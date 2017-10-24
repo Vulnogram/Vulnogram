@@ -1,0 +1,32 @@
+//- Copyright (c) 2017 Chandan B N. All rights reserved.
+
+extends ../layout
+
+block content
+  .card
+    .entry
+        .cardtitle= title
+    .entry
+      label Name:
+      tt=profile.name
+    .entry
+      label Email:
+      tt=profile.email
+    .entry
+      label Username:
+      tt=profile.username
+    .entry
+      label CNA or group email:
+      tt=profile.group
+    .entry
+      label Privilege:
+      span
+        if profile.priv == 0
+            | Admin
+        else if profile.priv == 1
+            | Read/Write
+        else if profile.priv == 2
+            | Read only
+    .entry
+        div.center
+            a.user(href="/users/list") User list

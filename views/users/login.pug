@@ -1,0 +1,18 @@
+//- Copyright (c) 2017 Chandan B N. All rights reserved.
+
+extends ../splash
+
+block content
+  
+  form.card(method='POST', action='/users/login')
+    input(type='hidden', name='_csrf', value=csrfToken)
+    .entry
+      .cardtitle Login required
+    .entry
+      label Username:
+      input(name='username', type='text')
+    .entry
+      label Password:
+      input(name='password', type='password')
+    .entry 
+      button.button.safe(type='submit', value='Login') Login

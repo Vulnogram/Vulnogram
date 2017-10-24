@@ -1,0 +1,14 @@
+//- Copyright (c) 2017 Chandan B N. All rights reserved.
+
+extends min
+
+block content
+    h2 Exported:
+    ol
+        each f in files
+            li
+                =f
+                = ' '
+    each doc, i in docs
+        h3=doc.cve.CVE_data_meta.ID + ' ' + doc.cve.CVE_data_meta.TITLE
+        textarea(cols=100,rows=3)=JSON.stringify(doc.cve, null, 3)

@@ -1,0 +1,68 @@
+//- Copyright (c) 2017 Chandan B N. All rights reserved.
+
+extends ../layout
+block content
+ - var tabs = [['drafting','review-ready','publish-ready'], ['deferred'],['published'],['rejected','merged', null]]
+ - var tabnames = ['Current', 'Future', 'Past', 'Others']
+ .tabs
+ each tab, index in tabs
+  input.tabradio(name='tabs', type='radio', id='tab' + index, checked=(index == focustab ? "true": false))
+  label.tablabel(for='tab' + index)=tabnames[index]
+  .content
+      - var prlist = [];
+      - var rowCount = 0;
+      style.
+        table#table td:nth-child(1), table#table td:nth-child(3), table#table td:nth-child(6) {
+            white-space: nowrap;
+        }
+      table.border.sortable
+        thead
+            tr
+                th CVE
+                th Date
+                th State
+                th Defect
+                th Description
+                th Owner
+        tbody
+            each doc, i in docs
+             if ((doc.cve.CNA_private && tab.indexOf(doc.cve.CNA_private.state) != -1)||(!doc.cve.CNA_private && index==3))
+                - rowCount++;
+                tr
+                    td
+                        a(href='/cves/'+doc.cve.CVE_data_meta.ID)= doc.cve.CVE_data_meta.ID
+                    td
+                        if doc.cve.CVE_data_meta.DATE_PUBLIC
+                            = doc.cve.CVE_data_meta.DATE_PUBLIC.substr(0,10)
+                    td
+                        if doc.cve.CNA_private
+                            span(class=doc.cve.CNA_private.state)=doc.cve.CNA_private.state
+                            if doc.cve.CNA_private.todo && doc.cve.CNA_private.todo.length > 0
+                                =' '
+                                span.badge=doc.cve.CNA_private.todo.length
+                    td
+                        if doc.cve.CNA_private && doc.cve.CNA_private.defect
+                            - prlist = prlist.concat(doc.cve.CNA_private.defect.split());
+                            = doc.cve.CNA_private.defect
+                    td
+                        a(href='/cves/view/'+doc.cve.CVE_data_meta.ID)
+                            =doc.cve.CVE_data_meta.TITLE
+                    td
+                        if doc.cve.CNA_private && doc.cve.CNA_private.owner
+                            span.monogram(class=doc.cve.CNA_private.owner.charAt(0).toUpperCase())
+                            =doc.cve.CNA_private.owner
+      if rowCount > 0
+        p Total items: 
+            = rowCount
+      else
+        p No matching CVE IDs
+      if prlist.length > 0
+        p List of defects mentioned above: 
+            = prlist.join(', ')
+
+ script(src="/js/tablesort.min.js")
+ script.
+        var tables = document.getElementsByClassName('sortable')
+        for (var i = 0; i < tables.length; i++) {
+            new Tablesort(tables[i]);
+        }

@@ -1,0 +1,13 @@
+//- Copyright (c) 2017 Chandan B N. All rights reserved.
+
+extends ../../layout
+include advisory.pug
+
+block content
+    p#meta
+        if doc && doc.updatedAt
+            ='Last updated ' + textUtil.timeSince(doc.updatedAt) + ' ago by ' + doc.author
+    .page
+        a.button.safe(id="edit",href="/cves/"+doc.cve.CVE_data_meta.ID) edit
+        #advisory
+            +page(doc.cve)

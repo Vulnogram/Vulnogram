@@ -1,0 +1,39 @@
+//- Copyright (c) 2017 Chandan B N. All rights reserved.
+
+doctype html
+html
+  head
+    title= title
+    include head
+  body#body
+    - var items = { "" : '☰ Home', new: '➕ New', drafts: 'Drafts', slides: 'Slides'}
+    header
+      .left
+        b.logo.title(title="Making the world safer one CVE at a time, since 2017")="Vulnogram"
+      .right
+        if user && !min
+            a.user(href="/users/profile/" + user.username)= user.name
+            a.exit(href="/users/logout")=" Logout "
+            //a.help Help
+    if user && !min
+        script.
+            var userName = "#{user.name}";
+            var userUsername = "#{user.username}";
+    else
+        script.
+            var userUsername = ""
+    if !min
+        nav.navbar
+            each label, path in items
+                a(class=label+" navtab" + (page === path ? " active" : ""), href = '/cves/' + path)= label
+            span.navtab.textbox
+                form(onsubmit="window.location.href= '/cves/pr'+ this.pr.value.replace(/[^0-9a-zA-Z-_.]/g, ''); return false")
+                    input(type="search",name="pr",placeholder="➕ FROM DEFECT")
+            span.navtab.textbox
+                form(action="/cves/search",method="get")
+                    input(type="search",name="q",placeholder="🔍 SEARCH")
+    if !min
+        !=messages()
+    p#errMsg
+    block content
+    include foot

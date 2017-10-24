@@ -1,0 +1,109 @@
+//- Copyright (c) 2017 Chandan B N. All rights reserved.
+
+mixin para(t)
+    if t
+        each line in t.split(/\n/)
+            if line
+                if line.startsWith('  ')
+                    code=line
+                    br
+                else
+                    p=line
+
+mixin page(cve)
+    - var cveid = cve.CVE_data_meta.ID.match(/^CVE-[0-9-]+$/)? cve.CVE_data_meta.ID : 'CVE-yyyy-nnnn'
+    h2
+        = cve.CVE_data_meta.TITLE + ' (' + cveid + ')'    
+
+    h4 PRODUCT AFFECTED:
+
+    p= textUtil.getProductAffected(cve)
+
+    h4 PROBLEM:
+
+    each d in cve.description.description_data
+        +para(d.value)
+    if cve.configuration
+        each c in cve.configuration
+            +para(c.value)
+    if cve.exploit
+        +para(cve.exploit)
+    p This issue has been assigned 
+        a(href="http://cve.mitre.org/cgi-bin/cvename.cgi?name="+cveid)=cveid
+        |.
+
+    h4 SOLUTION:
+
+    +para(cve.solution)
+
+    h4 WORKAROUND:
+    if cve.work_around
+        each w in cve.work_around
+            +para(w.value)
+
+    h4 MODIFICATION HISTORY:
+
+    p
+        ul
+            li=cve.CVE_data_meta.DATE_PUBLIC + ": Initial Publication."
+
+    h4 RELATED LINKS:
+
+    ul
+        if cve.CVE_data_meta.ID
+            li
+                a(href="http://cve.mitre.org/cgi-bin/cvename.cgi?name="+cveid)=cveid + " at cve.mitre.org"
+        each r in cve.references.reference_data
+            li
+                a(href=r.url)=r.url
+
+    h4 CVSS SCORE:
+    if cve.impact && cve.impact.cvss
+        p
+            if cve.impact.cvss.baseScore >= 0
+                =cve.impact.cvss.baseScore
+            if cve.impact.cvss.vectorString
+                    |  (
+                    a(href="https://cvssjs.github.io/#" + cve.impact.cvss.vectorString)=cve.impact.cvss.vectorString
+                    |)
+        if cve.impact.cvss.baseSeverity
+            h4 RISK LEVEL:
+            p=cve.impact.cvss.baseSeverity
+
+    if cve.credit && cve.credit.length > 0
+        h4 ACKNOWLEDGEMENTS:
+        ul
+            each c in cve.credit
+                li= c
+
+mixin tabulate(docs)
+  if docs && docs.length > 0
+    table.border
+        thead
+            tr
+                th CVE
+                th CVSS
+                th Defect
+                th Description
+        tbody
+            each doc, i in docs
+                tr
+                    td
+                        a(href='#'+doc.cve.CVE_data_meta.ID)
+                            if(doc.cve.CVE_data_meta.ID.match(/^CVE-[0-9-]+$/))
+                                = doc.cve.CVE_data_meta.ID
+                            else
+                                = 'CVE-yyyy-nnnn'
+                    td
+                        if doc.cve.impact && doc.cve.impact.cvss
+                            = doc.cve.impact.cvss.baseScore +' (' + doc.cve.impact.cvss.baseSeverity + ')'
+                    td
+                        if doc.cve.CNA_private && doc.cve.CNA_private.defect
+                            = doc.cve.CNA_private.defect
+                    td
+                        a(href='#'+doc.cve.CVE_data_meta.ID)= doc.cve.CVE_data_meta.TITLE
+    if docs && docs.lenth > 5
+        p Total items: 
+            = docs.length
+  else
+    p There are no CVE IDs in review or publish ready state.

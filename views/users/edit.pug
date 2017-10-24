@@ -1,0 +1,68 @@
+//- Copyright (c) 2017 Chandan B N. All rights reserved.
+
+extends ../layout
+
+block content
+ div
+  - var action = '/users/profile/';
+  if profile.username
+    - action = action + profile.username;
+  form.card(method='POST', action=action)
+    input(type='hidden', name='_csrf', value=csrfToken)
+    .entry
+        .cardtitle=title
+    .entry
+      label Name:
+      input.form-control(name='name', type='text', value=profile.name)
+    .entry
+      label Email:
+      input.form-control(name='email', type='text', value=profile.email)
+    .entry
+      label Username:
+      if admin
+        input.form-control(name='username', type='text',value=profile.username)
+      else
+        tt=profile.username
+    .entry
+      label Password:
+      input.form-control(name='password', type='password')
+    .entry
+      label Confirm Password:
+      input.form-control(name='password2', type='password')
+    .entry
+      label CNA or group email:
+      if admin
+        input.form-control(name='group', type='text',value=profile.group)
+      else
+        tt=profile.group
+    .entry
+      label Privilege:
+      if admin
+        select.form-control(name='priv')
+            option(value=2,selected=profile.priv==2) Read only
+            option(value=1,selected=profile.priv==1) Read/Write
+            option(value=0,selected=profile.priv==0) Admin
+      else
+        tt
+            if profile.priv == 0
+                | Admin
+            else if profile.priv == 1
+                | Read/Write
+            else if profile.priv == 2
+                | Read only
+    .entry
+        button.button.safe(type='submit', value='Save') Save
+    .entry
+        div.center
+            a.user(href="/users/list") User list
+            if admin
+                |  · 
+                a.new(href="/users/profile") Add user
+        div.center
+            if admin && profile.username
+                a.small.rejected(href="/users/delete/"+profile.username,onclick="return confirm('Delete this user?')") Delete 
+                    = profile.username
+                
+        
+
+    

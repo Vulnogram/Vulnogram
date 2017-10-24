@@ -1,0 +1,30 @@
+//- Copyright (c) 2017 Chandan B N. All rights reserved.
+
+extends ../layout
+block content
+    table.border.sortable
+        thead
+            tr
+                th Username
+                th Name
+                th email
+                th CNA
+                th Privilege
+        tbody
+            each user in users
+             tr
+                td
+                    a(href="/users/profile/" + user.username)=user.username
+                td
+                    a(href="/users/profile/" + user.username)=user.name
+                td
+                    a(href="mailto:" + user.email)=user.email
+                td
+                    a(href="mailto:" + user.group)=user.group
+                td
+                    if user.priv == 0
+                        | Admin
+                    else if user.priv == 1
+                        | Read/Write
+                    else if user.priv == 2
+                        | Read only
