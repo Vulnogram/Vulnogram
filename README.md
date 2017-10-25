@@ -12,12 +12,12 @@ Vulnogram project aims to make it easier for vendors and security researchers to
 
 ## Getting started
 
-#### Step 1. Install required node modules
+#### Step 1. Install required software
 
-
-	$ cd vulnogram
+	$ git clone https://github.com/Vulnogram/Vulnogram.git
+	$ cd Vulnogram
 	$ npm install
- 	... this should install required dependencies ...
+ 	... this should install required NodeJS dependencies ...
 
 
 #### Step 2. Setup monogodb to be used for persistent storage of CVE JSON and users.
