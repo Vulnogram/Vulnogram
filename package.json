@@ -1,6 +1,6 @@
 {
   "name": "Vulnogram",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Making the world safer one CVE at a time, since 2017. Tool for creating Security Advisories and CVE ID information.",
   "main": "app.js",
   "scripts": {
