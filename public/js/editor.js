@@ -370,6 +370,63 @@ JSONEditor.defaults.editors.radio = JSONEditor.AbstractEditor.extend({
     }
 });
 
+function tzOffset() {
+    var offset = new Date().getTimezoneOffset(),
+        o = Math.abs(offset);
+        return (offset < 0 ? "+" : "-") + ("00" + Math.floor(o / 60)).slice(-2) + ":" + ("00" + (o % 60)).slice(-2);   
+}
+
+// The time is displayed/set in local times in the input,
+//  but setValue, getValue use UTC. JSON output will be in UTC.
+JSONEditor.defaults.editors.dateTime = JSONEditor.defaults.editors.string.extend({
+    getValue: function () {
+        if(this.value && this.value.length > 0) {
+            if(this.value.match(/^\d{4}-\d{2}-\d{2}T[\d\:\.]+$/)) {
+                this.value = this.value + tzOffset();
+            }
+            var d = new Date(this.value);
+            if(d instanceof Date && !isNaN(d.getTime())) {
+                return d.toISOString();
+            } else {
+                return this.value;
+            }
+        } else {
+            return "";
+        }
+    },
+
+    setValue: function (val) {
+        if(val && this.value.match(/^\d{4}-\d{2}-\d{2}T[\d\:\.]+$/)) {
+                val = val + tzOffset();
+        }
+        var d = new Date(val);
+        if(d instanceof Date && !isNaN(d.getTime()) && d.getTime() > 0) {
+            this.value = 
+            this.input.value = new Date((d.getTime() - (d.getTimezoneOffset() * 60000))).toJSON().slice(0,16);
+        } else {
+            this.value = this.input.value = "";
+        
+        }
+    },
+
+    build: function () {
+        this.schema.format = "datetime-local";
+        this._super();
+        var tzInfo = document.createElement('small');
+        tzInfo.textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        this.input.parentNode.appendChild(tzInfo);
+
+    }
+});
+
+// Instruct the json-editor to use the custom datetime-editor.
+JSONEditor.defaults.resolvers.unshift(function (schema) {
+    if (schema.type === "string" && schema.format === "datetime") {
+        return "dateTime";
+    }
+
+});
+
 JSONEditor.defaults.editors.object = JSONEditor.defaults.editors.object.extend({
     layoutEditors: function () {
         var propertyNumber = 1;
@@ -787,3 +844,49 @@ function setupDeselectEvent() {
 }
 
 setupDeselectEvent();
+
+function loadCVE(value) {
+    var realId = value.match(/(CVE-(\d{4})-(\d{1,12})(\d{3}))/);
+    if(realId) {
+        var id = realId[1];
+        var year = realId[2];
+        var bucket = realId[3];
+        fetch('https://raw.githubusercontent.com/CVEProject/cvelist/master/'+ year + '/' + bucket + 'xxx/'+ id +'.json', {
+            method: 'GET',
+            credentials: 'omit',
+            headers: {
+                'Accept': 'application/json, text/plain, */*'
+            },
+            redirect: 'error',
+        })
+        .then(function (response) {
+            if (!response.ok) {
+                errMsg.textContent = "Failed to load valid CVE JSON";
+                infoMsg.textContent = "";
+                throw Error(id + ' ' + response.statusText);
+            }
+            return response.json();
+        })
+        .then(function (res) {
+            if (res.CVE_data_meta) {
+                cveEditor.root.setValue(res, true);
+                infoMsg.textContent = "Imported " + id +" from git";
+                errMsg.textContent = "";
+                document.title = id;
+                if(document.getElementById("save1")) {
+                    save2.className = save1.className = "button tabbutton save";
+                }
+                document.getElementById("editorTab").checked = true;
+                changes = 0;
+            } else {
+                errMsg.textContent = "Failed to load valid CVE JSON";
+                infoMsg.textContent = "";
+            }
+        })
+        .catch(function (error) {
+            errMsg.textContent = error;
+        })
+    } else {
+        errMsg.textContent = "CVE ID required";
+    }
+}
