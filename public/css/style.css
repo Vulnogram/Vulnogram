@@ -195,7 +195,7 @@ border: 0px;
   margin-left: .5em;
 
   display                 : block;
-  padding                 :7px 2em;
+  padding                 :7px 1em;
   border                  : 1px solid var(--bor);
   border-bottom           : 1px solid var(--wht);
   border-top-left-radius  : 4px;
@@ -205,7 +205,15 @@ border: 0px;
   color: var(--tlt);
   transition: background 0.3s, color 0.3s;
 }
-
+.tabinput label {
+  padding: 7px 4px 7px 1em;
+}
+.tabinput input {
+    height: 20px;
+    border: 1px solid var(--bor);
+    padding: 3px 6px 3px 6px;
+    border-radius: 3px;
+}
 .tabbutton {
     float: left;
     margin-left: .5em;
@@ -322,6 +330,17 @@ border: 0px;
 .card input, .editor label, .editor input {
     display: flex;
     padding: 4px 4px;
+}
+
+.editor input[type="datetime-local"] {
+    display: inline-block;
+    flex-grow: 0;
+    min-width: auto;
+    margin-right: 1em;
+}
+.editor input[type="datetime-local"] + small{
+    color: gray;
+    padding: 5px;
 }
 
 .editor h3 {
@@ -695,6 +714,7 @@ div[data-schemapath^="root"] > label:before,
 .SPLIT_FROM:before,
 .MERGED_TO:before,
 .save:before,
+.Import:before,
 .review-ready:before {
   display: inline-block;
   background-repeat: no-repeat;
@@ -884,6 +904,9 @@ label[for*="baseSeverity"]:before {
 }
 .save:before {
     background-position: -8em 0;
+}
+.Import:before {
+    background-position: -6em 0;
 }
 .credit:before {
     background-position: -65em 0;

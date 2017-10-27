@@ -274,7 +274,7 @@ var CVEschema = {
                 },
                 "DATE_PUBLIC": {
                     "type": "string",
-                    "format": "datetime-local"
+                    "format": "datetime"
                 },
                 "TITLE": {
                     "type": "string"
@@ -326,6 +326,20 @@ var CVEschema = {
                 }
             }
         },
+        "description": {
+            "type": "object",
+            "required": ["description_data"],
+            "properties": {
+                "description_data": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "title": "Description",
+                        "$ref": "#/definitions/lang_string"
+                    }
+                }
+            }
+        },
         "problemtype": {
             "type": "object",
             "required": ["problemtype_data"],
@@ -361,20 +375,6 @@ var CVEschema = {
                     "items": {
                         "title": "URL",
                         "$ref": "#/definitions/reference"
-                    }
-                }
-            }
-        },
-        "description": {
-            "type": "object",
-            "required": ["description_data"],
-            "properties": {
-                "description_data": {
-                    "type": "array",
-                    "minItems": 1,
-                    "items": {
-                        "title": "Description",
-                        "$ref": "#/definitions/lang_string"
                     }
                 }
             }
@@ -478,13 +478,6 @@ var CVEschema_plus = {
                 }
             }
         },
-        references: {
-            properties: {
-                reference_data: {
-                    format: "table"
-                }
-            }
-        },
         description: {
             properties: {
                 description_data: {
@@ -548,7 +541,15 @@ var CVEschema_plus = {
                 "title": "credit",
                 "type": "string"
             }
-        }
+        },
+        references: {
+            properties: {
+                reference_data: {
+                    format: "table"
+                }
+            },
+            propertyOrder: 14
+        },
     }
 };
 

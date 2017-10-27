@@ -39,7 +39,11 @@ block content
         input.tabradio(name='tabs', type='radio', id='jsonTab', value="6",)
         label.tablabel(for='jsonTab') JSON
         .content
-            pre(id="cvejson")        
+            pre(id="cvejson")
+        
+        form.tabinput(onsubmit="loadCVE(this.git.value);return false;")
+            label.Import Import
+            input.Import(type="text",name="git",placeholder="CVE-YYYY-NNNN",pattern=".*CVE-[0-9]{4}-[0-9]{4,12}.*",title="CVE ID CVE-yyyy-nnnn+")
     if !min
         div
             button.button.tabbutton.save(id="save2",style="visibility:hidden") SAVE     
