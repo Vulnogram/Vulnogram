@@ -10,9 +10,9 @@ block content
       .cardtitle Login required
     .entry
       label Username:
-      input(name='username', type='text')
+      input(name='username', type='text', autocomplete='username')
     .entry
       label Password:
-      input(name='password', type='password')
+      input(name='password', type='password', autocomplete='current-password')
     .entry 
       button.button.safe(type='submit', value='Login') Login

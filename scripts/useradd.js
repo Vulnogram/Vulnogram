@@ -1,12 +1,12 @@
 // Copyright (c) 2017 Chandan B N. All rights reserved.
 // Command line utility to add users.
 
-const pbkdf2 = require('./lib/pbkdf2.js');
+const pbkdf2 = require('../lib/pbkdf2.js');
 const passport = require('passport');
-const User = require('./models/user.js');
+const User = require('../models/user.js');
 const readline = require('readline');
 const mongoose = require('mongoose');
-const config = require('./config/conf');
+const config = require('../config/conf');
 
 mongoose.Promise = global.Promise;
 

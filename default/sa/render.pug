@@ -1,0 +1,106 @@
+extends ../../views/render.pug
+
+block prepend renderPage
+    if renderTemplate == 'advisory'
+        +saPage(doc, cmap, cSum)
+        - renderComplete = true
+    if renderTemplate == 'advisorySlide'
+        +saSlide(doc, cmap, cSum)
+        - renderComplete = true
+
+mixin saSlide(doc,cmap, cSum)
+    li.page
+        = doc.ID
+        | 
+        = doc.TITLE
+        ol
+            li PR: 
+                - var bugs = cSum.aggregate.defect;
+                - if (doc.defect) for(var d of doc.defect) { bugs.add(d)};
+                = Array.from(bugs.values())
+            li CVSS: 
+                +renderVal('CVSSFull', cSum.maxCVSS)
+            li Affects: 
+                = doc.PRODUCT_AFFECTED 
+            li
+                +mpara(doc.description)
+            li Solution: 
+                +mpara(doc.solution)
+
+mixin saPage(doc,cmap, cSum)
+    h2
+        = doc.ID
+        | 
+        = doc.TITLE
+
+    h4 PRODUCT AFFECTED:
+    p=doc.PRODUCT_AFFECTED
+
+    h4 PROBLEM:
+    +mpara(doc.description)
+
+    if cSum
+      if cSum.idSet
+        table.striped
+            tr.rowHead
+                th CVE
+                th CVSS
+                th Summary
+            each x, id in cSum.idSet
+                tr
+                    td=id
+                    td
+                        if cmap[id] && cmap[id].impact
+                            +renderVal('CVSSFull', cmap[id].impact.cvss)
+                    td
+                        if cSum.summary[id]
+                            = cSum.summary[id]
+                        else if cmap[id] && cmap[id].CVE_data_meta
+                            =cmap[id].CVE_data_meta.TITLE
+
+    h4 SOLUTION:
+    +mpara(doc.solution)
+    +aggpara(cSum.aggregate['solution'])
+    
+    - var bugs = cSum.aggregate.defect;
+    - if (doc.defect) for(var d of doc.defect) { bugs.add(d)};
+    if bugs.size > 0
+        p 
+            if(doc.CVE_list.length > 1)
+                | These issues are 
+            else
+                | This issue is 
+            | being tracked as PR 
+            +linklist(Array.from(bugs.values()), defectURL)
+            |.
+    
+    h4 WORKAROUND:
+    +mpara(doc.work_around)
+    +aggpara(cSum.aggregate['work_around'])
+
+    h4 MODIFICATION HISTORY:
+    if doc.DATE_PUBLIC
+        p
+            ul
+                li
+                    +renderVal('date',doc.DATE_PUBLIC)
+                    | : Initial Publication.
+
+    h4 RELATED LINKS:
+    ul
+        if cSum.urlSet
+            each u, t in cSum.urlSet
+                li
+                    a(href=t)=u
+
+    h4 CVSS SCORE:
+    p
+        +renderVal('CVSSFull', cSum.maxCVSS)
+
+    h4 RISK LEVEL:
+    p=cSum.maxCVSS.baseSeverity
+
+    if cSum.aggregate['credit'] && Object.keys(cSum.aggregate['credit']).length > 0
+        h4 ACKNOWLEDGEMENTS:
+        +aggpara(cSum.aggregate['credit'])
+

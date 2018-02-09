@@ -1,0 +1,28 @@
+//- Copyright (c) 2017 Chandan B N. All rights reserved.
+
+//- Extends default document editor for CVE
+
+extends ../../views/edit
+
+block append bannerItems
+    form(onsubmit="loadCVE(this.git.value);return false;")
+        label.headertab.Import Import
+        input.headertab.Import(type="text",name="git",placeholder="CVE-YYYY-NNNN",pattern=".*CVE-[0-9]{4}-[0-9]{4,12}.*",title="CVE ID CVE-yyyy-nnnn+")
+
+block customtabs
+        input.tabradio(name='tabs', type='radio', id='advisoryTab', value="4")
+        label.tablabel(for='advisoryTab') Advisory
+        .content
+            div.render(id="render")
+        input.tabradio(name='tabs', type='radio', id='mitreTab', value="5")
+        label.tablabel(for='mitreTab') MITRE
+        .content
+            div#mitreweb
+        input.tabradio(name='tabs', type='radio', id='jsonTab', value="6")
+        label.tablabel(for='jsonTab') JSON            
+        .content
+            div(style='float:right')
+                a.right.copy.button(onmouseover='this.textContent="Copy"',onclick='copyText(outjson);this.textContent="Copied"') Copy
+                | 
+                a.right.download.button(onclick='downloadText(outjson, this);') Download
+            pre#outjson

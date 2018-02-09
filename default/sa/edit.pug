@@ -1,0 +1,9 @@
+
+//- Copyright (c) 2017 Chandan B N. All rights reserved.
+
+extends ../../views/edit
+block customtabs
+        input.tabradio(name='tabs', type='radio', id='advisoryTab', value="4",)
+        label.tablabel(for='advisoryTab') Advisory
+        .content
+            div.render(id="render")

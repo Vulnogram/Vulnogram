@@ -9,10 +9,16 @@ const crypto = require('crypto');
 const passport = require('passport');
 const pbkdf2 = require('../lib/pbkdf2.js');
 const User = require('../models/user');
-const conf = require ('../config/conf');
+const conf = require('../config/conf');
 const csurf = require('csurf');
-const { check, validationResult } = require('express-validator/check');
-const { matchedData, sanitize } = require('express-validator/filter');
+const {
+    check,
+    validationResult
+} = require('express-validator/check');
+const {
+    matchedData,
+    sanitize
+} = require('express-validator/filter');
 
 const validator = require('validator');
 var csrfProtection = csurf();
@@ -34,6 +40,7 @@ protected.get('/profile/:id(' + conf.usernameRegex + ')?', csrfProtection, funct
                         title: 'Update profile: ' + user.username,
                         profile: user,
                         admin: admin,
+                        page: 'users',
                         csrfToken: req.csrfToken()
                     });
                 } else {
@@ -41,12 +48,13 @@ protected.get('/profile/:id(' + conf.usernameRegex + ')?', csrfProtection, funct
                         title: 'Profile: ' + user.username,
                         profile: user,
                         admin: admin,
+                        page: 'users',
                         csrfToken: req.csrfToken()
                     });
                 }
             } else {
                 req.flash('error', 'User id not found');
-                if(admin) {
+                if (admin) {
                     res.redirect('/users/profile');
                 } else {
                     res.render('blank');
@@ -59,6 +67,7 @@ protected.get('/profile/:id(' + conf.usernameRegex + ')?', csrfProtection, funct
             res.render('users/edit', {
                 title: 'Add new user',
                 profile: {},
+                page: 'users',
                 admin: admin,
                 csrfToken: req.csrfToken()
             });
@@ -73,65 +82,91 @@ protected.get('/profile/:id(' + conf.usernameRegex + ')?', csrfProtection, funct
 protected.post('/profile/:id(' + conf.usernameRegex + ')?', csrfProtection, [
     check('name')
         .trim()
-        .isLength({min:2, max:undefined})
+        .isLength({
+        min: 2,
+        max: undefined
+    })
         .withMessage('Name too short')
-        .isLength({min:0, max:64})
+        .isLength({
+        min: 0,
+        max: 64
+    })
         .withMessage('Name too long'),
+    check('emoji')
+        .trim()
+        .isLength({
+        min: 1,
+        max: 8
+    })
+        .withMessage('Long Emoji strings are not allowed'),
     check('email')
         .trim()
         .isEmail()
         .normalizeEmail()
-        .isLength({min:2, max:256})
+        .isLength({
+        min: 2,
+        max: 256
+    })
         .withMessage('User email is invalid'),
     check('password')
-        .custom((value, { req }) => value === req.body.password2)
+        .custom((value, {
+        req
+    }) => value === req.body.password2)
         .withMessage('Passwords do not match'),
     check('group')
         .trim()
         .normalizeEmail()
-        .custom((value, { req }) => {
-            // validate group only if it is a privileged user
-            // group email from unprivileged users will be ignored
-            if((req.user.priv != 0) || validator.isEmail(value)) {
-                return true;
-            }
-            return false;
-        })
+        .custom((value, {
+        req
+    }) => {
+        // validate group only if it is a privileged user
+        // group email from unprivileged users will be ignored
+        if ((req.user.priv != 0) || validator.isEmail(value)) {
+            return true;
+        }
+        return false;
+    })
         .withMessage('Group email is invalid'),
     check('username')
         .trim()
-        .custom((value, { req }) => {
-            // validate username if it is a privileged user
-            // username from unprivileged users will be ignored
-            if((req.user.priv != 0) || validator.matches(value, /^[a-zA-Z0-9]{3,128}$/)) {
-                return true;
-            }
-            req.body.username = "";
-            return false;
-        })
+        .custom((value, {
+        req
+    }) => {
+        // validate username if it is a privileged user
+        // username from unprivileged users will be ignored
+        if ((req.user.priv != 0) || validator.matches(value, /^[a-zA-Z0-9]{3,128}$/)) {
+            return true;
+        }
+        req.body.username = "";
+        return false;
+    })
         .withMessage('Username is invalid'),
     check('username')
-        .custom((value, {req}) => {
-                return User.findOne({
-                    username: value
-                }).then((user) => {
-                    if ((!req.params.id || req.params.id != value) && user) {
-                        throw new Error('this username is already in use');
-                        return false;
-                    } else {
-                        return true;
-                    }
-                });
-            }),
-    check('priv')
-        .custom((value, { req }) => {
-            // validate username if it is a privileged user
-            // username from unprivileged users will be ignored
-            if((req.user.priv != 0) || validator.isIn(value, [0,1,2])) {
+        .custom((value, {
+        req
+    }) => {
+        return User.findOne({
+            username: value
+        }).then((user) => {
+            if ((!req.params.id || req.params.id != value) && user) {
+                throw new Error('this username is already in use');
+                return false;
+            } else {
                 return true;
             }
-            return false;
-        })
+        });
+    }),
+    check('priv')
+        .custom((value, {
+        req
+    }) => {
+        // validate username if it is a privileged user
+        // username from unprivileged users will be ignored
+        if ((req.user.priv != 0) || validator.isIn(value, [0, 1, 2])) {
+            return true;
+        }
+        return false;
+    })
         .withMessage('Privilege provided is invalid')
 ], function (req, res) {
     if (req.isAuthenticated()) {
@@ -151,12 +186,13 @@ protected.post('/profile/:id(' + conf.usernameRegex + ')?', csrfProtection, [
                 title: 'User ' + req.body.username,
                 profile: req.body,
                 admin: admin,
+                page: 'users',
                 csrfToken: req.csrfToken()
             });
 
             //res.redirect('/users/profile/'+req.user.username);
         } else {
-            if(!admin) {
+            if (!admin) {
                 updates.username = req.user.username;
                 updates.priv = req.user.priv;
                 updates.group = req.user.group;
@@ -216,7 +252,7 @@ public.get('/login', csrfProtection, function (req, res) {
 // Login process
 public.post('/login', csrfProtection, function (req, res, next) {
     passport.authenticate('local', {
-        successRedirect: req.session.returnTo || '/cves',
+        successRedirect: req.session.returnTo || '/cve',
         failureRedirect: '/users/login',
         failureFlash: true
     })(req, res, next);
@@ -228,6 +264,21 @@ public.get('/logout', function (req, res) {
     req.session.returnTo = null;
     req.flash('success', 'You are logged out');
     res.redirect('/users/login');
+});
+
+protected.get('/style.css', function (req, res) {
+    if (req.isAuthenticated()) {
+        User.find({}, ['username', 'emoji', '-_id'], {}, function (err, users) {
+            if (err) {
+                res.status(500).send('Error');
+            } else {
+                res.render('users/style', {
+                    users: users,
+                    page: 'users'
+                });
+            }
+        });
+    }
 });
 
 //List users
@@ -242,7 +293,8 @@ protected.get('/list', function (req, res) {
                 res.status(500).send('Error');
             } else {
                 res.render('users/index', {
-                    users: users
+                    users: users,
+                    page: 'users'
                 });
             }
         });

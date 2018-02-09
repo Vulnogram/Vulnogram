@@ -1,0 +1,36 @@
+//- Copyright (c) 2017 Chandan B N. All rights reserved.
+
+extends layout
+mixin pageHolder(id)
+    .page
+        a(name=id)
+        .confidential
+            if(ext)
+                h5 Draft Security Advisory
+            else
+                h5 Confidential Information : INTERNAL USE ONLY
+        .render(id=id)
+            block
+                
+include util
+
+block content
+    if min
+        link(rel='stylesheet', href='css/style.css')
+    .confidential
+        if(ext)
+            h5 Draft Security Advisories
+        else
+            h3 Confidential Information
+            h3 INTERNAL USE ONLY.
+
+    +table(idx, ['Advisory', 'CVE', 'Defect', 'CVSS','Title'], true)
+    +tablesort
+    if sas
+        each sa, i in sas
+            +pageHolder(sa.body.ID)
+                +saPage(sa.body, cmap, csumSet[sa.body.ID])
+    if docs
+        each doc, i in docs
+            +pageHolder(doc.body.source.advisory ? doc.body.source.advisory : i)
+                +cvePage(doc.body)
