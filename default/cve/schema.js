@@ -1,9 +1,30 @@
 var langEnum = ["eng", "fra", "spa", "ger", "jpn", "zho"];
 
+var phases = {
+    DRAFT: "Current",
+    REVIEW: "Current",
+    READY: "Current",
+    PUBLIC: "Past",
+    RESERVED: "Future",
+    REPLACED_BY: "Other",
+    REJECTED: "Deleted",
+    SPLIT_FROM: "Other",
+    MERGED_TO: "Other"
+}
+var cvssChangeables = {
+    "attackVector": "cvss.attackVector",
+    "attackComplexity": "cvss.attackComplexity",
+    "privilegesRequired": "cvss.privilegesRequired",
+    "userInteraction": "cvss.userInteraction",
+    "scope": "cvss.scope",
+    "confidentialityImpact": "cvss.confidentialityImpact",
+    "integrityImpact": "cvss.integrityImpact",
+    "availabilityImpact": "cvss.availabilityImpact"
+}
 var CVSSschema = {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "JSON Schema for Common Vulnerability Scoring System version 3.0",
-    "id": "https://www.first.org/cvss/cvss-v3.0.json?20170531",
+    "id": "cvss",
     "type": "object",
     "definitions": {
         "attackVectorType": {
@@ -87,8 +108,8 @@ var CVSSschema = {
         },
         "severityType": {
             "type": "string",
-            "format": "radio",
-            "enum": ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
+            "format": "string",
+            //"enum": ["NONE", "LOW", "MEDIUM", "HIGH", "CRITICAL"]
         }
     },
     "properties": {
@@ -97,23 +118,6 @@ var CVSSschema = {
             "enum": ["3.0"],
             "options": {
                 "hidden": "true"
-            }
-        },
-        "vectorString": {
-            "type": "string",
-            options: {
-                input_width: "50em"
-            },
-            "pattern": "^CVSS:3.0/((AV:[NALP]|AC:[LH]|PR:[UNLH]|UI:[NR]|S:[UC]|[CIA]:[NLH]|E:[XUPFH]|RL:[XOTWU]|RC:[XURC]|[CIA]R:[XLMH]|MAV:[XNALP]|MAC:[XLH]|MPR:[XUNLH]|MUI:[XNR]|MS:[XUC]|M[CIA]:[XNLH])/)*(AV:[NALP]|AC:[LH]|PR:[UNLH]|UI:[NR]|S:[UC]|[CIA]:[NLH]|E:[XUPFH]|RL:[XOTWU]|RC:[XURC]|[CIA]R:[XLMH]|MAV:[XNALP]|MAC:[XLH]|MPR:[XUNLH]|MUI:[XNR]|MS:[XUC]|M[CIA]:[XNLH])$",
-            "watch": {
-                "AV": "attackVector",
-                "AC": "attackComplexity",
-                "PR": "privilegesRequired",
-                "UI": "userInteraction",
-                "S": "scope",
-                "C": "confidentialityImpact",
-                "I": "integrityImpact",
-                "A": "availabilityImpact"
             }
         },
         "attackVector": {
@@ -140,14 +144,29 @@ var CVSSschema = {
         "availabilityImpact": {
             "$ref": "#/definitions/ciaType"
         },
+        "vectorString": {
+            "type": "string",
+            options: {
+                input_width: "50em"
+            },
+            "pattern": "^CVSS:3.0/((AV:[NALP]|AC:[LH]|PR:[UNLH]|UI:[NR]|S:[UC]|[CIA]:[NLH]|E:[XUPFH]|RL:[XOTWU]|RC:[XURC]|[CIA]R:[XLMH]|MAV:[XNALP]|MAC:[XLH]|MPR:[XUNLH]|MUI:[XNR]|MS:[XUC]|M[CIA]:[XNLH])/)*(AV:[NALP]|AC:[LH]|PR:[UNLH]|UI:[NR]|S:[UC]|[CIA]:[NLH]|E:[XUPFH]|RL:[XOTWU]|RC:[XURC]|[CIA]R:[XLMH]|MAV:[XNALP]|MAC:[XLH]|MPR:[XUNLH]|MUI:[XNR]|MS:[XUC]|M[CIA]:[XNLH])$",
+            "template": "cvssjs.vector(context)",
+            "watch": cvssChangeables
+        },
         "baseScore": {
             "$ref": "#/definitions/scoreType",
             options: {
                 input_width: "5em"
-            }
+            },
+            template: "cvssjs.calculate(context)",
+            watch: cvssChangeables
         },
         "baseSeverity": {
-            "$ref": "#/definitions/severityType"
+            "$ref": "#/definitions/severityType",
+            template: "cvssjs.severity(context.sc).name",
+            watch: {
+                "sc": "cvss.baseScore"
+            }
         },
         /*        "exploitCodeMaturity":            { "$ref": "#/definitions/exploitCodeMaturityType" },
                 "remediationLevel":               { "$ref": "#/definitions/remediationLevelType" },
@@ -170,17 +189,19 @@ var CVSSschema = {
     },
     "required": ["version", "vectorString", "baseScore", "baseSeverity"]
 };
+
 //TODO: needs refactoring for standalone instance
-if (!userName) {
-    var userName = '';
-}
-var CVEschema = {
+//if (!userName) {
+//    var userName = '';
+//}
+
+var docSchema = {
     "$schema": "http://json-schema.org/draft-04/schema#",
 
     "definitions": {
         "cve_id": {
             "type": "string",
-            "pattern": "^CVE-[0-9]{4}-[0-9A-Za-z\.-]{4,}$"
+            "pattern": "^CVE-[0-9]{4}-[0-9A-Za-z\._-]{4,}$"
         },
         "email_address": {
             "type": "string",
@@ -202,11 +223,37 @@ var CVEschema = {
                             "type": "array",
                             "minItems": 1,
                             "items": {
-                                "title": "Version",
+                                "title": "version",
                                 "type": "object",
                                 "required": ["version_value"],
+                                "id": "v",
                                 "properties": {
+                                    "version_name": {
+                                        "title": "Version name (X)",
+                                        "type": "string"
+                                    },
+                                    "affected": {
+                                        "type": "string",
+                                        "enum": ["", "<", "<=", "=", ">", ">=", "!<", "<=", "!", "!>", "!>=", "?"],
+                                        "options": {
+                                            "enum_titles": [
+                                            "",
+                                            "< (affects X versions prior to n)",
+                                            "<= (affects X versions up to n)",
+                                            " = (affects n)",
+                                            " > (affects X versions above n)",
+                                            " >= (affects X versions n and above)",
+                                            "!< (doesn't affect X versions prior to n)",
+                                            "!<= (doesn't affect X versions n and below)",
+                                            "! (doesn't affect n)",
+                                            "!> (doesn't affect X versions above n)",
+                                            "!>= (doesn't affect X versions n and above)",
+                                            "? (status of n is unknown)"
+                                        ]
+                                        }
+                                    },
                                     "version_value": {
+                                        "title": "Version value (n)",
                                         "type": "string"
                                     },
                                     "platform": {
@@ -223,11 +270,22 @@ var CVEschema = {
             "type": "object",
             "required": ["url"],
             "properties": {
+                /*                "type" : {
+                                    "type": "string",
+                                    "enum": ["", "advisory", "analysis", "defect", "signature", "test", "exploit", "code-change", "discussion"]
+                                    
+                                },*/
                 "url": {
                     "maxLength": 500,
                     "type": "string",
+                    "format": "url",
                     "pattern": "^(ftp|http)s?://[^ \t]+$"
                 }
+                /*    ,
+                    
+                    "name": {
+                        "type": "string"
+                    } */
             }
         },
         "lang_string": {
@@ -241,7 +299,6 @@ var CVEschema = {
                     "type": "string",
                     "minLength": 2,
                     "maxLength": 3999
-
                 }
             }
         }
@@ -279,10 +336,47 @@ var CVEschema = {
                 "TITLE": {
                     "type": "string"
                 },
+                AKA: {
+                    "type": "string",
+                    "title": "Also known as"
+                },
                 STATE: {
                     "type": "string",
-                    "enum": ["PUBLIC", "RESERVED", "REPLACED_BY", "SPLIT_FROM", "MERGED_TO"],
-                    "default": "PUBLIC"
+                    "enum": ["DRAFT", "REVIEW", "READY", "PUBLIC", "RESERVED", "REPLACED_BY", "REJECTED", "SPLIT_FROM", "MERGED_TO"],
+                    "default": "DRAFT"
+                }
+            }
+        },
+        source: {
+            type: "object",
+            properties: {
+                defect: {
+                    title: "Defect",
+                    type: "array",
+                    format: "taglist",
+                    "uniqueItems": true,
+                    items: {
+                        type: "string"
+                    },
+
+                },
+                advisory: {
+                    title: "Advisory-ID",
+                    type: "string"
+                },
+                discovery: {
+                    type: "radio",
+                    "title": "Found during",
+                    "enum": ["INTERNAL", "EXTERNAL", "USER", "UNKNOWN"],
+                    "options": {
+                        "enum_titles": [
+                                "internal research",
+                                "external research",
+                                "production use",
+                                "unknown"
+                            ]
+                    },
+                    default: "UNKNOWN"
                 }
             }
         },
@@ -298,7 +392,7 @@ var CVEschema = {
                             "type": "array",
                             "minItems": 1,
                             "items": {
-                                "title": "Vendor",
+                                "title": "vendor",
                                 "type": "object",
                                 "required": ["vendor_name", "product"],
                                 "properties": {
@@ -313,7 +407,7 @@ var CVEschema = {
                                                 "type": "array",
                                                 "minItems": 1,
                                                 "items": {
-                                                    "title": "Product",
+                                                    "title": "product",
                                                     "$ref": "#/definitions/product"
                                                 }
                                             }
@@ -334,7 +428,7 @@ var CVEschema = {
                     "type": "array",
                     "minItems": 1,
                     "items": {
-                        "title": "Description",
+                        "title": "description",
                         "$ref": "#/definitions/lang_string"
                     }
                 }
@@ -348,7 +442,7 @@ var CVEschema = {
                     "type": "array",
                     "minItems": 1,
                     "items": {
-                        "title": "Problem type",
+                        "title": "problem type",
                         "type": "object",
                         "required": ["description"],
                         "properties": {
@@ -356,7 +450,7 @@ var CVEschema = {
                                 "type": "array",
                                 "minItems": 1,
                                 "items": {
-                                    "title": "Problem type description",
+                                    "title": "problem type description",
                                     "$ref": "#/definitions/lang_string"
                                 }
                             }
@@ -383,13 +477,13 @@ var CVEschema = {
 };
 
 // Additions to CVE Schema that could be benefitial for all.
-var CVEschema_plus = {
+var docSchema_plus = {
     options: {
-        input_width: "10em"
+        //        input_width: "10em"
     },
     definitions: {
         lang_string: {
-            properties: {            
+            properties: {
                 lang: {
                     "options": {
                         "hidden": "true"
@@ -441,6 +535,7 @@ var CVEschema_plus = {
             }
         },
         CVE_data_meta: {
+            "id": "CDM",
             options: {
                 layout: "grid",
                 grid_columns: 2
@@ -512,12 +607,18 @@ var CVEschema_plus = {
             "properties": {
                 "cvss": {
                     "type": "object",
+                    "id": "cvss",
                     "properties": CVSSschema.properties
                 }
             }
         },
         "exploit": {
-            "type": "string"
+            "type": "array",
+            "format": "table",
+            "items": {
+                "title": "Exploit",
+                "$ref": "#/definitions/lang_string"
+            }
         },
         "work_around": {
             "type": "array",
@@ -528,18 +629,19 @@ var CVEschema_plus = {
             }
         },
         "solution": {
-            "type": "string",
-            "format": "textarea",
-            "options": {
-                "input_height": "6em"
+            "type": "array",
+            "format": "table",
+            "items": {
+                "title": "solution",
+                "$ref": "#/definitions/lang_string"
             }
         },
         "credit": {
             "type": "array",
             "format": "table",
             "items": {
-                "title": "credit",
-                "type": "string"
+                "title": "credit statement",
+                "$ref": "#/definitions/lang_string"
             }
         },
         references: {
@@ -553,8 +655,160 @@ var CVEschema_plus = {
     }
 };
 
-Object.assign(CVEschema.definitions, CVSSschema.definitions);
-textUtil.mergeJSON(CVEschema, CVEschema_plus);
-if(CVEschema_custom) {
-    textUtil.mergeJSON(CVEschema, CVEschema_custom);
+var CVEschema_custom = {
+    definitions: {
+        product: {
+            properties: {
+                product_name: {
+                    type: "string"
+                    // Uncomment to configure default product name or configure an enum to show limited options
+                    // enum: ["product1", "product2"]
+                    // default: ""
+                }
+            }
+        },
+        reference: {
+            properties: {
+                url: {
+                    type: "string"
+                    // Uncomment to configure default advisory URL
+                    // default: "https://example.net/advisory/"
+                }
+            }
+        }
+    },
+    properties: {
+        CVE_data_meta: {
+            properties: {
+                ASSIGNER: {
+                    // Uncomment to configure default for ASSIGNER email ID
+                    // default: "sirt@example.net",
+                    options: {
+                        // Set property hidden to true to hide this in the GUI CVE editor.
+                        //hidden: true
+                    }
+                }
+            }
+        },
+        affects: {
+            properties: {
+                vendor: {
+                    properties: {
+                        vendor_data: {
+                            items: {
+                                properties: {
+                                    vendor_name: {
+                                        // Uncomment to configure default vendor name, set hidden true to hide in editor
+                                        // default: "Example Org",
+                                        options: {
+                                            // hidden: true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "exploit": {
+            "items": {
+                "default": {
+                    // Set default language for strings
+                    "lang": "eng",
+                    "value": ""
+                }
+            }
+        },
+        "work_around": {
+            "items": {
+                "default": {
+                    // Set default language for strings
+                    "lang": "eng",
+                    "value": ""
+                }
+            }
+        },
+
+        // Contents of this item will not be exported to MITRE (as seen under JSON tab)
+        // This is ideal for a CNA to store meta data that could be considered confidential or not worth inclusion in cve list.
+        "CNA_private": {
+            properties: {
+                owner: {
+                    type: "string",
+                    "format": "radio",
+                    enum: ["example", "team", "member", "usernames", "go", "here"]
+                },
+                phase: {
+                    type: "string",
+                    option: {
+                        hidden: true
+                    },
+                    template: "phases[context.state]",
+                    watch: {
+                        "state": "root.CVE_data_meta.STATE"
+                    }
+                },
+                publish: {
+                    type: "object",
+                    "options": {
+                        hidden: true
+                    },
+                    properties: {
+                        "ym": {
+                            type: "string",
+                            template: "(context.d ? context.d.substr(0,7) : '')",
+                            watch: {
+                                "d": "root.CVE_data_meta.DATE_PUBLIC"
+                            }
+                        },
+                        "year": {
+                            type: "string",
+                            template: "(context.d ? context.d.substr(0,4) : '')",
+                            watch: {
+                                "d": "root.CVE_data_meta.DATE_PUBLIC"
+                            }
+                        },
+                        "month": {
+                            type: "string",
+                            template: "(context.d ? context.d.substr(5,2) : '')",
+                            watch: {
+                                "d": "root.CVE_data_meta.DATE_PUBLIC"
+                            }
+                        }
+                    }
+                },
+                share_with_CVE: {
+                    type: "boolean",
+                    "format": "checkbox",
+                    "default": "true"
+                },
+                internal_comments: {
+                    type: "string",
+                    format: "textarea",
+                    options: {
+                        "input_height": "6em"
+                    },
+                    default: ''
+                },
+                todo: {
+                    title: "Reminders",
+                    type: "array",
+                    format: "table",
+                    items: {
+                        title: "action item",
+                        type: "string"
+                    }
+                }
+            },
+            required: ["owner", "todo"]
+        }
+    }
+};
+
+Object.assign(docSchema.definitions, CVSSschema.definitions);
+textUtil.mergeJSON(docSchema, docSchema_plus);
+if (CVEschema_custom) {
+    textUtil.mergeJSON(docSchema, CVEschema_custom);
 }
+// docSchema should now have the schema to be used by JSON Editor

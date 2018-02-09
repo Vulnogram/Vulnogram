@@ -24,6 +24,9 @@ block content
       else
         tt=profile.username
     .entry
+      label Favorite Emoji:
+      input.form-control(name='emoji', type='text', value=profile.emoji)
+    .entry
       label Password:
       input.form-control(name='password', type='password')
     .entry

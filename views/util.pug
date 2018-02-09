@@ -1,0 +1,264 @@
+mixin para(t)
+    if t
+        each line in t.split(/\n/)
+            if line
+                if line.startsWith('  ')
+                    code=line
+                    br
+                else
+                    p=line
+
+mixin mpara(l)
+    if l
+        each d in l
+            if d.value
+                +para(d.value)
+mixin aggpara(l)
+    if l
+        ul
+            each k, v in l
+                li
+                    b=k.join(', ')
+                    p
+                        +para(v)
+
+mixin linklist(l, url)
+    each v, i in l
+        if(i < l.length-2)
+            if(url)
+                a(href=url+v)=v
+            else
+                = v
+            | , 
+        else
+            if(i == l.length - 1 && i > 0)
+                |  and 
+            if(url)
+                a(href=url+v)=v
+            else
+                =v
+
+mixin renderVal(name, value, sum)
+    if value != null
+        case name
+            when 'ID'
+                a.nobr(href= '/' + schemaName +'/'+ value)=value
+            when 'CVE'
+                if value instanceof Array
+                    each val in value
+                        +renderVal(name, val, sum)
+                        | 
+                else
+                    a.nobr(href="/cve/" + value)=value
+            when 'Draft'
+                a(href="#" + value)=value
+            when 'date'
+                if value instanceof Date
+                    span.nobr
+                        =value.getFullYear()
+                        | -
+                        =value.getMonth()+1
+                        | -
+                        =value.getDate()
+                else
+                    span.nobr=value.substr(0,10)
+            when 'state'
+                span(class=value)=value
+            when 'ToDo'
+                if value.length > 0
+                    b.badge=value.length
+            when 'owner'
+                span.monogram(class=value.charAt(0))=value
+            when 'File'
+                a(href=page+(page.endsWith('/')? '':'/')+value)=value
+            when 'Filetype'
+                span.square(class=value.charAt(0))=value
+            when 'CVSS'
+                -var s = parseFloat(value)
+                if isNaN(s) || s<0 || s>10
+                    =value
+                else if s == 0
+                    b.tag.NONE=value
+                else if value <= 3.9
+                    b.tag.LOW=value
+                else if value <= 6.9
+                    b.tag.MEDIUM=value
+                else if value <= 8.9
+                    b.tag.HIGH= value
+                else if value <=10
+                    b.tag.CRITICAL=value
+                else
+                    =value
+            when 'CVSSFull'
+                = value.baseScore.toFixed(1)
+                |  
+                if value.version >= "3.0"
+                    | (
+                    a(href="https://cvssjs.github.io/#" + value.vectorString)=value.vectorString
+                    | )
+                else
+                    a(href='https://nvd.nist.gov/vuln-metrics/cvss/v2-calculator?vector='+value.vectorString)=value.vectorString
+            when 'Defect'
+                - if (!sum.Defect) {sum.Defect = {} }
+                -   
+                - var defects = value
+                - if (typeof defects === 'string' || defects instanceof String) {defects = value.split(/\s+/)}
+                each d in defects
+                    - sum.Defect[d]++;
+                    if  conf.defectURL
+                        a(href=conf.defectURL + d)= d
+                    else
+                        = d
+                    | 
+            default
+                if value instanceof Array
+                    each v in value
+                        +renderVal(name, v, sum)
+                        |  
+                else
+                    =value
+
+mixin renderCell(name, value, sum)
+    case name
+        when 'CVSS'
+            td(class=name,data-sort=value ? value.toFixed(3) : false)
+                +renderVal(name, value, sum)
+        default
+            td(class=name)
+                +renderVal(name, value, sum)
+
+
+
+mixin facetChart(facet, query, tfacet)
+    form(action='/'+schemaName,method="GET",onchange="document.getElementById('filter').className='button safe'")
+      header.banner
+        a.New.button.safe(href='/' + schemaName + '/new') NEW
+        span.spacer
+        if tfacet
+          each values, field in tfacet[0]
+            each v in values
+                - var active = ''
+                if v._id != '' && query[field] && query[field].includes(v._id)
+                    - active = 'active'
+                    input(type="hidden",name=field,value=v._id)
+                a(href='/' + schemaName + '?' + field + '=' + v._id, class=active)
+                    =v._id
+                    |  (
+                    = v.count
+                    | )
+        input.headertab(style="flex-grow:1",type="search",name="q",placeholder=" Search",value=query ? query['q'] :'')
+      if total > 0
+       div
+        each values, field in facet[0]
+          div(class=field + " chart")
+            label(class=field,for='flt'+field)=field
+            input.expand(id="flt"+field,type="checkbox")
+            each v in values
+                div.bar(style="width:" + Math.round(v.count/total*170.0+1) + "px")
+                    input(type="checkbox",id=field+v._id,name=field,value=v._id,checked=(v._id != '' && query[field] && query[field].includes(v._id)) || (v._id === '' && query[field] && query[field].includes('')))
+                    label(class=v._id, for=field+v._id,title=v._id+ " (" + v.count + ")")
+                        = v._id
+                        br
+                        b=v.count
+            label(for="flt"+field)
+
+        p
+            input.button#filter(type="submit",value="Filter")
+            //    input.button(type="submit",value="Update")
+        p
+            a.button(href="/" + schemaName, type="submit",value="Clear") Clear
+
+mixin paginate
+ - pages = Number(pages)
+ - current = Number(current)
+ - query ? delete query.page : '';
+ - var bs = '?' + (qs ? qs.stringify(query) : '')  + '&page=';
+ - var kin = 3;
+ if pages <= 1
+    span.pagination Found 
+        = total
+ if pages > 1
+    span.pagination
+        | Showing 
+        = ((current-1)*limit + 1)
+        |  - 
+        = current*limit > total ? total : current*limit
+        |  of 
+        = total
+        |  
+        if current == 1
+            a.active 1
+        else
+            a(href=bs + '1') 1
+        - var i =  (current > kin ? (current - kin + 1) : 2)
+        if i != 2
+            if(i == 3)
+                a(href=bs+2) 2
+            else
+                a.disabled ∙ ∙ ∙
+        while ((i <= (current + kin - 1)) && (i < pages))
+            if i==current
+                a.active= i
+            else
+                a(href=bs + i)=i
+            if i==(current + kin - 1) && i < pages -1
+                a.disabled ∙ ∙ ∙
+            - i++;
+        if current == pages
+            a.active=pages
+        else
+            a(href=bs+pages)=pages
+
+
+mixin table(docs, columns, hideRowCheck)
+    if !docs || docs.length == 0
+        p
+            b No items found!
+    else
+        - var rowCount = 0;
+        - var sum = {};
+        table.border.sortable
+            thead
+                tr
+                    if !hideRowCheck
+                        th(data-sort-method='none')
+                            input(type='checkbox',onClick='var cs = document.getElementsByClassName("rowCheck");console.log(cs.length); for(c=0;c<cs.length;c++){console.log(cs[c]); cs[c].checked=this.checked}')
+                    each column in columns
+                        case column
+                            when 'CVSS'
+                                th(data-sort-method='number') CVSS
+                            default
+                                th=column
+            tbody
+                each doc, i in docs
+                        - rowCount ++
+                        tr
+                            if !hideRowCheck
+                                td.rowCheckLabel
+                                    label.rowCheckLabel
+                                        input.rowCheck(type='checkbox', name=columns[0],value=doc[columns[0]])
+                            each column in columns
+                                +renderCell(column, doc[column], sum)
+
+        each list, agg in sum
+            p Unique 
+                = agg
+                |s (
+                =Object.keys(list).length
+                | ):  
+                = Object.keys(list).join(', ')
+
+
+mixin tablesort
+    script(src="/js/tablesort.min.js")
+    script.
+        var tables = document.getElementsByClassName('sortable')
+        for (var i = 0; i < tables.length; i++) {
+            new Tablesort(tables[i]);
+        }    
+
+mixin usercss(docs)
+    style
+        for v, i in docs
+            if v.emoji
+                = 'monogram ' + v.username.charAt(0) + ':before : {content:"'+ v.emoji +'"}'

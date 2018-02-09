@@ -12,24 +12,28 @@ Vulnogram project aims to make it easier for vendors and security researchers to
 
 ## Getting started
 
-#### Step 1. Install required software
+#### Step 1. Install required node modules
 
-	$ git clone https://github.com/Vulnogram/Vulnogram.git
-	$ cd Vulnogram
+
+	$ cd vulnogram
 	$ npm install
- 	... this should install required NodeJS dependencies ...
+ 	... this should install required dependencies ...
 
 
 #### Step 2. Setup monogodb to be used for persistent storage of CVE JSON and users.
 	See https://www.mongodb.com/
 
-#### Step 3. Edit the config/conf.js file to suite your requirements
+#### Step 3. Copy /config/conf-default.js to config/conf.js and edit the file to suite your requirements
 
-	See config/conf.js comments for hints
+	See config/conf-default.js comments for hints
 
-#### Step 4. If advisory template was modified, regenerate client side javascript
+#### Step 4 (Optional). Copy the "default" directory as "custom" and modify relevant pug templates, schemas or routes. Files from "custom" override "default".
 
-	$ node pugtemplate.js
+	See config/conf-default.js comments for hints
+
+##### Step 4. If any pug templates were modified, regenerate client side javascript
+
+	$ node scripts/pug2js.js
 
 #### Step 5. Configure a user on the CLI for logging in
 
@@ -77,6 +81,9 @@ This project uses or depends on software from
 * yamljs https://github.com/jeremyfa/yaml.js
 * tablesort v5.0.1 https://github.com/tristen/tablesort
 * cvssjs https://github.com/cvssjs
+* json-patch-extended
+* multer
+* querymen
 
 ## Licence
 

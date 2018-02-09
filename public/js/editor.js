@@ -1,148 +1,4 @@
-// Copyright (c) 2017 Chandan B N. All rights reserved.
- 
-var CVSSseveritys = [{
-    name: "NONE",
-    bottom: 0.0,
-    top: 0.0
-}, {
-    name: "LOW",
-    bottom: 0.1,
-    top: 3.9
-}, {
-    name: "MEDIUM",
-    bottom: 4.0,
-    top: 6.9
-}, {
-    name: "HIGH",
-    bottom: 7.0,
-    top: 8.9
-}, {
-    name: "CRITICAL",
-    bottom: 9.0,
-    top: 10.0
-}];
-
-function CVSSseverity(score) {
-    var i;
-    var severityRatingLength = this.CVSSseveritys.length;
-    for (i = 0; i < severityRatingLength; i++) {
-        if (score >= this.CVSSseveritys[i].bottom && score <= this.CVSSseveritys[i].top) {
-            return this.CVSSseveritys[i];
-        }
-    }
-    return {
-        name: "?",
-        bottom: 'Not',
-        top: 'defined'
-    };
-}
-
-function CVSScalculate (cvss) {
-    var cvssVersion = "3.0";
-    var exploitabilityCoefficient = 8.22;
-    var scopeCoefficient = 1.08;
-
-    // Define associative arrays mapping each metric value to the constant used in the CVSS scoring formula.
-
-    var Weight = {
-        attackVector: {
-            NETWORK: 0.85,
-            ADJACENT_NETWORK: 0.62,
-            LOCAL: 0.55,
-            PHYSICAL: 0.2
-        },
-        attackComplexity: {
-            HIGH: 0.44,
-            LOW: 0.77
-        },
-        privilegesRequired: {
-            UNCHANGED: {
-                NONE: 0.85,
-                LOW: 0.62,
-                HIGH: 0.27
-            },
-            // These values are used if Scope is Unchanged
-            CHANGED: {
-                NONE: 0.85,
-                LOW: 0.68,
-                HIGH: 0.5
-            }
-        },
-        // These values are used if Scope is Changed
-        userInteraction: {
-            NONE: 0.85,
-            REQUIRED: 0.62
-        },
-        scope: {
-            UNCHANGED: 6.42,
-            CHANGED: 7.52
-        },
-        confidentialityImpact: {
-            NONE: 0,
-            LOW: 0.22,
-            HIGH: 0.56
-        },
-        integrityImpact: {
-            NONE: 0,
-            LOW: 0.22,
-            HIGH: 0.56
-        },
-        availabilityImpact: {
-            NONE: 0,
-            LOW: 0.22,
-            HIGH: 0.56
-        }
-        // C, I and A have the same weights
-
-    };
-
-    var p;
-    var val = {},
-        metricWeight = {};
-    try {
-        for (p in Weight) {
-            val[p] = cvss[p];
-            if (typeof val[p] === "undefined" || val[p] === '') {
-                return "?";
-            }
-            metricWeight[p] = Weight[p][val[p]];
-        }
-    } catch (err) {
-        return err; // TODO: need to catch and return sensible error value & do a better job of specifying *which* parm is at fault.
-    }
-    metricWeight.privilegesRequired = Weight.privilegesRequired[val.scope][val.privilegesRequired];
-    //
-    // CALCULATE THE CVSS BASE SCORE
-    //
-    try {
-        var baseScore;
-        var impactSubScore;
-        var exploitabalitySubScore = exploitabilityCoefficient * metricWeight.attackVector * metricWeight.attackComplexity * metricWeight.privilegesRequired * metricWeight.userInteraction;
-        var impactSubScoreMultiplier = (1 - ((1 - metricWeight.confidentialityImpact) * (1 - metricWeight.integrityImpact) * (1 - metricWeight.availabilityImpact)));
-        if (val.scope === 'UNCHANGED') {
-            impactSubScore = metricWeight.scope * impactSubScoreMultiplier;
-        } else {
-            impactSubScore = metricWeight.scope * (impactSubScoreMultiplier - 0.029) - 3.25 * Math.pow(impactSubScoreMultiplier - 0.02, 15);
-        }
-
-
-        if (impactSubScore <= 0) {
-            baseScore = 0;
-        } else {
-            if (val.scope === 'UNCHANGED') {
-                baseScore = Math.min((exploitabalitySubScore + impactSubScore), 10);
-            } else {
-                baseScore = Math.min((exploitabalitySubScore + impactSubScore) * scopeCoefficient, 10);
-            }
-        }
-
-        baseScore = Math.ceil(baseScore * 10) / 10;
-        return baseScore;
-    } catch (err) {
-        return err;
-    }
-}
-
+// Copyright (c) 2018 Chandan B N. All rights reserved.
 
 var output = document.getElementById('output');
 var starting_value = {};
@@ -155,39 +11,9 @@ sourceEditor.setOptions({
     wrap: true
 });
 sourceEditor.$blockScrolling = Infinity;
-var vectorMap = {
-    "attackVector": "AV",
-    "attackComplexity": "AC",
-    "privilegesRequired": "PR",
-    "userInteraction": "UI",
-    "scope": "S",
-    "confidentialityImpact": "C",
-    "integrityImpact": "I",
-    "availabilityImpact": "A"
-};
 
-function cvssUpdate() {
-    cveEditor.unwatch('root.impact.cvss');
-    var cvssEditor = cveEditor.getEditor('root.impact.cvss');
-    if (cvssEditor) {
-        var c = cvssEditor.getValue();
-        var vectorString = "CVSS:" + cveEditor.getEditor('root.impact.cvss.version').getValue();
-        var sep = '/';
-        for (var m in c) {
-            if (vectorMap[m]) {
-                vectorString += sep + vectorMap[m] + ':' + c[m].charAt(0);
-            }
-        }
-        c.baseScore = CVSScalculate(c);
-        c.vectorString = vectorString;
-        c.baseSeverity = CVSSseverity(c.baseScore).name;
-        cvssEditor.setValue(c);
-    }
-    cveEditor.watch('root.impact.cvss', cvssUpdate);
-}
-
-function syncContents() {
-    var j = cveEditor.getValue();
+async function syncContents(tab) {
+    var j = docEditor.getValue();
     insync = true;
     sourceEditor.getSession().setValue(JSON.stringify(j, null, 2));
     sourceEditor.clearSelection();
@@ -195,9 +21,62 @@ function syncContents() {
     if (document.getElementById("yaml")) {
         document.getElementById("yaml").textContent = YAML.stringify(j, 20, 2);
     }
-    document.getElementById("advisory").innerHTML = window.advisoryTemplate(j);
-    document.getElementById("mitreweb").innerHTML = window.mitrewebTemplate(j);
-    document.getElementById("cvejson").textContent = textUtil.getMITREJSON(textUtil.reduceJSON(j));
+    if (tab == "advisoryTab" && pugRender && document.getElementById("render")) {
+        if (schemaName == "sa") {
+            var cSet = new Set();
+            var clist = [];
+            for (var d of j.CVE_list) {
+                if (d.CVE) {
+                    for (var x of d.CVE.match(/CVE-\d{4}-[a-zA-Z\d\._-]{4,}/igm)) {
+                        cSet.add(x);
+                    }
+                }
+            };
+            if (cSet.size > 0) {
+                var r = await textUtil.getDocuments('cve', Array.from(cSet));
+                var CVE_map = {};
+                for (c of r) {
+                    CVE_map[c.body.CVE_data_meta.ID] = c.body;
+                    cSet.delete(c.body.CVE_data_meta.ID);
+                }
+                if (cSet.size > 0) {
+                    var r = await textUtil.getDocuments('nvd', Array.from(cSet));
+                    for (c of r) {
+                        CVE_map[c.body.CVE_data_meta.ID] = c.body;
+                    }
+                }
+                var cSum = textUtil.sumCVE(j.CVE_list, CVE_map);
+                document.getElementById("render").innerHTML = pugRender({
+                    renderTemplate: 'advisory',
+                    doc: j,
+                    cmap: CVE_map,
+                    cSum: cSum
+                });
+
+            } else {
+                document.getElementById("render").innerHTML = pugRender({
+                    renderTemplate: 'advisory',
+                    doc: j,
+                    cmap: {},
+                    cSum: {}
+                });
+            }
+        } else {
+            document.getElementById("render").innerHTML = pugRender({
+                renderTemplate: 'advisory',
+                doc: j
+            });
+        }
+    }
+    if (tab == "mitreTab" && document.getElementById("mitreweb")) {
+        document.getElementById("mitreweb").innerHTML = pugRender({
+            renderTemplate: 'mitre',
+            doc: j
+        });
+    }
+    if (tab == "jsonTab" && document.getElementById("outjson")) {
+        document.getElementById("outjson").textContent = textUtil.getMITREJSON(textUtil.reduceJSON(j));
+    }
 }
 
 JSONEditor.defaults.resolvers.unshift(function (schema) {
@@ -205,6 +84,73 @@ JSONEditor.defaults.resolvers.unshift(function (schema) {
         return "radio";
     }
 });
+
+JSONEditor.defaults.templates.custom = function () {
+    return {
+        compile: function (template) {
+            return function (context) {
+                return eval(template);
+            }
+        }
+    }
+}
+
+// allow file uploads
+JSONEditor.defaults.options.upload = function (type, file, cbs) {
+
+    var reader = new FileReader();
+    var xhr = new XMLHttpRequest();
+    var fd = new FormData();
+    fd.append('file1', file);
+    this.xhr = xhr;
+    var self = this;
+    this.xhr.upload.addEventListener("loadstart", function (e) {
+        cbs.updateProgress(0); //
+    }, false);
+
+    this.xhr.upload.addEventListener("progress", function (e) {
+        if (e.lengthComputable) {
+            var percentage = Math.round((e.loaded * 100) / e.total);
+            cbs.updateProgress(percentage)
+            //self.ctrl.update(percentage);
+        }
+    }, false);
+
+    xhr.upload.addEventListener("load", function (e) {
+        //self.ctrl.update(100);
+        cbs.updateProgress(100);
+        //var canvas = self.ctrl.ctx.canvas;
+        //canvas.parentNode.removeChild(canvas);
+    }, false);
+    var uf = function (e) {
+        cbs.failure('Upload failed:');
+    };
+    xhr.addEventListener("error", uf, false);
+    xhr.addEventListener("abort", uf, false);
+
+    xhr.upload.addEventListener("error", uf, false);
+    xhr.upload.addEventListener("abort", uf, false);
+
+    xhr.onreadystatechange = function (oEvent) {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                if (xhr.response == '{"ok":"1"}') {
+                    //console.log(xhr.responseText);
+                    cbs.success(file.name);
+                } else {
+                    cbs.failure('Upload failed: ' + xhr.statusText);
+                }
+            } else if (xhr.status === 404) {
+                cbs.failure('Upload failed: ID Not found. Try saving document first!');
+            }
+        }
+    };
+
+    xhr.open("POST", window.location + '/file');
+    xhr.setRequestHeader('X-CSRF-Token', csrfToken)
+    xhr.overrideMimeType('text/plain; charset=x-user-defined-binary');
+    xhr.send(fd);
+};
 
 JSONEditor.defaults.editors.radio = JSONEditor.AbstractEditor.extend({
     setValue: function (value, initial) {
@@ -268,7 +214,7 @@ JSONEditor.defaults.editors.radio = JSONEditor.AbstractEditor.extend({
     },
     removeProperty: function () {
         this._super();
-        for (var i=0; i< this.inputs.length; i++) {
+        for (var i = 0; i < this.inputs.length; i++) {
             this.inputs[i].style.display = 'none';
         }
         if (this.description) this.description.style.display = 'none';
@@ -276,7 +222,7 @@ JSONEditor.defaults.editors.radio = JSONEditor.AbstractEditor.extend({
     },
     addProperty: function () {
         this._super();
-        for (var i=0; i< this.inputs.length; i++) {
+        for (var i = 0; i < this.inputs.length; i++) {
             this.inputs[i].style.display = '';
         }
         if (this.description) this.description.style.display = '';
@@ -318,8 +264,8 @@ JSONEditor.defaults.editors.radio = JSONEditor.AbstractEditor.extend({
             this.inputs[options[i]].setAttribute('value', options[i]);
             this.inputs[options[i]].setAttribute('name', this.formname);
             this.inputs[options[i]].setAttribute('id', this.formname + options[i]);
-            var label = this.theme.getRadioLabel((this.schema.enumTitles && this.schema.enumTitles[options[i]]) ?
-                this.schema.enumTitles[options[i]] :
+            var label = this.theme.getRadioLabel((this.schema.options && this.schema.options.enum_titles && this.schema.options.enum_titles[i]) ?
+                this.schema.options.enum_titles[i] :
                 options[i]);
             label.setAttribute('for', this.formname + options[i]);
             label.setAttribute('class', options[i]);
@@ -348,44 +294,47 @@ JSONEditor.defaults.editors.radio = JSONEditor.AbstractEditor.extend({
     },
     enable: function () {
         if (!this.always_disabled) {
-            for (var i=0; i< this.inputs.length; i++) {
-                this.inputs[i].disabled = false;
+            var opts = Object.keys(this.inputs);
+            for (var i = 0; i < opts.length; i++) {
+                this.inputs[opts[i]].disabled = false;
             }
         }
         this._super();
     },
     disable: function () {
-        for (var i=0; i< this.inputs.length; i++) {
-            this.inputs[i].disabled = true;
+        //console.log(this.inputs);
+        var opts = Object.keys(this.inputs);
+        for (var i = 0; i < opts.length; i++) {
+            this.inputs[opts[i]].disabled = true;
         }
         this._super();
     },
     destroy: function () {
         if (this.label) this.label.parentNode.removeChild(this.label);
         if (this.description) this.description.parentNode.removeChild(this.description);
-        for (var i=0; i< this.inputs.length; i++) {
+        for (var i = 0; i < this.inputs.length; i++) {
             this.inputs[i].parentNode.removeChild(this.inputs[i]);
         }
         this._super();
     }
 });
 
-function tzOffset() {
-    var offset = new Date().getTimezoneOffset(),
+function tzOffset(x) {
+    var offset = new Date(x).getTimezoneOffset(),
         o = Math.abs(offset);
-        return (offset < 0 ? "+" : "-") + ("00" + Math.floor(o / 60)).slice(-2) + ":" + ("00" + (o % 60)).slice(-2);   
+    return (offset < 0 ? "+" : "-") + ("00" + Math.floor(o / 60)).slice(-2) + ":" + ("00" + (o % 60)).slice(-2);
 }
 
 // The time is displayed/set in local times in the input,
 //  but setValue, getValue use UTC. JSON output will be in UTC.
 JSONEditor.defaults.editors.dateTime = JSONEditor.defaults.editors.string.extend({
     getValue: function () {
-        if(this.value && this.value.length > 0) {
-            if(this.value.match(/^\d{4}-\d{2}-\d{2}T[\d\:\.]+$/)) {
-                this.value = this.value + tzOffset();
+        if (this.value && this.value.length > 0) {
+            if (this.value.match(/^\d{4}-\d{2}-\d{2}T[\d\:\.]+$/)) {
+                this.value = this.value + tzOffset(this.value);
             }
             var d = new Date(this.value);
-            if(d instanceof Date && !isNaN(d.getTime())) {
+            if (d instanceof Date && !isNaN(d.getTime())) {
                 return d.toISOString();
             } else {
                 return this.value;
@@ -396,17 +345,18 @@ JSONEditor.defaults.editors.dateTime = JSONEditor.defaults.editors.string.extend
     },
 
     setValue: function (val) {
-        if(val && this.value.match(/^\d{4}-\d{2}-\d{2}T[\d\:\.]+$/)) {
-                val = val + tzOffset();
+        if (val && this.value.match(/^\d{4}-\d{2}-\d{2}T[\d\:\.]+$/)) {
+            val = val + tzOffset();
         }
         var d = new Date(val);
-        if(d instanceof Date && !isNaN(d.getTime()) && d.getTime() > 0) {
-            this.value = 
-            this.input.value = new Date((d.getTime() - (d.getTimezoneOffset() * 60000))).toJSON().slice(0,16);
+        if (d instanceof Date && !isNaN(d.getTime()) && d.getTime() > 0) {
+            var x = new Date((d.getTime() - (d.getTimezoneOffset() * 60000)));
+            this.value =
+                this.input.value = x.toJSON().slice(0, 16);
         } else {
             this.value = this.input.value = "";
-        
         }
+        this.jsoneditor.notifyWatchers(this.path);
     },
 
     build: function () {
@@ -415,7 +365,31 @@ JSONEditor.defaults.editors.dateTime = JSONEditor.defaults.editors.string.extend
         var tzInfo = document.createElement('small');
         tzInfo.textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
         this.input.parentNode.appendChild(tzInfo);
+    }
+});
 
+
+JSONEditor.defaults.editors.taglist = JSONEditor.defaults.editors.string.extend({
+    getValue: function () {
+        if (this.input && this.input.value) {
+            return this.input.value.split(/[\s,]+/);
+        } else {
+            return [];
+        }
+    },
+
+    setValue: function (val) {
+        if (val instanceof Array) {
+            //this.value = val.split();
+            this.input.value = val.join(' ');
+        } else {
+            this.input.value = val;
+        }
+    },
+
+    build: function () {
+        this.schema.format = "taglist";
+        this._super();
     }
 });
 
@@ -423,6 +397,13 @@ JSONEditor.defaults.editors.dateTime = JSONEditor.defaults.editors.string.extend
 JSONEditor.defaults.resolvers.unshift(function (schema) {
     if (schema.type === "string" && schema.format === "datetime") {
         return "dateTime";
+    }
+
+});
+
+JSONEditor.defaults.resolvers.unshift(function (schema) {
+    if (schema.type === "array" && schema.format === "taglist") {
+        return "taglist";
     }
 
 });
@@ -441,7 +422,100 @@ JSONEditor.defaults.editors.object = JSONEditor.defaults.editors.object.extend({
     }
 });
 
+JSONEditor.defaults.editors.upload =
+    JSONEditor.defaults.editors.upload.extend({
+        build: function () {
+            this._super();
+            var a = document.createElement('a');
+            a.target = "_blank";
+            this.control.replaceChild(a, this.label);
+            this.label = this.title = a;
+        },
+        setValue: function (val) {
+            if (this.value !== val) {
+                this.title.href = window.location + '/file/' + encodeURIComponent(val);
+                this.title.textContent = val;
+                this._super(val);
+            }
+        },
+        refreshPreview: function () {
+            if (this.last_preview === this.preview_value) return;
+            this.last_preview = this.preview_value;
+
+            this.preview.innerHTML = '';
+
+            if (!this.preview_value) return;
+
+            var self = this;
+
+            var mime = this.preview_value.match(/^data:([^;,]+)[;,]/);
+            if (mime) mime = mime[1];
+            if (!mime) mime = 'unknown';
+
+            var file = this.uploader.files[0];
+
+            this.preview.textContent = fileSize(file.size);
+            var uploadButton = this.getButton('Upload', 'upload', 'Upload');
+            this.preview.appendChild(uploadButton);
+            uploadButton.addEventListener('click', function (event) {
+                event.preventDefault();
+
+                uploadButton.setAttribute("disabled", "disabled");
+                self.theme.removeInputError(self.uploader);
+
+                if (self.theme.getProgressBar) {
+                    self.progressBar = self.theme.getProgressBar();
+                    self.preview.appendChild(self.progressBar);
+                }
+
+                self.jsoneditor.options.upload(self.path, file, {
+                    success: function (url) {
+                        self.setValue(url);
+
+                        if (self.parent) self.parent.onChildEditorChange(self);
+                        else self.jsoneditor.onChange();
+
+                        if (self.progressBar) self.preview.removeChild(self.progressBar);
+                        uploadButton.textContent = 'Done';
+                        uploadButton.setAttribute('value', 'Done');
+                        uploadButton.setAttribute('disabled', true);
+                    },
+                    failure: function (error) {
+                        self.theme.addInputError(self.uploader, error);
+                        if (self.progressBar) self.preview.removeChild(self.progressBar);
+                        uploadButton.removeAttribute("disabled");
+                        uploadButton.textContent = "Upload";
+
+                    },
+                    updateProgress: function (progress) {
+                        if (self.progressBar) {
+                            if (progress) self.theme.updateProgressBar(self.progressBar, progress);
+                            else self.theme.updateProgressBarUnknown(self.progressBar);
+                        }
+                    }
+                });
+            });
+        }
+    });
+
 JSONEditor.defaults.themes.custom = JSONEditor.AbstractTheme.extend({
+    /*    getBlockLinkHolder: function() {
+            var el = this._super();
+            el.className = 'rightFloat';
+            return el;
+      },
+      getLinksHolder: function() {
+            var el = this._super();
+            el.className = 'rightFloat';
+            return el;
+      },*/
+
+    getDescription: function (text) {
+        var el = document.createElement('summary');
+        el.innerHTML = text;
+        return el;
+    },
+
     getFormInputLabel: function (text) {
         var el = this._super(text);
         el.className = text;
@@ -545,7 +619,7 @@ JSONEditor.defaults.themes.custom = JSONEditor.AbstractTheme.extend({
 });
 
 
-var cveEditor = new JSONEditor(document.getElementById('editor'), {
+var docEditorOptions = {
     // Enable fetching schemas via ajax
     ajax: true,
     theme: 'custom',
@@ -558,8 +632,9 @@ var cveEditor = new JSONEditor(document.getElementById('editor'), {
     expand_height: true,
     input_width: '3em',
     input_height: '4em',
+    template: 'custom',
     // The schema for the editor
-    schema: CVEschema,
+    schema: docSchema,
     // Seed the form with a starting value
     //starting_value: {},
 
@@ -569,37 +644,32 @@ var cveEditor = new JSONEditor(document.getElementById('editor'), {
     // Require all properties by default
     //required_by_default: false,
     //display_required_only: false
-});
+};
+var docEditor = new JSONEditor(document.getElementById('editor'), docEditorOptions);
 
-cveEditor.getEditor('root.impact.cvss.version').disable();
-cveEditor.getEditor('root.impact.cvss.vectorString').disable();
-cveEditor.getEditor('root.impact.cvss.baseScore').disable();
-cveEditor.getEditor('root.impact.cvss.baseSeverity').disable();
+if (initJSON) {
+    docEditor.root.setValue(initJSON, true);
+}
 
-/*
-fuction enumExpand(src, obj) {
-    if (enum in obj) {
-        if(obj.enum)
+var selected = "editorTab";
+var tabs = document.getElementsByName("tabs");
+for (var i = 0; i < tabs.length; i++) {
+    if (tabs[i].checked === true) {
+        selected = tabs[i].id;
+        break;
     }
 }
-*/
-if (cveEntry) {
-    cveEditor.setValue(cveEntry.cve, true);
-}
+syncContents(selected);
 
-cvssUpdate();
-syncContents();
-
-function cveEditorValid(j) {
+function docEditorValid(j) {
     var errors = [];
-    if(j) {
-        errors = cveEditor.validate(j);
+    if (j) {
+        errors = docEditor.validate(j);
     } else {
-        errors = cveEditor.validate();
+        errors = docEditor.validate();
     }
-    //console.log('validating CVE editor=' + errors.length);
     if (errors.length) {
-        cveEditor.setOption('show_errors', 'always');
+        docEditor.setOption('show_errors', 'always');
         errMsg.textContent = (errors.length > 1 ? errors.length + " errors" : "Error") + " found";
         editorLabel.className = "tablabel errtab";
         return false;
@@ -610,10 +680,10 @@ function cveEditorValid(j) {
     }
 }
 
-function source2cve() {
+function source2editor() {
     insync = true;
     var result = JSON.parse(sourceEditor.getSession().getValue());
-    cveEditor.root.setValue(result, true);
+    docEditor.root.setValue(result, true);
     insync = false;
     return result;
 }
@@ -652,21 +722,21 @@ function save() {
         if (!sourceEditorValid()) {
             return;
         } else {
-            var j = source2cve();
-            if(!cveEditorValid(j)) {
+            var j = source2editor();
+            if (!docEditorValid(j)) {
                 document.getElementById("editorTab").checked = true;
                 return;
             }
         }
     }
-    if (!cveEditorValid()) {
+    if (!docEditorValid()) {
         document.getElementById("editorTab").checked = true;
         return;
     }
 
     infoMsg.textContent = "Saving...";
-    var e = cveEditor.getValue();
-    fetch('', {
+    var e = docEditor.getValue();
+    fetch(postUrl ? postUrl : '', {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -684,7 +754,7 @@ function save() {
             return response.json();
         })
         .then(function (res) {
-            if(res.type == "go") {
+            if (res.type == "go") {
                 window.location.href = res.to;
             } else if (res.type == "err") {
                 errMsg.textContent = res.msg;
@@ -695,9 +765,11 @@ function save() {
                 document.title = originalTitle;
                 // turn button to normal, indicate nothing to save,
                 // but do not disable it.
-                if(document.getElementById("save1")) {
-                    save2.className = save1.className = "button tabbutton save";
+                if (document.getElementById("save1")) {
+                    save2.className = "button save"
+                    save1.className = "button tabbutton save";
                 }
+                getChanges(getDocID());
             }
             changes = 0;
         })
@@ -707,36 +779,36 @@ function save() {
 
 }
 
-if(document.getElementById('save1') && document.getElementById('save2')) {
+if (document.getElementById('save1') && document.getElementById('save2')) {
     document.getElementById('save1').addEventListener('click', save);
     document.getElementById('save2').addEventListener('click', save);
     document.getElementById('save2').removeAttribute("style");
 }
 
 // Hook up the delete button to log to the console
-if(document.getElementById('remove')) {
-document.getElementById('remove').addEventListener('click', function () {
-    var e = cveEditor.getValue();
-    if (confirm('Delete ' + e.CVE_data_meta.ID + '?')) {
-        fetch('/cves/' + e.CVE_data_meta.ID, {
-            method: 'DELETE',
-            credentials: 'include',
-            headers: {
-                'Accept': 'application/json, text/plain, */*',
-                'CSRF-Token': csrfToken
-            },
-        }).then(function (response) {
-            if (response.status == 200) {
-                infoMsg.textContent = "Deleted ";
-                errMsg.textContent = "";
-                window.location = "/cves/";
-            } else {
-                errMsg.textContent = "Error " + response.statusText;
-                infoMsg.textContent = "";
-            }
-        });
-    }
-});
+if (document.getElementById('remove')) {
+    document.getElementById('remove').addEventListener('click', function () {
+        var e = docEditor.getValue();
+        if (confirm('Delete this ' + originalTitle + '?')) {
+            fetch("", {
+                method: 'DELETE',
+                credentials: 'include',
+                headers: {
+                    'Accept': 'application/json, text/plain, */*',
+                    'CSRF-Token': csrfToken
+                },
+            }).then(function (response) {
+                if (response.status == 200) {
+                    infoMsg.textContent = "Deleted ";
+                    errMsg.textContent = "";
+                    window.location = "./";
+                } else {
+                    errMsg.textContent = "Error " + response.statusText;
+                    infoMsg.textContent = "";
+                }
+            });
+        }
+    });
 }
 
 // hack to auto generate description/ needs improvement
@@ -750,8 +822,8 @@ if (descDiv) {
 }
 
 autoButton.addEventListener('click', function () {
-    var d = cveEditor.getEditor('root.description.description_data');
-    var cve = cveEditor.getValue();
+    var d = docEditor.getEditor('root.description.description_data');
+    var docJSON = docEditor.getValue();
     desc = d.getValue();
     if (d) {
         var i = desc.length;
@@ -762,12 +834,12 @@ autoButton.addEventListener('click', function () {
         }
         desc.push({
             lang: "eng",
-            value: "A " + cve.problemtype.problemtype_data[0].description[0].value + " vulnerability in ____COMPONENT____ of " + textUtil.getProductList(cve) +
+            value: "A " + docJSON.problemtype.problemtype_data[0].description[0].value + " vulnerability in ____COMPONENT____ of " + textUtil.getProductList(docJSON) +
                 " allows ____ATTACKER/ATTACK____ to cause ____IMPACT____."
         });
         desc.push({
             lang: "eng",
-            value: "Affected releases are " + textUtil.getAffectedProductString(cve) + '.'
+            value: "Affected releases are " + textUtil.getAffectedProductString(docJSON) + '.'
         });
         d.setValue(desc);
     } else {
@@ -779,36 +851,47 @@ var originalTitle = document.title;
 var changes = true;
 var insync = false;
 
+function getDocID() {
+    var idEditor = docEditor.getEditor('root.' + idpath);
+    if (idEditor) {
+        var val = idEditor.getValue();
+        if (val) {
+            return val;
+        } else {
+            return 'Vulnogram';
+        }
+    }
+}
+
 function incChanges() {
-    if(!insync) {
+    if (!insync) {
         changes = true;
         infoMsg.textContent = 'Edited';
-        document.title = originalTitle + ' (Edited)';
+        var idEditor = docEditor.getEditor('root.' + idpath);
+        document.title = '• ' + getDocID();
         errMsg.textContent = '';
-        if(document.getElementById("save1")) {
-                    save2.className = save1.className = "button tabbutton safe save";
+        if (document.getElementById("save1")) {
+            save2.className = "button safe save"
+            save1.className = "button tabbutton safe save";
         }
     }
 }
 
 function incEditorChanges() {
-    if(selected == 'editorTab') {
+    if (selected == 'editorTab') {
         incChanges();
     }
 }
 
 function incSourceChanges() {
-    if(selected == 'sourceTab') {
+    if (selected == 'sourceTab') {
         incChanges();
     }
 }
 
-cveEditor.watch('root.impact.cvss', cvssUpdate);
-cveEditor.watch('root', incEditorChanges);
+docEditor.watch('root', incEditorChanges);
 
-var selected = "editorTab";
-
-//trigger validation when either CVE edirtor or Source editor is deselected
+//trigger validation when either editor or Source editor is deselected
 function setupDeselectEvent() {
     var tabs = document.getElementsByName("tabs");
     for (var i = 0; i < tabs.length; i++) {
@@ -819,23 +902,23 @@ function setupDeselectEvent() {
             if (selected != clicked) {
                 switch (selected) {
                     case "editorTab":
-                        cveEditorValid();
-                        syncContents();
+                        docEditorValid();
+                        syncContents(clicked);
                         break;
                     case "sourceTab":
-                        if(sourceEditorValid()) {
-                            // for some setting value of CVE Editor and calling immediate validation returns no erroer
+                        if (sourceEditorValid()) {
+                            // for some setting value of GUI Editor and calling immediate validation returns no erroer
                             // run validation against the actual JSON being copied to Editor
-                            var j = source2cve();
-                            cveEditorValid(j);
-                            syncContents();
+                            var j = source2editor();
+                            docEditorValid(j);
+                            syncContents(clicked);
                         } else {
                             clicked = "sourceTab";
                             document.getElementById("sourceTab").checked = true;
                         }
                         break;
                     default:
-                        syncContents();
+                        syncContents(clicked);
                 }
             }
             selected = clicked;
@@ -847,46 +930,82 @@ setupDeselectEvent();
 
 function loadCVE(value) {
     var realId = value.match(/(CVE-(\d{4})-(\d{1,12})(\d{3}))/);
-    if(realId) {
+    if (realId) {
         var id = realId[1];
         var year = realId[2];
         var bucket = realId[3];
-        fetch('https://raw.githubusercontent.com/CVEProject/cvelist/master/'+ year + '/' + bucket + 'xxx/'+ id +'.json', {
-            method: 'GET',
-            credentials: 'omit',
-            headers: {
-                'Accept': 'application/json, text/plain, */*'
-            },
-            redirect: 'error',
-        })
-        .then(function (response) {
-            if (!response.ok) {
-                errMsg.textContent = "Failed to load valid CVE JSON";
-                infoMsg.textContent = "";
-                throw Error(id + ' ' + response.statusText);
-            }
-            return response.json();
-        })
-        .then(function (res) {
-            if (res.CVE_data_meta) {
-                cveEditor.root.setValue(res, true);
-                infoMsg.textContent = "Imported " + id +" from git";
-                errMsg.textContent = "";
-                document.title = id;
-                if(document.getElementById("save1")) {
-                    save2.className = save1.className = "button tabbutton save";
+        fetch('https://raw.githubusercontent.com/CVEProject/cvelist/master/' + year + '/' + bucket + 'xxx/' + id + '.json', {
+                method: 'GET',
+                credentials: 'omit',
+                headers: {
+                    'Accept': 'application/json, text/plain, */*'
+                },
+                redirect: 'error'
+            })
+            .then(function (response) {
+                if (!response.ok) {
+                    errMsg.textContent = "Failed to load valid CVE JSON";
+                    infoMsg.textContent = "";
+                    throw Error(id + ' ' + response.statusText);
                 }
-                document.getElementById("editorTab").checked = true;
-                changes = 0;
-            } else {
-                errMsg.textContent = "Failed to load valid CVE JSON";
-                infoMsg.textContent = "";
-            }
-        })
-        .catch(function (error) {
-            errMsg.textContent = error;
-        })
+                return response.json();
+            })
+            .then(function (res) {
+                if (res.CVE_data_meta) {
+
+                    // workaround for JSON Editor issue with clearing arrays
+                    // https://github.com/jdorn/json-editor/issues/617
+                    docEditor.destroy();
+                    docEditor = new JSONEditor(document.getElementById('editor'), docEditorOptions);
+                    docEditor.root.setValue(res, true);
+                    infoMsg.textContent = "Imported " + id + " from git";
+                    console.log('Imported from GIT');
+                    errMsg.textContent = "";
+                    document.title = id;
+                    if (document.getElementById("save1")) {
+                        save2.className = "button save"
+                        save1.className = "button tabbutton save";
+                    }
+                    document.getElementById("editorTab").checked = true;
+                    changes = 0;
+                    postUrl = "./new";
+                } else {
+                    errMsg.textContent = "Failed to load valid CVE JSON";
+                    infoMsg.textContent = "";
+                }
+            })
+            .catch(function (error) {
+                errMsg.textContent = error;
+            })
     } else {
         errMsg.textContent = "CVE ID required";
     }
+}
+
+function copyText(element) {
+    if (document.selection) {
+        var range = document.body.createTextRange();
+        range.moveToElementText(element);
+        range.select();
+        document.execCommand("copy");
+        document.selection.empty();
+        infoMsg.textContent = 'Copied JSON to clipboard';
+    } else if (window.getSelection) {
+        var range = document.createRange();
+        range.selectNode(element);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        document.execCommand("copy");
+        window.getSelection().removeAllRanges();
+        infoMsg.textContent = 'Copied JSON to clipboard';
+    }
+}
+
+function downloadText(element, link) {
+    var file = new File([element.textContent], getDocID() + '.json', {
+        type: "text/plain",
+        lastModified: new Date()
+    });
+    link.href = URL.createObjectURL(file);
+    link.download = file.name;
 }

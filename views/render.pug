@@ -1,0 +1,110 @@
+include util
+
+mixin parseObject(obj)
+  if obj !== null
+    if typeof obj === 'string'
+        =obj
+    else if typeof obj === 'object'
+        for v, k in obj
+            .indent
+                b=k
+                |: 
+                if typeof v === 'string'
+                    =v
+                else
+                    .indent
+                        +parseObject(v)
+        
+mixin comments
+    .page#newComment
+      form.editor(onsubmit="sendComment(this);return false;")
+        input(type="hidden",name="id",value=id)
+        dt
+            b.monogram(class=username.charAt(0))=username
+        textarea(rows=6, name="text",onkeyup="setCommentButton(this, this.form.button)",onblur="setCommentButton(this, this.form.button)")
+        button.button(name="button",disabled=true) Add comment
+    each c, i in docs
+      .page
+        dt 
+            b.monogram(class=c.author.charAt(0))=c.author
+            |  commented on  
+            = new Date(c.createdAt).toLocaleDateString("en-US",{year: 'numeric', month: 'short', day: 'numeric'})
+            |  
+            if(c.createdAt != c.updatedAt)
+                | (updated 
+                = new Date(c.updatedAt).toLocaleDateString("en-US",{year: 'numeric', month: 'short', day: 'numeric'})
+                | )
+            | :  
+            if(c.author == username)
+                button(onclick="editPost(this.parentNode)") update
+        pre.commentText
+            = c.body
+        input(type="hidden",name="slug",value=c.slug)
+        input(type="hidden",name="date",value=c.createdAt)
+
+
+mixin changes
+    - var past = {add: 'added', remove: 'removed', replace: 'changed', move: 'moved', copy: 'copied'}
+    table.diff
+        each v, i in docs
+          tbody
+            each op, i in v.body.patch
+                tr.head
+                    td(colspan=3)
+                        | Version 
+                        = v.__v
+                        |  
+                        b
+                            +renderVal('owner', v.author)
+                        |  
+                        = past[op.op] ? past[op.op] : op.op
+                        |  
+                        b= op.path
+                        |  on 
+                        +renderVal('date', v.updatedAt)
+                tr.change(class=op.op)
+                    if op.op == 'remove'
+                        - op.old = op.value
+                        - delete op.value
+                    if op.op == 'replace' && typeof op.old === 'string' && typeof op.value === 'string'
+                        - var diffs = diffline(op.old, op.value);
+                        td
+                          pre
+                            for s in diffs.lhs
+                                case s.t
+                                  when 0
+                                    = s.str
+                                  when 1
+                                    span.del=s.str
+                        td
+                        td
+                          pre
+                            for s in diffs.rhs
+                                case s.t
+                                  when 0
+                                    = s.str
+                                  when 1
+                                    span.add=s.str
+                    else
+                        td
+                            if op.old instanceof Object
+                                pre= JSON.stringify(op.old, null, 3)
+                            else
+                                = op.old
+                        td
+                        td
+                            if op.value instanceof Object
+                                pre= JSON.stringify(op.value, null, 3)
+                            else
+                                = op.value 
+                        
+
+block renderPage
+    if !renderComplete
+        case renderTemplate
+            when 'comments'
+                +comments
+            when 'changes'
+                +changes
+            default
+                //+parseObject(doc)

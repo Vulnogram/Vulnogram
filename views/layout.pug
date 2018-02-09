@@ -5,16 +5,18 @@ html
   head
     title= title
     include head
-  body#body
-    - var items = { "" : '☰ Home', new: '➕ New', drafts: 'Drafts', slides: 'Slides'}
-    header
+  body#body(class=schemaName)
+    - var items = { 'SA': {land: '/sa/?phase=Current', start: '/sa/'}, 'CVE' : { land: "/cve/?phase=Current", start: '/cve/'}, Drafts: { land: "/review/drafts", start: '/review/drafts'}, Slides: { land: "/review/slides", start: "/review/slides"}}
+    header.header
       .left
-        b.logo.title(title="Making the world safer one CVE at a time, since 2017")="Vulnogram"
-      .right
+        b.logo.title(title="Making the world safer one CVE at a time, since 2017")="Vulnogram "
         if user && !min
-            a.user(href="/users/profile/" + user.username)= user.name
+            each prop, label in items
+                a(class=label + (page && page.startsWith(prop.start) ? " active" : ""), href = prop.land)=label
+      .right
+        if !min
+            a.user(class= (page == 'users' ? " active" : ""), href="/users/profile/" + user.username)= user.name
             a.exit(href="/users/logout")=" Logout "
-            //a.help Help
     if user && !min
         script.
             var userName = "#{user.name}";
@@ -22,18 +24,20 @@ html
     else
         script.
             var userUsername = ""
-    if !min
-        nav.navbar
-            each label, path in items
-                a(class=label+" navtab" + (page === path ? " active" : ""), href = '/cves/' + path)= label
-            span.navtab.textbox
-                form(onsubmit="window.location.href= '/cves/pr'+ this.pr.value.replace(/[^0-9a-zA-Z-_.]/g, ''); return false")
-                    input(type="search",name="pr",placeholder="➕ FROM DEFECT")
-            span.navtab.textbox
-                form(action="/cves/search",method="get")
-                    input(type="search",name="q",placeholder="🔍 SEARCH")
-    if !min
-        !=messages()
-    p#errMsg
-    block content
+
+    block banner
+    .messagebar
+        #errMsg
+            if !min
+                pre
+                    !=messages()
+            block error
+        .right#infoMsg
+            block info
+    .pad
+        block content
+    .messagebar
+        .right
+            block info
+    block subcontent
     include foot
