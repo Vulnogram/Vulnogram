@@ -29,20 +29,18 @@ Vulnogram project aims to make it easier for vendors and security researchers to
 
 #### Step 4 (Optional). Copy the "default" directory as "custom" and modify relevant pug templates, schemas or routes. Files from "custom" override "default".
 
-	See config/conf-default.js comments for hints
-
-##### Step 4. If any pug templates were modified, regenerate client side javascript
+#### Step 5. If any pug templates were modified, regenerate client side javascript
 
 	$ node scripts/pug2js.js
 
-#### Step 5. Configure a user on the CLI for logging in
+#### Step 6. Configure a user on the CLI for logging in
 
 	$ node useradd.js tester tester@example.com Tester sirt@example.com 1
 	Enter Password: ********************************************
 	Enter Password again: ********************************************
 	Success New user is now registered and can log in: tester
 
-#### Step 6. Start the node application
+#### Step 7. Start the node application
 
 	$ npm start
     
