@@ -44,7 +44,7 @@ Vulnogram project aims to make it easier for vendors and security researchers to
 
 	$ npm start
     
-  	Vulnogram@0.0.1 start /home/user/vulnogram
+  	Vulnogram@0.0.4 start /home/user/vulnogram
 	nodemon app
 	
 	[nodemon] 1.11.0
