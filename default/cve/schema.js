@@ -201,11 +201,13 @@ var docSchema = {
     "definitions": {
         "cve_id": {
             "type": "string",
-            "pattern": "^CVE-[0-9]{4}-[0-9A-Za-z\._-]{4,}$"
+            "pattern": "^CVE-[0-9]{4}-[0-9A-Za-z\._-]{4,}$",
+            "message": 'Valid email is required!'
         },
         "email_address": {
             "type": "string",
-            "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"
+            "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$",
+            "message": 'Valid email required'
         },
         "product": {
             "type": "object",
@@ -213,7 +215,10 @@ var docSchema = {
             "properties": {
                 "product_name": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "description": "eg., Example Express",
+                    "message": 'A product name is required!'
+
                 },
                 "version": {
                     "type": "object",
@@ -230,7 +235,8 @@ var docSchema = {
                                 "properties": {
                                     "version_name": {
                                         "title": "Version name (X)",
-                                        "type": "string"
+                                        "type": "string",
+                                        "description": "eg., 4.0"
                                     },
                                     "affected": {
                                         "type": "string",
@@ -254,10 +260,16 @@ var docSchema = {
                                     },
                                     "version_value": {
                                         "title": "Version value (n)",
-                                        "type": "string"
+                                        "type": "string",
+                                        "description": "eg., 4.0 update 2",
+                                        "minLength": 1,
+                                        "message": 'Affected version value is required!'
+
                                     },
                                     "platform": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "description": "eg., x86"
+
                                     }
                                 }
                             }
@@ -266,26 +278,36 @@ var docSchema = {
                 }
             }
         },
-        "reference": {
+        reference: {
+            "id": "ref",
             "type": "object",
-            "required": ["url"],
-            "properties": {
-                /*                "type" : {
-                                    "type": "string",
-                                    "enum": ["", "advisory", "analysis", "defect", "signature", "test", "exploit", "code-change", "discussion"]
-                                    
-                                },*/
-                "url": {
+            "required": [ "url" ],
+            properties: {
+                refsource: {
+                    type: "string",
+                    // Uncomment to configure default advisory URL
+                     default: "CONFIRM",
+                     enum: [ "AIXAPAR", "ALLAIRE", "APPLE", "ATSTAKE", "AUSCERT", "BEA", "BID", "BINDVIEW", "BUGTRAQ", "CALDERA", "CERT", "CERT-VN", "CHECKPOINT", "CIAC", "CISCO", "COMPAQ", "CONECTIVA", "CONFIRM", "DEBIAN", "EEYE", "ENGARDE", "ERS", "EXPLOIT-DB", "FarmerVenema", "FEDORA", "FREEBSD", "FRSIRT", "FULLDISC", "GENTOO", "HP", "HPBUG", "IBM", "IDEFENSE", "IMMUNIX", "ISS", "JVN", "JVNDB", "L0PHT", "MANDRAKE", "MANDRIVA", "MISC", "MLIST", "MS", "MSKB", "NAI", "NETBSD", "NTBUGTRAQ", "OPENBSD", "OPENPKG", "OSVDB", "OVAL", "REDHAT", "SCO", "SECTRACK", "SECUNIA", "SF-INCIDENTS", "SGI", "SLACKWARE", "SREASON", "SREASONRES", "SUN", "SUNALERT", "SUNBUG", "SUSE", "TRUSTIX", "TURBO", "UBUNTU", "VIM", "VULN-DEV", "VULNWATCH", "VUPEN", "WIN2KSEC", "XF" ]
+                },
+                url: {
+                    // Uncomment to configure default advisory URL
+                    // default: "https://kb.juniper.net/",
+                    type: "string",
                     "maxLength": 500,
-                    "type": "string",
-                    "format": "url",
-                    "pattern": "^(ftp|http)s?://[^ \t]+$"
+                    "pattern": "^(ftp|http)s?://\\S+$",
+                    "message": 'Valid URL is required!'
+
+                },
+                name: {
+                    type: "string",
+                    // Uncomment to configure default advisory URL
+                    // default: "https://kb.juniper.net/",
+                    /*template: "context.self ? context.self : (((context.refsource == 'CONFIRM') || (context.refsource == 'MISC')) ? context.url : context.self)",
+                    watch: {
+                        "url": "ref.url",
+                        "refsource": "ref.refsource"
+                    }*/
                 }
-                /*    ,
-                    
-                    "name": {
-                        "type": "string"
-                    } */
             }
         },
         "lang_string": {
@@ -296,9 +318,11 @@ var docSchema = {
                     "type": "string"
                 },
                 "value": {
+                    "title": " ",
                     "type": "string",
                     "minLength": 2,
-                    "maxLength": 3999
+                    "maxLength": 3999,
+
                 }
             }
         }
@@ -324,21 +348,25 @@ var docSchema = {
             "required": ["ID", "ASSIGNER", "STATE"],
             "properties": {
                 "ID": {
-                    "$ref": "#/definitions/cve_id"
+                    "$ref": "#/definitions/cve_id",
+                    "description": "CVE-yyyy-nnnn"
                 },
                 "ASSIGNER": {
-                    "$ref": "#/definitions/email_address"
+                    "$ref": "#/definitions/email_address",
+                    "description": "Email of CNA assigning this CVE ID"
                 },
                 "DATE_PUBLIC": {
                     "type": "string",
                     "format": "datetime"
                 },
                 "TITLE": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Short summary"
                 },
                 AKA: {
                     "type": "string",
-                    "title": "Also known as"
+                    "title": "Also known as",
+                    "description": "eg., HeartBleed, Shellshock"
                 },
                 STATE: {
                     "type": "string",
@@ -353,6 +381,7 @@ var docSchema = {
                 defect: {
                     title: "Defect",
                     type: "array",
+                    "description": "CNA specific bug tracking IDs",
                     format: "taglist",
                     "uniqueItems": true,
                     items: {
@@ -362,7 +391,8 @@ var docSchema = {
                 },
                 advisory: {
                     title: "Advisory-ID",
-                    type: "string"
+                    type: "string",
+                    "description": "CNA specific advisory IDs (Optional)",
                 },
                 discovery: {
                     type: "radio",
@@ -397,7 +427,9 @@ var docSchema = {
                                 "required": ["vendor_name", "product"],
                                 "properties": {
                                     "vendor_name": {
-                                        "type": "string"
+                                        "type": "string",
+                                        "description": "eg., Example Org",
+                                        "minLength": 1
                                     },
                                     "product": {
                                         "type": "object",
@@ -466,6 +498,7 @@ var docSchema = {
                 "reference_data": {
                     "type": "array",
                     "minItems": 1,
+                    "maxItems": 500,
                     "items": {
                         "title": "URL",
                         "$ref": "#/definitions/reference"

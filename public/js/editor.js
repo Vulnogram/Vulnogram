@@ -515,7 +515,21 @@ JSONEditor.defaults.themes.custom = JSONEditor.AbstractTheme.extend({
         el.innerHTML = text;
         return el;
     },
-
+    getFormControl: function(label, input, description) {
+    var el = document.createElement('div');
+    el.className = 'form-control';
+    if(label) el.appendChild(label);
+    if(input.type === 'checkbox') {
+      label.insertBefore(input,label.firstChild);
+      if(description) el.appendChild(description);
+    }
+    else {
+      input.setAttribute('placeholder', description ? description.textContent : '');
+      el.appendChild(input);
+    }
+    return el;
+  },
+  
     getFormInputLabel: function (text) {
         var el = this._super(text);
         el.className = text;
