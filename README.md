@@ -10,6 +10,8 @@ The name Vulnogram is inspired from Greek origin suffix '-gram' which is used fo
 
 Vulnogram project aims to make it easier for vendors and security researchers to accurately record vulnerability information for inclusion in the CVE List.
 
+<img src="https://raw.githubusercontent.com/Vulnogram/Vulnogram.github.io/master/screenshots/Vulnogram-ScreenShot.jpg" width="50%">
+
 ## Getting started
 
 #### Step 1. Install required Node.js modules.
