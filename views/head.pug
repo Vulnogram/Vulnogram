@@ -9,4 +9,7 @@ meta(name='csrf-token', content=_csrf)
 meta(name='theme-color', content='#f0f8ff')
 link(rel='apple-touch-icon', sizes='256x256', href=conf.basedir + 'css/logo.png')
 link(rel='icon' type='image/png', href= conf.basedir + 'css/logo.png', sizes='256x256')
-link(rel='stylesheet', href= conf.basedir + 'css/style.css')
+link(rel='stylesheet', href= conf.basedir + 'css/min.css')
+link(rel='stylesheet', href= conf.basedir + 'css/icns.css')
+if (opts && opts.style)
+    style=opts.style

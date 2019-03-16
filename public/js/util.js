@@ -51,30 +51,50 @@ function cloneJSON(obj) {
 };
 
 var textUtil = {
-
+jsonView: function(obj) {
+    if (obj instanceof Array) {
+        var ret = '<table>'; 
+        for(var k in obj) {
+            ret = ret + '<tr><td>' + this.jsonView(obj)+ '</td></tr>';
+        }
+        return(ret + '</table>');
+    } else if (obj instanceof Object) {
+        var ret = '<div>';
+        for (var k in obj){
+            if (obj.hasOwnProperty(k)){
+                ret = ret + '<div><b>' + k + '</b>: ' + this.jsonView(obj[k]) + '</div>';
+            }
+        }
+        return ret + '</div>'
+    } else {
+        return obj;
+    };
+},
 reduceJSON: function (cve) {
     //todo: this is to create a duplcate object
     // needs cleaner implementation
     var c = cloneJSON(cve);
     delete c.CNA_private;
-    var merged = {};
-    var d;
-    for (d of c.description.description_data) {
-        if(d && d.lang) {
-        if (!merged[d.lang]) {
-            merged[d.lang] = [];
+    if (c.description && c.description.description_data) {
+        var merged = {};
+        var d;
+        for (d of c.description.description_data) {
+            if (d && d.lang) {
+                if (!merged[d.lang]) {
+                    merged[d.lang] = [];
+                }
+                merged[d.lang].push(d.value);
+            }
         }
-        merged[d.lang].push(d.value);
+        var new_d = [];
+        for (var m in merged) {
+            new_d.push({
+                lang: m,
+                value: merged[m].join("\n")
+            });
         }
+        c.description.description_data = new_d;
     }
-    var new_d = [];
-    for (var m in merged) {
-        new_d.push({
-            lang: m,
-            value: merged[m].join("\n")
-        });
-    }
-    c.description.description_data = new_d;
     if(c.impact && c.impact.cvss && c.impact.cvss.baseScore === 0) {
         delete c.impact;    
     }
@@ -108,59 +128,48 @@ getProductList: function (cve) {
 },
 
 getAffectedProductString: function (cve) {
+    var status={};
     var lines = [];
     for (var vendor of cve.affects.vendor.vendor_data) {
-        var pstring = [];
+        var vendor_name = vendor.vendor_name;
         for(var product of vendor.product.product_data) {
-            var vstring = [];
             for(var version of product.version.version_data) {
                 var vv = version.version_value;
-                if(version.affected) {
-
-/*                    
-            "<  affects X versions prior to n",
-            "<= affects X versions up to n",
-            " = affects n",
-            " > affects X versions above n",
-            " >= affects X versions n and above",
-            "!< doesn't affect X versions prior to n",
-            "!<= doesn't affect X versions n and below ",
-            "! doesn't affect n",
-            "!> doesn't affect X versions above n",
-            "!>= doesn't affect X versions n and above" */
-                    switch (version.affected) {
-                        case "<":
-                            vv = version.version_name + " versions prior to " + version.version_value;
-                            break;
-                        case "<=":
-                            vv = version.version_name + " versions up to and including " + version.version_value;
-                            break;
+                var cat = "affected";
+                if(version.version_affected) {
+                    if(version.version_affected.startsWith('?')) {
+                        cat = "unknown";
+                    } else if (version.version_affected.startsWith('!')) {
+                        cat = "unaffected";
+                    }
+                    var prefix = "";
+                    if(version.version_name && version.version_name != "") {
+                        prefix = version.version_name + " ";
+                    }
+                    switch (version.version_affected) {
+                        case "!":
+                        case "?":
                         case "=":
                             vv = version.version_value;
                             break;
+                        case "<":
+                        case "!<":
+                        case "?<":
+                            vv = prefix + "versions prior to " + version.version_value;
+                            break;
                         case ">":
-                            vv = version.version_name + " versions above " + version.version_value;
+                        case "?>":
+                            vv = prefix + "versions later than " + version.version_value;
+                            break;
+                        case "<=":
+                        case "!<=":
+                        case "?<=":
+                            vv = prefix + "version " + version.version_value + " and prior versions";
                             break;
                         case ">=":
-                            vv = version.version_name + " versions above and including " + version.version_value ;
-                            break;
-                        case "!<":
-                            vv = version.version_name + " versions not prior to " + version.version_value;
-                            break;
-                        case "!<=":
-                            vv = version.version_name + " versions not " + version.version_value, " and below";
-                            break;
-                        case "!":
-                            vv = "not " + version.version_value;
-                            break;
-                        case "!>":
-                            vv = version.version_name + " versions not above " + version.version_value;
-                            break;
                         case "!>=":
-                            vv = version.version_name + " versions not " + version.version_value + " and above";
-                            break;
-                        case "?":
-                            vv = "status of " + version.version_value + " is unknown";
+                        case "?>=":
+                            vv = prefix + "version " + version.version_value + " and later versions";
                             break;
                         default:
                             vv = version.version_value;
@@ -169,13 +178,35 @@ getAffectedProductString: function (cve) {
                 if (version.platform) {
                     vv = vv + " on " + version.platform;
                 }
-                vstring.push(vv);
+                
+                if (!status[cat]) {
+                    status[cat] = {};
+                }
+                if(!status[cat][vendor_name + ' ' + product.product_name]) {
+                    status[cat][vendor_name + ' ' + product.product_name] = [];
+                }
+                status[cat][vendor_name + ' ' + product.product_name].push(vv);
             }
-            pstring.push(product.product_name + ":\n" + vstring.join(";\n"));
         }
-        lines.push(vendor.vendor_name + " " + pstring.join(", "));
     }
-    return lines.join(";\n");  
+    var stringifyArray = function(ob) {
+        var ret = [];
+        for(var p in ob) {
+            ret.push(p + " " + ob[p].join(';\n') + ".");
+        }
+        return ret.join('\n');
+    }
+    var ret = [];
+    if (status.affected) {
+        ret.push('This issue affects:\n' + stringifyArray(status.affected));
+    }
+    if (status.unaffected) {
+        ret.push('This issue does not affect:\n' + stringifyArray(status.unaffected));
+    }
+    if (status.unknown) {
+        ret.push('It is not known whether this issue affects:\n' + stringifyArray(status.unknown));
+    }
+    return ret.join('\n\n');
 },
 
 getProductAffected:
@@ -191,7 +222,7 @@ function (cve) {
             var includePlatforms = true;
             var platforms = {};
             for (var version of product.version.version_data) {
-                if(version.affected && version.affected.indexOf('!') < 0) {
+                if(version.version_affected && version.version_affected.indexOf('!') < 0 && version.version_affected.indexOf('?') < 0) {
                     versions[version.version_name] = 1;
                     if (version.platform == "all" || version.platform == "") {
                         includePlatforms = false;
@@ -313,8 +344,6 @@ getCVESummarySet: function(docs, cmap) {
     var csumSet = {};
     for (sa of docs) {
         csumSet[sa.body.ID] = this.sumCVE(sa.body.CVE_list, cmap);
-        //console.log(sa.body.ID + " == " + JSON.stringify(sa.body.CVE_list) + " ::" + cmap);
-        //console.log(JSON.stringify(csumSet[sa.body.ID]));
     }
     return csumSet;
 },
@@ -356,7 +385,7 @@ saIndex: function(docs, csumSet) {
 return docs.map(d => ({
       Advisory: d.body.ID,
       CVE: d.body.CVE_list.map(x => (x.CVE.split(/[\s,]+/))),
-      CVSS: csumSet && csumSet[d.body.ID] ? csumSet[d.body.ID].maxCVSS.baseScore : "",
+      CVSS: (d.body.cvss && d.body.cvss.baseScore > 0) ? d.body.cvss.baseScore : (csumSet && csumSet[d.body.ID] ? csumSet[d.body.ID].maxCVSS.baseScore : ""),
       Date: d.body.DATE_PUBLIC,
       Title: d.body.TITLE,
       State: d.body.STATE,
@@ -435,19 +464,10 @@ sumCVE: function(list, cmap) {
        idSet: idSet,
        summary: summary
     })     
-}
+},
 
-};
-if(typeof module !== 'undefined') {
-    module.exports = textUtil;
-}
-
-function fileSize(a,b,c,d,e){
- return (b=Math,c=b.log,d=1024,e=c(a)/c(d)|0,a/b.pow(d,e)).toFixed(2)
- +' '+(e?'KMGTPEZY'[--e]+'B':'Bytes')
-}
-
-function diffline(line1, line2) {
+    
+    diffline: function(line1, line2) {
         var ret1 = [];
         var ret2 = [];
         var s = 0;
@@ -495,7 +515,15 @@ function diffline(line1, line2) {
         }
 
         return {lhs: ret1, rhs: ret2};
+    },
+    fileSize : function(a,b,c,d,e){
+        return (b=Math,c=b.log,d=1024,e=c(a)/c(d)|0,a/b.pow(d,e)).toFixed(2)
+            +' '+(e?'KMGTPEZY'[--e]+'B':'Bytes')
     }
+};
+if(typeof module !== 'undefined') {
+    module.exports = textUtil;
+}
 
 var cvssjs = {
     vectorMap: {
@@ -632,7 +660,7 @@ vector: function(cvss) {
         try {
             for (p in Weight) {
                 val[p] = cvss[p];
-                if (typeof val[p] === "undefined" || val[p] === '') {
+                if (typeof val[p] === "undefined" || val[p] === '' || val[p] == null) {
                     return "?";
                 }
                 metricWeight[p] = Weight[p][val[p]];

@@ -2,7 +2,22 @@
 
 extends layout
 
-block banner
+
+block append bannerItemsLeft
+    if tfacet && tfacet.length && tfacet.length > 0
+      each values, field in tfacet[0]
+        each v in values
+            - var active = ''
+            if (v._id == query[field] || ((typeof query[field] === 'string') && query[field].split(',').includes(v._id)) || ((query[field] instanceof Array) && query[field].includes(v._id)))
+                - active = 'pur'
+                //input(type="hidden",name=field,value=v._id)
+            a.icn.fbn(href='/' + schemaName + '?' + field + '=' + v._id, class=active + ' ' + v._id, count=v.count)
+                =(v._id ? v._id : 'null')
+                |  (
+                = v.count
+                | )
+  
+block facetBanner
     include util.pug
     +facetChart(facet, query, tfacet)
 
@@ -13,8 +28,13 @@ block error
 block info
     +paginate
 
+block append head
+    if !min
+        link(rel='stylesheet', href= '/users/list/css')
+
 block content
     include util.pug
     .tabletop
-        +table(docs, columns)
-        +tablesort
+        +bulkTable(docs, columns)
+        if pages == 1
+            +tablesort

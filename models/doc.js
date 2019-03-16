@@ -9,9 +9,12 @@ module.exports = function (name) {
         doc_id: String,
         parent_id: Object,
         slug: String,
-        full_slug: String
+        full_slug: String,
+        comments: Array,
+        files: Array
     }, {
-        timestamps: true
+        timestamps: true,
+        strict: false
     });
     //ensure text search
     //TODO: index all facet fields.

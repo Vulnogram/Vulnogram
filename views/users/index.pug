@@ -2,17 +2,19 @@
 
 extends ../layout
 block content
-    table.border.sortable
+    table.tbl.wht.sortable
         thead
             tr
+                th 
                 th Username
                 th Name
                 th email
-                th CNA
+                th CNA/group
                 th Privilege
         tbody
             each user in users
              tr
+                td=user.emoji
                 td
                     a(href="/users/profile/" + user.username)=user.username
                 td

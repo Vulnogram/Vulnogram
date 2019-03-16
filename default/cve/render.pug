@@ -1,16 +1,115 @@
 extends ../../views/render.pug
 
-block prepend renderPage
-    case renderTemplate
-        when 'advisory'
-            +cvePage(doc)
-            - renderComplete = true
-        when 'slide'
-            +cveSlide(doc)
-            - renderComplete = true
-        when 'mitre'
-            +mitre(doc)
-            - renderComplete = true
+block prepend content
+    mixin slide(cve)
+        .page.wht.shd.pad2.gap
+            b.slideTitle
+                if cve.source && cve.source.advisory
+                    = cve.source.advisory
+                    |              
+                = cve.CVE_data_meta.TITLE + ' (' + cve.CVE_data_meta.ID + ')'
+            ul.bullets
+                li
+                    b.term CVSS: 
+                    span.text
+                        if cve.impact && cve.impact.cvss
+                            +CVSS(cve.impact.cvss)
+                li
+                    b.term PR: 
+                    span.text= cve.source.defect
+                li
+                    b.term Affects: 
+                    span.text= textUtil.getProductAffected(cve) 
+                li
+                    b.term Problem: 
+                    span.text
+                        +mpara(cve.description.description_data.slice(0,1))
+                li
+                    b.term Workaround: 
+                    span.text
+                        +mpara(cve.work_around)
+                li
+                    b.term Solution: 
+                    span.text
+                        +mpara(cve.solution)
+
+
+    mixin page(cve)
+        - var sourceText = {"INTERNAL":"This issue was found during internal product security testing or research.", "EXTERNAL":"This issue was discovered during an external security research.", "USER":"This issue was seen during production usage.", "UNKNOWN":""};
+        - var CDM = cve.CVE_data_meta;
+        - var cveid = CDM.ID.match(/^CVE-[0-9-]+$/)? CDM.ID : 'CVE-yyyy-nnnn';
+        h2
+            if cve.source && cve.source.advisory
+                = cve.source.advisory
+                |  
+            = CDM.TITLE + ' (' + cveid + ')'    
+
+        h4 PRODUCT AFFECTED:
+
+        p= textUtil.getProductAffected(cve)
+
+        h4 PROBLEM:
+        +mpara(cve.description.description_data)
+        +mpara(cve.configuration)
+        +mpara(cve.exploit)
+        if cve.source
+            if sourceText[cve.source.discovery]
+                p=sourceText[cve.source.discovery]
+            if CDM.AKA
+                p This issue is also known as 
+                    = CDM.AKA
+                    |.
+        p This issue has been assigned 
+            a(href="http://cve.mitre.org/cgi-bin/cvename.cgi?name="+cveid)=cveid
+            |.
+
+        h4 SOLUTION:
+
+        +mpara(cve.solution)
+
+        if cve.source.defect && cve.source.defect.length > 0
+            p This issue is being tracked as 
+                +linklist(cve.source.defect, defectURL)
+                |.
+        h4 WORKAROUND:
+        +mpara(cve.work_around)
+
+        h4 MODIFICATION HISTORY:
+
+        p
+            ul
+                li
+                    +renderDate(CDM.DATE_PUBLIC)
+                    | : Initial Publication.
+
+        h4 RELATED LINKS:
+
+        ul
+            if CDM.ID
+                li
+                    a(href="http://cve.mitre.org/cgi-bin/cvename.cgi?name="+cveid)=cveid + " at cve.mitre.org"
+            each r in cve.references.reference_data
+                li
+                    a(href=r.url)=r.url
+
+        h4 CVSS SCORE:
+        if cve.impact && cve.impact.cvss
+            p
+                +CVSS(cve.impact.cvss)
+            if cve.impact.cvss.baseSeverity
+                h4 RISK LEVEL:
+                p=cve.impact.cvss.baseSeverity
+
+        if cve.credit && cve.credit.length > 0
+            h4 ACKNOWLEDGEMENTS:
+            ul
+                each c in cve.credit
+                    li= c.value
+
+        if cve.CNA_private && cve.CNA_private.internal_comments
+            h4 INTERNAL COMMENTS:
+            p
+                +para(cve.CNA_private.internal_comments)
 
 mixin mitre(cve)
     h2 MITRE CVE entry preview
@@ -58,99 +157,3 @@ mixin mitre(cve)
                         b YYYYMMDD
                     td.ltgreybackground Disclaimer: The entry creation date may reflect when the CVE-ID was allocated or reserved, and does not necessarily indicate when this vulnerability was discovered, shared with the affected vendor, publicly disclosed, or updated in CVE.
 
-mixin cveSlide(cve)
-    li.page
-        if cve.source && cve.source.advisory
-            = cve.source.advisory
-            |              
-        = cve.CVE_data_meta.TITLE + ' (' + cve.CVE_data_meta.ID + ')'
-        ul
-            li CVSS: 
-                if cve.impact && cve.impact.cvss
-                    +renderVal('CVSSFull', cve.impact.cvss)
-            li PR: 
-                = cve.source.defect
-            li Affects: 
-                = textUtil.getProductAffected(cve) 
-            li
-                +mpara(cve.description.description_data.slice(0,1))
-            li Solution: 
-                +mpara(cve.solution)
-
-
-mixin cvePage(cve)
-    - var sourceText = {"INTERNAL":"This issue was found during internal product security testing or research.", "EXTERNAL":"This issue was discovered during an external security research.", "USER":"This issue was seen during production usage.", "UNKNOWN":""};
-    - var CDM = cve.CVE_data_meta;
-    - var cveid = CDM.ID.match(/^CVE-[0-9-]+$/)? CDM.ID : 'CVE-yyyy-nnnn';
-    h2
-        if cve.source && cve.source.advisory
-            = cve.source.advisory
-            |  
-        = CDM.TITLE + ' (' + cveid + ')'    
-
-    h4 PRODUCT AFFECTED:
-
-    p= textUtil.getProductAffected(cve)
-
-    h4 PROBLEM:
-    +mpara(cve.description.description_data)
-    +mpara(cve.configuration)
-    +mpara(cve.exploit)
-    if cve.source
-        if sourceText[cve.source.discovery]
-            p=sourceText[cve.source.discovery]
-        if CDM.AKA
-            p This issue is also known as 
-                = CDM.AKA
-                |.
-    p This issue has been assigned 
-        a(href="http://cve.mitre.org/cgi-bin/cvename.cgi?name="+cveid)=cveid
-        |.
-
-    h4 SOLUTION:
-
-    +mpara(cve.solution)
-
-    if cve.source.defect && cve.source.defect.length > 0
-        p This issue is being tracked as 
-            +linklist(cve.source.defect, defectURL)
-            |.
-    h4 WORKAROUND:
-    +mpara(cve.work_around)
-
-    h4 MODIFICATION HISTORY:
-
-    p
-        ul
-            li
-                +renderVal('date', CDM.DATE_PUBLIC)
-                | : Initial Publication.
-
-    h4 RELATED LINKS:
-
-    ul
-        if CDM.ID
-            li
-                a(href="http://cve.mitre.org/cgi-bin/cvename.cgi?name="+cveid)=cveid + " at cve.mitre.org"
-        each r in cve.references.reference_data
-            li
-                a(href=r.url)=r.url
-
-    h4 CVSS SCORE:
-    if cve.impact && cve.impact.cvss
-        p
-            +renderVal('CVSSFull', cve.impact.cvss)
-        if cve.impact.cvss.baseSeverity
-            h4 RISK LEVEL:
-            p=cve.impact.cvss.baseSeverity
-
-    if cve.credit && cve.credit.length > 0
-        h4 ACKNOWLEDGEMENTS:
-        ul
-            each c in cve.credit
-                li= c.value
-
-    if cve.CNA_private && cve.CNA_private.internal_comments
-        h4 INTERNAL COMMENTS:
-        p
-            +para(cve.CNA_private.internal_comments)

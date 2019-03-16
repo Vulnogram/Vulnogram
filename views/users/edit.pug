@@ -7,42 +7,42 @@ block content
   - var action = '/users/profile/';
   if profile.username
     - action = action + profile.username;
-  form.card(method='POST', action=action)
+  form.pad2.bor.shd.rnd(method='POST', action=action)
     input(type='hidden', name='_csrf', value=csrfToken)
-    .entry
+    .row
         .cardtitle=title
-    .entry
-      label Name:
-      input.form-control(name='name', type='text', value=profile.name)
-    .entry
-      label Email:
-      input.form-control(name='email', type='text', value=profile.email)
-    .entry
-      label Username:
+    .row
+      label.lbl.icn.owner Name:
+      input.txt(name='name', type='text', value=profile.name)
+    .row
+      label.lbl.icn.Email Email:
+      input.txt(name='email', type='text', value=profile.email)
+    .row
+      label.lbl.icn.owner Username:
       if admin
-        input.form-control(name='username', type='text',value=profile.username)
+        input.txt(name='username', type='text',value=profile.username)
       else
         tt=profile.username
-    .entry
-      label Favorite Emoji:
-      input.form-control(name='emoji', type='text', value=profile.emoji)
-    .entry
-      label Password:
-      input.form-control(name='password', type='password')
-    .entry
-      label Confirm Password:
-      input.form-control(name='password2', type='password')
-    .entry
-      label CNA or group email:
+    .row
+      label.lbl.icn Favorite Emoji:
+      input.txt(name='emoji', type='text', value=profile.emoji)
+    .row
+      label.lbl.icn Password:
+      input.txt(name='password', type='password', autocomplete="new-password")
+    .row
+      label.lbl.icn Confirm Password:
+      input.txt(name='password2', type='password', autocomplete="new-password")
+    .row
+      label.lbl.icn.CNA CNA or group email:
       if admin
-        input.form-control(name='group', type='text',value=profile.group)
+        input.txt(name='group', type='text',value=profile.group)
       else
         tt=profile.group
-    .entry
-      label Privilege:
+    .row
+      label.lbl.icn Privilege:
       if admin
         select.form-control(name='priv')
-            option(value=2,selected=profile.priv==2) Read only
+            //option(value=2,selected=profile.priv==2) Read only
             option(value=1,selected=profile.priv==1) Read/Write
             option(value=0,selected=profile.priv==0) Admin
       else
@@ -53,17 +53,17 @@ block content
                 | Read/Write
             else if profile.priv == 2
                 | Read only
-    .entry
-        button.button.safe(type='submit', value='Save') Save
-    .entry
+    .row
+        button.btn.sfe(type='submit', value='Save') Save
+    .row
         div.center
-            a.user(href="/users/list") User list
+            a.btn.icn.owner(href="/users/list") User list
             if admin
                 |  · 
-                a.new(href="/users/profile") Add user
+                a.btn.icn.add(href="/users/profile") Add user
         div.center
             if admin && profile.username
-                a.small.rejected(href="/users/delete/"+profile.username,onclick="return confirm('Delete this user?')") Delete 
+                a.sml.icn.rejected.tred(href="/users/delete/"+profile.username,onclick="return confirm('Delete this user?')") Delete 
                     = profile.username
                 
         

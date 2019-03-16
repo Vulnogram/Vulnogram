@@ -3,5 +3,7 @@
 extends layout
 
 block content
-    .card
-        = message
+    .gap.pad
+        .tred= message
+        br
+        button.gap.btn.icn.undo(onclick="history.back()") Return to previous page

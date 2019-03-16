@@ -1,0 +1,194 @@
+include util
+
+mixin files
+    .rnd.hig.gap.wlp.ins
+        .pad
+            b.icn.Attachments Attachments
+            #fileList
+                +fileList
+        form.pad
+            input.fbn(id="file1",name="file1", type='file',multiple=true,onchange='preview(this,event)')
+            input.txt(size="40em",name="comment", placeholder="Description of the attachment(s)")
+            button.btn.icn.indent.save#upb(onclick="attach(this, event)") Attach
+            progress.hid(name="prg")
+            div.indent.indent(class="filePreview")
+    
+mixin fileList
+        if(files && files.length>0)
+                - fields = {name: {href:'/'+schemaName+'/' + doc_id + '/file/', class: 'icn ', target:'_blank', xref: {class: 'type'}}, user: {class: 'ico'}, delete: {class: 'ico delete',onclick:'fileDelete(this)'}};
+                +table(files, ['name','comment','size','updatedAt','user','delete'])
+
+mixin commentBox
+    #commentTemplate.hid
+      form.bor.shd.rnd.gap.pad(onsubmit="sendComment(this);return false;")
+        input(type="hidden",name="id",value=id)
+        .toolbar
+          div
+            span.btg.indent
+              a.sbn.icn.bold(data-wysihtml5-command='bold', title='Bold CTRL+B')
+              a.sbn.icn.italic(data-wysihtml5-command='italic', title='Italic CTRL+I')
+              a.sbn.icn.underline(data-wysihtml5-command='underline', title='Underline CTRL+U')
+              a.sbn.icn.highlight(data-wysihtml5-command='bgColorStyle', title='highlight', color="#666699", data-wysihtml5-command-value='#effa66')
+              // <a class="fbn icn strikethrough" data-wysihtml5-command="strike" title="Strike"></a>
+            span.btg.indent
+              a.sbn.icn.htmlp(data-wysihtml5-command='formatBlock', data-wysihtml5-command-value='p',title='paragraph style')
+              a.sbn.icn.htmlh1(data-wysihtml5-command='formatBlock', data-wysihtml5-command-value='h1',title='Heading 1')
+              a.sbn.icn.htmlh2(data-wysihtml5-command='formatBlock', data-wysihtml5-command-value='h2',title='Heading 2')
+              a.sbn.icn.htmlh3(data-wysihtml5-command='formatBlock', data-wysihtml5-command-value='h3',title='Heading 3')
+              a.wysihtml5-command-active.sbn.icn.clear(data-wysihtml5-command='formatBlock', data-wysihtml5-command-blank-value='true',unselectable='on',title='Clear styles')
+            span.btg.indent
+              a.sbn.icn.link(data-wysihtml5-command='createLink',title='Hyperlink')
+              a.sbn.icn.unlink(data-wysihtml5-command='removeLink',title='Unlink')
+              a.sbn.icn.image(data-wysihtml5-command='insertImage',title='Insert image')
+              a.sbn.icn.code(data-wysihtml5-command='formatBlock', data-wysihtml5-command-value='pre',title='Code text')
+              a.sbn.icn.quote(data-wysihtml5-command='formatBlock', data-wysihtml5-command-value='blockquote',title='Block quote')
+              a.sbn.icn.table(data-wysihtml5-command='createTable',title='Insert Table')
+            span.btg.indent
+              a.sbn.icn.ulist(data-wysihtml5-command='insertUnorderedList',title='Bulletted list')
+              a.sbn.icn.olist(data-wysihtml5-command='insertOrderedList',title='Numbered list')
+            span.btg.indent
+              a.sbn.icn.undo(data-wysihtml5-command='undo',title='Undo')
+              a.sbn.icn.redo(data-wysihtml5-command='redo',title='Redo')
+              a.sbn.icn.html(data-wysihtml5-action='change_view',title='HTML source view')
+            span.btg.indent(data-wysihtml5-hiddentools='table', style='display: none;')
+              a.sbn.icn.addabove(data-wysihtml5-command='addTableCells', data-wysihtml5-command-value='above',title='Insert row above')
+              a.sbn.icn.addbelow(data-wysihtml5-command='addTableCells', data-wysihtml5-command-value='below',title='Insert row below')
+              a.sbn.icn.addbefore(data-wysihtml5-command='addTableCells', data-wysihtml5-command-value='before',title='Insert column before')
+              a.sbn.icn.addafter(data-wysihtml5-command='addTableCells', data-wysihtml5-command-value='after',title='Insert column after')
+              a.sbn.icn.delrow(data-wysihtml5-command='deleteTableCells', data-wysihtml5-command-value='row',title='Delete row')
+              a.sbn.icn.delcol(data-wysihtml5-command='deleteTableCells', data-wysihtml5-command-value='column',title='Delete column')
+          div(data-wysihtml5-dialog='createLink', style='display: none;')
+              label.lbl.sml.icn.link Link: 
+              input.icn.txt(size='90', data-wysihtml5-dialog-field='href', value='https://',title='URL')
+              a.btn.icn.extlink(onclick='window.open(this.previousElementSibling.value)') Open
+              a.btn.indent.icn.ok(data-wysihtml5-dialog-action='save') OK
+              a.btn.icn.cancel(data-wysihtml5-dialog-action='cancel') Cancel
+          div(data-wysihtml5-dialog='insertImage', style='display: none;')
+              label.lbl.icn.link URL
+              input.icn.txt(data-wysihtml5-dialog-field='src',size=50,value='https://')
+              label.lbl or
+              label.btn.icn.folder(title='Browse for local images to insert') Insert Image ..
+                input.hid(type='file',onchange='loadimg.call(this, event)',accept="image/*")
+              a.btn.indent.icn.ok(data-wysihtml5-dialog-action='save') OK
+              a.btn.icn.cancel(data-wysihtml5-dialog-action='cancel') Cancel
+          div(data-wysihtml5-dialog='createTable', style='display: none;')
+                label.icn.table.lbl Rows: 
+                input.txt(type='text', data-wysihtml5-dialog-field='rows')
+                label.lbl Cols: 
+                input.txt(type='text', data-wysihtml5-dialog-field='cols')
+                a.btn.icn.ok.indent(data-wysihtml5-dialog-action='save') OK
+                a.btn.icn.cancel(data-wysihtml5-dialog-action='cancel') Cancel
+
+        .wysihtml5-editor.fil.txt(style="min-height:10em")
+        //, onkeyup="this.form.button.disabled=this.value ? false : true",onblur="this.form.button.disabled=this.value ? false : true")
+        //#addCommentText.wysDiv(onkeyup="setCommentButton(this, this.form.button)",onblur="setCommentButton(this, this.form.button)")
+        button.btn.gap.sml(type="submit",name="button",disabled=true) Add comment
+
+mixin comments
+  if docs
+    each c, i in docs
+      .shd.rnd.bor.pad.gap(class=c._id? 'lyel': 'wht')
+        dt 
+            - var cd = new Date(c.createdAt);
+            - var ud = new Date(c.updatedAt);
+            span.pad3.lbl.icn(class=c.subject ? 'Email' : c.author)
+                b=c.author
+                | &nbsp;on  
+                = cd.toLocaleDateString("en-US",{year: 'numeric', month: 'short', day: 'numeric'})
+                |  
+                if(c.updatedAt && (cd.getTime() !== ud.getTime()))
+                    | (updated 
+                    = ud.toLocaleDateString("en-US",{year: 'numeric', month: 'short', day: 'numeric'})
+                    | )
+                |  
+            if(c.author == username)
+                button.btn.sml(onclick="editPost(this.parentNode)") update
+            |  -  
+            b.lbl=c.title
+            if c._id
+                a.lbl.icn.extlink(href='/mail/'+c._id)
+                    =c.subject
+            else
+                b.lbl=c.subject
+        .wysihtml5-editor.fil
+            if c.hypertext
+                +asis(c.hypertext)
+            else if c.body
+                div.wrp=c.body
+            else
+                i.tgrey No content
+        input(type="hidden",name="slug",value=c.slug)
+        input(type="hidden",name="date",value=c.createdAt)
+
+mixin changeIcon(op)
+    if op == 'remove'
+        span.lbl
+            | &rarr; 
+        span.lbl.icn.rejected
+    else if op == 'add'
+        | +
+    else
+        span.lbl
+            | &rarr;  
+
+mixin changes
+    - var past = {add: 'added', remove: 'removed', replace: 'changed', move: 'moved', copy: 'copied'}
+    table.diff
+      if docs
+        each v, i in docs
+          tbody
+            each op, i in v.body.patch
+                tr.hig
+                    td.pad(colspan=3)
+                      span.ico(class=v.author)
+                        b= v.author
+                        |  on 
+                        +renderVal('date', v? v.updatedAt:'')
+                        |  
+                        = past[op.op] ? past[op.op] : op.op
+                        |  
+                        b= op.path
+                tr.change(class=op.op)
+                    if op.op == 'remove'
+                        - op.old = op.value
+                        - delete op.value
+                    if op.op == 'replace' && typeof op.old === 'string' && typeof op.value === 'string'
+                        - var diffs = textUtil.diffline(op.old, op.value);
+                        td
+                          pre.pre
+                            for s in diffs.lhs
+                                case s.t
+                                  when 0
+                                    = s.str
+                                  when 1
+                                    span.red=s.str
+                        td
+                            +changeIcon(op.op)
+                        td
+                          pre.pre
+                            for s in diffs.rhs
+                                case s.t
+                                  when 0
+                                    = s.str
+                                  when 1
+                                    span.grn=s.str
+                    else
+                        td
+                            if op.old instanceof Object
+                                pre= JSON.stringify(op.old, null, 3)
+                            else
+                                = op.old
+                        td
+                            +changeIcon(op.op)
+                        td
+                            if op.value instanceof Object
+                                pre= JSON.stringify(op.value, null, 3)
+                            else
+                                = op.value 
+
+mixin filePreview
+    +table(docs,columns)
+
+block red
+    if ctemplate != undefined
+        +#{ctemplate}

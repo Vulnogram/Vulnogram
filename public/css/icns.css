@@ -1,0 +1,1504 @@
+.logo:before {
+    width: 1em;
+    min-width: 1em;
+    height: 1em;
+    font-size: 24px;
+    background-repeat: no-repeat;
+    vertical-align: middle;
+    background-size: contain;
+    content: "";
+    background-image: url(logo.png);
+    background-position: 0 0;
+    display: inline-flex;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+.logo {
+    text-decoration: none;
+}
+.bdg[title="0"] {
+    display: none;
+}
+
+.center .pad2 .logo:before {
+    font-size: 12em;
+}
+
+.center .pad2 .big {
+    font-size: 30px;
+}
+
+@media only screen and (max-width:1000px) {
+    .sbn,
+    .fbn,
+    .btn,
+    .txt,
+    .lbl,
+    .tag {
+        padding-left: .5em;
+        padding-right: .5em;
+        /*transition: padding 0.5s ease;*/
+    }
+}
+
+@media only screen and (max-width:800px) {
+    b.logo {
+        font-size: 0px;
+    }
+    header a.icn {
+        max-width: 2.5em;
+        overflow: hidden;
+        /*    font-size: 1.5vmax;*/
+        position: inherit;
+        color: transparent;
+        transition: 0.5s ease;
+        transition-property: all;
+        transition-delay: .4s;
+    }
+    a.icn:after {
+        content: attr(count);
+        color: black;
+    }
+    a.icn:hover {
+        color: transparent;
+    }
+}
+
+.expand {
+    display: none;
+}
+
+.chart>label:first-child {
+    display: block;
+}
+
+.chart>label:last-child:before,
+.chart>label:first-child:after {
+    content: "❯";
+    opacity: 0;
+    transition-duration: 0.5s;
+    transition-property: opacity;
+}
+
+.chart label {
+    cursor: pointer;
+}
+
+.chart:hover>label:last-child:before,
+.chart:hover>label:first-child:after {
+    content: "❯";
+    opacity: 1;
+}
+
+.chart>label:last-child:before {
+    position: absolute;
+    margin-top: 9px;
+    margin-left: -1px;
+    height: 30px;
+    width: 10px;
+}
+
+.chart>label:first-child:after {
+    margin-left: 5px;
+}
+
+.chart:hover>.expand:checked~label:before {
+    content: "❮";
+}
+
+.expand:checked~.bar {
+    display: inline-table;
+    transition: all .5s;
+    width: auto;
+}
+
+.chart {
+    box-sizing: border-box;
+    display: inline-block;
+    padding: 3px;
+    margin: 1px 2px;
+    /*    float:left;
+    border:1px solid var(--bor);
+    min-height: 65px;*/
+}
+
+.chart .bar .icn {
+    line-height: 10px;
+}
+
+.chart .bar .icn:before {
+    font-size: 12px;
+}
+
+.chart .bar {
+    display: inline-block;
+    margin: 1px;
+}
+
+.chart .bar label {
+    width: 100%;
+    box-sizing: border-box;
+    transition-duration: 0.4s;
+    border-width: 0px;
+    outline-color: white;
+}
+
+.chart .bar input {
+    display: none;
+}
+
+.chart .bar input:checked+label {
+    border-color: #444;
+    border-style: solid;
+    box-shadow: inset 0px 2px 3px rgba(0, 0, 0, 0.1);
+    border-width: 1px;
+    border-bottom-width: 3px;
+}
+
+.chart .bar label:active,
+.chart .bar input+label:hover {
+    outline: 1px solid var(--lnk);
+    box-shadow: 0 0 0 0.2em rgba(3, 102, 214, 0.3);
+}
+
+.chart .bar label {
+    /*   border: 1px solid white;*/
+    display: inline-block;
+    font-size: 10px;
+    height: 34px;
+    overflow: hidden;
+    white-space: pre;
+    padding: 1px;
+    text-align: center;
+    font-weight: normal;
+}
+
+div[data-schemapath="root"]>div>div>div>div.row>div[data-schematype="object"] {
+    padding-bottom: 1.5em;
+}
+
+div[data-schemapath$=".cvss"] .rdg .form-control:first-child input[type="radio"]:checked+label {
+    background-color: rgb(162, 213, 114);
+}
+
+div[data-schemapath$=".cvss"] .rdg .form-control input[type="radio"]:checked+label {
+    background-color: rgb(250, 230, 120);
+}
+
+div[data-schemapath$=".cvss"] .rdg .form-control:nth-child(3) input[type="radio"]:checked+label {
+    background-color: rgb(240, 170, 83);
+}
+
+div[data-schemapath$=".cvss"] .rdg .form-control:nth-child(4) input[type="radio"]:checked+label {
+    background-color: rgb(240, 130, 120);
+}
+
+div[data-schemapath$=".cvss"] .rdg .form-control:last-child input[type="radio"]:checked+label {
+    background-color: rgb(240, 130, 120);
+}
+
+.chart {
+    --tc: black;
+    --c1: #E0F3DB;
+    --c2: #CCEBC5;
+    --c3: #A8DDB5;
+    --c4: #7BCCC4;
+    --c5: #4EB3D3;
+    --c6: #2B8CBE;
+    --c7: #97c782;
+    --c8: #a49f8c;
+    --c9: #F0BC5B;
+    --c10: #D6C888;
+    --c11: #BDD4B6;
+    --c12: #B0BBAC;
+    --c13: #c4d0c0;
+}
+
+.chart:nth-child(odd) {
+    --c1: #FDB462;
+    --c2: #8dd3c7;
+    --c3: #bebada;
+    --c4: #fb8072;
+    --c5: #80b1d3;
+    --c6: #fdb462;
+    --c7: #b3de69;
+    --c8: #fccde5;
+    --c9: #d9d9d9;
+    --c10: #bc80bd;
+    --c11: #ccebc5;
+}
+
+.bar:nth-child(15n+1) label {
+    background-color: var(--c3)
+}
+
+.bar:nth-child(15n+2) label {
+    background-color: var(--c2)
+}
+
+.bar:nth-child(15n+3) label {
+    background-color: var(--c1)
+}
+
+.bar:nth-child(15n+4) label {
+    background-color: var(--c2)
+}
+
+.bar:nth-child(15n+5) label {
+    background-color: var(--c3)
+}
+
+.bar:nth-child(15n+6) label {
+    background-color: var(--c4)
+}
+
+.bar:nth-child(15n+7) label {
+    background-color: var(--c5)
+}
+
+.bar:nth-child(15n+8) label {
+    background-color: var(--c6)
+}
+
+.bar:nth-child(15n+9) label {
+    background-color: var(--c7)
+}
+
+.bar:nth-child(15n+10) label {
+    background-color: var(--c8)
+}
+
+.bar:nth-child(15n+11) label {
+    background-color: var(--c9)
+}
+
+.bar:nth-child(15n+12) label {
+    background-color: var(--c10)
+}
+
+.bar:nth-child(15n+13) label {
+    background-color: var(--c11)
+}
+
+.bar:nth-child(15n+14) label {
+    background-color: var(--c12)
+}
+
+.bar:nth-child(15n+15) label {
+    background-color: var(--c13)
+}
+
+.bar label {
+    background-color: var(--c1);
+    color: var(--tc);
+}
+
+.severity .bar .NONE,
+.CVSS .NONE {
+    --tc: white;
+    background-color: green;
+}
+
+.severity .bar .LOW,
+.CVSS .LOW {
+    background-color: gold;
+}
+
+.severity .bar .MEDIUM,
+.CVSS .MEDIUM {
+    background-color: orange;
+}
+
+.severity .bar .HIGH,
+.CVSS .HIGH {
+    background-color: salmon;
+}
+
+.severity .bar .CRITICAL,
+.CVSS .CRITICAL {
+    --tc: white;
+    background-color: orangered;
+}
+
+.compactTable:checked+table .icn {
+    width: 1.5em;
+    overflow: hidden;
+}
+
+.ico:before {
+    margin-right: 4px;
+}
+
+.compactTable:checked+table .ico {
+    display: inline-flex;
+    width: 1.25em;
+    height: 1.5em;
+    overflow: hidden;
+}
+
+.compactTable:checked+table .extra {
+    display: hidden;
+    font-size: 0;
+}
+
+label[for="compactTable"][val=""]:after {
+    content: " Expand ";
+    font-size: small;
+}
+
+label[for="compactTable"][val="false"]:after {
+    content: " Expand ";
+    font-size: small;
+}
+
+label[for="compactTable"][val="true"]:after {
+    content: " Compact ";
+    font-size: small;
+}
+
+label[for="compactTable"][val="false"]:after {
+    content: " Expand ";
+    font-size: small;
+}
+
+.editor textarea {
+    font-size: 14px;
+}
+
+.editor .tbl th {
+    text-align: left;
+}
+
+.editor .tbl {
+    width: 100%;
+}
+
+.editor .tbl td {
+    padding: 0;
+}
+
+.editor .tbl td:last-child {
+    width: 0.2%;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.editor .form-control {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.editor input[type="file"],
+.editor input[type="text"],
+.editor input[type="url"],
+.editor input[type="taglist"],
+.editor input[type="email"] {
+    flex-grow: 1;
+}
+
+.editor input,
+.editor textarea {
+    background-color: transparent;
+}
+
+div[data-schemaid="root"]>b {
+    display: none;
+}
+
+div[data-schematype="array"] select {
+    height: 1.5em;
+}
+
+div[data-schematype="array"] td:hover,
+div[data-schematype="array"] td:focus-within {
+    border: 1px solid var(--lnk);
+    /*    box-shadow: 0 0 0 0.2em rgba(3,102,214,0.3);*/
+    outline: 2px solid rgba(3, 102, 214, 0.3);
+    outline-offset: 0px;
+}
+
+textarea,
+.wysihtml5-editor {
+    font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+}
+
+div[data-schematype="array"] td>.form-control:first-child .txt,
+div[data-schematype="array"] td>.form-control:first-child textarea,
+div[data-schematype="array"] td>.form-control:first-child .wysihtml5-editor,
+div[data-schematype="array"] td>.form-control:first-child select {
+    outline: none;
+    padding: 0.05em 0.5em;
+    margin: 1px;
+    border: transparent;
+    box-shadow: none;
+    margin-bottom: 1px;
+}
+
+div[data-schematype="array"] input[type="text"]:hover {
+    background-color: var(--pur);
+}
+
+
+/*
+.editor input {
+    border: 1px;
+}
+*/
+
+div[data-schematype="array"] textarea {
+    flex-grow: 1;
+    border: none;
+    padding: 5px;
+}
+
+div[data-schemaid="root"]>h3 {
+    display: none;
+}
+
+div[data-schematype="object"]>h3>span:before {
+    color: "red";
+}
+
+.editor-statusbar,
+.editor-preview-side,
+.CodeMirror,
+.editor-toolbar {
+    flex-basis: 100%;
+}
+
+.smalllogo:before {
+    background-position: -60em 0;
+}
+
+.New:before,
+.DRAFT:before,
+.drafting:before {
+    background-position: -1em 0;
+}
+
+.REJECTED:before,
+.rejected:before {
+    background-position: -4em 0;
+}
+
+.REVIEW:before,
+.Drafts:before,
+.review-ready:before {
+    background-position: -2em 0;
+}
+
+.video:before,
+.Slides:before {
+    background-position: -11em 0;
+}
+
+.Priority:before,
+.READY:before,
+.publish-ready:before {
+    background-position: -9em 0;
+}
+
+.MERGED:before,
+.MERGED_TO:before,
+.merge_with:before,
+.merged:before {
+    background-position: -7em 0;
+}
+
+.SPLIT_FROM:before {
+    background-position: -63em 0;
+}
+
+.closed:before,
+.DEFERRED:before,
+.RESERVED:before,
+.deferred:before {
+    background-position: -38em 0;
+}
+
+.REPLACED_BY:before {
+    background-position: -62em 0;
+}
+
+.web:before,
+.PUBLIC:before,
+.references:before,
+.published:before {
+    background-position: -3em 0;
+}
+
+.PHYSICAL:before {
+    background-position: -14em 0;
+}
+
+.LOCAL:before {
+    background-position: -15em 0;
+}
+
+.ADJACENT_NETWORK:before {
+    background-position: -16em 0;
+}
+
+.NETWORK:before {
+    background-position: -17em 0;
+}
+
+.LOW[for*="attackComplexity"]:before {
+    background-position: -18em 0;
+}
+
+.HIGH[for*="attackComplexity"]:before {
+    background-position: -19em 0;
+}
+
+.NONE[for*="privilegesRequired"]:before {
+    background-position: -20em 0;
+}
+
+.LOW[for*="privilegesRequired"]:before {
+    background-position: -21em 0;
+}
+
+.HIGH[for*="privilegesRequired"]:before {
+    background-position: -22em 0;
+}
+
+.REQUIRED:before {
+    background-position: -23em 0;
+}
+
+.NONE[for*="userInteraction"]:before {
+    background-position: -24em 0;
+}
+
+.UNCHANGED:before {
+    background-position: -25em 0;
+}
+
+.CHANGED:before {
+    background-position: -26em 0;
+}
+
+.NONE[for*="confidentialityImpact"]:before {
+    background-position: -27em 0;
+}
+
+.LOW[for*="confidentialityImpact"]:before {
+    background-position: -28em 0;
+}
+
+.HIGH[for*="confidentialityImpact"]:before {
+    background-position: -29em 0;
+}
+
+.NONE[for*="integrityImpact"]:before {
+    background-position: -30em 0;
+}
+
+.LOW[for*="integrityImpact"]:before {
+    background-position: -32em 0;
+}
+
+.HIGH[for*="integrityImpact"]:before {
+    background-position: -31em 0;
+}
+
+.NONE[for*="availabilityImpact"]:before {
+    background-position: -33em 0;
+}
+
+.LOW[for*="availabilityImpact"]:before {
+    background-position: -34em 0;
+}
+
+.HIGH[for*="availabilityImpact"]:before {
+    background-position: -35em 0;
+}
+
+div[data-schemapath*="cvss"] label[for*="baseSeverity"]:before {
+    display: none;
+}
+
+.data_changelog:before,
+.pending:before,
+.year:before,
+.month:before,
+.UPDATED:before,
+.ym:before,
+.DATE_ASSIGNED:before,
+.bundle:before,
+.DATE_PUBLIC:before {
+    background-position: -13em 0;
+}
+
+.vendor:before {
+    background-position: -47em 0;
+}
+
+.PR:before,
+.Defect:before,
+.defect:before,
+.problemtype:before {
+    background-position: -10em 0;
+}
+
+.severity:before,
+.CVSS:before,
+.cvss:before {
+    background-position: -55em 0;
+}
+
+.uuid:before,
+.ID:before {
+    background-position: -37em 0;
+}
+
+.TITLE:before {
+    background-position: -39em 0;
+}
+
+.CNA:before,
+.ASSIGNER:before {
+    background-position: -12em 0;
+}
+
+.state:before,
+.STATE:before {
+    background-position: -51em 0;
+}
+
+.system:before,
+.configuration:before {
+    background-position: -40em 0;
+}
+
+.Case:before {
+    background-position: -71em 0;
+}
+
+header .Note:before,
+.text:before,
+.pdf:before,
+.doc:before,
+.description:before {
+    background-position: -41em 0;
+}
+
+.implementation:before,
+.product_name:before,
+.product:before {
+    background-position: -43em 0;
+}
+
+.version:before {
+    background-position: -44em 0;
+}
+
+.impact:before {
+    background-position: -46em 0;
+}
+
+.exploit:before {
+    background-position: -48em 0;
+}
+
+.exit:before {
+    background-position: -49em 0;
+}
+
+.no-vuln:before,
+.solution:before {
+    background-position: -58em 0;
+}
+
+.reporter:before {
+    background-position: -53em 0;
+}
+
+.contact:before,
+.committers:before,
+.REQUESTER:before,
+.user:before,
+.owner:before {
+    background-position: -52em 0;
+}
+
+.aliases:before,
+.Also:before,
+.internal_comments:before {
+    background-position: -54em 0;
+}
+
+.mCVE:before {
+    background-position: -102em 0;
+}
+
+.JSA:before,
+.Advisory-ID:before {
+    background-position: -56em 0;
+}
+
+.advisory:before,
+header .CVE:before,
+.alert:before,
+.errmsg:before,
+.affects:before {
+    background-position: -57em 0;
+}
+
+.auto:before {
+    background-position: -59em 0;
+    font-size: 16px;
+}
+
+.save:before {
+    background-position: -8em 0;
+}
+
+.export:before {
+    background-position: -5em 0;
+}
+
+.Import:before {
+    background-position: -6em 0;
+}
+
+.credit:before {
+    background-position: -65em 0;
+}
+
+.work_around:before {
+    background-position: -66em 0;
+}
+
+.CNA_private:before {
+    background-position: -67em 0;
+}
+
+.Current-Status:before,
+.source:before,
+.metadata:before,
+.CVE_data_meta:before {
+    background-position: -68em 0;
+}
+
+.SIR:before,
+.Reminders:before {
+    background-position: -36em 0;
+}
+
+.NVD:before {
+    background-position: -128em 0;
+}
+
+.discovery:before,
+.Search:before,
+.Found:before {
+    background-position: -69em 0;
+}
+
+.Attachments:before {
+    background-position: -70em 0;
+}
+
+.copy:before {
+    background-position: -73em 0;
+}
+
+.download:before {
+    background-position: -74em 0;
+}
+
+.folder:before {
+    background-position: -72em 0;
+}
+
+.TYPE:before {
+    background-position: -75em 0;
+}
+
+.clock:before {
+    background-position: -84em 0;
+}
+
+.waiting:before {
+    background-position: -76em 0;
+}
+
+.new:before {
+    background-position: -77em 0;
+}
+
+.open:before {
+    background-position: -78em 0;
+}
+
+.ok:before,
+.closed-yes:before {
+    background-position: -79em 0;
+}
+
+.cancel:before {
+    background-position: -88em 0;
+}
+
+.closed-no:before {
+    background-position: -80em 0;
+}
+
+.unknown:before,
+.UNKNOWN:before,
+.unsure:before {
+    background-position: -81em 0;
+}
+
+.no-advisory:before,
+.not-applicable:before {
+    background-position: -82em 0;
+}
+
+.misc:before {
+    background-position: -83em 0;
+}
+
+.Email:before,
+.Mail:before,
+.email:before {
+    background-position: -85em 0;
+}
+
+.fold:before {
+    background-position: -86em 0;
+}
+
+.INTERNAL:before {
+    background-position: -100em 0;
+}
+
+.L337:before,
+.EXTERNAL:before {
+    background-position: -99em 0;
+}
+
+.USER:before {
+    background-position: -101em 0;
+}
+.add:before,
+.json-editor-btn-add:before {
+    background-position: -64em 0;
+}
+
+.delete:before {
+    background-position: -80em 0;
+}
+
+.bold:before {
+    background-position: -103em 0;
+}
+
+.italic:before {
+    background-position: -104em 0;
+}
+
+.underline:before {
+    background-position: -105em 0;
+}
+
+.highlight:before {
+    background-position: -134em 0;
+}
+
+.link:before {
+    background-position: -106em 0;
+}
+
+.duplicate:before,
+.extlink:before {
+    background-position: -129em 0;
+}
+
+.unlink:before {
+    background-position: -107em 0;
+}
+
+.image:before {
+    background-position: -108em 0;
+}
+
+.code:before {
+    background-position: -109em 0;
+}
+
+.ulist:before {
+    background-position: -110em 0;
+}
+
+.olist:before {
+    background-position: -111em 0;
+}
+
+.undo:before {
+    background-position: -112em 0;
+}
+
+.redo:before {
+    background-position: -113em 0;
+}
+
+.html:before {
+    background-position: -114em 0;
+}
+
+.table:before {
+    background-position: -115em 0;
+}
+
+.delrow:before {
+    background-position: -116em 0;
+}
+
+.delcol:before {
+    background-position: -117em 0;
+}
+
+.addbelow:before {
+    background-position: -118em 0;
+}
+
+.addbefore:before {
+    background-position: -119em 0;
+}
+
+.addabove:before {
+    background-position: -120em 0;
+}
+
+.addafter:before {
+    background-position: -121em 0;
+}
+
+.clear:before {
+    background-position: -122em 0;
+}
+
+.quote:before {
+    background-position: -123em 0;
+}
+
+.htmlh1:before {
+    background-position: -124em 0;
+}
+
+.htmlh2:before {
+    background-position: -125em 0;
+}
+
+.htmlh3:before {
+    background-position: -126em 0;
+}
+
+.htmlp:before {
+    background-position: -127em 0;
+}
+
+.critical:before {
+    background-position: -130em 0;
+}
+
+.high:before {
+    background-position: -131em 0;
+}
+
+.normal:before {
+    background-position: -132em 0;
+}
+
+.low:before {
+    background-position: -133em 0;
+}
+
+.box:before {
+    background-position: -135em 0;
+}
+
+.wysihtml5-commands-disabled .sbn {
+    opacity: 0.2;
+}
+
+.wysihtml5-commands-disabled .wysihtml5-action-active {
+    opacity: 1;
+}
+
+.toolbar div[data-wysihtml5-dialog] {
+    background-color: var(--wht);
+    margin: 5px 0 0;
+    padding: 5px;
+    border: 1px solid var(--bor);
+    top: 2em;
+    box-shadow: 1px 2px 3px #99999955;
+}
+
+.toolbar {
+    top: 66px;
+    z-index: 0;
+}
+
+.wysihtml5-action-active,
+.wysihtml5-command-active,
+.toolbar .sbn:hover {
+    color: #999999;
+    background-color: var(--bor);
+}
+
+.wysihtml5-editor {
+    margin-top: 5px;
+    padding: 6px;
+    border-width: 1px;
+}
+
+.wysihtml5-editor table {
+    border-collapse: collapse;
+    border: 1px solid var(--bor2);
+}
+
+.wysihtml5-editor td {
+    padding: 4px 8px !important;
+    border: 1px solid var(--bor) !important;
+    width: auto !important;
+}
+
+.toolbar .txt {
+    border: 1px solid var(--bor) !important;
+}
+
+.toolbar .txt:focus,
+.toolbar .txt:active,
+.toolbar .txt:hover {
+    /*border: 1px solid var(--lnk);
+    outline: 3px solid rgba(114, 162, 217, 0.33);
+    outline-offset: -1px;*/
+    border: 1px solid var(--lnk) !important;
+    box-shadow: 0 0 0 0.2em rgba(3, 102, 214, 0.3) !important;
+}
+
+.wysihtml5-editor th {
+    background-color: var(--hig) !important;
+}
+
+.wysihtml5-editor blockquote,
+.wysihtml5-editor pre {
+    background-color: var(--hig);
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    padding: 4px 8px;
+}
+
+th[role="columnheader"] {
+    cursor: pointer;
+}
+
+.sortup:after,
+[aria-sort="descending"]:after {
+    content: "▲";
+    color: var(--lnk);
+    overflow-x: hidden;
+}
+
+.sortdown:after,
+[aria-sort="ascending"]:after {
+    content: "▼";
+    color: var(--lnk);
+    overflow-x: hidden;
+}
+
+.json-editor-btn-delete:focus,
+.json-editor-btn-delete:active,
+.json-editor-btn-delete:hover,
+.json-editor-btn-delete {
+    font-size: 0px;
+    border: none;
+    box-shadow: none;
+    background-color: transparent;
+}
+
+.y0 {
+    color: #000000;
+}
+
+.y1 {
+    color: #1F1A10;
+}
+
+.y2 {
+    color: #3E3420;
+}
+
+.y3 {
+    color: #5e4e31;
+}
+
+.y4 {
+    color: #7D6841;
+}
+
+.y5 {
+    color: #9c8251;
+}
+
+.y6 {
+    color: #bc9d62;
+}
+
+.y7 {
+    color: #c1a266;
+}
+
+.y8 {
+    color: #c6a76b;
+}
+
+.y9 {
+    color: #d4b67b;
+}
+
+.y10 {
+    color: #d9bf8d;
+}
+
+.yf {
+    color: #2fffe7;
+    background-color: #336446;
+}
+
+@keyframes tri1 {
+    10% {
+        transform: rotate(0deg);
+        transform-origin: 200px 0px;
+    }
+    25% {
+        transform: translate(20.7px, 50px) rotate(-45deg);
+        transform-origin: 150px 50px;
+    }
+    65% {
+        transform: translate(20.7px, 50px) rotate(-45deg);
+        transform-origin: 150px 50px;
+    }
+    70% {
+        transform: rotate(0deg);
+        transform-origin: 200px 0px;
+    }
+}
+
+@keyframes tri2 {
+    15% {
+        transform: rotate(0deg);
+    }
+    30% {
+        transform: translate(29.3px, 29.29px) rotate(-45deg);
+    }
+    60% {
+        transform: translate(29.3px, 29.29px) rotate(-45deg);
+    }
+    65% {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes whl {
+    30% {
+        transform: translate(0px, 0px);
+    }
+    35% {
+        transform: translate(-10px, 10px);
+    }
+    38% {
+        transform: translate(200px, -200px);
+    }
+    42% {
+        transform: translate(-200px, -200px);
+    }
+    44% {
+        transform: translate(-200px, 300px);
+    }
+    50% {
+        transform: translate(0px, 0px);
+    }
+}
+
+#tri1 {
+    animation: tri1 10s ease infinite;
+    animation-delay: 0.3s;
+}
+
+#tri2 {
+    animation: tri2 10s ease infinite;
+    animation-delay: 0.6s;
+}
+
+#tri3 {
+    animation: whl 10s ease infinite;
+    animation-delay: 0s;
+}
+
+#two {
+    animation: whl 10s ease infinite;
+    animation-delay: .5s;
+}
+
+.expnd:checked+div {
+    color: red;
+}
+
+table.striped {
+    font-size: 100%;
+    border-spacing: 0;
+    border: 1px solid #c1c1c1;
+    border-collapse: collapse;
+}
+
+table.striped th {
+    height: 24px;
+    text-align: center;
+    background-color: #f0f0f0;
+    border: #ababab 1px solid;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+table.striped td {
+    padding: 5px;
+    border-width: 0px 1px 0px 1px;
+    border: #c1c1c1 1px solid;
+}
+
+
+/* D3 charts */
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.grid {
+    stroke: #EEE;
+    stroke-width: 0.5px;
+}
+
+.bar {
+    fill: steelblue;
+}
+
+.x.axis path {}
+
+.chart .lbox {
+    width: 10px;
+    height: 10px;
+    display: inline-block;
+    border: 1px solid #ccc;
+    margin-left: 1em;
+}
+
+.chart .tick text {
+    font-size: 16px;
+    fill: #666666;
+    /*    stroke: #ffffff;
+    stroke-width: .5px;
+    stroke-linecap: butt;
+    stroke-linejoin: miter;
+    font-weight: 800;*/
+}
+
+.chart .total {
+    fill: #666666;
+    font-weight: bold;
+}
+
+.chart .sum {
+    font-weight: 200;
+    font-family: "helvetica neue", helvetica, arial, sans-serif;
+    font-size: 80px;
+    opacity: .6;
+    /*    
+   stroke: #ffffff;
+    stroke-width: .5px;
+    stroke-linecap: butt;
+    stroke-linejoin: miter;*/
+}
+
+.arc path {
+    stroke: #fff;
+}
+
+.chart rect,
+.arc path {
+    opacity: 0.8;
+}
+
+.chart rect:hover,
+.arc path:hover {
+    opacity: 0.9;
+}
+
+.line {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 2px;
+}
+
+
+/*D3 charts*/
+
+#chartZ:checked+div+.grd {
+    grid-template-columns: 110vh;
+    /*   max-height: 100vh;*/
+}
+
+#chartZ:checked~.grd .vis .chart {
+    font-size: 14px;
+}
+
+#chartZ:checked~.btg>label[for="chartZ"] {
+    background-color: var(--sec);
+}
+
+#chartS:checked~.btg>label[for="chartS"] {
+    background-color: var(--sec);
+}
+
+svg {
+    background: #ffffff;
+}
+
+.grd {
+    display: grid;
+    grid-gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    /* justify-content: space-around;*/
+}
+
+.vis {
+    display: block;
+    box-sizing: border-box;
+    min-height: 300px;
+    min-width: 320px;
+    background-color: var(--wht);
+}
+
+.vis .chart {
+    font-size: 22px;
+}
+
+
+/* materialize*/
+/*
+.row {
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 20px
+}
+*/
+.row:after {
+    content: "";
+    display: table;
+    clear: both
+}
+
+.row .col {
+    float: left;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    padding: 0 0 0 .25rem;
+    min-height: 1px
+}
+
+.row .col[class*="push-"],.row .col[class*="pull-"] {
+    position: relative
+}
+
+.row .col.s1 {
+    width: 8.3333333333%;
+    margin-left: auto;
+    left: auto;
+    right: auto
+}
+
+.row .col.s2 {
+    width: 16.6666666667%;
+    margin-left: auto;
+    left: auto;
+    right: auto
+}
+
+.row .col.s3 {
+    width: 25%;
+    margin-left: auto;
+    left: auto;
+    right: auto
+}
+
+.row .col.s4 {
+    width: 33.3333333333%;
+    margin-left: auto;
+    left: auto;
+    right: auto
+}
+
+.row .col.s5 {
+    width: 41.6666666667%;
+    margin-left: auto;
+    left: auto;
+    right: auto
+}
+
+.row .col.s6 {
+    width: 50%;
+    margin-left: auto;
+    left: auto;
+    right: auto
+}
+
+.row .col.s7 {
+    width: 58.3333333333%;
+    margin-left: auto;
+    left: auto;
+    right: auto
+}
+
+.row .col.s8 {
+    width: 66.6666666667%;
+    margin-left: auto;
+    left: auto;
+    right: auto
+}
+
+.row .col.s9 {
+    width: 75%;
+    margin-left: auto;
+    left: auto;
+    right: auto
+}
+
+.row .col.s10 {
+    width: 83.3333333333%;
+    margin-left: auto;
+    left: auto;
+    right: auto
+}
+
+.row .col.s11 {
+    width: 91.6666666667%;
+    margin-left: auto;
+    left: auto;
+    right: auto
+}
+
+.row .col.s12 {
+    width: 100%;
+    margin-left: auto;
+    left: auto;
+    right: auto
+}

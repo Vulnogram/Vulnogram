@@ -61,7 +61,6 @@ if(error = newUser.validateSync()) {
 
 newUser = newUser._doc;
 delete newUser._id;
-//console.log(newUser);
 
 hidden('Enter Password: ', (password1) => {
     hidden('Enter Password again: ', (password2) => {
@@ -72,8 +71,10 @@ hidden('Enter Password: ', (password1) => {
                 }
                 newUser.password = hash;
                 mongoose.connect(config.database, {
-                    useMongoClient: true,
                     keepAlive: false,
+                    useNewUrlParser: true,
+                    useCreateIndex: true,
+                    useFindAndModify: false,
                 });
                 User.findOneAndUpdate({
                         username: newUser.username

@@ -95,7 +95,7 @@ protected.post('/profile/:id(' + conf.usernameRegex + ')?', csrfProtection, [
     check('emoji')
         .trim()
         .isLength({
-        min: 1,
+        min: 0,
         max: 8
     })
         .withMessage('Long Emoji strings are not allowed'),
@@ -303,6 +303,48 @@ protected.get('/list', function (req, res) {
     }
 });
 
+protected.get('/list/json', function (req, res) {
+    if (req.isAuthenticated()) {
+        User.find({group:req.user.group}, ['username','name','emoji'], {
+            sort: {
+                username: 1
+            }
+        }, function (err, users) {
+            if (err) {
+                res.status(500).send('Error');
+            } else {
+                res.json({
+                default: req.user.username,
+                enum: users.map(function(u) { return u.username;}),
+                options: {enum_titles: users.map(function(u){return u.name})
+                }});
+            }
+        });
+    } else {
+
+    }
+});
+protected.get('/list/css', function (req, res) {
+    if (req.isAuthenticated()) {
+        User.find({group:req.user.group}, ['username','name','emoji'], {
+            sort: {
+                username: 1
+            }
+        }, function (err, users) {
+            if (err) {
+                res.status(500).send('Error');
+            } else {
+                res.setHeader('Content-Type', 'text/css');
+                for(u of users) {
+                    res.write('.' + u.username + ':before {content: "' + u.emoji + '";}\n');
+                }
+                res.end();
+            }
+        });
+    } else {
+
+    }
+});
 module.exports = {
     public: public,
     protected: protected

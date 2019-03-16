@@ -1,7 +1,19 @@
 //- Copyright (c) 2017 Chandan B N. All rights reserved.
 
-footer(class="footer")
-  div
+span.pad.ban
+  .pad2.center.tgrey
+    if startTime
+        - var timeTaken = renderStartTime - startTime;
+        - var renderTime = Date.now() - renderStartTime;
+        .pad2.center.sml.tgrey
+            if !isNaN(timeTaken) 
+                | Responded in 
+                = timeTaken 
+                | ms 
+            if !isNaN(renderTime)
+                | (rendered in  
+                = renderTime
+                | ms)
     small
         = conf.classification
         | 

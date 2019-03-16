@@ -1,53 +1,79 @@
 //- Copyright (c) 2017 Chandan B N. All rights reserved.
 
 extends layout
-
-block banner
-    header.banner
-        block bannerItems
-            if !min
-                a.New.button.safe(href='/' + schemaName + '/new') NEW
-                form(action='/' + schemaName,method="GET",style="flex-grow:1")
-                    input.headertab(style="width:100%",type="search",name="q",placeholder=" Search")
-
+    
 block info
     if doc && doc.updatedAt
         ='Last updated ' + textUtil.timeSince(doc.updatedAt) + ' ago by ' + doc.author + ' (v' + doc.__v + ')'
 
-block content
-    .tabs
+block append head
+    if !min
+        link(rel='stylesheet', href= '/users/list/css')
+
+block prepend bannerItemsLeft
+    if !min
+        a.fbn(href=(confOpts[schemaName].conf.uri? confOpts[schemaName].conf.uri : '/' + schemaName + '/' ), title=confOpts[schemaName].conf.title) ☰
+    
+block append bannerItemsLeft
+    if !confOpts[schemaName].conf.readonly
+        input#importJSON.hid(type="file",accept="application/json",onchange="loadFile(event,this);")
+        a.icn.fbn.folder(type="file",onclick='importFile(event, this);') Open
         if !min
-            button.button.tabbutton.save(id="save1") SAVE
-        input.tabradio(name='tabs', type='radio', id='editorTab', value="1",checked)
-        label.tablabel#editorLabel(for='editorTab') Editor
-        .content
-            div
-                button.button.auto.safe(id="auto",style="visibility:hidden") Auto-Text
-            div.editor(id="editor")
+            button.icn.fbn.save(id="save1") SAVE    
+        a.icn.fbn.download(type="button",oncontextmenu='downloadFile(event, this);',onclick='downloadFile(event, this);',value="Download") Download
+
+block scripts
+    if opts && opts.script
+        script
+            each i,v in opts.script
+                | #{v} = !{opts.script[v].toString()};
+    if opts && opts.validators
+        script
+            | var custom_validators = [!{opts.validators.toString()}];
+    if !min
+        script(src="/js/wy/simple.js")
+        script(src="/js/wy/wysihtml-toolbar.min.js")
+        script(src=conf.basedir + 'js/subcontent.js')
+        script(src=conf.basedir + 'js/comment.js')
+        script var csrfToken = "#{csrfToken}";
+
+block content
+    div
+        span.lbl &nbsp;
+        input.tab(name='tabs', type='radio', id='editorTab', value="1",checked)
+        label.lbl#editorLabel(for='editorTab') Editor
+        .wht.fil.bor.pad
+            div.hid
+                button.lbl.sml.indent.btn.icn.auto.sfe(id="auto",style="visibility:hidden") Auto-Text
+            iframe(name="x",style="display:none",src="about:blank")
+            form.editor(target="x",action="about:blank",id="editor")
             if !min
-                a.right.rejected(id="remove") Delete this entry from database
-        input.tabradio(name='tabs', type='radio', id='sourceTab', value="2")
-        label.tablabel(for='sourceTab') Source
-        .content
+                
+                a.gap.flr.icn.tred.rejected(id="remove") Delete this entry from database
+        input.tab(name='tabs', type='radio', id='sourceTab', value="2")
+        label.lbl(for='sourceTab') Source
+        .wht.fil.bor.pad
             div(id="output",rows="40",cols="100%")
                 p
 
         block customtabs
 
         if !min
-            input.tabradio(name='tabs', type='radio', id='changesTab', value="6")
-            label.tablabel(for='changesTab') Changes
-            .content
+            input.tab(name='tabs', type='radio', id='changesTab', value="6")
+            label.lbl(for='changesTab') Changes
+            .wht.fil.bor.pad
                 div#changelog
 
+        
     if !min
         div(style="clear:both")
-            button.button.save(id="save2",style="visibility:hidden") SAVE
+            button.gap.btn.save(id="save2",style="visibility:hidden") SAVE
 
     script
         if conf.publicDefectURL
             | var defectURL = "!{conf.publicDefectURL}";
         | var idpath = "#{idpath}";
+        | var allowAjax = "#{allowAjax}";
         | var schemaName = "#{schemaName}";
         | var postUrl = "#{postUrl?postUrl:''}";
         | var csrfToken = "#{csrfToken}";
@@ -55,24 +81,38 @@ block content
             | var initJSON=!{JSON.stringify(doc.body).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029').replace(/</g, '\\u003C').replace(/>/g, '\\u003E').replace(/\//g, '\\u002F')};
         else
             | var initJSON = undefined;
-        | var CVEschema_custom=!{conf && conf.CVEschema_custom ? JSON.stringify(conf.CVEschema_custom).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029').replace(/</g, '\\u003C').replace(/>/g, '\\u003E').replace(/\//g, '\\u002F') : false};
+        if min
+            | var docSchema=!{JSON.stringify(opts && opts.schema ? opts.schema : '{}').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029').replace(/</g, '\\u003C').replace(/>/g, '\\u003E').replace(/\//g, '\\u002F')};
+
 
     script(src=conf.basedir + 'js/util.js')
-    script(src=conf.basedir + schemaName + '/schema.js')
+    if !min && opts && opts.schema
+        script(src=conf.basedir + schemaName + '/schema.js')
     script(src=conf.jsoneditor,integrity=conf.jsoneditorHash,crossorigin="anonymous")
     script(src=conf.ace,integrity=conf.aceHash,crossorigin="anonymous")
     script(src=conf.basedir + 'js/' + schemaName + '/render.js')
     script(src=conf.basedir + 'js/editor.js')
+    if doc && doc.body
+        script getChanges("#{doc_id}");
 
 block subcontent
-    if doc
-        div#comments
-        script(src="/js/linkify.min.js")
-        script(src="/js/linkify-element.min.js")
-        script(src=conf.basedir + 'js/comment.js')
-        script
-            | getComments("#{doc_id}");
-            | getChanges("#{doc_id}");
+    if !min
+        include subcontent
+        - var id = doc_id;
+        if doc && opts && opts.conf && opts.conf.files
+            - var files = [];
+            if doc && doc.files
+                - files = doc.files;
+            +files
+        +commentBox
+        if doc && Object.keys(doc).length > 0
+            script
+                | document.getElementById("commentTemplate").insertAdjacentElement('afterend', newCommentBox());
+        #commentsBox
+            - var username = user.username;
+            - var docs = ucomments;//.sort(function(a, b) {return a.updatedAt < b.updatedAt;})
+            #comments
+                +comments
 
 block logolink
     br

@@ -5,22 +5,26 @@ html
   head
     title= title
     include head
-  body.splash
+  body.sec.wlp
+    .pad2.gap2
+    .pad2.gap2
     center
-      table(style="margin-top:5em")
+      table.rnd.wht.shd
        tr
-        td.center
-           .con
-            .logo
-            .title Vulnogram
-            small.footer(style="text-transform:uppercase;font-size:12px;")
+        td.center(width="315px" style="border-right:1px dashed #eee")
+           .pad2.gap2
+            .slogo
+                include ../public/css/logo.svg
+            
+            .big Vulnogram
+            small.sml(style="text-transform:uppercase;font-size:12px;")
                 | Making the world safer
                 br
                 | one CVE ID at a time
                 br
                 | Since 2017
-        td.top
+        td.pad2
             !=messages()
-            p#message
+            .pad.gap#message
             block content
-            include foot
+      include foot

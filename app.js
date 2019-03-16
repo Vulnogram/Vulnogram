@@ -12,11 +12,13 @@ const passport = require('passport');
 const crypto = require('crypto');
 const compress = require('compression');
 const conf = require('./config/conf');
+const optSet = require('./models/set');
 
 mongoose.Promise = global.Promise;
 mongoose.connect(conf.database, {
-    useMongoClient: true,
     keepAlive: true,
+    useNewUrlParser: true,
+    useCreateIndex: true
 });
 const db = mongoose.connection;
 
@@ -37,6 +39,7 @@ app.disable('x-powered-by');
 // enable compression
 app.use(compress());
 
+app.set('env', 'production');
 // View engine
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
@@ -50,7 +53,7 @@ app.use(express.urlencoded({
 }));
 
 // parse application/json
-app.use(express.json());
+app.use(express.json({limit:'16mb'}));
 
 // serve files under public freely
 app.use(express.static('public'));
@@ -72,21 +75,19 @@ app.use(passport.session());
 // This shows error messages on the client
 app.use(require('connect-flash')());
 app.use(function (req, res, next) {
+    res.locals.user = req.user || null;
+    res.locals.startTime = Date.now();
     res.locals.messages = require('express-messages')(req, res);
     next();
 });
 
-// make user information available
+/*// make user information available
 app.get('*', function (req, res, next) {
     res.locals.user = req.user || null;
+    res.locals.confOpts = app.locals.confOpts;
     next();
 });
-
-app.post('*', function (req, res, next) {
-    res.locals.user = req.user || null;
-    next();
-});
-
+*/
 // add this to route for authenticating before certain requests.
 function ensureAuthenticated(req, res, next) {
     if (req.isAuthenticated()) {
@@ -110,23 +111,84 @@ app.use(function (req, res, next) {
 
 // set up routes
 let users = require('./routes/users');
-
 app.use('/users', users.public);
-
 app.use('/users', ensureAuthenticated, users.protected);
 
 let nvd = require('./routes/nvd');
-
 app.use('/nvd', ensureAuthenticated, nvd.router);
 
 let docs = require('./routes/doc');
 
+app.locals.confOpts = {};
+for(section of conf.sections) {
+        app.locals.confOpts[section] = optSet(section, ['default', 'custom']);
+    //var s = conf.sections[section];
+    //if(s.schema) {
+        let r = docs(section, app.locals.confOpts[section]);
+        app.use('/' + section, ensureAuthenticated, r.router);
+    //}
+}
+
+app.use('/home', ensureAuthenticated, async function(req, res, next){
+    res.render('home');
+});
+
+app.use('/home/stats', ensureAuthenticated, async function(req, res, next){
+    var sections = [];
+    for(section of conf.sections){
+        var s = {};
+        try {
+            var s = await db.collection(section+'s').stats();
+        } catch (e){
+            
+        };
+        if (s === {}) {
+        try {
+            var s = await db.collection(section).stats();
+        } catch (e){
+            
+        };
+        };
+        
+        sections.push({
+            name: section,
+            items: s.count,
+            size: s.size,
+            avgSize: s.avgObjSize
+        });
+    }
+    res.render('list', {
+        docs: sections,
+        columns: ['name', 'items', 'size', 'avgSize'],
+        fields: {
+            'name': {
+                className: 'icn'
+            }
+        }
+    })
+});
+
+app.use(function (req, res, next) {
+    res.locals.confOpts = app.locals.confOpts;
+    next();
+});
+        
+/*app.post('*', function (req, res, next) {
+    res.locals.user = req.user || null;
+    res.locals.confOpts = app.locals.confOpts;
+    next();
+});
+*/
+/*
 let cveRoute = docs('cve');
 app.use('/cve', ensureAuthenticated, cveRoute.router);
 
 let saRoute = docs('sa');
 app.use('/sa', ensureAuthenticated, saRoute.router);
 
+let cnaRoute = docs('cna');
+app.use('/cna', ensureAuthenticated, cnaRoute.router);
+*/
 //Configuring a reviewToken in conf file allows sharing drafts with 'people who have a link containing the configurable token' 
 let review = require('./routes/review');
 
@@ -138,7 +200,7 @@ if (review.public) {
 app.use('/review', ensureAuthenticated, review.protected);
 
 app.get('/', function (req, res, next) {
-    res.redirect('/cve/?phase=Current');
+    res.redirect('/cve/?state=DRAFT,READY,REVIEW');
 });
 
 app.listen(conf.serverPort, function () {

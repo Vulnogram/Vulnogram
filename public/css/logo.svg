@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   height="200"
+   width="200"
+   version="1.1"
+   viewBox="0 0 200 200"
+   id="svg10485"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="logo.svg">
+  <metadata
+     id="metadata10497">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs10495" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1406"
+     inkscape:window-height="796"
+     id="namedview10493"
+     showgrid="true"
+     inkscape:zoom="2.5890987"
+     inkscape:cx="88.870393"
+     inkscape:cy="106.92986"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg10485">
+    <inkscape:grid
+       type="xygrid"
+       id="grid4151"
+       spacingx="100"
+       spacingy="100" />
+  </sodipodi:namedview>
+    <g id="whl">
+        <g id="two">
+  <path
+    fill="darkslategray"
+     style="fill-opacity:0.67940551;fill-rule:evenodd"
+     d="M 100,100 100,0 200,0 Z"
+     id="tri1"
+     />
+  <path
+    fill="darkslategray"
+     id="tri2"
+     d="m 0,0 0,100 100,0 z"
+     style="fill-opacity:0.67940551;fill-rule:evenodd" />
+        </g>
+  <path
+    fill="darkslategray"
+     style="fill-opacity:0.67940551;fill-rule:evenodd"
+     d="M 100,200 100,100 0,100 Z"
+     id="tri3"
+     />
+    </g>
+</svg>

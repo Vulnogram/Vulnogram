@@ -4,25 +4,29 @@
 
 extends ../../views/edit
 
-block append bannerItems
-    form(onsubmit="loadCVE(this.git.value);return false;")
-        label.headertab.Import Import
-        input.headertab.Import(type="text",name="git",placeholder="CVE-YYYY-NNNN",pattern=".*CVE-[0-9]{4}-[0-9]{4,12}.*",title="CVE ID CVE-yyyy-nnnn+")
+block prepend bannerItemsRight
+    form.indent.out.nobr(onsubmit="event.preventDefault();loadCVE(this.git.value);return false;")
+        input.icn.txt.Import(type="text",name="git",placeholder="CVE-YYYY-NNNN",pattern=".*CVE-[0-9]{4}-[0-9]{4,12}.*",size=17,title="CVE ID CVE-yyyy-nnnn+",required)
+        button.btn.icn.Import(type="submit") GIT
+    form.indent.out.nobr(action="https://github.com/CVEProject/cvelist/search",method="GET")
+        input(type="hidden",name="type",value="Code")
+        input.icn.txt.Import(type="text",name="q",placeholder="Search CVElist",title="Search CVElist git repo",required)
+        button.btn.icn.Search(type="submit") GIT
 
 block customtabs
-        input.tabradio(name='tabs', type='radio', id='advisoryTab', value="4")
-        label.tablabel(for='advisoryTab') Advisory
-        .content
+        input.tab(name='tabs', type='radio', id='advisoryTab', value="4")
+        label.lbl(for='advisoryTab') Advisory
+        .wht.fil.bor.pad
             div.render(id="render")
-        input.tabradio(name='tabs', type='radio', id='mitreTab', value="5")
-        label.tablabel(for='mitreTab') MITRE
-        .content
+        input.tab(name='tabs', type='radio', id='mitreTab', value="5")
+        label.lbl(for='mitreTab') MITRE
+        .wht.fil.bor.pad
             div#mitreweb
-        input.tabradio(name='tabs', type='radio', id='jsonTab', value="6")
-        label.tablabel(for='jsonTab') JSON            
-        .content
+        input.tab(name='tabs', type='radio', id='jsonTab', value="6")
+        label.lbl(for='jsonTab') JSON            
+        .wht.fil.bor.pad
             div(style='float:right')
-                a.right.copy.button(onmouseover='this.textContent="Copy"',onclick='copyText(outjson);this.textContent="Copied"') Copy
+                a.icn.right.copy.btn(onmouseover='this.textContent="Copy"',onclick='copyText(outjson);this.textContent="Copied"') Copy
                 | 
-                a.right.download.button(onclick='downloadText(outjson, this);') Download
-            pre#outjson
+                a.icn.right.download.btn(onclick='downloadText(outjson, this);') Download
+            .pre#outjson

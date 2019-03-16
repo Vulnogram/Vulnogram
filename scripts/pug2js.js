@@ -4,21 +4,35 @@ var fs = require('fs');
 var pug = require('pug');
 const conf = require ('../config/conf');
 var optSet = require('../models/set');
+var cfc = pug.compileFileClient('views/subcontent.pug', {
+    basedir: 'views',
+    name: 'subdocRender',
+    compileDebug: false,
+    inlineRuntimeFunctions: true
+});
+fs.writeFileSync('public/js/subcontent.js', cfc);
 
-for (setName of ['cve', 'sa', 'sir']) {
-    var opts = optSet(setName);
-    if (opts.render == 'render') {
-        opts.render = '../views/render';
+for (section of conf.sections) {
+    console.log('rendering ' + section);
+    //var s = conf.sections[section];
+    var opts = optSet(section);
+    if (!opts.conf.readonly) {
+        console.log('rendering ' + section);
+
+        //var opts = optSet(s.schema);
+        if (opts.render == 'render') {
+            opts.render = '../views/render';
+        }
+        var pugRender = pug.compileFileClient(__dirname + '/' + opts.render + '.pug', {
+            basedir: 'views',
+            name: 'pugRender',
+            compileDebug: false,
+            inlineRuntimeFunctions: true
+        });
+        var jsDir = 'public/js/' + section;
+        if (!fs.existsSync(jsDir)) {
+            fs.mkdirSync(jsDir);
+        }
+        fs.writeFileSync('public/js/' + section + '/render.js', pugRender);
     }
-    var pugRender = pug.compileFileClient(__dirname + '/' + opts.render + '.pug', {
-        basedir: 'views',
-        name: 'pugRender',
-        compileDebug: false,
-        inlineRuntimeFunctions: true
-    });
-    var jsDir = 'public/js/'+setName;
-    if (!fs.existsSync(jsDir)) {
-                fs.mkdirSync(jsDir); 
-    }
-    fs.writeFileSync('public/js/'+setName+ '/render.js', pugRender);
 }

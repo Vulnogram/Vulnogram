@@ -1,29 +1,36 @@
 //- Copyright (c) 2017 Chandan B N. All rights reserved.
 
-extends layout
-mixin pageHolder(id)
-        block
-        
-                
-include util
+extends min
 
+include util
+mixin pageHolder(id)
+        a(name=id)
+        block
 block content
     if min
         link(rel='stylesheet', href='css/style.css')
-    .confidential
+    .tred.pad2
         if(ext)
             h5 Draft Security Advisories
         else
             h3 Confidential Information
             h3 INTERNAL USE ONLY.
-
-    //+table(idx, {'Draft': 'Advisory', CVE:'CVE',Defect:'Defect', CVSS: 'CVSS',Title:'Title'})
+    .pad
+        +table(idx, ['Advisory', 'CVE', 'Defect', 'CVSS','Title'], false, 'indexTable')
+        +tablesort
     ol
       if sas
         each sa, i in sas
-            +pageHolder(sa.body.ID)
-                +saSlide(sa.body, cmap, csumSet[sa.body.ID])
+            block saBlock
+                +pageHolder(sa.body.ID)
+                    - cSum = csumSet[sa.body.ID];
+                    +slide(sa.body, cmap, cSum)
       if docs
-        each doc, i in docs
-            +pageHolder(doc.body.source.advisory ? doc.body.source.advisory : i)
-                +cveSlide(doc.body)
+        each cve, i in docs
+            block cveBlock
+                +pageHolder(cve.body.source.advisory ? cve.body.source.advisory : i)
+                    +slide(cve.body)
+    script(lang="javascript",src="https://cdn.rawgit.com/gitbrent/PptxGenJS/v2.0.0/dist/pptxgen.bundle.js",integrity="sha384-AqjfEM7+BEtbs6R3yOngNy+ZB+aVGJxq1vllC/h9ebWeB2Y0RmhWVxwzLYzlZXQZ",crossorigin="anonymous")
+    script(src="/js/ppt.js")
+    .pad2.gap2
+        button.btn.icn.download(type="button",value="Export to PPTX",onclick="newPPT()") Export to PPTX

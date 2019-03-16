@@ -3,9 +3,9 @@ const crypto = require('crypto');
 const fs = require('fs');
 const ObjectID = require('mongodb').ObjectID;
 const docModel = require('../models/doc');
-const optSet = require('../models/set');
 const textUtil = require('../public/js/util.js');
 const conf = require('../config/conf');
+const package = require('../package.json');
 const csurf = require('csurf');
 var csrfProtection = csurf();
 var querymen = require('querymen');
@@ -26,40 +26,50 @@ const {
 } = require('express-validator/filter');
 const validator = require('validator');
 
-module.exports = function (name) {
-    var opts = optSet(name);
+module.exports = function (name, opts) {
+    //todo make it configurable
     var idpath = opts.facet.ID.path;
+    if(undefined == opts.facet.ID.link) {
+        opts.facet.ID.href = '/' +name+ '/';
+    }
     var jsonidpath = idpath.substr(5);
     var idpattern = opts.facet.ID.regex;
     //idpath, idpattern, querySchema, facetSchema, qProject, tFacet) {
     var queryDef = {
         q: {
             normalize: false,
-            type: String,
+            type: [String],
             default: null,
+            escape: true,
             paths: ["$text"],
             operator: "$search",
-            formatter: function (txt, v, p) {
+            /*formatter: function (txt, v, p) {
                 return v.replace(/([A-Z]+-[0-9A-Za-z-]+)/g, "\"$1\"");
-            }
+            }*/
 
         },
         sort: {
-            default: idpath
+            default: 'ID'
         },
         limit: {
-            default: 200,
+            default: 100,
             max: 22000
         }
     };
     var project = {};
     var columns = [];
     var tabFacet = {};
+    var bulkInput = {};
+    var toIndex = {};
+    var defaultSort = {};
+    var lookups = [];
     var chartFacet = {
         count: [{
             $count: "total"
         }]
     };
+    var chartCount = 0;
+
     for (key in opts.facet) {
         var options = opts.facet[key];
         queryDef[key] = {
@@ -73,10 +83,21 @@ module.exports = function (name) {
             queryDef[key].operator = options.queryOperator;
         }
         if (!options.hideColumn) {
-            project[key] = '$' + options.path;
+            if (Array.isArray(options.path)) {
+                project[key] = { "$setUnion": [options.path.map(x => {return '$' + x})]
+                               }
+            } else if (typeof options.path === 'string') {
+                project[key] = '$' + options.path;
+            } else if(Object.keys(options.path).length != 0) {
+                project[key] = options.path;
+            }
             columns.push(key);
         }
+        if(options.sortDefault) {
+            queryDef.sort.default = options.sortDefault;
+        }
         if (options.tabs) {
+            toIndex[options.path] = options.sort ? options.sort : 1;
             if (Array.isArray(options.pipeline)) {
                 tabFacet[key] = options.pipeline;
             } else {
@@ -93,6 +114,8 @@ module.exports = function (name) {
             }
         }
         if (options.chart) {
+            chartCount++;
+            toIndex[options.path] = options.sort ? options.sort : 1;
             if (Array.isArray(options.pipeline)) {
                 chartFacet[key] = options.pipeline;
             } else {
@@ -108,28 +131,81 @@ module.exports = function (name) {
                 })
             }
         }
-    }
-    var qSchema = new querymen.Schema(queryDef);
-    qSchema.formatter('escape', function (escape, value, param) {
-        if (escape && value) {
-            value = value.replace(/([A-Z]+-[0-9A-Za-z-]+)/g, "\"$1\"")
+        if(options.bulk) {
+            if(options.enum) {
+                bulkInput[key] = {
+                    type: 'select',
+                    enum: options.enum
+                }
+            } else {
+                bulkInput[key] = {
+                    type: 'input'
+                }
+            }
         }
-        return value;
+       /* if(options.lookup) {
+        console.log('OL:'+JSON.stringify(options.lookup));
+            lookups = lookups.concat(options.lookup);
+        console.log('OL:'+JSON.stringify(lookups));
+        }*/
+    }
+
+    function phraseSplit(searchString) {
+        var s1 = searchString.match(/\\?.|^$/g).reduce((p, c) => {
+        if(c === '"'){
+            p.quote ^= 1;
+        }else if(!p.quote && c === ' '){
+            p.a.push('');
+        }else{
+            p.a[p.a.length-1] += c.replace(/\\(.)/,"$1");
+        }
+        return  p;
+    }, {a: ['']}).a;
+        return(s1);
+    }
+    
+    var qSchema = new querymen.Schema(queryDef);
+    
+    qSchema.formatter('escape', function (escape, value, param) {
+        var r = [];
+        if (escape) {
+            if(typeof value == 'string') {
+                r = phraseSplit(value);
+            } else if (Array.isArray(value)) {
+                for(v in value) {
+                    r.push(v.phraseSplit(value));
+                }
+            }
+        }
+        var terms = "";
+        for(var term of r) {
+            terms = terms + ' "' + term + '" ';
+        }
+        return terms;
     });
-    /*   qSchema.formatter('numeric', function(escape, value, param){
-           if(escape && escape) {
-               value = value.replace(/[^0-9-]/g, "");
-           }
-           return "^" + value;
-       });*/
+/*    qSchema.formatter('nullify', function(escape, value, param){
+        console.log("NULLIFY CALLED!");
+        if (value === "null") {
+            return {$exists:false};
+        }
+    });
+    if(opts.facet.severity) {
+        qSchema.param('severity').option('nullify', true);
+    }*/
     qSchema.param('q').option('escape', true);
 
 
     var module = {};
     var Document = module.Document = docModel(name);
     var History = module.History = docModel(name + '_history');
-    var Comment = module.Comment = docModel(name + '_comments');
-
+    //console.log(toIndex);
+    for(var x in toIndex) {
+        var o = {};
+        o[x] = toIndex[x];
+        delete o.createIndex;
+        //console.log(name + ' createIndex('+JSON.stringify(o)+')');
+        Document.collection.createIndex(o, {background: true});
+    }
     module.createDoc = function (req, res) {
         let errors = validationResult(req).array();
         if (errors.length > 0) {
@@ -164,6 +240,7 @@ module.exports = function (name) {
                 return;
             }
         });
+        return;
     };
 
     module.addHistory = function (oldDoc, newDoc) {
@@ -191,15 +268,21 @@ module.exports = function (name) {
         };
         //console.log(JSON.stringify(auditTrail));
         //todo: eliminate mongoose and call InsertOne directly
-        History.bulkWrite([{
-            insertOne: {
-                document: auditTrail
-            }
-        }], function (err, d) {
-            if (err) {
-                console.log('Error: saving history ' + err);
-            }
-        });
+        if(auditTrail.body.patch.length > 0) {
+            History.bulkWrite([{
+                insertOne: {
+                    document: auditTrail
+                }
+            }], function (err, d) {
+                if (err) {
+                    console.log('Error: saving history ' + err);
+                } else {
+                }
+            });
+            return auditTrail;
+        } else {
+            return null;
+        }
     }
     module.upsertDoc = function (req, res) {
         let errors = validationResult(req).array();
@@ -295,24 +378,37 @@ module.exports = function (name) {
         res.locals.page = req.baseUrl + req.path;
         next();
     });
-
-    router.get('/schema.js', function (req, res) {
-        res.sendFile(path.join(__dirname, '/../', opts.schema));
-    });
+    
+/*    if (opts.style) {
+        //console.log('PATH: ' + path.join(__dirname, '/../', opts.schema));
+        router.use('/style.css', express.static(path.join(__dirname, '/../', opts.style)));
+    }*/
+    // ToDo eliminate, as it can be embedded
+    if (opts.schema) {
+        //console.log('PATH: ' + path.join(__dirname, '/../', opts.schema));
+        //router.use('/schema.js', express.static(path.join(__dirname, '/../', opts.schema)));
+        router.use('/schema.js', function(req, res){
+            res.send('docSchema = ' + JSON.stringify(opts.schema));
+        });
+    }
 
     router.get('/render.js', function (req, res) {
-        res.compile(opts.render);
+        res.compile(opts.render, {cache: true});
     });
 
-    router.get('/new', csrfProtection, function (req, res) {
-        res.render(opts.edit, {
-            title: 'New',
-            doc: null,
-            idpath: jsonidpath,
-            textUtil: textUtil,
-            csrfToken: req.csrfToken()
+    if (!opts.conf.readonly) {
+        router.get('/new', csrfProtection, function (req, res) {
+            res.render(opts.edit, {
+                title: 'New',
+                doc: null,
+                opts: opts,
+                idpath: jsonidpath,
+                textUtil: textUtil,
+                csrfToken: req.csrfToken(),
+                allowAjax: true
+            });
         });
-    });
+    }
 
     router.get('/json/:id/:ver([0-9]+)?', function (req, res) {
         var ids = req.params.id.match(RegExp(idpattern, 'img'));
@@ -339,6 +435,8 @@ module.exports = function (name) {
                     });
                 } else {
                     res.json({
+                        idpath: idpath,
+                        id: req.params.id,
                         q: q,
                         ids: ids,
                         docs: docs
@@ -364,7 +462,7 @@ module.exports = function (name) {
             }
             return false;
         })
-        .withMessage('Document ID not valid');
+        .withMessage('Document ID not valid. Expecting ' + idpattern);
 
     var existCheck = module.existCheck = check(jsonidpath)
         .exists()
@@ -386,7 +484,37 @@ module.exports = function (name) {
     var random_slug = function () {
         return crypto.randomBytes(13).toString('base64').replace(/[\+\/\=]/g, '-');
     }
-
+    var matchingEmail = async function (doc_id) {
+        try{
+        return await Document.db.collection('mails').find({
+            '$text': {
+                '$search': '"' + doc_id + '"'
+            }
+        }, {
+            'author': 1,
+            'subject': 1,
+            'hypertext': 1,
+           // 'html': 1,
+            'createdAt': 1,
+            _id: 1
+        }).toArray();
+        } catch(e) {
+            return [];
+        }
+    };
+    var unifiedComments = async function(doc_id, comments) {
+        var emails = await matchingEmail(doc_id);
+        //console.log('GOT emails' + emails);
+        var u = [];
+        if(emails) {
+            u = u.concat(emails);
+        }
+        if(comments) {
+            u = u.concat(comments);
+        }
+        u.sort(function(a, b) {return b.createdAt - a.createdAt;});
+        return u;
+    }
     var addComment = async function (doc_id, username, text, parent_slug) {
         try {
 
@@ -394,26 +522,26 @@ module.exports = function (name) {
             var slug = random_slug();
             var q = {};
             q[idpath] = doc_id;
-            //console.log('Commenting on ' + doc_id + 'q=' + JSON.stringify(q))
-            var commentDoc = await Document.findOne(q, {
-                _id: 1
-            }).exec();
-            if (commentDoc && commentDoc._id) {
-                var ret = await Comment.create({
-                    doc_id: doc_id,
-                    parent_id: ObjectID(commentDoc._id),
-                    slug: slug,
-                    author: username,
-                    body: text
-                });
-                return ({
-                    ok: 1
-                });
-            } else {
-                return ({
-                    msg: 'Error: No parent document found'
-                });
-            }
+            //console.log('Commenting on ' + doc_id + ' q=' + JSON.stringify(q))
+            var dt = new Date();
+            var ret = await Document.findOneAndUpdate(
+                q, {
+                    $push: {
+                        comments: {$each: [{
+                            createdAt: dt,
+                            updatedAt: dt,
+                            author: username,
+                            slug: slug,
+                            hypertext: text,
+                        }], $position: 0
+                                  }
+                    }
+                }, {new: true}).exec();
+            
+            return ({
+                    ok: 1,
+                    ret: await unifiedComments(doc_id, ret ? ret.comments :[]),
+            });            
         } catch (e) {
             console.log(e);
             return ({
@@ -426,35 +554,20 @@ module.exports = function (name) {
         try {
             var q = {};
             q[idpath] = doc_id;
-            //console.log('Commenting on ' + doc_id)
-            parentDoc = await Document.findOne(q).exec();
-            if (parentDoc && parentDoc._id) {
-                //console.log('Updating on ' + commentDoc._id);
-                var q = {
-                    parent_id: parentDoc._id,
-                    slug: slug //,
-                    // createdAt: new ISODate(date);
+            q['comments.slug'] = slug;
+            q['comments.author'] = username;
+            var ret = await Document.findOneAndUpdate(q, {
+                '$set': {
+                    "comments.$.hypertext": text,
+                    "comments.$.updatedAt": date
                 }
-                var doc = await Comment.findOne(q).exec();
-                //console.log('\nGot exisingt comment!' + doc + ' for querry ' + JSON.stringify(q));
-                if (doc) {
-                    doc.body = text;
-                    ret = await doc.save();
-                } else {
-                    q.body = text;
-                    q.doc_id = doc_id;
-                    q.author = username;
-                    ret = await Comment.create(q);
-                }
-                //console.log('Retunring '+ret);
-                return ({
-                    ok: 1
-                });
-            } else {
-                return ({
-                    msg: 'Error: No parent document'
-                });
-            }
+            }, {
+                new: true
+            }).exec();                 
+            return ({
+                    ok: 1,
+                ret: await unifiedComments(doc_id, ret ? ret.comments : [])
+            });
         } catch (e) {
             //console.log(e);
             return ({
@@ -463,36 +576,9 @@ module.exports = function (name) {
         }
     }
 
-    var getComment = async function (doc_id, slug) {
-        var q = {};
-        q[idpath] = doc_id;
-        //console.log('getting comments for ' + doc_id )
-        parentDoc = await Document.findOne(q).exec();
-        if (parentDoc) {
-            //console.log('getting comments for ' + commentDoc._id )
-            var cq = {
-                parent_id: parentDoc._id
-            };
-            if (slug) {
-                cq.slug = slug;
-            }
-            var ret = await Comment.find(cq, {
-                _id: 0,
-                parent_id: 0
-            }).exec();
-            //console.log('returning ' + ret);
-            return (ret);
-        } else {
-            return {
-                'message': 'No parent document'
-            };
-        }
-    }
-
     router.post('/comment', csrfProtection, async function (req, res) {
         if (req.body.slug) {
-            var r = await updateComment(req.body.id, req.user.username, req.body.text, req.body.slug, req.body.date);
-            //console.log('Sending: ' + r);
+            var r = await updateComment(req.body.id, req.user.username, req.body.text, req.body.slug, new Date());
             res.json(r);
         } else {
             addComment(req.body.id, req.user.username, req.body.text).then(r => {
@@ -504,7 +590,6 @@ module.exports = function (name) {
     var getSubDocs = async function (subSchema, doc_id) {
         var q = {}
         q[idpath] = doc_id;
-        //console.log('looking for ' + doc_id)
         parentDoc = await Document.findOne(q).exec();
         if (parentDoc) {
             var subq = {
@@ -516,7 +601,6 @@ module.exports = function (name) {
             }).sort({
                 updatedAt: -1
             }).exec();
-            //console.log('returning ' + ret);
             return (ret);
         } else {
             return {
@@ -524,21 +608,24 @@ module.exports = function (name) {
             };
         }
     }
-
-    router.get('/comment/:id', function (req, res) {
-        getSubDocs(Comment, req.params.id).then(r => {
-            res.json(r);
-        });
+/*
+    router.get('/comment/:id(' + idpattern + ')', async function (req, res) {
+        var q = {};
+        q[idpath] = req.params.id;
+        var ret = await Document.findOne(q, {comments: 1}).exec();
+        var emails = await Document.db.collection('mails').find({'$text':{'$search': '"' + req.params.id + '"'}},{'author':1,'subject':1,'body':1,'html':1,'createdAt':1,_id:0}).toArray();
+        //res.json(ret ? ret.comments.sort(function(a, b) {return a.createdAt < b.createdAt;}) : []);
+        //console.log(emails);
+        res.json(unified);
     });
-
-    router.get('/log/:id', function (req, res) {
+*/
+    router.get('/log/:id(' + idpattern + ')', function (req, res) {
         getSubDocs(History, req.params.id).then(r => {
             res.json(r);
         });
     });
 
     var deep_value = function (obj, path) {
-        //console.log(' need ' + path + ' from ' + obj);
         var ret = obj;
         for (var i = 0, path = path.split('.'), len = path.length; i < len; i++) {
             ret = ret[path[i]];
@@ -549,184 +636,483 @@ module.exports = function (name) {
         //console.log(' = ' + ret);
         return ret;
     };
-    //check if Document ID exists, insert, then redirect to Document ID page
-    router.post(/\/(new)$/, csrfProtection, [checkID, existCheck], module.createDoc);
+    
+    if(opts.conf.files) {
+        router.post('/:id(' + idpattern + ')/file', csrfProtection, async function (req, res) {
+            var fq = {};
+            fq[idpath] = req.params.id;
+            var doc = await Document.findOne(fq);
+            if(doc) {
+                var fcount = 0;
+                var comment;
+                var busboy = new Busboy({
+                    headers: req.headers
+                });
+                busboy.on('field', function(fieldname, val, fieldnameTruncated, valTruncated, encoding, mimetype) {
+                    if (fieldname=='comment') {
+                        comment = val;
+                    }
+                });
+                busboy.on('file', async function (fieldname, file, filename, encoding, mimetype) {
+                    var x = fcount++;
+                    //console.log('File [' + fieldname + ']: filename: ' + filename + ', encoding: ' + encoding + ', mimetype: ' + mimetype + ' COMMENT: '+ comment);
+                    //var base = opts.conf.files;
+                    var collectionDir = opts.conf.files; //path.join(base, req.baseUrl);
+                    if (!fs.existsSync(collectionDir)) {
+                        fs.mkdirSync(collectionDir);
+                        //console.log(' Created collection dir' + collectionDir);
+                    }
+                    var docDir = path.join(collectionDir, req.params.id);
+                    if (!fs.existsSync(docDir)) {
+                        fs.mkdirSync(docDir);
+                        //console.log(' Created Doc dir' + docDir);
+                    }
+                    docDir = path.join(docDir, 'file');
+                    if (!fs.existsSync(docDir)) {
+                        fs.mkdirSync(docDir);
+                        //console.log(' Created Doc dir' + docDir);
+                    }
 
-    // update or submit new Document ID 
-    router.post('/:id(' + idpattern + ')', csrfProtection, [checkID], module.upsertDoc);
+                    var saveTo = path.join(docDir, path.basename(filename));
+                    var pn = path.normalize(saveTo);
+                    if (pn.startsWith(docDir)) {
+                        var w = await file.pipe(fs.createWriteStream(pn));
+                        
+                        w.on('finish', async function(){
+                            var fileq = {};
+                            fileq[idpath] = req.params.id;
+                            fileq['files.name'] = filename;
+                            //console.log('Update query'+ JSON.stringify(fileq));
+                            var [ftype, fsubtype] = mimetype ? mimetype.split('/',2) : ['unknown','unknown'];
+;                            var nf = {
+                                    "name": filename,
+                                    "updatedAt": new Date(),
+                                    "size": w.bytesWritten,
+                                    "comment": comment,
+                                    "user": req.user.username,
+                                    "type": ftype,
+                                    "subtype": fsubtype
+                            };
+                            var ret = await Document.findOneAndUpdate(fileq, {
+                                '$set': {
+                                    "files.$": nf
+                                }
+                            }, {
+                                new: true
+                            }).exec(); 
+                            if(ret === null) {
+                                var ret = await Document.findOneAndUpdate(fq, {
+                                    $push: {
+                                        files: nf
+                                    }
+                                }, {
+                                    new: true
+                                }).exec();
+                            }
+                            
+                            if(x==(fcount-1)) {
+                                if(busboy._done) {
+                                    res.json({
+                                        ok: '1',
+                                        //flist: flist
+                                    })
+                                } else {
+                                    busboy.on('finish', function(){
+                                        res.json({
+                                            ok: '1',
+                                            //flist: flist
+                                        })
+                                    });
+                                }
+                            }
+                        });
+                    } else {
+                        res.json({
+                            ok: 0,
+                            msg: 'Invalid file path!'
+                        });
+                    }
+                });
 
-    router.post('/:id(' + idpattern + ')/file', csrfProtection, function (req, res) {
-
-        var busboy = new Busboy({
-            headers: req.headers
-        });
-        busboy.on('file', async function (fieldname, file, filename, encoding, mimetype) {
-
-            console.log('File [' + fieldname + ']: filename: ' + filename + ', encoding: ' + encoding + ', mimetype: ' + mimetype);
-            var base = '/tmp';
-            var collectionDir = path.join(base, req.baseUrl);
-            if (!fs.existsSync(collectionDir)) {
-                fs.mkdirSync(collectionDir);
-                console.log(' Created collection dir' + collectionDir);
-            }
-            var docDir = path.join(collectionDir, req.params.id);
-            if (!fs.existsSync(docDir)) {
-                fs.mkdirSync(docDir);
-                console.log(' Created Doc dir' + docDir);
-            }
-            docDir = path.join(docDir, 'file');
-            if (!fs.existsSync(docDir)) {
-                fs.mkdirSync(docDir);
-                console.log(' Created Doc dir' + docDir);
-            }
-
-            var saveTo = path.join(docDir, path.basename(filename));
-            var pn = path.normalize(saveTo);
-            if (pn.startsWith(docDir)) {
-                file.pipe(fs.createWriteStream(pn));
+                /*busboy.on('finish', function () {
+                    res.json({
+                        ok: '1',
+                        //flist: flist
+                    })
+                });*/
+                req.pipe(busboy);
             } else {
                 res.json({
-                    ok: 0,
-                    msg: 'Invalid file path!'
+                        ok: 0,
+                        msg: 'Document not found!'
+                    });
+            }
+        });
+        
+        router.get('/:id(' + idpattern + ')/file/:filename',
+            async function(req, res, next) {
+                res.setHeader("Content-Security-Policy", "default-src 'none'; connect-src 'none'");
+                return next();
+            },                   
+            express.static(path.join(opts.conf.files))
+        );
+
+        router.delete('/:id(' + idpattern + ')/file/:filename',async function (req, res) {
+            var fq = {};
+            fq[idpath] = req.params.id;
+            try {
+                var ret = await Document.update(fq,{$pull: {files: {name: req.params.filename}}});
+                res.json({ok:ret.ok, n:ret.n});
+            } catch(e) {
+                res.json(e);
+            }
+        });
+        
+        router.get('/files/:id(' + idpattern + ')', 
+                   async function(req, res, next) {
+            res.setHeader("Content-Security-Policy", "default-src 'none'; connect-src 'none'");
+                          return next();
+                    },
+                   
+                   async function (req, res) {
+            var fq = {};
+            fq[idpath] = req.params.id;
+            var doc = await Document.findOne(fq,{files:1});
+            res.json(doc.files);
+        });
+
+        router.get('/:id(' + idpattern + ')/file/', function (req, res) {
+
+            fs.readdir(path.join(opts.conf.files, req.params.id, '/file/'), function (err, items) {
+                res.render(opts.list, {
+                    title: req.params.id + ' files',
+                    docs: items ? items.map(x => {
+                        return ({
+                            'File': x,
+                            'Filetype': x.substr(x.lastIndexOf('.') + 1)
+                        })
+                    }) : [],
+                    columns: ['File', 'Filetype'],
+                    subtitle: 'Attachments for ' + req.params.id
+                });
+            });
+        });
+    }
+    router.post('/update', 
+                csrfProtection, 
+                function(req, res, next) {req.query=req.body; next();},
+                querymen.middleware(qSchema),
+                async function (req, res) {
+        try {
+            var q = req.querymen.query;
+            
+            var f = q[idpath];
+            if(f) {
+                delete q[idpath];
+                for(k in q) {
+                    if (q[k] === "") {
+                        delete q[k]
+                    }
+                }
+                if (Object.keys(q).length != 0) {
+                    
+                var d = new Date();
+                q.author = req.user.username;
+                q.updatedAt = d;
+                    //console.log(q);
+                    var fq = {};
+                    fq[idpath] = f;
+                    var docs = await Document.find(fq);
+                    var results = [];
+                    for(var d of docs) {
+                        var result = await Document.findAndModify({
+                            _id: d._id
+                        }, [], {
+                            "$set": q,
+                            "$inc": {
+                                __v: 1
+                            }
+                        }, {
+                            "upsert": false,
+                            "new": true
+                        });
+                        var r = module.addHistory(d, result.value);
+                        if(r) {
+                            r.__v = r.__v + ' ('+deep_value(result.value, idpath)+')';
+                            results.push(r);
+                        }
+                        //results.push(deep_value(result.value, idpath));
+                    }
+                    //console.log(results);
+                    res.render('changes', {
+                       // renderTemplate: 'changes',
+                        textUtil: textUtil,
+                        title: 'Bulk update results',
+                        docs: results
+                    });
+                } else {
+                    res.render('blank', {
+                        title: 'Error',
+                        message: 'Error: No updates specified! Please select fields and values to update.'
+                    });
+                }
+                } else {
+                res.render('blank', {
+                    title: 'Error',
+                    message: 'Error: No items selected. Please select one or more items to update'
                 });
             }
-        });
+        } catch (err) {
+            req.flash('error', err);
+            res.render('blank', {
+                title: 'Error',
+                message: 'failed bulk updates: ' + err.message
+            });
 
-        busboy.on('finish', function () {
-            res.json({
-                ok: '1'
-            })
-        });
-        req.pipe(busboy);
-    });
+        }
+    });    
+    //check if Document ID exists, insert, then redirect to Document ID page
+    if (!opts.conf.readonly) {
+        router.post(/\/(new)$/, csrfProtection, [checkID, existCheck], module.createDoc);
 
-    router.get('/:id(' + idpattern + ')/file/:filename',
-        express.static(path.join('/tmp/sir/')));
-    //    router.get('/:id(' + idpattern + ')/file/',
-    //               serveIndex(path.join('/tmp/sir/'), {icons: true}));
+        // update or submit new Document ID 
+        router.post('/:id(' + idpattern + ')', csrfProtection, [checkID], module.upsertDoc);
 
-    router.get('/:id(' + idpattern + ')/file/', function (req, res) {
+        router.delete('/:id(' + idpattern + ')', csrfProtection, function (req, res) {
+            let query = {};
+            query[idpath] = req.params.id;
 
-        fs.readdir(path.join('/tmp/', req.baseUrl, req.params.id, 'file'), function (err, items) {
-            res.render(opts.list, {
-                title: req.params.id + ' files',
-                docs: items ? items.map(x => {
-                    return ({
-                        'File': x,
-                        'Filetype': x.substr(x.lastIndexOf('.') + 1)
-                    })
-                }) : [],
-                columns: ['File', 'Filetype'],
-                subtitle: 'Attachments for ' + req.params.id
+            Document.remove(query, function (err) {
+                if (err) {
+                    res.send('Error Deleting');
+                    return;
+                } else {
+                    res.send('Deleted');
+                }
             });
         });
+        // load Document editor form
+    }
+
+    router.get('/list/', 
+               querymen.middleware(qSchema),
+               async function (req, res) {
+        var r = await Document.aggregate([
+            { $match: req.querymen.query },
+            { $project: project }
+        ]);
+        res.json(r);
     });
+    
+    router.get('/agg/', 
+               querymen.middleware(qSchema),
+               async function (req, res) {
+        if (req.query.f) {
+        var f = req.query.f;
+        if (!Array.isArray(f)) {
+            f = [f];
+        }
 
-
-    // Delete post
-    router.delete('/:id(' + idpattern + ')', csrfProtection, function (req, res) {
-        let query = {};
-        query[idpath] = req.params.id;
-
-        Document.remove(query, function (err) {
-            if (err) {
-                res.send('Error Deleting');
-                return;
-            } else {
-                res.send('Deleted');
+        var prj = {};
+        for(var k of f) {
+            var options = opts.facet[k];
+            if (Array.isArray(options.path)) {
+                prj[k] = { "$setUnion": [options.path.map(x => {return '$' + x})] }
+            } else if (typeof options.path === 'string') {
+                prj[k] = '$' + options.path;
+            } else if(Object.keys(options.path).length != 0) {
+                prj[k] = options.path;
             }
-        });
-    });
+        }
 
-    // Home page/Index/Filter
-    // Display a listing of Document IDs in the database
-    // load Document editor form
-    router.get('/:id(' + idpattern + ')', csrfProtection, function (req, res) {
-        var q = {};
-        q[idpath] = req.params.id;
-        Document.findOne(q, function (err, doc) {
-            //todo: if can't find it in the database, get from git repo
-            if (!doc) {
-                req.flash('error', 'ID not found: ' + req.params.id);
+        var g = {}, gg={};
+        if(f.length == 1) {
+            g = '$' + f[0];
+        } else {
+            for(var k of f) {
+                g[k]= '$'+k;
+                gg[k] = '$_id.'+k;
             }
-            res.render(opts.edit, {
-                title: req.params.id,
-                doc_id: req.params.id,
-                idpath: jsonidpath,
-                doc: doc,
-                textUtil: textUtil,
-                csrfToken: req.csrfToken()
-            });
-        });
+        }
+
+        var agg = [
+            {
+                $match: req.querymen.query
+            }, {
+                $project: prj
+            }, {
+                $group: {_id: g, t:{$sum:1}}
+            }
+        ];
+        gg.t='$t';
+        if (f[1] && !req.query.ungroup) {
+            delete gg[f[0]];
+            agg.push({
+                $group: {
+                    _id: '$_id.' + f[0],
+                    t: {
+                        $sum: '$t'
+                    },
+                    items: {
+                        $push: gg
+                    }
+                }
+            })        
+        }
+
+        if(req.querymen.cursor.sort) {
+            agg.push({$sort: {'_id':1}})
+        }
+            
+        var ret = await Document.aggregate(agg);
+
+        res.json(ret);
+        } else {
+            res.json([]);
+        }
     });
-
-
-    router.get('/', querymen.middleware(qSchema), async function (req, res) {
+    
+    /* The Main listing routine */
+    router.get('/', csrfProtection, querymen.middleware(qSchema), async function (req, res) {
         try {
 
-            chartFacet.all = [
-                {
-                    $project: project
-            },
-                {
-                    $skip: req.querymen.cursor.skip
-            },
-                {
-                    $limit: req.querymen.cursor.limit
-            },
-        ];
-
-            //console.log('QUERY:' + JSON.stringify(req.querymen.query));
-            var tabs = await Document.aggregate([{
-                    $facet: tabFacet
+            // to get the documents
+            // get top level tabs aggregated counts
+            var tabs = [];
+            if (Object.keys(tabFacet).length != 0) {
+                //console.log('QUERY:' + JSON.stringify(req.querymen.query,2,3,4));
+                tabs = await Document.aggregate([{
+                                $facet: tabFacet
+                            }]).exec();
             }
-            ]).exec();
-
-            var charts = await Document.aggregate([
-                {
-                    "$match": req.querymen.query
-            },
-                {
-                    $sort: req.querymen.cursor.sort
-            },
-                {
-                    $facet: chartFacet
+            
+            // get the charts aggregated counts
+            
+            if(req.querymen.query['$text']) {
+                if (req.querymen.query['$text']['$in']) {
+                    var terms = "";
+                    for(var term of req.querymen.query['$text']['$in']) {
+                                terms = terms + ' ' + term;
+                    }
+                    delete req.querymen.query['$text']['$in'];
+                    req.querymen.query['$text']['$search'] = terms;
+                }
             }
-        ]).exec();
+            
+            var docs = [];
+            var charts = [];
+            var total = 0;
 
-            var docs = charts[0].all;
-            delete charts[0].all;
+            if (chartCount > 0) {
+                chartFacet.all = [];
+                if (opts.conf.unwind) {
+                    chartFacet.all = [opts.conf.unwind];
+                }
+                chartFacet.all = chartFacet.all.concat([
+                    {
+                        $skip: req.querymen.cursor.skip
+                    },
+                    {
+                        $limit: req.querymen.cursor.limit
+                    }]);
+
+                if (Array.isArray(opts.conf.lookup) && opts.conf.lookup.length > 0) {
+                    //console.log('LOOKUPS' + JSON.stringify(lookups));
+                    chartFacet.all = chartFacet.all.concat(opts.conf.lookup);
+                }
+                                                       
+                chartFacet.all.push({
+                        $project: project
+                    });
+                
+                /*    {
+                        $sort: req.querymen.cursor.sort
+                    },
+                ];*/
+
+
+                //console.log('QUERY:' + JSON.stringify(req.querymen.query,2,3,4));
+                var aggQuery = [
+                    {
+                        "$match": req.querymen.query
+                    }, {
+                        //to do translate to paths
+                        $sort: req.querymen.cursor.sort
+                    }, {
+                        $facet: chartFacet
+                    }
+                ];
+                var agg = Document.aggregate(aggQuery);
+                agg.options = {
+                    allowDiskUse: true
+                };
+                charts = await agg.exec();
+                //console.log('Aggregation QUERY: ' + JSON.stringify(aggQuery, null, 3));
+                docs = charts[0].all;
+                delete charts[0].all;
+                if (charts[0] && charts[0].count && charts[0].count[0]) {
+                    total = charts[0].count[0].total;
+                }
+                //console.log('docs:' + JSON.stringify(docs,null,1))
+                delete charts[0].count;
+            } else {
+                //console.log('PROJE' + JSON.stringify(project));
+                total = await Document.countDocuments(req.querymen.query).exec();
+                var aggQuery = [
+                    {
+                        $match : req.querymen.query
+                    },
+                    {
+                        $sort: req.querymen.cursor.sort
+                    },
+                    {
+                        $project: project
+                    },
+                    {
+                        $skip: req.querymen.cursor.skip
+                    },
+                    {
+                        $limit: req.querymen.cursor.limit
+                    }];
+                //console.log('QUERY' + JSON.stringify(aggQuery));
+                docs = await Document.
+                aggregate(aggQuery).exec();
+                //total = docs.length;
+            }
+            //console.log('Results'+ JSON.stringify(docs,1,1,1));
 
             var currentPage = 1;
             if (req.query.page) {
                 currentPage = req.query.page;
             }
-            var total = 0;
-            if (charts[0] && charts[0].count && charts[0].count[0]) {
-                total = charts[0].count[0].total;
-            }
 
-            delete charts[0].count;
             //console.log('GOT TOTAL ' + total);
             var pages = Math.ceil(total / req.querymen.cursor.limit);
             //console.log(' PAGES = ' + currentPage)
             //if(charts) {
             //console.log('FACET:' + JSON.stringify(chartFacet, null, 2));
             //}
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Cache-Control', 'no-store, must-revalidate, max-age=0');
+            res.locals.renderStartTime = Date.now();
             res.render(opts.list, {
-                title: conf.appName,
+                title: (opts.conf ? opts.conf.title + ' - ' : '') + package.name,
                 docs: docs,
+                opts: opts,
                 textUtil: textUtil,
                 qs: qs,
                 focustab: 0,
                 facet: charts,
                 tfacet: tabs,
+                fields: opts.facet,
                 query: req.query,
                 limit: req.querymen.cursor.limit,
                 pages: pages,
                 total: total,
                 columns: columns,
-                current: currentPage
+                current: currentPage,
+                csrfToken: req.csrfToken(),
+                bulkInput: bulkInput
             });
 
         } catch (err) {
@@ -738,6 +1124,50 @@ module.exports = function (name) {
 
         }
     });
+
+    //console.log('/:id(' + idpattern + ')');
+    router.get('/:id(' + idpattern + ')', csrfProtection, function (req, res) {
+        //console.log('Got GET ' + req.params.id);
+        var q = {};
+        q[idpath] = req.params.id;
+        Document.findOne(q, async function (err, doc) {
+            if (!doc) {
+                req.flash('error', 'ID not found: ' + req.params.id);
+                //console.log('GOT doc/' + idpath + req.params.id + doc);
+            }
+            var ucomments = await unifiedComments(req.params.id, doc ? doc.comments : []);
+            res.locals.renderStartTime = Date.now();
+            if(opts.conf.readonly) {
+                if(doc && doc._doc) {
+                  delete doc._doc._id;  
+                } 
+                //console.log('READONLY view');
+                res.setHeader("Content-Security-Policy", "default-src 'self'; connect-src 'none'; font-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'");
+                res.render((opts.render == 'render' ? 'readonly' : opts.render), {
+                    title: req.params.id,
+                    doc: doc ? doc._doc : {},
+                    textUtil: textUtil,
+                    doc_id: req.params.id,
+                    csrfToken: req.csrfToken(),
+                    renderTemplate: 'default',
+                    ucomments: ucomments
+                });
+            } else {
+                res.render(opts.edit, {
+                    title: req.params.id,
+                    opts: opts,
+                    doc_id: req.params.id,
+                    idpath: jsonidpath,
+                    doc: doc,
+                    textUtil: textUtil,
+                    csrfToken: req.csrfToken(),
+                    allowAjax: true,
+                    ucomments: ucomments
+                });
+            }
+        });
+    });
+    
     module.router = router;
     return module;
 }

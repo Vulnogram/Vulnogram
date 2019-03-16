@@ -1,36 +1,42 @@
 //- Copyright (c) 2017 Chandan B N. All rights reserved.
 
-extends layout
+extends min
+
+include util
 mixin pageHolder(id)
-    .page
-        a(name=id)
-        .confidential
+    a(name=id,id=id)
+    .wht.bor.shd.gap.pad2.brk
+        .tred
             if(ext)
                 h5 Draft Security Advisory
             else
                 h5 Confidential Information : INTERNAL USE ONLY
-        .render(id=id)
+        .render
             block
-                
-include util
 
 block content
     if min
         link(rel='stylesheet', href='css/style.css')
-    .confidential
+    .tred.pad2
         if(ext)
             h5 Draft Security Advisories
         else
             h3 Confidential Information
             h3 INTERNAL USE ONLY.
-
-    +table(idx, ['Advisory', 'CVE', 'Defect', 'CVSS','Title'], true)
-    +tablesort
+    .pad
+        +table(idx, ['Advisory', 'CVE', 'Defect', 'CVSS','Title'])
+        +distinctSummary(idx, ['Defect'])
+        +tablesort
     if sas
         each sa, i in sas
-            +pageHolder(sa.body.ID)
-                +saPage(sa.body, cmap, csumSet[sa.body.ID])
+            // var renderTemplate = 'saPage'
+            block saBlock
+                +pageHolder(sa.body.ID)
+                    - cSum = csumSet[sa.body.ID];
+                    +page(sa.body,cmap,csumSet[sa.body.ID])
     if docs
         each doc, i in docs
-            +pageHolder(doc.body.source.advisory ? doc.body.source.advisory : i)
-                +cvePage(doc.body)
+            block cveBlock
+                a(name=doc.body.CVE_data_meta.ID)
+                +pageHolder(doc.body.source.advisory ? doc.body.source.advisory : i)
+                    +page(doc.body)

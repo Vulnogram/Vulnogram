@@ -1,10 +1,10 @@
 {
   "name": "Vulnogram",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Making the world safer one CVE at a time, since 2017. Tool for creating Security Advisories and CVE ID information.",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app"
+    "start": "NODE_ENV=production forever start app.js"
   },
   "author": "Chandan B N.",
   "license": "SEE LICENSE IN README.md",
@@ -13,23 +13,24 @@
     "url": "https://github.com/Vulnogram/Vulnogram.git"
   },
   "dependencies": {
-    "compression": "^1.7.1",
+    "busboy": "^0.3.0",
+    "compression": "^1.7.3",
     "connect-flash": "^0.1.1",
-    "csso-cli": "^1.1.0",
+    "csso-cli": "^2.0.2",
     "csurf": "^1.9.0",
-    "express": "^4.16.3",
+    "express": "^4.16.4",
     "express-messages": "^1.0.1",
     "express-session": "^1.15.6",
-    "express-validator": "^4.2.1",
+    "express-validator": "^5.3.1",
+    "extend": "^3.0.2",
+    "forever": "^0.15.3",
     "json-patch-extended": "^0.1.2",
-    "mongoose": "^4.13.12",
-    "monk": "^6.0.5",
-    "multer": "^1.3.0",
-    "nodemon": "^1.17.3",
+    "linkifyjs": "^2.1.8",
+    "mongoose": "^5.4.19",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
-    "pug": "^2.0.0-rc.4",
+    "pug": "^2.0.3",
     "querymen": "^2.1.3",
-    "uglify-es": "^3.1.9"
+    "uglify-es": "^3.3.9"
   }
 }

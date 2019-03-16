@@ -7,7 +7,7 @@ const router = express.Router();
 
 async function getCVE(ids) {
     try {
-        var r = await mongoose.connection.collection('nvd').find({
+        var r = await mongoose.connection.collection('nvds').find({
             'cve.CVE_data_meta.ID': {
                 '$in': Array.from(ids.values())
             }

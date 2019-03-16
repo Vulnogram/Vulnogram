@@ -1,0 +1,125 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "CVSS 3.0",
+    "id": "cvss",
+    "type": "object",
+    "properties": {
+        "version": {
+            "type": "string",
+            "enum": ["3.0"],
+            "options": {
+                "hidden": "true"
+            }
+        },
+        "attackVector": {
+            "type": "string",
+            "format": "radio",
+            "enum": ["PHYSICAL", "LOCAL", "ADJACENT_NETWORK", "NETWORK"],
+            "options": {
+            }
+        },
+        "attackComplexity": {
+            "type": "string",
+            "format": "radio",
+            "enum": ["HIGH", "LOW"],
+            "options": {
+            }
+        },
+        "privilegesRequired": {
+            "type": "string",
+            "format": "radio",
+            "enum": ["HIGH", "LOW", "NONE"],
+            "options": {
+            }
+        },
+        "userInteraction": {
+            "type": "string",
+            "format": "radio",
+            "enum": ["REQUIRED", "NONE"],
+            "options": {
+            }
+        },
+        "scope": {
+            "type": "string",
+            "format": "radio",
+            "enum": ["UNCHANGED", "CHANGED"],
+            "options": {
+            }
+        },
+        "confidentialityImpact": {
+            "type": "string",
+            "format": "radio",
+            "enum": ["NONE", "LOW", "HIGH"],
+            "options": {
+            }
+        },
+        "integrityImpact": {
+            "type": "string",
+            "format": "radio",
+            "enum": ["NONE", "LOW", "HIGH"]
+        },
+        "availabilityImpact": {
+            "type": "string",
+            "format": "radio",
+            "enum": ["NONE", "LOW", "HIGH"],
+            "options": {
+            }
+        },
+        "vectorString": {
+            "type": "string",
+            "options": {
+                "input_width": "20em"
+            },
+            "pattern": "^CVSS:3.0/((AV:[NALP]|AC:[LH]|PR:[UNLH]|UI:[NR]|S:[UC]|[CIA]:[NLH]|E:[XUPFH]|RL:[XOTWU]|RC:[XURC]|[CIA]R:[XLMH]|MAV:[XNALP]|MAC:[XLH]|MPR:[XUNLH]|MUI:[XNR]|MS:[XUC]|M[CIA]:[XNLH])/)*(AV:[NALP]|AC:[LH]|PR:[UNLH]|UI:[NR]|S:[UC]|[CIA]:[NLH]|E:[XUPFH]|RL:[XOTWU]|RC:[XURC]|[CIA]R:[XLMH]|MAV:[XNALP]|MAC:[XLH]|MPR:[XUNLH]|MUI:[XNR]|MS:[XUC]|M[CIA]:[XNLH])$",
+            "template": "cvssjs.vector(context)",
+            "watch": {
+                "attackVector": "cvss.attackVector",
+                "attackComplexity": "cvss.attackComplexity",
+                "privilegesRequired": "cvss.privilegesRequired",
+                "userInteraction": "cvss.userInteraction",
+                "scope": "cvss.scope",
+                "confidentialityImpact": "cvss.confidentialityImpact",
+                "integrityImpact": "cvss.integrityImpact",
+                "availabilityImpact": "cvss.availabilityImpact"
+            },
+    "links": [{
+                   "class": "sml icn extlink",
+                    "href": "'http://cvssjs.github.io/#' + context.self",
+                    "title": "'CVSS Calculator'",
+                    "rel": "'Open in CVSS Calculator'"
+    }]
+            
+        },
+        "baseScore": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10,
+            "template": "cvssjs.calculate(context)",
+            "watch": {
+                    "attackVector": "cvss.attackVector",
+                    "attackComplexity": "cvss.attackComplexity",
+                    "privilegesRequired": "cvss.privilegesRequired",
+                    "userInteraction": "cvss.userInteraction",
+                    "scope": "cvss.scope",
+                    "confidentialityImpact": "cvss.confidentialityImpact",
+                    "integrityImpact": "cvss.integrityImpact",
+                    "availabilityImpact": "cvss.availabilityImpact"
+            },
+            "options": {
+                "input_width": "6em"
+            }
+        },
+        "baseSeverity": {
+            "type": "string",
+            "format": "string",
+            "template": "cvssjs.severity(context.sc).name",
+            "watch": {
+                "sc": "cvss.baseScore"
+            },
+            "options": {
+                "input_width": "6em"
+            }
+        }
+    },    
+    "required": ["version", "vectorString", "baseScore", "baseSeverity"]
+}
