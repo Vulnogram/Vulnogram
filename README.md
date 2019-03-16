@@ -12,7 +12,7 @@ Vulnogram project aims to make it easier for vendors and security researchers to
 
 ## Getting started
 
-#### Step 1. Install required node modules
+#### Step 1. Install required Node.js modules.
 
 
 	$ cd vulnogram
@@ -23,13 +23,15 @@ Vulnogram project aims to make it easier for vendors and security researchers to
 #### Step 2. Setup monogodb to be used for persistent storage of CVE JSON and users.
 	See https://www.mongodb.com/
 
-#### Step 3. Copy /config/conf-default.js to config/conf.js and edit the file to suite your requirements
+    *Important*: Ensure mongodb authentication is enabled. It is recommended to run mongodb bound to loopback/localhost and not expose it to network.
+
+#### Step 3. Edit the config parameters in conf.js to suite your requirements.
 
 	See config/conf-default.js comments for hints
 
-#### Step 4 (Optional). Copy the "default" directory as "custom" and modify relevant pug templates, schemas or routes. Files from "custom" override "default".
+#### Step 4 (Optional). Copy the "default" directory as "custom" and modify relevant pug templates, schemas or routes. Files or fields from "custom" override "default".
 
-#### Step 5. If any pug templates were modified, regenerate client side javascript
+#### Step 5. If any pug templates were modified, regenerate client side javascript.
 
 	$ node scripts/pug2js.js
 
@@ -40,24 +42,21 @@ Vulnogram project aims to make it easier for vendors and security researchers to
 	Enter Password again: ********************************************
 	Success New user is now registered and can log in: tester
 
-#### Step 7. Start the node application
+#### Step 7. Start the node application.
 
 	$ npm start
-    
-  	Vulnogram@0.0.5 start /home/user/vulnogram
-	nodemon app
-	
-	[nodemon] 1.11.0
-	[nodemon] to restart at any time, enter `rs`
-	[nodemon] watching: *.*
-	[nodemon] starting `node app app.js`
-	Server started on port 3555
-	Connected to MongoDB ...
+    $ npm start
 
-Tip: Use foreverjs to run this service continuously like a daemon.
+    > Vulnogram@0.0.5 start /Users/cbn/prj/Vulnogram6
+    > NODE_ENV=production forever start --id 'vulnogram' --spinSleepTime 5000 --minUptime 2000 app.js
 
-#### Finish: Web application should be now accessible
-	http://localhost:3555/
+    info:    Forever processing file: app.js
+    info:    Forever processes running
+    data:        uid  command                      script forever pid   id        logfile                      uptime     
+    data:    [0] v3wE /usr/bin/node app.js 11208   11210 vulnogram /home/vulnogram/.forever/v3wE.log 0:0:0:0.23 
+
+#### Finish: Web application should be now accessible at:
+	http://localhost:3555/ or https://localhost:3555/ depending on configuration.
 
 ## Create the minimal standalone web page and client side scripts.
 
@@ -65,7 +64,7 @@ Tip: Use foreverjs to run this service continuously like a daemon.
     
 This creates standalone/index.html with minimized javascript and stylesheets can be hosted independelty on websites serving static files.
 
-## Dependencies
+## Dependencies:
 
 This project uses or depends on software from
 
@@ -76,15 +75,16 @@ This project uses or depends on software from
 * Pug https://pugjs.org/
 * ACE editor https://ace.c9.io/
 * JSON Schema based editor https://github.com/jdorn/json-editor
-* yamljs https://github.com/jeremyfa/yaml.js
 * tablesort v5.0.1 https://github.com/tristen/tablesort
 * cvssjs https://github.com/cvssjs
 * json-patch-extended
 * querymen
+* linkifyjs
+* pptxGenJS
 
 ## Licence
 
-Copyright (c) 2017-2019 Chandan B N
+Copyright (c) 2017-2019 Chandan B N.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 

@@ -4,7 +4,10 @@
   "description": "Making the world safer one CVE at a time, since 2017. Tool for creating Security Advisories and CVE ID information.",
   "main": "app.js",
   "scripts": {
-    "start": "NODE_ENV=production forever start app.js"
+    "test": "NODE_ENV=developement nodemon app",
+    "start": "NODE_ENV=production forever start --id 'vulnogram' --spinSleepTime 5000 --minUptime 2000 app.js;forever list",
+    "stop": "NODE_ENV=production forever stop app.js",
+    "restart": "NODE_ENV=production forever restart app.js"
   },
   "author": "Chandan B N.",
   "license": "SEE LICENSE IN README.md",

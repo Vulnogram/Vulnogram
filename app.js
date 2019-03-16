@@ -4,6 +4,7 @@ const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const flash = require('connect-flash');
+const https = require('https');
 
 // TODO: don't use express-session for large-scale production use
 const session = require('express-session');
@@ -81,13 +82,6 @@ app.use(function (req, res, next) {
     next();
 });
 
-/*// make user information available
-app.get('*', function (req, res, next) {
-    res.locals.user = req.user || null;
-    res.locals.confOpts = app.locals.confOpts;
-    next();
-});
-*/
 // add this to route for authenticating before certain requests.
 function ensureAuthenticated(req, res, next) {
     if (req.isAuthenticated()) {
@@ -172,23 +166,7 @@ app.use(function (req, res, next) {
     res.locals.confOpts = app.locals.confOpts;
     next();
 });
-        
-/*app.post('*', function (req, res, next) {
-    res.locals.user = req.user || null;
-    res.locals.confOpts = app.locals.confOpts;
-    next();
-});
-*/
-/*
-let cveRoute = docs('cve');
-app.use('/cve', ensureAuthenticated, cveRoute.router);
 
-let saRoute = docs('sa');
-app.use('/sa', ensureAuthenticated, saRoute.router);
-
-let cnaRoute = docs('cna');
-app.use('/cna', ensureAuthenticated, cnaRoute.router);
-*/
 //Configuring a reviewToken in conf file allows sharing drafts with 'people who have a link containing the configurable token' 
 let review = require('./routes/review');
 
@@ -203,6 +181,12 @@ app.get('/', function (req, res, next) {
     res.redirect('/cve/?state=DRAFT,READY,REVIEW');
 });
 
-app.listen(conf.serverPort, function () {
-    console.log('Server started on port ' + conf.serverPort);
-});
+if(conf.httpsOptions) {
+    https.createServer(conf.httpsOptions, app).listen(conf.serverPort, conf.serverHost, function () {
+        console.log('Server started at https://' + conf.serverHost + ':' + conf.serverPort);
+    });
+} else {
+    app.listen(conf.serverPort, conf.serverHost, function () {
+        console.log('Server started at http://' + conf.serverHost + ':' + conf.serverPort);
+    });
+}
