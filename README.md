@@ -23,7 +23,7 @@ Vulnogram project aims to make it easier for vendors and security researchers to
 #### Step 2. Setup monogodb to be used for persistent storage of CVE JSON and users.
 	See https://www.mongodb.com/
 
-    *Important*: Ensure mongodb authentication is enabled. It is recommended to run mongodb bound to loopback/localhost and not expose it to network.
+ **Important**: Ensure mongodb authentication is enabled. It is recommended to run mongodb bound to loopback/localhost and not expose it to network.
 
 #### Step 3. Edit the config parameters in conf.js to suite your requirements.
 
@@ -44,7 +44,6 @@ Vulnogram project aims to make it easier for vendors and security researchers to
 
 #### Step 7. Start the node application.
 
-	$ npm start
     $ npm start
 
     > Vulnogram@0.0.5 start /Users/cbn/prj/Vulnogram6
