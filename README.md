@@ -48,8 +48,8 @@ Vulnogram project aims to make it easier for vendors and security researchers to
 
     $ npm start
 
-    > Vulnogram@0.0.5 start /Users/cbn/prj/Vulnogram6
-    > NODE_ENV=production forever start --id 'vulnogram' --spinSleepTime 5000 --minUptime 2000 app.js
+    > Vulnogram@0.0.6 start /home/vulnogram/
+    > forever start --id 'vulnogram' --spinSleepTime 5000 --minUptime 2000 app.js
 
     info:    Forever processing file: app.js
     info:    Forever processes running
@@ -59,11 +59,11 @@ Vulnogram project aims to make it easier for vendors and security researchers to
 #### Finish: Web application should be now accessible at:
 	http://localhost:3555/ or https://localhost:3555/ depending on configuration.
 
-## Create the minimal standalone web page and client side scripts.
+## Create the minimal standalone, stateless web page and client side scripts.
 
     $ make min
     
-This creates standalone/index.html with minimized javascript and stylesheets can be hosted independelty on websites serving static files.
+This creates standalone /index.html with minimized javascript and stylesheets can be hosted independelty on websites serving static files.
 
 ## Dependencies:
 
