@@ -615,23 +615,6 @@ schema: {
    },
    "format": "table"
   },
-  "description": {
-   "type": "object",
-   "required": [
-    "description_data"
-   ],
-   "properties": {
-    "description_data": {
-     "type": "array",
-     "minItems": 1,
-     "items": {
-      "title": "description",
-      "$ref": "#/definitions/lang_string"
-     },
-     "format": "table"
-    }
-   }
-  },
   "problemtype": {
    "type": "object",
    "required": [
@@ -653,11 +636,49 @@ schema: {
         "minItems": 1,
         "items": {
          "title": "problem type description",
-         "$ref": "#/definitions/lang_string"
+           "type": "object",
+           "required": [
+            "lang",
+            "value"
+           ],
+           "properties": {
+            "lang": {
+             "type": "string",
+             "options": {
+              "hidden": "true"
+             },
+             "default": "eng"
+            },
+            "value": {
+             "description": "Vulnerability type: can be a CWE or free text",
+             "title": " ",
+             "type": "string",
+             "minLength": 2,
+             "maxLength": 3999,
+             "$ref": "/js/cwe-frequent.json"
+            }
+           }
         },
         "format": "table"
        }
       }
+     },
+     "format": "table"
+    }
+   }
+  },
+  "description": {
+   "type": "object",
+   "required": [
+    "description_data"
+   ],
+   "properties": {
+    "description_data": {
+     "type": "array",
+     "minItems": 1,
+     "items": {
+      "title": "description",
+      "$ref": "#/definitions/lang_string"
      },
      "format": "table"
     }

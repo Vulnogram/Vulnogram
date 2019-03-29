@@ -122,6 +122,21 @@ JSONEditor.defaults.templates.custom = function () {
 JSONEditor.defaults.editors.string = JSONEditor.defaults.editors.string.extend({
     addLink: function(link) {
         if(this.control) this.control.appendChild(link);
+    },
+    build: function() {
+        this._super();
+        if(this.schema.examples && this.schema.examples.length > 0){
+            var dlist = document.createElement('datalist');
+            dlist.setAttribute('id', this.path + '-datalist');
+            var eg = this.schema.examples;
+            for(var i = 0; i< eg.length; i++) {
+                var v = document.createElement('option');
+                v.setAttribute('value', eg[i]);
+                dlist.appendChild(v);
+            }
+            this.input.setAttribute('list', this.path + '-datalist');
+            this.container.appendChild(dlist);
+        }
     }
 });
      
@@ -814,6 +829,7 @@ var docEditorOptions = {
     input_width: '3em',
     input_height: '4em',
     template: 'custom',
+    prompt_before_delete: false,
     // The schema for the editor
     schema: docSchema
     // Seed the form with a starting value
@@ -855,9 +871,24 @@ autoButton.addEventListener('click', function (event) {
                     desc.splice(i, 1);
                 }
             }
+            var pts = [];
+            for(var j = 0; j < docJSON.problemtype.problemtype_data.length; j++) {
+                for(var k = 0; k < docJSON.problemtype.problemtype_data[j].description.length; k++) {
+                    if(docJSON.problemtype.problemtype_data[j].description[k].lang == "eng") {
+                       var pt =  docJSON.problemtype.problemtype_data[j].description[k].value;
+                        if (pt) {
+                            pts.push(pt.replace(/^CWE-[0-9 ]+/,''));
+                        }
+                    }
+                }
+            }
+            var ptstring = pts.join(', ');
+            if (ptstring.length == 0) {
+                ptstring = "A"
+            }
             desc.push({
                 lang: "eng",
-                value: "A " + docJSON.problemtype.problemtype_data[0].description[0].value + " vulnerability in ____COMPONENT____ of " + textUtil.getProductList(docJSON) +
+                value: ptstring + " vulnerability in ____COMPONENT____ of " + textUtil.getProductList(docJSON) +
                     " allows ____ATTACKER/ATTACK____ to cause ____IMPACT____."
             });
             desc.push({

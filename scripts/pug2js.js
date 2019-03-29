@@ -17,9 +17,6 @@ for (section of conf.sections) {
     //var s = conf.sections[section];
     var opts = optSet(section);
     if (!opts.conf.readonly) {
-        console.log('rendering ' + section);
-
-        //var opts = optSet(s.schema);
         if (opts.render == 'render') {
             opts.render = '../views/render';
         }

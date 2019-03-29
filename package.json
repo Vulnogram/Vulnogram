@@ -1,13 +1,13 @@
 {
   "name": "Vulnogram",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Making the world safer one CVE at a time, since 2017. Tool for creating Security Advisories and CVE ID information.",
   "main": "app.js",
   "scripts": {
-    "test": "NODE_ENV=developement nodemon app",
-    "start": "NODE_ENV=production forever start --id 'vulnogram' --spinSleepTime 5000 --minUptime 2000 app.js;forever list",
-    "stop": "NODE_ENV=production forever stop app.js",
-    "restart": "NODE_ENV=production forever restart app.js"
+    "test": "nodemon app",
+    "start": "forever start --id 'vulnogram' --spinSleepTime 5000 --minUptime 2000 app.js;forever list",
+    "stop": "forever stop app.js",
+    "restart": "forever restart app.js"
   },
   "author": "Chandan B N.",
   "license": "SEE LICENSE IN README.md",
@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "busboy": "^0.3.0",
-    "compression": "^1.7.3",
+    "compression": "^1.7.4",
     "connect-flash": "^0.1.1",
     "csso-cli": "^2.0.2",
     "csurf": "^1.9.0",
@@ -29,7 +29,9 @@
     "forever": "^0.15.3",
     "json-patch-extended": "^0.1.2",
     "linkifyjs": "^2.1.8",
-    "mongoose": "^5.4.19",
+    "mongodb": "^3.2.2",
+    "mongoose": "^5.4.20",
+    "nodemon": "^1.18.10",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
     "pug": "^2.0.3",

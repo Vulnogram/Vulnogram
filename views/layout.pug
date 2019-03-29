@@ -9,7 +9,7 @@ html
   body#body(class=schemaName)
     .stk
         block topHeader
-            header.ban.pad.wht
+            header.ban.pad.wht.btm
                 .left
                     block topHeaderLeft
                         a.logo.big(title="Making the world safer one CVE at a time, since 2017", href=conf.homepage)="Vulnogram"
@@ -25,7 +25,6 @@ html
                             //if opts && opts.conf && opts.conf.userpage
                             //    a.icn.fbn.folder(href='/' + schemaName+'/' +opts.conf.userpage + user.username) Mine
                             a.icn.fbn.exit(href="/users/logout")=" Logout "
-        hr.gap0.tgrey
         block banner
             header.ban.pad.shd.hig
                 block bannerItems

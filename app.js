@@ -15,6 +15,10 @@ const compress = require('compression');
 const conf = require('./config/conf');
 const optSet = require('./models/set');
 
+if(!process.env.NODE_ENV) {
+    process.env.NODE_ENV = "production";
+}
+
 mongoose.Promise = global.Promise;
 mongoose.connect(conf.database, {
     keepAlive: true,

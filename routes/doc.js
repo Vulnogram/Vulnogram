@@ -503,7 +503,8 @@ module.exports = function (name, opts) {
         }
     };
     var unifiedComments = async function(doc_id, comments) {
-        var emails = await matchingEmail(doc_id);
+        var emails = null;
+        //var emails = await matchingEmail(doc_id);
         //console.log('GOT emails' + emails);
         var u = [];
         if(emails) {
@@ -902,6 +903,13 @@ module.exports = function (name, opts) {
             { $project: project }
         ]);
         res.json(r);
+    });
+
+    router.get('/examples/', 
+               querymen.middleware(qSchema),
+               async function (req, res) {
+        var r = await Document.find(req.querymen.query).distinct(req.query.field);
+        res.json({examples:r});
     });
     
     router.get('/agg/', 

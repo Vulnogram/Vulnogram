@@ -3,7 +3,9 @@ const fs = require("fs");
 module.exports = {
 
     // The Mongodb URL where CVE entries and users are stored.
-    database: 'mongodb://127.0.0.1:27017/vulnogram',
+    // WARNING: Configure MongoDB authentication and use a strong password
+    // WARNING: Ensure MongoDB is not reachable from the network. 
+    database:'mongodb://vulnogram:StringLongPass@127.0.0.1:27017/vulnogram'
 
     // Name of the organization that should be used in page titles etc.,
     orgName: 'Example Org',
@@ -28,6 +30,7 @@ module.exports = {
 
     //Uncomment this block to enable HTTPs. Configure paths for valid SSL certificates. 
     // Either get them from your favorite Certificate Authority or generate self signed:
+    // Keep these safe and secured and readable only by account running vulnogram process!
     // $ openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out cert.pem
 /*
     httpsOptions: {
@@ -88,7 +91,7 @@ module.exports = {
             color: {
                 domain: ["CRITICAL", "HIGH", "MEDIUM", "LOW", "NONE", "", null],
                 range: ["orangered","salmon","orange","gold","green", "lightgray", "lightgray"]
-            }            
+            }
         }
     ]
 };

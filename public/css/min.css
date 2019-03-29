@@ -2,6 +2,7 @@ body {
     /*font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;*/
     font-family: "-apple-system", "system-ui", "Arial", "sans-serif";
     --wht: #fff;
+    --bck: #fefefd;
     --hig: #f0f0f0;
     --bor: #dadce0;
     --bor2: #a0a8b9;
@@ -14,7 +15,7 @@ body {
     --red: #f2c3b2;
     --grn: #b2f2bc;
     margin: 0px;
-    background-color: var(--wht);
+    background-color: var(--bck);
     color: var(--txt);
     font-size: 13px;
 }
@@ -41,7 +42,9 @@ body {
 .shd2 {
     box-shadow: 2px 3px 5px rgba(0,0,0,0.4);   
 }
-
+.btm {
+    border-bottom: 1px solid rgba(0,0,0,0.05);   
+}
 .ban {
     overflow: auto;
     display: flex;

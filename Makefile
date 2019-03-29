@@ -5,7 +5,7 @@ CVE = $(OUT)/cve
 CSSO = ./node_modules/.bin/csso
 UJS = ./node_modules/.bin/uglifyjs
 
-TARGETS := $(OUT)/index.html $(CSS)/sprite.svg $(CSS)/min.css $(CSS)/icns.css $(CSS)/logo.png $(JS)/util.js $(JS)/editor.js $(JS)/cvss.json
+TARGETS := $(OUT)/index.html $(CSS)/sprite.svg $(CSS)/min.css $(CSS)/icns.css $(CSS)/logo.png $(CSS)/logo.gif $(JS)/util.js $(JS)/editor.js $(JS)/cvss.json $(JS)/cwe-frequent.json
 
 $(OUT)/index.html: ./scripts/standalone.js ./config/conf-standalone.js ./default/* ./default/cve/* ./views/*
 	node $<
@@ -28,6 +28,9 @@ $(CSS)/%.svg: ./public/css/%.svg
 $(CSS)/%.png: ./public/css/%.png
 	cp -f $< $@
 
+$(CSS)/%.gif: ./public/css/%.gif
+	cp -f $< $@
+    
 $(JS)/%.js: ./public/js/%.js
 	$(UJS) $< -c -o $@
 
