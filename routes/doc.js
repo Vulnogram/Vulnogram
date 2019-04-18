@@ -96,6 +96,7 @@ module.exports = function (name, opts) {
         if(options.sortDefault) {
             queryDef.sort.default = options.sortDefault;
         }
+        //toIndex[options.path] = options.sort ? options.sort : 1;
         if (options.tabs) {
             toIndex[options.path] = options.sort ? options.sort : 1;
             if (Array.isArray(options.pipeline)) {
@@ -1006,16 +1007,59 @@ module.exports = function (name, opts) {
                     req.querymen.query['$text']['$search'] = terms;
                 }
             }
+            var sort = {};
+            if(req.querymen.cursor.sort) {
+                for(var s in req.querymen.cursor.sort) {
+                    if(opts.facet[s] && opts.facet[s].path) {
+                        sort[opts.facet[s].path] = req.querymen.cursor.sort[s];
+                    }
+                }
+            }
             
+            var allQuery = [];
+            if (opts.conf.unwind) {
+                allQuery = [opts.conf.unwind];
+            }
+            if (Array.isArray(opts.conf.lookup) && opts.conf.lookup.length > 0) {
+                //console.log('LOOKUPS' + JSON.stringify(lookups));
+                allQuery = allQuery.concat(opts.conf.lookup);
+            }
+            if ((Object.keys(sort).length != 0)) {
+                allQuery.push({
+                    $sort: sort
+                });
+            }
+            allQuery = allQuery.concat([
+                {
+                    $skip: req.querymen.cursor.skip
+                },
+                {
+                    $limit: req.querymen.cursor.limit
+                },
+                {
+                    $project: project
+                }
+            ]);
+            
+            //console.log('SORT:' + JSON.stringify(sort,1,1,1));
             var docs = [];
             var charts = [];
             var total = 0;
 
             if (chartCount > 0) {
-                chartFacet.all = [];
-                if (opts.conf.unwind) {
+                chartFacet.all = allQuery;
+               /* if (opts.conf.unwind) {
                     chartFacet.all = [opts.conf.unwind];
                 }
+                if (Array.isArray(opts.conf.lookup) && opts.conf.lookup.length > 0) {
+                    //console.log('LOOKUPS' + JSON.stringify(lookups));
+                    chartFacet.all = chartFacet.all.concat(opts.conf.lookup);
+                }
+                if((Object.keys(sort).length != 0)) {
+                    chartFacet.all.push({
+                        $sort: sort
+                    });
+                }                                                       
                 chartFacet.all = chartFacet.all.concat([
                     {
                         $skip: req.querymen.cursor.skip
@@ -1023,37 +1067,25 @@ module.exports = function (name, opts) {
                     {
                         $limit: req.querymen.cursor.limit
                     }]);
-
-                if (Array.isArray(opts.conf.lookup) && opts.conf.lookup.length > 0) {
-                    //console.log('LOOKUPS' + JSON.stringify(lookups));
-                    chartFacet.all = chartFacet.all.concat(opts.conf.lookup);
-                }
-                                                       
                 chartFacet.all.push({
                         $project: project
-                    });
-                
-                /*    {
-                        $sort: req.querymen.cursor.sort
-                    },
-                ];*/
+                });
+                */
 
 
                 //console.log('QUERY:' + JSON.stringify(req.querymen.query,2,3,4));
                 var aggQuery = [
                     {
                         "$match": req.querymen.query
-                    }, {
-                        //to do translate to paths
-                        $sort: req.querymen.cursor.sort
-                    }, {
+                    }, 
+                    {
                         $facet: chartFacet
                     }
                 ];
                 var agg = Document.aggregate(aggQuery);
-                agg.options = {
+                /*agg.options = {
                     allowDiskUse: true
-                };
+                };*/
                 charts = await agg.exec();
                 //console.log('Aggregation QUERY: ' + JSON.stringify(aggQuery, null, 3));
                 docs = charts[0].all;
@@ -1069,20 +1101,8 @@ module.exports = function (name, opts) {
                 var aggQuery = [
                     {
                         $match : req.querymen.query
-                    },
-                    {
-                        $sort: req.querymen.cursor.sort
-                    },
-                    {
-                        $project: project
-                    },
-                    {
-                        $skip: req.querymen.cursor.skip
-                    },
-                    {
-                        $limit: req.querymen.cursor.limit
-                    }];
-                //console.log('QUERY' + JSON.stringify(aggQuery));
+                    }].concat(allQuery);
+                //console.log('AGG QUERY' + JSON.stringify(aggQuery,1,1,1));
                 docs = await Document.
                 aggregate(aggQuery).exec();
                 //total = docs.length;

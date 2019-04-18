@@ -180,7 +180,8 @@ schema: {
      "message": "A product name is required!",
         "options": {
         "grid_columns": 10
-        }        
+        },
+        //"$ref":"/product/examples/?field=body.product"
     },
     "version": {
      "type": "object",

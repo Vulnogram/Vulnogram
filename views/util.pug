@@ -240,8 +240,9 @@ mixin hyperVal(obj, name)
                     =value
 
 mixin facetChart(facet, query, tfacet)
-  if (total > 0) && facet.length > 0 && (Object.keys(facet[0]).length)
-    form.ins.hig.flx.wlp.pad#chartForm(action='/'+schemaName,method="GET",onchange="document.getElementById('filter').className='indent btn sfe'")
+  if (total > 0)
+    // && facet.length > 0 && (Object.keys(facet[0]).length)
+    form#chartForm(action='/'+schemaName,method="GET",onchange="document.getElementById('filter').className='indent btn sfe'")
         if query && query.q
             input(type="hidden",name="q",value=(Array.isArray(query.q) ? query.q.join(' ') : query.q))
         if tfacet && tfacet.length && tfacet.length > 0
@@ -249,7 +250,8 @@ mixin facetChart(facet, query, tfacet)
                 each v in values
                     if (v._id == query[field] || ((typeof query[field] === 'string') && query[field].split(',').includes(v._id)) || ((query[field] instanceof Array) && query[field].includes(v._id)))
                         input(type="hidden",name=field,value=v._id)
-        div.flx
+        if facet.length > 0 && (Object.keys(facet[0]).length)
+          div.ins.hig.flx.wlp.pad
             each values, field in facet[0]
               div.wht.rnd.shd.chart(class=field)
                 label.ico(class=field,for='flt'+field)=field
@@ -265,9 +267,9 @@ mixin facetChart(facet, query, tfacet)
             .right.gap
                 input.indent.btn#filter(type="submit", value="Filter")
                 a.indent.btn(href="/" + schemaName, type="submit", value="Clear") Clear
-                if pages > 1        
-                    for c in columns
-                        button.hid(id="sort"+c,name="sort",value=(query.sort=="-" + c ? "" : "-") + c)=c
+        if pages > 1        
+            for c in columns
+                button.hid(id="sort"+c,name="sort",value=(query.sort=="-" + c ? "" : "-") + c)=c
 
 mixin paginate
  if total > 0
@@ -389,12 +391,12 @@ mixin table(docs, columns, showCheckboxes, id)
                             input(type='checkbox',onClick='var cs = document.getElementsByClassName("rowCheck");for(c=0;c<cs.length;c++){cs[c].checked=this.checked}')
                     each column in columns
                         if pages > 1
-                            th.sortth.nobr
-                                label(for='sort'+column,class=(query ? (query['sort'] == column ? 'sortup': (query['sort'] == "-" + column ? 'sortdown' : '')): null))=column
+                            th.sortth.nobr.pointer
+                                label.block.pointer(for='sort'+column,class=(query ? (query['sort'] == column ? 'sortup': (query['sort'] == "-" + column ? 'sortdown' : '')): null))=column
                         else
                             case column
                                 when 'CVSS'
-                                    th(data-sort-method='number') CVSS
+                                    th.pointer(data-sort-method='number') CVSS
                                 default
                                     th=column
 

@@ -25,7 +25,7 @@ module.exports = {
    //reviewToken: 'randomtoken',
 
     // port where this tool is running
-    serverHost: 'localhost',
+    serverHost: '127.0.0.1',
     serverPort: 3555,
     basedir: '/',
 

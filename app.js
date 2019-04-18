@@ -2,6 +2,7 @@
 
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const mongoose = require('mongoose');
 const flash = require('connect-flash');
 const https = require('https');
@@ -118,13 +119,19 @@ app.use('/nvd', ensureAuthenticated, nvd.router);
 let docs = require('./routes/doc');
 
 app.locals.confOpts = {};
-for(section of conf.sections) {
-        app.locals.confOpts[section] = optSet(section, ['default', 'custom']);
+
+var defaultSections = fs.readdirSync('./default');
+var customSections = fs.readdirSync('./custom');
+var sections = new Set([...defaultSections, ...customSections]);
+
+for(section of sections) {
+    var s = optSet(section, ['default', 'custom']);
     //var s = conf.sections[section];
-    //if(s.schema) {
+    if(s.facet && s.facet.ID) {
+        app.locals.confOpts[section] = s;
         let r = docs(section, app.locals.confOpts[section]);
         app.use('/' + section, ensureAuthenticated, r.router);
-    //}
+    }
 }
 
 app.use('/home', ensureAuthenticated, async function(req, res, next){

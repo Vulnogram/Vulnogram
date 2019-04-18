@@ -463,8 +463,8 @@ pug_html = pug_html + (pug_escape(null == (pug_interp = value) ? "" : pug_interp
 };
 pug_mixins["facetChart"] = pug_interp = function(facet, query, tfacet){
 var block = (this && this.block), attributes = (this && this.attributes) || {};
-if ((total > 0) && facet.length > 0 && (Object.keys(facet[0]).length)) {
-pug_html = pug_html + "\u003Cform" + (" class=\"ins hig flx wlp pad\""+" id=\"chartForm\""+pug_attr("action", '/'+schemaName, true, false)+" method=\"GET\" onchange=\"document.getElementById('filter').className='indent btn sfe'\"") + "\u003E";
+if ((total > 0)) {
+pug_html = pug_html + "\u003C!-- && facet.length \u003E 0 && (Object.keys(facet[0]).length)--\u003E\u003Cform" + (" id=\"chartForm\""+pug_attr("action", '/'+schemaName, true, false)+" method=\"GET\" onchange=\"document.getElementById('filter').className='indent btn sfe'\"") + "\u003E";
 if (query && query.q) {
 pug_html = pug_html + "\u003Cinput" + (" type=\"hidden\" name=\"q\""+pug_attr("value", (Array.isArray(query.q) ? query.q.join(' ') : query.q), true, false)) + "\u002F\u003E";
 }
@@ -530,7 +530,8 @@ pug_html = pug_html + "\u003Cinput" + (" type=\"hidden\""+pug_attr("name", field
 }).call(this);
 
 }
-pug_html = pug_html + "\u003Cdiv class=\"flx\"\u003E";
+if (facet.length > 0 && (Object.keys(facet[0]).length)) {
+pug_html = pug_html + "\u003Cdiv class=\"ins hig flx wlp pad\"\u003E";
 // iterate facet[0]
 ;(function(){
   var $$obj = facet[0];
@@ -587,7 +588,8 @@ pug_html = pug_html + "\u003Clabel" + (pug_attr("for", "flt"+field, true, false)
   }
 }).call(this);
 
-pug_html = pug_html + "\u003Cdiv class=\"right gap\"\u003E\u003Cinput class=\"indent btn\" id=\"filter\" type=\"submit\" value=\"Filter\"\u002F\u003E\u003Ca" + (" class=\"indent btn\""+pug_attr("href", "/" + schemaName, true, false)+" type=\"submit\" value=\"Clear\"") + "\u003EClear\u003C\u002Fa\u003E";
+pug_html = pug_html + "\u003Cdiv class=\"right gap\"\u003E\u003Cinput class=\"indent btn\" id=\"filter\" type=\"submit\" value=\"Filter\"\u002F\u003E\u003Ca" + (" class=\"indent btn\""+pug_attr("href", "/" + schemaName, true, false)+" type=\"submit\" value=\"Clear\"") + "\u003EClear\u003C\u002Fa\u003E\u003C\u002Fdiv\u003E\u003C\u002Fdiv\u003E";
+}
 if (pages > 1) {
 // iterate columns
 ;(function(){
@@ -608,7 +610,7 @@ pug_html = pug_html + "\u003Cbutton" + (" class=\"hid\""+pug_attr("id", "sort"+c
 }).call(this);
 
 }
-pug_html = pug_html + "\u003C\u002Fdiv\u003E\u003C\u002Fdiv\u003E\u003C\u002Fform\u003E";
+pug_html = pug_html + "\u003C\u002Fform\u003E";
 }
 };
 pug_mixins["paginate"] = pug_interp = function(){
@@ -829,12 +831,12 @@ pug_html = pug_html + "\u003Cth data-sort-method=\"none\"\u003E\u003Cinput type=
       for (var pug_index20 = 0, $$l = $$obj.length; pug_index20 < $$l; pug_index20++) {
         var column = $$obj[pug_index20];
 if (pages > 1) {
-pug_html = pug_html + "\u003Cth class=\"sortth nobr\"\u003E\u003Clabel" + (pug_attr("class", pug_classes([(query ? (query['sort'] == column ? 'sortup': (query['sort'] == "-" + column ? 'sortdown' : '')): null)], [true]), false, false)+pug_attr("for", 'sort'+column, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = column) ? "" : pug_interp)) + "\u003C\u002Flabel\u003E\u003C\u002Fth\u003E";
+pug_html = pug_html + "\u003Cth class=\"sortth nobr pointer\"\u003E\u003Clabel" + (pug_attr("class", pug_classes(["block","pointer",(query ? (query['sort'] == column ? 'sortup': (query['sort'] == "-" + column ? 'sortdown' : '')): null)], [false,false,true]), false, false)+pug_attr("for", 'sort'+column, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = column) ? "" : pug_interp)) + "\u003C\u002Flabel\u003E\u003C\u002Fth\u003E";
 }
 else {
 switch (column){
 case 'CVSS':
-pug_html = pug_html + "\u003Cth data-sort-method=\"number\"\u003ECVSS\u003C\u002Fth\u003E";
+pug_html = pug_html + "\u003Cth class=\"pointer\" data-sort-method=\"number\"\u003ECVSS\u003C\u002Fth\u003E";
   break;
 default:
 pug_html = pug_html + "\u003Cth\u003E" + (pug_escape(null == (pug_interp = column) ? "" : pug_interp)) + "\u003C\u002Fth\u003E";
@@ -848,12 +850,12 @@ pug_html = pug_html + "\u003Cth\u003E" + (pug_escape(null == (pug_interp = colum
       $$l++;
       var column = $$obj[pug_index20];
 if (pages > 1) {
-pug_html = pug_html + "\u003Cth class=\"sortth nobr\"\u003E\u003Clabel" + (pug_attr("class", pug_classes([(query ? (query['sort'] == column ? 'sortup': (query['sort'] == "-" + column ? 'sortdown' : '')): null)], [true]), false, false)+pug_attr("for", 'sort'+column, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = column) ? "" : pug_interp)) + "\u003C\u002Flabel\u003E\u003C\u002Fth\u003E";
+pug_html = pug_html + "\u003Cth class=\"sortth nobr pointer\"\u003E\u003Clabel" + (pug_attr("class", pug_classes(["block","pointer",(query ? (query['sort'] == column ? 'sortup': (query['sort'] == "-" + column ? 'sortdown' : '')): null)], [false,false,true]), false, false)+pug_attr("for", 'sort'+column, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = column) ? "" : pug_interp)) + "\u003C\u002Flabel\u003E\u003C\u002Fth\u003E";
 }
 else {
 switch (column){
 case 'CVSS':
-pug_html = pug_html + "\u003Cth data-sort-method=\"number\"\u003ECVSS\u003C\u002Fth\u003E";
+pug_html = pug_html + "\u003Cth class=\"pointer\" data-sort-method=\"number\"\u003ECVSS\u003C\u002Fth\u003E";
   break;
 default:
 pug_html = pug_html + "\u003Cth\u003E" + (pug_escape(null == (pug_interp = column) ? "" : pug_interp)) + "\u003C\u002Fth\u003E";

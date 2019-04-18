@@ -154,6 +154,12 @@ body {
 .hid {
     display: none;
 }
+.block {
+    display: block;
+}
+.pointer {
+    cursor: pointer;
+}
 .invis {
   color: rgba(0,0,0,0); 
   font-size: 0;

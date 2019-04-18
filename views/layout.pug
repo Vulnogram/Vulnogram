@@ -14,7 +14,7 @@ html
                     block topHeaderLeft
                         a.logo.big(title="Making the world safer one CVE at a time, since 2017", href=conf.homepage)="Vulnogram"
                         |   
-                        each section in conf.sections
+                        each vx, section in confOpts
                             if confOpts && confOpts[section]
                                 - var cf = confOpts[section].conf ? confOpts[section].conf : {};
                                 a.icn.fbn(class=cf.class + (page && page.startsWith('/' + section + '/') ? " hig ins " : ""), title=cf.title, href = (cf.uri? cf.uri : '/' + section + '/' ))=cf.name

@@ -659,7 +659,7 @@ div[data-schemapath*="cvss"] label[for*="baseSeverity"]:before {
 .TITLE:before {
     background-position: -39em 0;
 }
-
+.organization:before,
 .CNA:before,
 .ASSIGNER:before {
     background-position: -12em 0;

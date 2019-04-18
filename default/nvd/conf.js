@@ -18,7 +18,7 @@ facet: {
     },
     date: {
         path: 'publishedDate',
-        sortDefault: '-publishedDate'
+        sortDefault: '-date'
     },
 /*    updated: {
         path: 'lastModifiedDate'
@@ -28,7 +28,7 @@ facet: {
         path: 'cve.problemtype.problemtype_data.description.value',
         //chart: true
     },
-  /*  vendor: {
+    vendor: {
         path: 'cve.affects.vendor.vendor_data.vendor_name',
         pipeline: [
             {
@@ -38,7 +38,7 @@ facet: {
             }
         ]
     },
-    product: {
+   /* product: {
         path: 'cve.affects.vendor.vendor_data.product.product_data.product_name',
         pipeline: [
             {
