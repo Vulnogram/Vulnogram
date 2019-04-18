@@ -4,12 +4,12 @@ function pug_classes_array(r,a){for(var s,e="",u="",c=Array.isArray(a),g=0;g<r.l
 function pug_classes_object(r){var a="",n="";for(var o in r)o&&r[o]&&pug_has_own_property.call(r,o)&&(a=a+n+o,n=" ");return a}
 function pug_escape(e){var a=""+e,t=pug_match_html.exec(a);if(!t)return e;var r,c,n,s="";for(r=t.index,c=0;r<a.length;r++){switch(a.charCodeAt(r)){case 34:n="&quot;";break;case 38:n="&amp;";break;case 60:n="&lt;";break;case 62:n="&gt;";break;default:continue}c!==r&&(s+=a.substring(c,r)),c=r+1,s+=n}return c!==r?s+a.substring(c,r):s}
 var pug_has_own_property=Object.prototype.hasOwnProperty;
-var pug_match_html=/["&<>]/;function pugRender(locals) {var pug_html = "", pug_mixins = {}, pug_interp;;var locals_for_with = (locals || {});(function (Array, Date, defectURL, doc, doc_id, isNaN, renderTemplate, textUtil) {pug_mixins["mitre"] = pug_interp = function(doc){
+var pug_match_html=/["&<>]/;function pugRender(locals) {var pug_html = "", pug_mixins = {}, pug_interp;;var locals_for_with = (locals || {});(function (Array, Date, defectURL, doc, doc_id, isNaN, renderTemplate, textUtil) {pug_mixins["mitre"] = pug_interp = function(cve){
 var block = (this && this.block), attributes = (this && this.attributes) || {};
-pug_html = pug_html + "\u003Ch2\u003EMITRE CVE entry preview\u003C\u002Fh2\u003E\u003Cdiv id=\"GeneratedTable\"\u003E\u003Ctable cellpadding=\"0\" cellspacing=\"0\" border=\"0\"\u003E\u003Ctbody\u003E\u003Ctr\u003E\u003Cth colspan=\"2\"\u003ECVE-ID\u003C\u002Fth\u003E\u003C\u002Ftr\u003E\u003Ctr\u003E\u003Ctd nowrap=\"nowrap\"\u003E\u003Ch2\u003E" + (pug_escape(null == (pug_interp = doc.CVE_data_meta.ID) ? "" : pug_interp)) + "\u003C\u002Fh2\u003E\u003C\u002Ftd\u003E\u003Ctd class=\"ltgreybackground\"\u003E\u003Cdiv class=\"larger\"\u003E\u003Ca\u003ELearn more at National Vulnerability Database (NVD)\u003C\u002Fa\u003E\u003C\u002Fdiv\u003E\u003Cdiv class=\"smaller\"\u003E• Severity Rating • Fix Information • Vulnerable Software Versions • SCAP Mappings\u003C\u002Fdiv\u003E\u003C\u002Ftd\u003E\u003C\u002Ftr\u003E\u003Ctr\u003E\u003Cth colspan=\"2\"\u003EDescription\u003C\u002Fth\u003E\u003C\u002Ftr\u003E\u003Ctr\u003E\u003Ctd colspan=\"2\"\u003E";
-// iterate doc.description.description_data
+pug_html = pug_html + "\u003Ch2\u003EMITRE CVE entry preview\u003C\u002Fh2\u003E\u003Cdiv id=\"GeneratedTable\"\u003E\u003Ctable cellpadding=\"0\" cellspacing=\"0\" border=\"0\"\u003E\u003Ctbody\u003E\u003Ctr\u003E\u003Cth colspan=\"2\"\u003ECVE-ID\u003C\u002Fth\u003E\u003C\u002Ftr\u003E\u003Ctr\u003E\u003Ctd nowrap=\"nowrap\"\u003E\u003Ch2\u003E" + (pug_escape(null == (pug_interp = cve.CVE_data_meta.ID) ? "" : pug_interp)) + "\u003C\u002Fh2\u003E\u003C\u002Ftd\u003E\u003Ctd class=\"ltgreybackground\"\u003E\u003Cdiv class=\"larger\"\u003E\u003Ca\u003ELearn more at National Vulnerability Database (NVD)\u003C\u002Fa\u003E\u003C\u002Fdiv\u003E\u003Cdiv class=\"smaller\"\u003E• Severity Rating • Fix Information • Vulnerable Software Versions • SCAP Mappings\u003C\u002Fdiv\u003E\u003C\u002Ftd\u003E\u003C\u002Ftr\u003E\u003Ctr\u003E\u003Cth colspan=\"2\"\u003EDescription\u003C\u002Fth\u003E\u003C\u002Ftr\u003E\u003Ctr\u003E\u003Ctd colspan=\"2\"\u003E";
+// iterate cve.description.description_data
 ;(function(){
-  var $$obj = doc.description.description_data;
+  var $$obj = cve.description.description_data;
   if ('number' == typeof $$obj.length) {
       for (var pug_index0 = 0, $$l = $$obj.length; pug_index0 < $$l; pug_index0++) {
         var d = $$obj[pug_index0];
@@ -26,9 +26,9 @@ pug_html = pug_html + ((pug_escape(null == (pug_interp = d.value) ? "" : pug_int
 }).call(this);
 
 pug_html = pug_html + "\u003C\u002Ftd\u003E\u003C\u002Ftr\u003E\u003Ctr\u003E\u003Cth colspan=\"2\"\u003EReferences\u003C\u002Fth\u003E\u003C\u002Ftr\u003E\u003Ctr\u003E\u003Ctd class=\"note\" colspan=\"2\"\u003E\u003Cb\u003ENote: \u003C\u002Fb\u003E\u003Ca\u003EReferences\u003C\u002Fa\u003E are provided for the convenience of the reader to help distinguish between vulnerabilities. The list is not intended to be complete.\u003C\u002Ftd\u003E\u003C\u002Ftr\u003E\u003Ctr\u003E\u003Ctd colspan=\"2\"\u003E\u003Cul\u003E";
-// iterate doc.references.reference_data
+// iterate cve.references.reference_data
 ;(function(){
-  var $$obj = doc.references.reference_data;
+  var $$obj = cve.references.reference_data;
   if ('number' == typeof $$obj.length) {
       for (var pug_index1 = 0, $$l = $$obj.length; pug_index1 < $$l; pug_index1++) {
         var r = $$obj[pug_index1];
@@ -44,7 +44,7 @@ pug_html = pug_html + "\u003Cli\u003E\u003Ca" + (" target=\"_blank\""+pug_attr("
   }
 }).call(this);
 
-pug_html = pug_html + "\u003C\u002Ful\u003E\u003C\u002Ftd\u003E\u003C\u002Ftr\u003E\u003Ctr\u003E\u003Cth colspan=\"2\"\u003EAssigning CNA\u003C\u002Fth\u003E\u003C\u002Ftr\u003E\u003Ctr\u003E\u003Ctd colspan=\"2\"\u003E" + (pug_escape(null == (pug_interp = doc.CVE_data_meta.ASSIGNER) ? "" : pug_interp)) + " (MITRE uses CNA name instead of email address)\u003C\u002Ftd\u003E\u003C\u002Ftr\u003E\u003Ctr\u003E\u003Cth colspan=\"2\"\u003EDate Entry Created\u003C\u002Fth\u003E\u003C\u002Ftr\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb\u003EYYYYMMDD\u003C\u002Fb\u003E\u003C\u002Ftd\u003E\u003Ctd class=\"ltgreybackground\"\u003EDisclaimer: The entry creation date may reflect when the CVE-ID was allocated or reserved, and does not necessarily indicate when this vulnerability was discovered, shared with the affected vendor, publicly disclosed, or updated in CVE.\u003C\u002Ftd\u003E\u003C\u002Ftr\u003E\u003C\u002Ftbody\u003E\u003C\u002Ftable\u003E\u003C\u002Fdiv\u003E";
+pug_html = pug_html + "\u003C\u002Ful\u003E\u003C\u002Ftd\u003E\u003C\u002Ftr\u003E\u003Ctr\u003E\u003Cth colspan=\"2\"\u003EAssigning CNA\u003C\u002Fth\u003E\u003C\u002Ftr\u003E\u003Ctr\u003E\u003Ctd colspan=\"2\"\u003E" + (pug_escape(null == (pug_interp = cve.CVE_data_meta.ASSIGNER) ? "" : pug_interp)) + " (MITRE uses CNA name instead of email address)\u003C\u002Ftd\u003E\u003C\u002Ftr\u003E\u003Ctr\u003E\u003Cth colspan=\"2\"\u003EDate Entry Created\u003C\u002Fth\u003E\u003C\u002Ftr\u003E\u003Ctr\u003E\u003Ctd\u003E\u003Cb\u003EYYYYMMDD\u003C\u002Fb\u003E\u003C\u002Ftd\u003E\u003Ctd class=\"ltgreybackground\"\u003EDisclaimer: The entry creation date may reflect when the CVE-ID was allocated or reserved, and does not necessarily indicate when this vulnerability was discovered, shared with the affected vendor, publicly disclosed, or updated in CVE.\u003C\u002Ftd\u003E\u003C\u002Ftr\u003E\u003C\u002Ftbody\u003E\u003C\u002Ftable\u003E\u003C\u002Fdiv\u003E";
 };
 pug_mixins["para"] = pug_interp = function(t, hypertext){
 var block = (this && this.block), attributes = (this && this.attributes) || {};
@@ -298,73 +298,63 @@ pug_html = pug_html + (pug_escape(null == (pug_interp = obj) ? "" : pug_interp))
 }
 }
 };
-pug_mixins["slide"] = pug_interp = function(doc){
+pug_mixins["slide"] = pug_interp = function(cve){
 var block = (this && this.block), attributes = (this && this.attributes) || {};
 pug_html = pug_html + "\u003Cdiv class=\"page wht shd pad2 gap\"\u003E\u003Cb class=\"slideTitle\"\u003E";
-if (doc.source && doc.source.advisory) {
-pug_html = pug_html + (pug_escape(null == (pug_interp = doc.source.advisory) ? "" : pug_interp)) + "             ";
+if (cve.source && cve.source.advisory) {
+pug_html = pug_html + (pug_escape(null == (pug_interp = cve.source.advisory) ? "" : pug_interp)) + "             ";
 }
-pug_html = pug_html + (pug_escape(null == (pug_interp = doc.CVE_data_meta.TITLE + ' (' + doc.CVE_data_meta.ID + ')') ? "" : pug_interp)) + "\u003C\u002Fb\u003E\u003Cul class=\"bullets\"\u003E\u003Cli\u003E\u003Cb class=\"term\"\u003ECVSS: \u003C\u002Fb\u003E\u003Cspan class=\"text\"\u003E";
-if (doc.impact && doc.impact.cvss) {
-pug_mixins["CVSS"](doc.impact.cvss);
+pug_html = pug_html + (pug_escape(null == (pug_interp = cve.CVE_data_meta.TITLE + ' (' + cve.CVE_data_meta.ID + ')') ? "" : pug_interp)) + "\u003C\u002Fb\u003E\u003Cul class=\"bullets\"\u003E\u003Cli\u003E\u003Cb class=\"term\"\u003ECVSS: \u003C\u002Fb\u003E\u003Cspan class=\"text\"\u003E";
+if (cve.impact && cve.impact.cvss) {
+pug_mixins["CVSS"](cve.impact.cvss);
 }
-pug_html = pug_html + "\u003C\u002Fspan\u003E\u003C\u002Fli\u003E\u003Cli\u003E\u003Cb class=\"term\"\u003EPR: \u003C\u002Fb\u003E\u003Cspan class=\"text\"\u003E" + (pug_escape(null == (pug_interp = doc.source.defect) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003C\u002Fli\u003E\u003Cli\u003E\u003Cb class=\"term\"\u003EAffects: \u003C\u002Fb\u003E\u003Cspan class=\"text\"\u003E" + (pug_escape(null == (pug_interp = textUtil.getProductAffected(doc)) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003C\u002Fli\u003E\u003Cli\u003E\u003Cb class=\"term\"\u003EProblem: \u003C\u002Fb\u003E\u003Cspan class=\"text\"\u003E";
-pug_mixins["mpara"](doc.description.description_data.slice(0,1));
+pug_html = pug_html + "\u003C\u002Fspan\u003E\u003C\u002Fli\u003E\u003Cli\u003E\u003Cb class=\"term\"\u003EPR: \u003C\u002Fb\u003E\u003Cspan class=\"text\"\u003E" + (pug_escape(null == (pug_interp = cve.source.defect) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003C\u002Fli\u003E\u003Cli\u003E\u003Cb class=\"term\"\u003EAffects: \u003C\u002Fb\u003E\u003Cspan class=\"text\"\u003E" + (pug_escape(null == (pug_interp = textUtil.getProductAffected(cve)) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003C\u002Fli\u003E\u003Cli\u003E\u003Cb class=\"term\"\u003EProblem: \u003C\u002Fb\u003E\u003Cspan class=\"text\"\u003E";
+pug_mixins["mpara"](cve.description.description_data.slice(0,1));
 pug_html = pug_html + "\u003C\u002Fspan\u003E\u003C\u002Fli\u003E\u003Cli\u003E\u003Cb class=\"term\"\u003EWorkaround: \u003C\u002Fb\u003E\u003Cspan class=\"text\"\u003E";
-pug_mixins["mpara"](doc.work_around);
+pug_mixins["mpara"](cve.work_around);
 pug_html = pug_html + "\u003C\u002Fspan\u003E\u003C\u002Fli\u003E\u003Cli\u003E\u003Cb class=\"term\"\u003ESolution: \u003C\u002Fb\u003E\u003Cspan class=\"text\"\u003E";
-pug_mixins["mpara"](doc.solution);
+pug_mixins["mpara"](cve.solution);
 pug_html = pug_html + "\u003C\u002Fspan\u003E\u003C\u002Fli\u003E\u003C\u002Ful\u003E\u003C\u002Fdiv\u003E";
 };
-pug_mixins["page"] = pug_interp = function(doc){
+pug_mixins["page"] = pug_interp = function(cve){
 var block = (this && this.block), attributes = (this && this.attributes) || {};
 var sourceText = {"INTERNAL":"This issue was found during internal product security testing or research.", "EXTERNAL":"This issue was discovered during an external security research.", "USER":"This issue was seen during production usage.", "UNKNOWN":""};
-var CDM = doc.CVE_data_meta;
+var CDM = cve.CVE_data_meta;
 var cveid = CDM.ID.match(/^CVE-[0-9-]+$/)? CDM.ID : 'CVE-yyyy-nnnn';
 pug_html = pug_html + "\u003Ch2\u003E";
-if (doc.source && doc.source.advisory) {
-pug_html = pug_html + (pug_escape(null == (pug_interp = doc.source.advisory) ? "" : pug_interp)) + " ";
+if (cve.source && cve.source.advisory) {
+pug_html = pug_html + (pug_escape(null == (pug_interp = cve.source.advisory) ? "" : pug_interp)) + " ";
 }
-if (doc.CNA_private && doc.CNA_private.publish && doc.CNA_private.publish.ym) {
-pug_html = pug_html + (pug_escape(null == (pug_interp = doc.CNA_private.publish.ym) ? "" : pug_interp)) + " ";
-}
-pug_html = pug_html + "Security Bulletin: " + (pug_escape(null == (pug_interp = CDM.TITLE + ' (' + cveid + ')') ? "" : pug_interp)) + "\u003C\u002Fh2\u003E\u003Ch4\u003EPRODUCT AFFECTED:\u003C\u002Fh4\u003E\u003Cp\u003E" + (pug_escape(null == (pug_interp = textUtil.getProductAffected(doc)) ? "" : pug_interp)) + "\u003C\u002Fp\u003E\u003Ch4\u003EPROBLEM:\u003C\u002Fh4\u003E";
-pug_mixins["mpara"](doc.description.description_data);
-pug_mixins["mpara"](doc.configuration);
-pug_mixins["mpara"](doc.exploit);
-if (doc.source) {
-if (sourceText[doc.source.discovery]) {
-pug_html = pug_html + "\u003Cp\u003E" + (pug_escape(null == (pug_interp = sourceText[doc.source.discovery]) ? "" : pug_interp)) + "\u003C\u002Fp\u003E";
+pug_html = pug_html + (pug_escape(null == (pug_interp = CDM.TITLE + ' (' + cveid + ')') ? "" : pug_interp)) + "\u003C\u002Fh2\u003E\u003Ch4\u003EPRODUCT AFFECTED:\u003C\u002Fh4\u003E\u003Cp\u003E" + (pug_escape(null == (pug_interp = textUtil.getProductAffected(cve)) ? "" : pug_interp)) + "\u003C\u002Fp\u003E\u003Ch4\u003EPROBLEM:\u003C\u002Fh4\u003E";
+pug_mixins["mpara"](cve.description.description_data);
+pug_mixins["mpara"](cve.configuration);
+pug_mixins["mpara"](cve.exploit);
+if (cve.source) {
+if (sourceText[cve.source.discovery]) {
+pug_html = pug_html + "\u003Cp\u003E" + (pug_escape(null == (pug_interp = sourceText[cve.source.discovery]) ? "" : pug_interp)) + "\u003C\u002Fp\u003E";
 }
 if (CDM.AKA) {
 pug_html = pug_html + "\u003Cp\u003EThis issue is also known as " + (pug_escape(null == (pug_interp = CDM.AKA) ? "" : pug_interp)) + ".\u003C\u002Fp\u003E";
 }
 }
 pug_html = pug_html + "\u003Cp\u003EThis issue has been assigned \u003Ca" + (pug_attr("href", "http://cve.mitre.org/cgi-bin/cvename.cgi?name="+cveid, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = cveid) ? "" : pug_interp)) + "\u003C\u002Fa\u003E.\u003C\u002Fp\u003E\u003Ch4\u003ESOLUTION:\u003C\u002Fh4\u003E";
-pug_mixins["mpara"](doc.solution);
-if (doc.source.defect && doc.source.defect.length > 0) {
-pug_html = pug_html + "\u003Cp\u003EThis issue is being tracked as PR ";
-pug_mixins["linklist"](doc.source.defect, defectURL);
-pug_html = pug_html + " which";
-if ((doc.source.defect.length>1)) {
-pug_html = pug_html + " are";
+pug_mixins["mpara"](cve.solution);
+if (cve.source.defect && cve.source.defect.length > 0) {
+pug_html = pug_html + "\u003Cp\u003EThis issue is being tracked as ";
+pug_mixins["linklist"](cve.source.defect, defectURL);
+pug_html = pug_html + ".\u003C\u002Fp\u003E";
 }
-else {
-pug_html = pug_html + " is";
-}
-pug_html = pug_html + " visible on the Customer Support website.\u003C\u002Fp\u003E";
-}
-pug_html = pug_html + "\u003Cp\u003ENote: Juniper SIRT's \u003Ca href=\"https:\u002F\u002Fkb.juniper.net\u002FKB16765\"\u003Epolicy\u003C\u002Fa\u003E is not to evaluate releases which are beyond End of Engineering (EOE) or End of Life (EOL).\u003C\u002Fp\u003E\u003Ch4\u003EWORKAROUND:\u003C\u002Fh4\u003E";
-pug_mixins["mpara"](doc.work_around);
-pug_html = pug_html + "\u003Ch4\u003EIMPLEMENTATION:\u003C\u002Fh4\u003E\u003Cp\u003ESoftware Releases, patches and updates are available at \u003Ca href=\"https:\u002F\u002Fwww.juniper.net\u002Fsupport\u002Fdownloads\u002F\"\u003Ehttps:\u002F\u002Fwww.juniper.net\u002Fsupport\u002Fdownloads\u002F\u003C\u002Fa\u003E.\u003C\u002Fp\u003E\u003Ch4\u003EMODIFICATION HISTORY:\u003C\u002Fh4\u003E\u003Cp\u003E\u003Cul\u003E\u003Cli\u003E";
+pug_html = pug_html + "\u003Ch4\u003EWORKAROUND:\u003C\u002Fh4\u003E";
+pug_mixins["mpara"](cve.work_around);
+pug_html = pug_html + "\u003Ch4\u003EMODIFICATION HISTORY:\u003C\u002Fh4\u003E\u003Cp\u003E\u003Cul\u003E\u003Cli\u003E";
 pug_mixins["renderDate"](CDM.DATE_PUBLIC);
-pug_html = pug_html + ": Initial Publication.\u003C\u002Fli\u003E\u003C\u002Ful\u003E\u003C\u002Fp\u003E\u003Ch4\u003ERELATED LINKS:\u003C\u002Fh4\u003E\u003Cul\u003E\u003Cli\u003E\u003Ca href=\"https:\u002F\u002Fkb.juniper.net\u002FKB16613\"\u003EKB16613: Overview of the Juniper Networks SIRT Quarterly Security Bulletin Publication Process\u003C\u002Fa\u003E\u003C\u002Fli\u003E\u003Cli\u003E\u003Ca href=\"https:\u002F\u002Fkb.juniper.net\u002FKB16765\"\u003EKB16765: In which releases are vulnerabilities fixed?\u003C\u002Fa\u003E\u003C\u002Fli\u003E\u003Cli\u003E\u003Ca href=\"https:\u002F\u002Fkb.juniper.net\u002FKB16446\"\u003EKB16446: Common Vulnerability Scoring System (CVSS) and Juniper's Security Advisories\u003C\u002Fa\u003E\u003C\u002Fli\u003E\u003Cli\u003E\u003Ca href=\"https:\u002F\u002Fwww.juniper.net\u002Fsecurity\u002Freport-vulnerability\u002F\"\u003EReport a Security Vulnerability - How to Contact the Juniper Networks Security Incident Response Team\u003C\u002Fa\u003E\u003C\u002Fli\u003E";
+pug_html = pug_html + ": Initial Publication.\u003C\u002Fli\u003E\u003C\u002Ful\u003E\u003C\u002Fp\u003E\u003Ch4\u003ERELATED LINKS:\u003C\u002Fh4\u003E\u003Cul\u003E";
 if (CDM.ID) {
 pug_html = pug_html + "\u003Cli\u003E\u003Ca" + (pug_attr("href", "http://cve.mitre.org/cgi-bin/cvename.cgi?name="+cveid, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = cveid + " at cve.mitre.org") ? "" : pug_interp)) + "\u003C\u002Fa\u003E\u003C\u002Fli\u003E";
 }
-// iterate doc.references.reference_data
+// iterate cve.references.reference_data
 ;(function(){
-  var $$obj = doc.references.reference_data;
+  var $$obj = cve.references.reference_data;
   if ('number' == typeof $$obj.length) {
       for (var pug_index8 = 0, $$l = $$obj.length; pug_index8 < $$l; pug_index8++) {
         var r = $$obj[pug_index8];
@@ -381,19 +371,19 @@ pug_html = pug_html + "\u003Cli\u003E\u003Ca" + (pug_attr("href", r.url, true, f
 }).call(this);
 
 pug_html = pug_html + "\u003C\u002Ful\u003E\u003Ch4\u003ECVSS SCORE:\u003C\u002Fh4\u003E";
-if (doc.impact && doc.impact.cvss) {
+if (cve.impact && cve.impact.cvss) {
 pug_html = pug_html + "\u003Cp\u003E";
-pug_mixins["CVSS"](doc.impact.cvss);
+pug_mixins["CVSS"](cve.impact.cvss);
 pug_html = pug_html + "\u003C\u002Fp\u003E";
-if (doc.impact.cvss.baseSeverity) {
-pug_html = pug_html + "\u003Ch4\u003ERISK LEVEL:\u003C\u002Fh4\u003E\u003Cp\u003E" + (pug_escape(null == (pug_interp = doc.impact.cvss.baseSeverity) ? "" : pug_interp)) + "\u003C\u002Fp\u003E";
+if (cve.impact.cvss.baseSeverity) {
+pug_html = pug_html + "\u003Ch4\u003ERISK LEVEL:\u003C\u002Fh4\u003E\u003Cp\u003E" + (pug_escape(null == (pug_interp = cve.impact.cvss.baseSeverity) ? "" : pug_interp)) + "\u003C\u002Fp\u003E";
 }
 }
-if (doc.credit && doc.credit.length > 0) {
-pug_html = pug_html + "\u003Ch4\u003EACKNOWLEDGEMENTS:\u003C\u002Fh4\u003EThe Juniper SIRT would like to would like to acknowledge and thank,\u003Cul\u003E";
-// iterate doc.credit
+if (cve.credit && cve.credit.length > 0) {
+pug_html = pug_html + "\u003Ch4\u003EACKNOWLEDGEMENTS:\u003C\u002Fh4\u003E\u003Cul\u003E";
+// iterate cve.credit
 ;(function(){
-  var $$obj = doc.credit;
+  var $$obj = cve.credit;
   if ('number' == typeof $$obj.length) {
       for (var pug_index9 = 0, $$l = $$obj.length; pug_index9 < $$l; pug_index9++) {
         var c = $$obj[pug_index9];
@@ -411,9 +401,9 @@ pug_html = pug_html + "\u003Cli\u003E" + (pug_escape(null == (pug_interp = c.val
 
 pug_html = pug_html + "\u003C\u002Ful\u003E";
 }
-if (doc.CNA_private && doc.CNA_private.internal_comments) {
+if (cve.CNA_private && cve.CNA_private.internal_comments) {
 pug_html = pug_html + "\u003Ch4\u003EINTERNAL COMMENTS:\u003C\u002Fh4\u003E\u003Cp\u003E";
-pug_mixins["para"](doc.CNA_private.internal_comments);
+pug_mixins["para"](cve.CNA_private.internal_comments);
 pug_html = pug_html + "\u003C\u002Fp\u003E";
 }
 };
