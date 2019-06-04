@@ -125,6 +125,9 @@ JSONEditor.defaults.editors.string = JSONEditor.defaults.editors.string.extend({
     },
     build: function() {
         this._super();
+        if(this.label && this.options.class) {
+            this.label.className = this.label.className + ' ' + this.options.class;
+        }
         if(this.schema.examples && this.schema.examples.length > 0){
             var dlist = document.createElement('datalist');
             dlist.setAttribute('id', this.path + '-datalist');
@@ -669,6 +672,7 @@ JSONEditor.defaults.themes.custom = JSONEditor.AbstractTheme.extend({
   getFormControl: function(label, input, description) {
     var el = document.createElement('div');
     el.className = 'form-control';
+    console.log(input.editor);
     if(label) {
         if(description)
             label.setAttribute('title', description.textContent);
@@ -692,7 +696,7 @@ JSONEditor.defaults.themes.custom = JSONEditor.AbstractTheme.extend({
   },
     getFormInputLabel: function (text) {
         var el = this._super(text);
-        el.className = 'lbl icn ' +text;
+        el.className = 'lbl icn ' + text;
         return el;
     },
     getFormInputDescription: function (text) {

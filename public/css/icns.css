@@ -622,6 +622,7 @@ div[data-schemapath*="cvss"] label[for*="baseSeverity"]:before {
     display: none;
 }
 
+.ci-date:before,
 .data_changelog:before,
 .pending:before,
 .year:before,
@@ -651,12 +652,13 @@ div[data-schemapath*="cvss"] label[for*="baseSeverity"]:before {
     background-position: -55em 0;
 }
 
+.keywords:before,
 .uuid:before,
 .ID:before {
     background-position: -37em 0;
 }
-
-.TITLE:before {
+.TITLE:before,
+.title:before {
     background-position: -39em 0;
 }
 .organization:before,

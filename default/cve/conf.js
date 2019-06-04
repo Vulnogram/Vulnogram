@@ -462,6 +462,7 @@ schema: {
      "$ref": "#/definitions/cve_id",
      "description": "CVE-yyyy-nnnn",
      "options": {
+         "class": "ID",
       "input_width": "10em",
     "grid_columns": 6
      }
@@ -479,7 +480,8 @@ schema: {
      "type": "string",
      "format": "datetime",
      "options": {
-      "input_width": "18em",
+         "class": "date",
+         "input_width": "18em",
          "grid_columns": 6
      }
     },
@@ -487,6 +489,7 @@ schema: {
      "type": "string",
      "description": "Short summary",
       "options": {
+          
          "grid_columns": 12
      }
    },
@@ -635,6 +638,9 @@ schema: {
        "description": {
         "type": "array",
         "minItems": 1,
+        "options": {
+            "disable_array_add": "true"
+        },
         "items": {
          "title": "problem type description",
            "type": "object",
