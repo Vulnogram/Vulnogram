@@ -9,13 +9,13 @@ module.exports = {
     database: 'mongodb://127.0.0.1:27017/vulnogram',
 
     // Name of the organization that should be used in page titles etc.,
-    orgName: 'Example Org',
+    //orgName: 'Example Org',
 
     // Name of the group that should be used in page titles etc.,
     groupName: 'Security Incident Response Team',
 
     //CNA contact address
-    contact: 'sirt@example.net',
+    //contact: 'sirt@example.net',
 
     classification: 'Confidential INTERNAL USE ONLY',
     copyright: '© Example Org',
