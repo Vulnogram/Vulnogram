@@ -121,7 +121,7 @@ let docs = require('./routes/doc');
 app.locals.confOpts = {};
 
 var defaultSections = fs.readdirSync('./default');
-var customSections = fs.readdirSync('./custom');
+var customSections = fs.existsSync('./custom') ? fs.readdirSync('./custom') : [];
 var sections = new Set([...defaultSections, ...customSections]);
 
 for(section of sections) {
