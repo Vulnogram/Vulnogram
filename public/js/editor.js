@@ -672,7 +672,7 @@ JSONEditor.defaults.themes.custom = JSONEditor.AbstractTheme.extend({
   getFormControl: function(label, input, description) {
     var el = document.createElement('div');
     el.className = 'form-control';
-    console.log(input.editor);
+    //console.log(input.editor);
     if(label) {
         if(description)
             label.setAttribute('title', description.textContent);
