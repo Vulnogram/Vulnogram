@@ -7,8 +7,9 @@ UJS = ./node_modules/.bin/uglifyjs
 
 TARGETS := $(OUT)/index.html $(CSS)/sprite.svg $(CSS)/min.css $(CSS)/icns.css $(CSS)/logo.png $(CSS)/logo.gif $(JS)/util.js $(JS)/editor.js $(JS)/cvss.json $(JS)/cwe-frequent.json
 
-$(OUT)/index.html: ./scripts/standalone.js ./config/conf-standalone.js ./default/* ./default/cve/* ./views/*
-	node $<
+$(OUT)/index.html: ./scripts/standalone.js ./config/conf-standalone.js ./[cd][ue][sf]*[mt]/cve/* ./views/*
+	if [ -e "./custom/cve/conf.js" ]; then node $< custom ;  else node $< ; fi
+
 
 $(OUT)/js:
 	mkdir -p $(OUT)/js
