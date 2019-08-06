@@ -662,7 +662,7 @@ schema: {
              "type": "string",
              "minLength": 2,
              "maxLength": 3999,
-             "$ref": "/js/cwe-frequent.json"
+             "$ref": "./js/cwe-frequent.json"
             }
            }
         },
@@ -721,7 +721,7 @@ schema: {
    "type": "object",
    "properties": {
     "cvss": {
-     "$ref": "/js/cvss.json"
+     "$ref": "./js/cvss.json"
     }
    }
   },
