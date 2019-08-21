@@ -12,14 +12,17 @@ const fs = require('fs');
 const pug = require('pug');
 const conf = require('../config/conf-standalone');
 const optSet = require('../models/set');
-
 // Compile the template to a function string
-var cveEdit = pug.compileFile('default/cve/edit.pug', {compileDebug: false});
+
+var editTemplate = fs.existsSync('custom/cve/edit.pug') ? 'custom/cve/edit.pug' : 'default/cve/edit.pug';
+var renderTemplate = fs.existsSync('custom/cve/render.pug') ? 'custom/cve/render.pug' : 'default/cve/render.pug';
+
+var cveEdit = pug.compileFile(editTemplate, {compileDebug: false});
 confOpts = {
     cve: optSet('cve', ['default'].concat(process.argv.slice(2)))
 }
-
-confOpts.cve.conf.uri = '/';
+console.log(confOpts.cve.render);
+confOpts.cve.conf.uri = '.';
 var cveProps = confOpts.cve.schema.properties;
 delete cveProps.CNA_private;
 cveProps.CVE_data_meta.properties.STATE.enum = 
@@ -37,7 +40,7 @@ fs.writeFileSync("standalone/index.html", cveEdit({
     allowAjax: false,
 }));
 
-var pugRender = pug.compileFileClient('default/cve/render.pug', {
+var pugRender = pug.compileFileClient(renderTemplate, {
         basedir: 'views',
         name: 'pugRender',
         compileDebug: false,

@@ -62,32 +62,31 @@ mixin renderDate(value)
     if v
         = v.toJSON().substr(0,10)
 
-mixin page(obj)
-    if obj !== null
-        if typeof obj === 'string'
-            if obj.length < 20
-                span(class=obj)=obj
-            else
-                span.wrp=obj
-        else if obj instanceof Array
-            if obj.length > 0
-                ol
-                    for v, k in obj
-                        li
-                            +page(v)
-        else if typeof obj === 'object'
-            for v, k in obj
-                if obj.hasOwnProperty(k)
-                    .indent
-                        b.ico(class=k)=k
-                            | : 
-                        |  
-                        +page(v)
-        else
-            =obj
-
-
 block content
+    block pageDef
+        mixin page(obj)
+            if obj !== null
+                if typeof obj === 'string'
+                    if obj.length < 20
+                        span(class=obj)=obj
+                    else
+                        span.wrp=obj
+                else if obj instanceof Array
+                    if obj.length > 0
+                        ol
+                            for v, k in obj
+                                li
+                                    +page(v)
+                else if typeof obj === 'object'
+                    for v, k in obj
+                        if obj.hasOwnProperty(k)
+                            .indent
+                                b.ico(class=k)=k
+                                    | : 
+                                |  
+                                +page(v)
+                else
+                    =obj
     .big=doc_id
     if doc
         if renderTemplate == 'default'

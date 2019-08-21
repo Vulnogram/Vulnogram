@@ -834,6 +834,7 @@ var docEditorOptions = {
     input_height: '4em',
     template: 'custom',
     prompt_before_delete: false,
+    ajaxBase: ajaxBase,
     // The schema for the editor
     schema: docSchema
     // Seed the form with a starting value
@@ -935,13 +936,13 @@ if (document.getElementById('save1') && document.getElementById('save2')) {
     document.getElementById('save2').removeAttribute("style");
 }
 
-function  loadJSON(res, id, message) {
+function loadJSON(res, id, message) {
     // workaround for JSON Editor issue with clearing arrays
     // https://github.com/jdorn/json-editor/issues/617
     if(docEditor) {
         docEditor.destroy();
     }
-    docEditor = new  JSONEditor(document.getElementById('editor'), docEditorOptions);
+    docEditor = new JSONEditor(document.getElementById('editor'), docEditorOptions);
     docEditor.on('ready', function () {
         docEditor.root.setValue(res, true);
         infoMsg.textContent = message ? message : '';
@@ -973,8 +974,6 @@ function  loadJSON(res, id, message) {
 
     });
 }
-
-loadJSON(initJSON);
 
 /*docEditor.on('ready', function () {
     // Now the api methods will be available

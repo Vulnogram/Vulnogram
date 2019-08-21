@@ -1,10 +1,10 @@
 var conf = require('../../config/conf');
 var express = require('express')
-var router = express.Router()
+var router = express.Router();
 const csurf = require('csurf');
 var csrfProtection = csurf();
 var package = require('../../package.json');
-module.exports= {
+module.exports = {
 conf: {
     title: 'CVE: Common Vulnerabilities and Exposures',
     name: 'CVE',
@@ -662,7 +662,7 @@ schema: {
              "type": "string",
              "minLength": 2,
              "maxLength": 3999,
-             "$ref": "/js/cwe-frequent.json"
+             "$ref": "js/cwe-frequent.json"
             }
            }
         },
@@ -721,7 +721,7 @@ schema: {
    "type": "object",
    "properties": {
     "cvss": {
-     "$ref": "/js/cvss.json"
+     "$ref": "js/cvss.json"
     }
    }
   },

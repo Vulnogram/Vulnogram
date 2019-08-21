@@ -68,21 +68,23 @@ block content
     if !min
         div(style="clear:both")
             button.gap.btn.save(id="save2",style="visibility:hidden") SAVE
-
-    script
-        if conf.publicDefectURL
-            | var defectURL = "!{conf.publicDefectURL}";
-        | var idpath = "#{idpath}";
-        | var allowAjax = "#{allowAjax}";
-        | var schemaName = "#{schemaName}";
-        | var postUrl = "#{postUrl?postUrl:''}";
-        | var csrfToken = "#{csrfToken}";
-        if doc && doc.body
-            | var initJSON=!{JSON.stringify(doc.body).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029').replace(/</g, '\\u003C').replace(/>/g, '\\u003E').replace(/\//g, '\\u002F')};
-        else
-            | var initJSON = undefined;
-        if min
-            | var docSchema=!{JSON.stringify(opts && opts.schema ? opts.schema : '{}').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029').replace(/</g, '\\u003C').replace(/>/g, '\\u003E').replace(/\//g, '\\u002F')};
+    
+    block initGlobals
+        script
+            if conf.publicDefectURL
+                | var defectURL = "!{conf.publicDefectURL}";
+            | var idpath = "#{idpath}";
+            | var allowAjax = "#{allowAjax}";
+            | var schemaName = "#{schemaName}";
+            | var postUrl = "#{postUrl?postUrl:''}";
+            | var csrfToken = "#{csrfToken}";
+            | var ajaxBase  = "#{conf.basedir}";
+            if doc && doc.body
+                | var initJSON=!{JSON.stringify(doc.body).replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029').replace(/</g, '\\u003C').replace(/>/g, '\\u003E').replace(/\//g, '\\u002F')};
+            else
+                | var initJSON = undefined;
+            if min
+                | var docSchema=!{JSON.stringify(opts && opts.schema ? opts.schema : '{}').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029').replace(/</g, '\\u003C').replace(/>/g, '\\u003E').replace(/\//g, '\\u002F')};
 
 
     script(src=conf.basedir + 'js/util.js')
@@ -92,6 +94,10 @@ block content
     script(src=conf.ace,integrity=conf.aceHash,crossorigin="anonymous")
     script(src=conf.basedir + 'js/' + schemaName + '/render.js')
     script(src=conf.basedir + 'js/editor.js')
+
+    block loadEditor
+        script loadJSON(initJSON);
+
     if doc && doc.body
         script getChanges("#{doc_id}");
 

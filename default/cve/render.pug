@@ -33,7 +33,7 @@ block prepend content
                     span.text
                         +mpara(cve.solution)
 
-
+block pageDef
     mixin page(cve)
         - var sourceText = {"INTERNAL":"This issue was found during internal product security testing or research.", "EXTERNAL":"This issue was discovered during an external security research.", "USER":"This issue was seen during production usage.", "UNKNOWN":""};
         - var CDM = cve.CVE_data_meta;
