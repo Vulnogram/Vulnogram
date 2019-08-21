@@ -19,11 +19,11 @@ block customtabs
         .wht.fil.bor.pad
             div.render(id="render")
         input.tab(name='tabs', type='radio', id='mitreTab', value="5")
-        label.lbl(for='mitreTab') MITRE
+        label.lbl(for='mitreTab') MITRE-Preview
         .wht.fil.bor.pad
             div#mitreweb
         input.tab(name='tabs', type='radio', id='jsonTab', value="6")
-        label.lbl(for='jsonTab') JSON            
+        label.lbl(for='jsonTab') CVE-JSON            
         .wht.fil.bor.pad
             div(style='float:right')
                 a.icn.right.copy.btn(onmouseover='this.textContent="Copy"',onclick='copyText(outjson);this.textContent="Copied"') Copy
