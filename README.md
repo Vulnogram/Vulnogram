@@ -59,11 +59,11 @@ Vulnogram project aims to make it easier for vendors and security researchers to
 #### Finish: Web application should be now accessible at:
 	http://localhost:3555/ or https://localhost:3555/ depending on configuration.
 
-## Create the minimal standalone, stateless web page and client side scripts.
+## Create the minimal, browser mode, standalone, stateless web page and client side scripts.
 
     $ make min
     
-This creates standalone /index.html with minimized javascript and stylesheets can be hosted independelty on websites serving static files.
+This creates standalone /index.html with minimized javascript and stylesheets can be hosted independently on websites serving static files. Opening the index.html as a file URL may not work since some browsers (including Chrome) will not run async requests on file:// URLs. It is recommended to serve these files from a webserver. See https://developer.mozilla.org/en-US/docs/Learn/Common_questions/set_up_a_local_testing_server for examples on how to run a simple testing webserver.
 
 ## Dependencies:
 
