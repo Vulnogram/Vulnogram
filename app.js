@@ -35,7 +35,9 @@ db.once('open', function () {
 
 //Check for db errors
 db.on('error', function (err) {
-    console.error(err);
+   console.error(err.message);
+   console.error('Check mongodb connection URL configuration. Ensure Mongodb server is running!');
+   process.exit();
 });
 
 const app = express();
