@@ -14,6 +14,17 @@ Vulnogram project aims to make it easier for vendors and security researchers to
 
 ## Getting started
 
+Vulnogram can be deployed in two modes:
+
+| Browser mode                  | Server mode |
+|------------------------------|------------|
+| Frontend web UI only, as seen on [vulnogram.github.io](https://vulnogram.github.io). | A NodeJS web application serves frontend web UI for a backend Mongodb. |
+| Can't save CVE JSON drafts.  | Save created JSON documents to a Mongodb backend. |
+| No login required.           | Users are authenticated. |
+| No workflow or tracking.     | Allows tracking, querying and searching of JSON documents. |
+
+### Server mode deployment:
+
 #### Step 1. Install required Node.js modules.
 
 
@@ -59,11 +70,20 @@ Vulnogram project aims to make it easier for vendors and security researchers to
 #### Finish: Web application should be now accessible at:
 	http://localhost:3555/ or https://localhost:3555/ depending on configuration.
 
-## Create the minimal, browser mode, standalone, stateless web page and client side scripts.
+## Browser mode deployment: 
+
+#### Configure defaults
+
+* Install required nodejs modules. See [step 1](https://github.com/Vulnogram/Vulnogram#step-1-install-required-nodejs-modules)  above.
+* Configure Vulnogram following [step 3](https://github.com/Vulnogram/Vulnogram#step-3-edit-the-config-parameters-in-confjs-to-suite-your-requirements) to 5 above.
+
+#### Generate files needed for a front-end only static website (browser mode).
 
     $ make min
     
-This creates standalone /index.html with minimized javascript and stylesheets can be hosted independently on websites serving static files. Opening the index.html as a file URL may not work since some browsers (including Chrome) will not run async requests on file:// URLs. It is recommended to serve these files from a webserver. See https://developer.mozilla.org/en-US/docs/Learn/Common_questions/set_up_a_local_testing_server for examples on how to run a simple testing webserver.
+This creates standalone /index.html with minimized javascript and stylesheets can be hosted independently on websites serving static files. This does not require the backend mongodb server or the nodejs server application to be running.
+
+Note: Opening the index.html as a file URL may not work since some browsers (including Chrome) will not run async requests on file:// URLs. It is recommended to serve these files from a webserver. See https://developer.mozilla.org/en-US/docs/Learn/Common_questions/set_up_a_local_testing_server for examples on how to run a simple testing webserver.
 
 ## Dependencies:
 
