@@ -106,4 +106,4 @@ This project uses or depends on software from
 
 Copyright (c) 2017-2019 Chandan B N.
 
-SPDX-License-Identifier: CC-BY-3.0
+SPDX-License-Identifier: MIT
