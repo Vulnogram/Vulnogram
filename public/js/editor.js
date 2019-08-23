@@ -957,9 +957,11 @@ function loadJSON(res, id, message) {
             save2.className = "btn save gap";
             save1.className = "btn save";
         }
-        document.getElementById("editorTab").checked = true;
-        selected = "editorTab";
-        syncContents(selected);
+        if (message) {
+            selected = "editorTab";
+            document.getElementById(selected).checked = true;
+            syncContents(selected);
+        }
         docEditor.watch('root', incEditorChanges);
         editorLabel.className = "lbl";
         changes = 0;
