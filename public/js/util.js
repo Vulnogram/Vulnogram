@@ -524,58 +524,108 @@ sumCVE: function(list, cmap) {
 if(typeof module !== 'undefined') {
     module.exports = textUtil;
 }
-
 var cvssjs = {
     vectorMap: {
-                "attackVector": "AV",
-                "attackComplexity": "AC",
-                "privilegesRequired": "PR",
-                "userInteraction": "UI",
-                "scope": "S",
-                "confidentialityImpact": "C",
-                "integrityImpact": "I",
-                "availabilityImpact": "A"
-   },
-vector: function(cvss) {
-     var sep = "/";
-    var r= "CVSS:3.0";
-     for (var m in cvss) {
-        if (this.vectorMap[m] && cvss[m]) {
-            r += sep + this.vectorMap[m] + ':' + cvss[m].charAt(0);
+        "attackVector": "AV",
+        "attackComplexity": "AC",
+        "privilegesRequired": "PR",
+        "userInteraction": "UI",
+        "scope": "S",
+        "confidentialityImpact": "C",
+        "integrityImpact": "I",
+        "availabilityImpact": "A"
+    },
+    // Define associative arrays mapping each metric value to the constant used in the CVSS scoring formula.
+    Weight: {
+        attackVector: {
+            NETWORK: 0.85,
+            ADJACENT_NETWORK: 0.62,
+            LOCAL: 0.55,
+            PHYSICAL: 0.2
+        },
+        attackComplexity: {
+            HIGH: 0.44,
+            LOW: 0.77
+        },
+        privilegesRequired: {
+            UNCHANGED: {
+                NONE: 0.85,
+                LOW: 0.62,
+                HIGH: 0.27
+            },
+            // These values are used if Scope is Unchanged
+            CHANGED: {
+                NONE: 0.85,
+                LOW: 0.68,
+                HIGH: 0.5
+            }
+        },
+        // These values are used if Scope is Changed
+        userInteraction: {
+            NONE: 0.85,
+            REQUIRED: 0.62
+        },
+        scope: {
+            UNCHANGED: 6.42,
+            CHANGED: 7.52
+        },
+        confidentialityImpact: {
+            NONE: 0,
+            LOW: 0.22,
+            HIGH: 0.56
+        },
+        integrityImpact: {
+            NONE: 0,
+            LOW: 0.22,
+            HIGH: 0.56
+        },
+        availabilityImpact: {
+            NONE: 0,
+            LOW: 0.22,
+            HIGH: 0.56
         }
-    }
-    return r;
+        // C, I and A have the same weights
+    },
+    vector: function (cvss) {
+        var sep = "/";
+        var r = "CVSS:3.1";
+        for (var m in cvss) {
+            if (this.vectorMap[m] && cvss[m]) {
+                r += sep + this.vectorMap[m] + ':' + cvss[m].charAt(0);
+            }
+        }
+        return r;
 
-},
-   CVSSseveritys: [{
-    name: "NONE",
-    bottom: 0.0,
-    top: 0.0
-}, {
-    name: "LOW",
-    bottom: 0.1,
-    top: 3.9
-}, {
-    name: "MEDIUM",
-    bottom: 4.0,
-    top: 6.9
-}, {
-    name: "HIGH",
-    bottom: 7.0,
-    top: 8.9
-}, {
-    name: "CRITICAL",
-    bottom: 9.0,
-    top: 10.0
-}],
-    severityLevel: function(score) {
-        if(score == 0) {
+    },
+    CVSSseveritys: [{
+        name: "NONE",
+        bottom: 0.0,
+        top: 0.0
+   }, {
+        name: "LOW",
+        bottom: 0.1,
+        top: 3.9
+   }, {
+        name: "MEDIUM",
+        bottom: 4.0,
+        top: 6.9
+   }, {
+        name: "HIGH",
+        bottom: 7.0,
+        top: 8.9
+   }, {
+        name: "CRITICAL",
+        bottom: 9.0,
+        top: 10.0
+   }],
+    severityLevel: function (score) {
+        if (score == 0) {
             return 'NONE'
-        } else if(score <= 3.9) {
+        } else if (score <= 3.9) {
             return 'LOW'
-        } else if(score <= 6.9) {
+        } else if (score <= 6.9) {
             return 'MEDIUM'
-        } else if(score <= 8.9) {
+        } else if (score <= 8.9) {
             return 'HIGH'
         } else {
             return 'CRITICAL'
@@ -595,110 +645,57 @@ vector: function(cvss) {
             top: 'defined'
         };
     },
+    roundUp1: function Roundup(input) {
+        var int_input = Math.round(input * 100000);
+        if (int_input % 10000 === 0) {
+            return int_input / 100000
+        } else {
+            return (Math.floor(int_input / 10000) + 1) / 10
+        }
+    },
     calculate: function (cvss) {
-        var cvssVersion = "3.0";
+        var cvssVersion = "3.1";
         var exploitabilityCoefficient = 8.22;
         var scopeCoefficient = 1.08;
-
-        // Define associative arrays mapping each metric value to the constant used in the CVSS scoring formula.
-
-        var Weight = {
-            attackVector: {
-                NETWORK: 0.85,
-                ADJACENT_NETWORK: 0.62,
-                LOCAL: 0.55,
-                PHYSICAL: 0.2
-            },
-            attackComplexity: {
-                HIGH: 0.44,
-                LOW: 0.77
-            },
-            privilegesRequired: {
-                UNCHANGED: {
-                    NONE: 0.85,
-                    LOW: 0.62,
-                    HIGH: 0.27
-                },
-                // These values are used if Scope is Unchanged
-                CHANGED: {
-                    NONE: 0.85,
-                    LOW: 0.68,
-                    HIGH: 0.5
-                }
-            },
-            // These values are used if Scope is Changed
-            userInteraction: {
-                NONE: 0.85,
-                REQUIRED: 0.62
-            },
-            scope: {
-                UNCHANGED: 6.42,
-                CHANGED: 7.52
-            },
-            confidentialityImpact: {
-                NONE: 0,
-                LOW: 0.22,
-                HIGH: 0.56
-            },
-            integrityImpact: {
-                NONE: 0,
-                LOW: 0.22,
-                HIGH: 0.56
-            },
-            availabilityImpact: {
-                NONE: 0,
-                LOW: 0.22,
-                HIGH: 0.56
-            }
-            // C, I and A have the same weights
-
-        };
-
         var p;
         var val = {},
             metricWeight = {};
         try {
-            for (p in Weight) {
+            for (p in this.Weight) {
                 val[p] = cvss[p];
                 if (typeof val[p] === "undefined" || val[p] === '' || val[p] == null) {
                     return "?";
                 }
-                metricWeight[p] = Weight[p][val[p]];
+                metricWeight[p] = this.Weight[p][val[p]];
             }
         } catch (err) {
             return err; // TODO: need to catch and return sensible error value & do a better job of specifying *which* parm is at fault.
         }
-        metricWeight.privilegesRequired = Weight.privilegesRequired[val.scope][val.privilegesRequired];
+        metricWeight.privilegesRequired = this.Weight.privilegesRequired[val.scope][val.privilegesRequired];
         //
         // CALCULATE THE CVSS BASE SCORE
         //
         try {
-            var baseScore;
-            var impactSubScore;
-            var exploitabalitySubScore = exploitabilityCoefficient * metricWeight.attackVector * metricWeight.attackComplexity * metricWeight.privilegesRequired * metricWeight.userInteraction;
+            var baseScore, impactSubScore, impact, exploitability;
             var impactSubScoreMultiplier = (1 - ((1 - metricWeight.confidentialityImpact) * (1 - metricWeight.integrityImpact) * (1 - metricWeight.availabilityImpact)));
             if (val.scope === 'UNCHANGED') {
                 impactSubScore = metricWeight.scope * impactSubScoreMultiplier;
             } else {
                 impactSubScore = metricWeight.scope * (impactSubScoreMultiplier - 0.029) - 3.25 * Math.pow(impactSubScoreMultiplier - 0.02, 15);
             }
-
-
+            exploitabality = exploitabilityCoefficient * metricWeight.attackVector * metricWeight.attackComplexity * metricWeight.privilegesRequired * metricWeight.userInteraction;
             if (impactSubScore <= 0) {
                 baseScore = 0;
             } else {
                 if (val.scope === 'UNCHANGED') {
-                    baseScore = Math.min((exploitabalitySubScore + impactSubScore), 10);
+                    baseScore = this.roundUp1(Math.min((exploitabality + impactSubScore), 10));
                 } else {
-                    baseScore = Math.min((exploitabalitySubScore + impactSubScore) * scopeCoefficient, 10);
+                    baseScore = this.roundUp1(Math.min((exploitabality + impactSubScore) * scopeCoefficient, 10));
                 }
             }
-
-            baseScore = Math.ceil(baseScore * 10) / 10;
-            return baseScore;
+            return baseScore.toFixed(1);
         } catch (err) {
             return err;
         }
     }
 }
-
