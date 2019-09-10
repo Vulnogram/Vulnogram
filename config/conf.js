@@ -1,4 +1,5 @@
 const fs = require("fs");
+var package = require('../package.json');
 
 module.exports = {
 
@@ -18,7 +19,7 @@ module.exports = {
     //contact: 'sirt@example.net',
 
     classification: 'Confidential INTERNAL USE ONLY',
-    copyright: '© Example Org',
+    copyright: '© Example Org. Made with ' + package.name + ' ' + package.version,
 
     // Uncomment this line and set a random string to allow unauthenticated access to draft CVE entries that are in review-ready or publish-ready state via /review/<token>/ or /review/<token>/CVE-ID
     // This may be useful to share a link to the draft for internal reviews and only those with the link have access to the drafts.    
@@ -37,7 +38,7 @@ module.exports = {
     httpsOptions: {
         key: fs.readFileSync("./config/key.pem"),
         cert: fs.readFileSync("./config/cert.pem"),
-        minVersion: 'TLS1.2'
+        minVersion: 'TLSv1.2'
     },
 */
     
