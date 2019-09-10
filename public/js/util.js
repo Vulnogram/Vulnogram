@@ -100,7 +100,7 @@ reduceJSON: function (cve) {
     }
     return(orderKeys(c));
 },
-    
+
 getMITREJSON: function(cve) {
     return JSON.stringify(cve, null, "    ");
 },
@@ -211,9 +211,6 @@ getAffectedProductString: function (cve) {
 
 getProductAffected:
 function (cve) {
-    /*var gs = this.getAffectedProductString(cve);
-    if (gs.length < 100)
-        return 'This issue affects ' + gs + '.';*/
     var lines = [];
     for (var vendor of cve.affects.vendor.vendor_data) {
         var pstring = [];
@@ -328,144 +325,20 @@ deep_value: function(obj, path) {
     };
     return ret;
 },
-getDocuments: async function(schemaName, ids) {
-    const res = await fetch('/' + schemaName + '/json/' + ids.join(','), {
-            method: 'GET',
+getDocuments: async function(schemaName, ids, paths) {
+    const res = await fetch('/' + schemaName + '/json/', {
+            method: 'POST',
             credentials: 'include',
             headers: {
-                'Accept': 'application/json, text/plain, */*'
+                'Accept': 'application/json, text/plain, */*',
+                'Content-Type': 'application/json'
             },
-            redirect: 'error'     
+            redirect: 'error',
+            body: JSON.stringify({ids:ids,fields:paths})
     });
-    const json = await res.json();
-    return json.docs;
+    const docs = await res.json();
+    return docs;
 },
-getCVESummarySet: function(docs, cmap) {
-    var csumSet = {};
-    for (sa of docs) {
-        csumSet[sa.body.ID] = this.sumCVE(sa.body.CVE_list, cmap);
-    }
-    return csumSet;
-},
-getCVEMap: function(docs) {
-    var cmap = {};
-    for(var doc of docs) {
-        cmap[doc.body.CVE_data_meta.ID] = doc.body;
-    }
-    return cmap;
-},
-saCVESet: function(docs) {
-    var idSet = new Set();
-    for (doc of docs) {
-        for(var d of doc.body.CVE_list) {
-            if (d.CVE) {
-                for(var x of d.CVE.match(/CVE-\d{4}-[a-zA-Z\d\._-]{4,}/img)) {
-                    idSet.add(x);
-                }
-             }
-        }
-    }
-    return idSet;
-},
-    
-addToSet: function(s, a) {
-    if(s) {
-        if(a) {
-            for(item of a) {
-                s.add(item);
-            }
-        }
-    } else {
-        s = new Set(a);
-    }
-    return s;
-},
-
-saIndex: function(docs, csumSet) {
-return docs.map(d => ({
-      Advisory: d.body.ID,
-      CVE: d.body.CVE_list.map(x => (x.CVE.split(/[\s,]+/))),
-      CVSS: (d.body.cvss && d.body.cvss.baseScore > 0) ? d.body.cvss.baseScore : (csumSet && csumSet[d.body.ID] ? csumSet[d.body.ID].maxCVSS.baseScore : ""),
-      Date: d.body.DATE_PUBLIC,
-      Title: d.body.TITLE,
-      State: d.body.STATE,
-      Defect: csumSet && csumSet[d.body.ID] ?
-        Array.from(this.addToSet(csumSet[d.body.ID].aggregate.defect, d.body.defect).values()):"",
-      ToDo: d.body.CNA_private.todo,
-      Owner: d.body.CNA_private.owner
-  }));
-},
-sumCVE: function(list, cmap) {
-    var maxCVSS = {baseScore: 0.0};
-    var aggFields = ['work_around', 'solution', 'credit', 'defect'];
-    var aggregate = {defect:new Set()};
-    var urlSet = {};
-    var idSet = {};
-    var summary = {};
-    for(var cve of list) {
-     if (cve.CVE) {
-         //console.log(cve.CVE);
-      for(var id of cve.CVE.match(/CVE-\d{4}-[a-zA-Z\d\._-]{4,}/img)) {
-        idSet[id] = 1;
-          //console.log(' idSet = ' + JSON.stringify(idSet));
-        if(cve.summary) {
-            summary[id] = cve.summary;
-        }
-      }
-     }
-    }
-    for(var id in idSet) {
-        urlSet["http://cve.mitre.org/cgi-bin/cvename.cgi?name="+id] = id + " at cve.mitre.org";
-        if(cmap[id]) {
-            for(var af of aggFields) {
-                if (cmap[id][af]) {
-                    var aggmap = aggregate[af];
-                    if (!aggmap) {
-                        aggmap = {};
-                        aggregate[af] = aggmap;
-                    }
-                    var t = [];
-                    for(var d of cmap[id][af]) {
-                        t.push(d.value);
-                    }
-                    var concattext = t.join("\n");
-                    if(concattext) {
-                        var cvek = aggmap[concattext];
-                        if (!cvek) {
-                            cvek = []
-                            aggmap[concattext] = cvek;
-                        }
-                        cvek.push(id);
-                    }
-                }
-            }
-            if(cmap[id].source && cmap[id].source.defect) {
-                for(var d of cmap[id].source.defect) {
-                    aggregate['defect'].add(d); 
-                    //console.log('Adding ' + Array.from(aggregate.defect.values()));
-                }
-            }
-            if(cmap[id].impact && cmap[id].impact.cvss) {
-                if(cmap[id].impact.cvss.baseScore > maxCVSS.baseScore + 0) {
-                    maxCVSS = cmap[id].impact.cvss;
-                }
-            }
-            if(cmap[id].references) {
-                for(var r of cmap[id].references.reference_data) {
-                    urlSet[r.url] = r.url
-                }
-            }
-        }
-    }
-    return ({
-       maxCVSS: maxCVSS,
-       aggregate: aggregate,
-       urlSet: urlSet,
-       idSet: idSet,
-       summary: summary
-    })     
-},
-
     
     diffline: function(line1, line2) {
         var ret1 = [];
