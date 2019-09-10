@@ -7,9 +7,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const protected = express.Router();
 const textUtil = require ('../public/js/util.js');
-const nvd = require('./nvd');
 const CVE = mongoose.model('cve');
-//const SA = mongoose.model('sa');
 const pug = require('pug');
 const optSet = require('../models/set');
 
@@ -18,7 +16,6 @@ module.exports = {
 }
 
 var cveOpts = optSet('cve');
-//var saOpts = optSet('sa');
 var slideTemplate = pug.compile(
 `extends ./views/slides.pug
 
@@ -53,26 +50,6 @@ async function drafts(req, res) {
   if(req.params.id) {
       saq["body.ID"] = cveq["body.CVE_data_meta.ID"] = req.params.id;
   }
-/*    var saList= await SA.find(saq)
-        .catch((e)=>console.log('SA.find ' + e));
-    var idSet = textUtil.saCVESet(saList);
-    var cveInfo = await CVE.find({'body.CVE_data_meta.ID': {"$in": Array.from(idSet)}})
-        .catch((e)=>console.log('CVE.find ' + e))
-    var cmap = textUtil.getCVEMap(cveInfo);
-    
-    for(var cveid in cmap) {
-        idSet.delete(cveid);
-    }
-   if(idSet.size > 0) {
-        var nvdCVEs = await nvd.getCVE(idSet);
-        for(var e of nvdCVEs) {
-            cmap[e.body.CVE_data_meta.ID] = e.body;
-        }
-    }
-    var csumSet = textUtil.getCVESummarySet(saList, cmap);
-
-    var saidx = textUtil.saIndex(saList, csumSet);*/
-
     var cveList = await CVE.find(cveq, cvef, { sort: { 'body.source.advisory': 1 } })
         .catch((e)=>console.log('CVE list .find ' + e));
     var tbd = 0;
@@ -84,16 +61,13 @@ async function drafts(req, res) {
             Title:d.body.CVE_data_meta.TITLE,
             Defect:d.body.source.defect
         }));
-    //idx = saidx.concat(idx);
     var draftView = "drafts";
     var templateFunction = draftsTemplate;
     if(req.path.startsWith("/slides")) {
         draftView = "slides";
         templateFunction = slideTemplate;
     }
-/*        saOpts.facet['Advisory']={link:"#"};
-        saOpts.facet['CVE']={link:"#"};
-        saOpts.facet['Defect']={link:"#"};*/
+
     res.send(templateFunction({
         //min: true,
         conf: conf,
@@ -103,11 +77,8 @@ async function drafts(req, res) {
         idx: idx,
         messages: res.locals.messages,
         docs: cveList,
-    //    sas: saList,
         textUtil: textUtil,
         ext: req.query.e,
-     //   cmap: cmap,
-        //confOpts: {},
         fields: {
             'Advisory': {
                 href: '#'
@@ -121,7 +92,6 @@ async function drafts(req, res) {
             }
         },
         schemaName: 'cve',
-       // csumSet: csumSet,
         defectURL: conf.publicDefectURL
       }));
     } catch (e) {
