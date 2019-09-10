@@ -43,46 +43,59 @@ async function syncContents(tab) {
     sourceEditor.getSession().setValue(JSON.stringify(j, null, 2));
     sourceEditor.clearSelection();
     insync = false;
-/*    if (document.getElementById("yaml")) {
-        document.getElementById("yaml").textContent = YAML.stringify(j, 20, 2);
-    }*/
     if (tab == "advisoryTab" && pugRender && document.getElementById("render")) {
-        if (schemaName == "sa") {
+        var cve_list = textUtil.deep_value(j, 'CNA_private.CVE_list')
+        if (cve_list && cve_list.length > 0) {
             var cSet = new Set();
-            for (var d of j.CVE_list) {
+            var cMap = {};
+            for (var d of cve_list) {
                 if (d.CVE) {
                     for (var x of d.CVE.match(/CVE-\d{4}-[a-zA-Z\d\._-]{4,}/igm)) {
                         cSet.add(x);
+                        cMap[x] = {
+                            impact: '',
+                            summary: d.summary
+                        }
                     }
                 }
             }
             if (cSet.size > 0) {
-                var r = await textUtil.getDocuments('cve', Array.from(cSet));
-                var CVE_map = {};
+                var r = await textUtil.getDocuments('nvd', Array.from(cSet),['cve.CVE_data_meta', 'cve.description', 'impact']);
                 for (var c of r) {
-                    CVE_map[c.body.CVE_data_meta.ID] = c.body;
-                    cSet.delete(c.body.CVE_data_meta.ID);
+                    var cveid = textUtil.deep_value(c, 'cve.CVE_data_meta.ID');
+                    if (textUtil.deep_value(c,'impact.baseMetricV3.cvssV3')) {
+                        cMap[cveid].impact = {cvss:c.impact.baseMetricV3.cvssV3};
+                    } else if (textUtil.deep_value(c,'impact.baseMetricV2.cvssV2')) {
+                        cMap[cveid].impact = {cvss:c.impact.baseMetricV2.cvssV2};
+                    }
+                    if(!cMap[cveid].summary) {
+                        var title = textUtil.deep_value(c, 'cve.CVE_data_meta.TITLE');
+                        cMap[cveid].summary = title ? title : textUtil.deep_value(c, 'cve.description.description_data')[0].value;
+                    }
+                    cSet.delete(cveid);
                 }
                 if (cSet.size > 0) {
-                    var nr = await textUtil.getDocuments('nvd', Array.from(cSet));
+                    var nr = await textUtil.getDocuments('cve', Array.from(cSet), ['body.CVE_data_meta','body.impact', 'body.description']);
                     for (c of nr) {
-                        CVE_map[c.body.CVE_data_meta.ID] = c.body;
+                        var cveid = textUtil.deep_value(c, 'body.CVE_data_meta.ID');
+                        if (textUtil.deep_value(c, 'body.impact.cvss')) {
+                            cMap[cveid].impact = c.body.impact;
+                        }
+                        if(!cMap[cveid].summary) {
+                            var desc = textUtil.deep_value(c, 'body.description.description_data')[0].value;
+                            cMap[cveid].summary = desc ? desc : textUtil.deep_value(c, 'body.CVE_data_meta.TITLE') ;
+                        }
                     }
                 }
-                var cSum = textUtil.sumCVE(j.CVE_list, CVE_map);
                 document.getElementById("render").innerHTML = pugRender({
                     renderTemplate: 'page',
                     doc: j,
-                    cmap: CVE_map,
-                    cSum: cSum
+                    cmap: cMap,
                 });
-
             } else {
                 document.getElementById("render").innerHTML = pugRender({
                     renderTemplate: 'page',
-                    doc: j,
-                    cmap: {},
-                    cSum: {}
+                    doc: j
                 });
             }
         } else {
@@ -420,7 +433,6 @@ JSONEditor.defaults.editors.dateTime = JSONEditor.defaults.editors.string.extend
     }
 });
 
-
 JSONEditor.defaults.editors.taglist = JSONEditor.defaults.editors.string.extend({
     getValue: function () {
         if (this.input && this.input.value) {
@@ -444,7 +456,6 @@ JSONEditor.defaults.editors.taglist = JSONEditor.defaults.editors.string.extend(
         this._super();
     }
 });
-
 
 JSONEditor.defaults.editors.simplehtml = JSONEditor.defaults.editors.string.extend({
     getValue: function () {
@@ -847,17 +858,44 @@ var docEditorOptions = {
     //required_by_default: false,
     //display_required_only: false
 };
-var docEditor;// = new JSONEditor(document.getElementById('editor'), docEditorOptions);
+var docEditor;
 
-    
+function hashChange() {
+    if(window.location.hash) {
+        var hash = window.location.hash.substring(1);
+        if((hash) && document.getElementById(hash+'Tab')) {
+            selected = hash+'Tab';
+            var t = document.getElementById(selected);
+            t.checked = true;
+            var event = new Event('change');
+            t.dispatchEvent(event);
+        }
+    }
+}
+
+window.onhashchange = hashChange;
+
 var selected = "editorTab";
+if (typeof(defaultTab) !== 'undefined') {
+    selected = defaultTab;
+} else {
+    if(window.location.hash) {
+        var hash = window.location.hash.substring(1);
+        if((hash) && document.getElementById(hash+'Tab')){
+            selected = hash+'Tab';
+            //console.log(selected);
+        }
+    }
+}
+/*
 var tabs = document.getElementsByName("tabs");
 for (var i = 0; i < tabs.length; i++) {
     if (tabs[i].checked === true) {
         selected = tabs[i].id;
         break;
     }
-}
+}*/
+//console.log(selected);
 var originalTitle = document.title;
 var changes = true;
 var insync = false;
@@ -942,7 +980,7 @@ function loadJSON(res, id, message) {
     if(docEditor) {
         docEditor.destroy();
     }
-    docEditor = new JSONEditor(document.getElementById('editor'), docEditorOptions);
+    docEditor = new JSONEditor(document.getElementById('docEditor'), docEditorOptions);
     docEditor.on('ready', function () {
         docEditor.root.setValue(res, true);
         infoMsg.textContent = message ? message : '';
@@ -959,9 +997,12 @@ function loadJSON(res, id, message) {
         }
         if (message) {
             selected = "editorTab";
-            document.getElementById(selected).checked = true;
-            syncContents(selected);
         }
+        document.getElementById(selected).checked = true;
+        var event = new Event('change');
+        document.getElementById(selected).dispatchEvent(event);
+        //selected = "editorTab";
+        syncContents(selected);
         docEditor.watch('root', incEditorChanges);
         editorLabel.className = "lbl";
         changes = 0;
@@ -976,24 +1017,6 @@ function loadJSON(res, id, message) {
 
     });
 }
-
-/*docEditor.on('ready', function () {
-    // Now the api methods will be available
-    if (initJSON) {
-        docEditor.root.setValue(initJSON, true);
-    }
-    syncContents(selected);
-    docEditor.watch('root', incEditorChanges);
-
-    // hack to auto generate description/ needs improvement
-    var descDiv = document.querySelector('[data-schemapath="root.description.description_data"] div ');
-    if (descDiv) {
-        descDiv.appendChild(autoButton);
-        autoButton.removeAttribute("style");
-    }
-
-});
-*/
 
 var errorsFound = false;
 function docEditorValid(j) {
@@ -1120,10 +1143,9 @@ function save() {
             errMsg.textContent = error + ' Try reloading the page.';
         });
     // This is a trick for brower auto completion to work
-        document.getElementById('editor').submit();
+        document.getElementById('docEditor').submit();
 
 }
-
 
 function getDocID() {
     var idEditor = docEditor.getEditor('root.' + idpath);
@@ -1139,11 +1161,6 @@ function getDocID() {
 
 function incChanges() {
     if (!insync) {
-/*        if(errorsFound) {
-            docEditorValid();
-        } else {
-            //;
-        }*/
         errMsg.textContent = '';
         editorLabel.className = "lbl";
 
@@ -1178,6 +1195,7 @@ function setupDeselectEvent() {
         var t = tabs[i];
         t.addEventListener('change', function () {
             var clicked = this.id;
+            window.location.hash = this.id.replace(/Tab$/,'');
             //console.log(selected + ' -to-> ' + clicked);
             if (selected != clicked) {
                 switch (selected) {
@@ -1256,7 +1274,7 @@ function downloadFile(event, link) {
     link.href = URL.createObjectURL(file);
     link.download = file.name;
     // trick to get autocomplete work
-    document.getElementById('editor').submit();
+    document.getElementById('docEditor').submit();
 
 }
 function downloadText(element, link) {
