@@ -448,7 +448,7 @@ schema: {
       },
     "options": {
         "hidden": "true"
-    }   
+    }
   },
   "CVE_data_meta": {
    "type": "object",
@@ -808,6 +808,35 @@ schema: {
      "default": "true",
      "description": "a flag to share this entry to cvelist."
     },
+       "CVE_table_description": {
+           "title": "CVE table description",
+           "type": "array",
+           "format": "table",
+           "items": {
+               "title": "Description",
+               "$ref": "#/definitions/lang_string"
+           }
+       },
+        "CVE_list": {
+            "title": "CVE table",
+            "description": "For multi-CVE advisory.",
+            "type": "array",
+            "format": "table",
+            "minItems": 0,
+            "items": {
+                "type": "object",
+                "title": "List of CVEs for a table",
+                "properties": {
+                    "CVE": {
+                        "type": "string",
+                        "pattern": "(CVE-[0-9]{4}-[0-9A-Za-z\._-]{4,}[,\s]?)+"
+                    },
+                    "summary": {
+                        "type": "string"
+                    }
+                }
+            }
+     },       
     "internal_comments": {
      "type": "string",
      "format": "textarea",

@@ -59,9 +59,27 @@ block pageDef
                 p This issue is also known as 
                     = CDM.AKA
                     |.
-        p This issue has been assigned 
-            a(href="http://cve.mitre.org/cgi-bin/cvename.cgi?name="+cveid)=cveid
-            |.
+        if cmap && Object.keys(cmap).length > 0 && cmap.constructor === Object
+            +mpara(cve.CNA_private.CVE_table_description)
+            table.striped
+                tr.rowHead
+                    th CVE
+                    th CVSS
+                    th Summary
+                each x, id in cmap
+                    tr
+                        td=id
+                        td
+                            if cmap[id] && cmap[id].impact
+                                +CVSS(cmap[id].impact.cvss)
+                        td
+                            if cmap[id] && cmap[id].summary
+                                =cmap[id].summary
+
+        else
+            p This issue has been assigned 
+                a(href="http://cve.mitre.org/cgi-bin/cvename.cgi?name="+cveid)=cveid
+                |.
 
         h4 SOLUTION:
 

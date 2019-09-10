@@ -115,8 +115,8 @@ let users = require('./routes/users');
 app.use('/users', users.public);
 app.use('/users', ensureAuthenticated, users.protected);
 
-let nvd = require('./routes/nvd');
-app.use('/nvd', ensureAuthenticated, nvd.router);
+//let nvd = require('./routes/nvd');
+//app.use('/nvd', ensureAuthenticated, nvd.router);
 
 let docs = require('./routes/doc');
 
