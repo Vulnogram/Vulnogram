@@ -79,6 +79,9 @@ module.exports = function (name, opts) {
         if (options.type) {
             queryDef[key].type = options.type;
         }
+        if (options.hasOwnProperty('default')) {
+            queryDef[key].default = options.default;
+        }
         if (options.queryOperator) {
             queryDef[key].operator = options.queryOperator;
         }
@@ -144,11 +147,10 @@ module.exports = function (name, opts) {
                 }
             }
         }
-       /* if(options.lookup) {
-        console.log('OL:'+JSON.stringify(options.lookup));
+        if(options.lookup) {
+            //console.log('OL:'+JSON.stringify(options.lookup));
             lookups = lookups.concat(options.lookup);
-        console.log('OL:'+JSON.stringify(lookups));
-        }*/
+        }
     }
 
     function phraseSplit(searchString) {
@@ -411,7 +413,7 @@ module.exports = function (name, opts) {
         });
     }
 
-    router.get('/json/:id/:ver([0-9]+)?', function (req, res) {
+    router.get('/json/:id', function (req, res) {
         var ids = req.params.id.match(RegExp(idpattern, 'img'));
         if (ids) {
             var searchSchema = Document;
@@ -419,13 +421,8 @@ module.exports = function (name, opts) {
             q[idpath] = {
                 "$in": ids
             };
-            if (req.params.ver) {
-                searchSchema = History;
-                q.__v = req.params.ver + 0;
-            }
-
             searchSchema.find(q, {
-                body: 1,
+                //body: 1,
                 _id: 0
             }, {}, function (err, docs) {
                 if (err) {
@@ -435,20 +432,32 @@ module.exports = function (name, opts) {
                         docs: []
                     });
                 } else {
-                    res.json({
-                        idpath: idpath,
-                        id: req.params.id,
-                        q: q,
-                        ids: ids,
-                        docs: docs
-                    });
+                    res.json(docs);
                 }
             });
         } else {
-            res.json({
-                title: 'Error',
-                message: 'No valid id'
-            });
+            res.json([]);
+        }
+    });
+    router.post('/json/', async function (req, res) {
+        if (req.body.ids && req.body.ids.length > 0) {
+            console.log('REQ: ' + JSON.stringify(req.body.ids));
+            var q = {};
+            q[idpath] = {
+                    "$in": req.body.ids
+                };
+            var fields = {
+                _id: 0
+            };
+            if(req.body.fields && req.body.fields.length > 0) {
+                for (var f of req.body.fields) {
+                    fields[f] = 1;
+                }
+            }
+            var results = await Document.find(q, fields);
+            res.json(results);
+        } else {
+            res.json([]);
         }
     });
 
@@ -989,7 +998,7 @@ module.exports = function (name, opts) {
             // get top level tabs aggregated counts
             var tabs = [];
             if (Object.keys(tabFacet).length != 0) {
-                //console.log('QUERY:' + JSON.stringify(req.querymen.query,2,3,4));
+                console.log('QUERY:' + JSON.stringify(req.querymen.query,2,3,4));
                 tabs = await Document.aggregate([{
                                 $facet: tabFacet
                             }]).exec();
@@ -1020,10 +1029,10 @@ module.exports = function (name, opts) {
             if (opts.conf.unwind) {
                 allQuery = [opts.conf.unwind];
             }
-            if (Array.isArray(opts.conf.lookup) && opts.conf.lookup.length > 0) {
+            /*if (Array.isArray(opts.conf.lookup) && opts.conf.lookup.length > 0) {
                 //console.log('LOOKUPS' + JSON.stringify(lookups));
                 allQuery = allQuery.concat(opts.conf.lookup);
-            }
+            }*/
             if ((Object.keys(sort).length != 0)) {
                 allQuery.push({
                     $sort: sort
@@ -1072,16 +1081,59 @@ module.exports = function (name, opts) {
                 });
                 */
 
+                // Translate queries for empty strings to match any of "", null, non-existant.
+                for(var q in req.querymen.query) {
+                    if(req.querymen.query[q] === '') {
+                        req.querymen.query[q] = 
+                            {"$not":{
+                                "$exists": true,
+                                "$nin": ['',null]
+                                }
+                            };
+                            //{"$not":{"$exists": true, $ne: ""}}
+                        //req.querymen.query[q] = {"$in":["",null]};
+                    }
+                    if(req.querymen.query[q] === 'null') {
+                        //req.querymen.query[q] = {"$exists": false}
+                        req.querymen.query[q] = {"$in":["",null]}
+                    }
+                }
+                var lookups = {};
+                
+                //console.log('ORIG QUERY:' +  JSON.stringify(req.querymen.query,3,3));
+                // if there are lookups then split query
+                if (Array.isArray(opts.conf.lookup) && opts.conf.lookup.length > 0) {
+                    var lookupAsNames = {};
+                    for(var l of opts.conf.lookup) {
+                       lookupAsNames[l.$lookup.as]=true;
+                    }
+                    for(var q in req.querymen.query) {
+                        var a = q.split('.',1)[0];
+                        if (lookupAsNames[a]) {
+                            lookups[q] = req.querymen.query[q];
+                            delete req.querymen.query[q];
+                        }
+                    }
+                }
+                
+                //console.log('LOOKUPs separated:' + JSON.stringify(lookups,3,3));
 
-                //console.log('QUERY:' + JSON.stringify(req.querymen.query,2,3,4));
+                //console.log('NEW QUERY:' + JSON.stringify(req.querymen.query,2,3,4));
                 var aggQuery = [
                     {
                         "$match": req.querymen.query
-                    }, 
-                    {
-                        $facet: chartFacet
+                    }];
+                if (Array.isArray(opts.conf.lookup) && opts.conf.lookup.length > 0) {
+                    aggQuery = aggQuery.concat(opts.conf.lookup)
+                    if(Object.keys(lookups).length != 0) {
+                        aggQuery.push({"$match": lookups});
                     }
-                ];
+                }
+                aggQuery.push({
+                        $facet: chartFacet
+                });
+                
+
                 var agg = Document.aggregate(aggQuery);
                 /*agg.options = {
                     allowDiskUse: true
@@ -1144,7 +1196,7 @@ module.exports = function (name, opts) {
             });
 
         } catch (err) {
-            req.flash('error', err);
+            //req.flash('error', err);
             res.render('blank', {
                 title: 'Error',
                 message: 'failed. ' + err.message
