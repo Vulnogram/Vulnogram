@@ -258,7 +258,7 @@ mixin facetChart(facet, query, tfacet)
                 input.expand(id="flt"+field,type="checkbox")
                 each v in values
                     div.bar(style="width:" + Math.round(v.count/total*170.0+1) + "px")
-                        input(type="checkbox", id=field+v._id, name=field, value=v._id ? v._id : '', checked=(v._id != '' && query[field] && query[field].includes(v._id)) || (v._id === '' && query[field] && typeof query[field] != 'string' && query[field].includes('')))
+                        input(type="checkbox", id=field+v._id, name=field, value= v._id ? (Array.isArray(v._id)? v._id.join(','): v._id): (v._id === null ? 'null':v._id), checked=(v._id != '' && query[field] && query[field].includes(v._id)) || (v._id === '' && query[field] && typeof query[field] != 'string' && query[field].includes('')))
                         label.otl(class=v._id + (fields[field].class? ' ' + fields[field].class : ''), for=field+v._id,title=v._id+ " (" + v.count + ")")
                             = v._id
                             br
