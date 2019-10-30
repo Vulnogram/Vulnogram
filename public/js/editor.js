@@ -27,94 +27,7 @@ var save2 = document.getElementById('save2');
 var editorLabel = document.getElementById('editorLabel');
 
 var starting_value = {};
-
-var sourceEditor = ace.edit("output");
-sourceEditor.getSession().setMode("ace/mode/json");
-sourceEditor.getSession().on('change', incSourceChanges);
-sourceEditor.setOptions({
-    maxLines: 480,
-    wrap: true
-});
-sourceEditor.$blockScrolling = Infinity;
-
-async function syncContents(tab) {
-    var j = docEditor.getValue();
-    insync = true;
-    sourceEditor.getSession().setValue(JSON.stringify(j, null, 2));
-    sourceEditor.clearSelection();
-    insync = false;
-    if (tab == "advisoryTab" && pugRender && document.getElementById("render")) {
-        var cve_list = textUtil.deep_value(j, 'CNA_private.CVE_list')
-        if (cve_list && cve_list.length > 0) {
-            var cSet = new Set();
-            var cMap = {};
-            for (var d of cve_list) {
-                if (d.CVE) {
-                    for (var x of d.CVE.match(/CVE-\d{4}-[a-zA-Z\d\._-]{4,}/igm)) {
-                        cSet.add(x);
-                        cMap[x] = {
-                            impact: '',
-                            summary: d.summary
-                        }
-                    }
-                }
-            }
-            if (cSet.size > 0) {
-                var r = await textUtil.getDocuments('nvd', Array.from(cSet),['cve.CVE_data_meta', 'cve.description', 'impact']);
-                for (var c of r) {
-                    var cveid = textUtil.deep_value(c, 'cve.CVE_data_meta.ID');
-                    if (textUtil.deep_value(c,'impact.baseMetricV3.cvssV3')) {
-                        cMap[cveid].impact = {cvss:c.impact.baseMetricV3.cvssV3};
-                    } else if (textUtil.deep_value(c,'impact.baseMetricV2.cvssV2')) {
-                        cMap[cveid].impact = {cvss:c.impact.baseMetricV2.cvssV2};
-                    }
-                    if(!cMap[cveid].summary) {
-                        var title = textUtil.deep_value(c, 'cve.CVE_data_meta.TITLE');
-                        cMap[cveid].summary = title ? title : textUtil.deep_value(c, 'cve.description.description_data')[0].value;
-                    }
-                    cSet.delete(cveid);
-                }
-                if (cSet.size > 0) {
-                    var nr = await textUtil.getDocuments('cve', Array.from(cSet), ['body.CVE_data_meta','body.impact', 'body.description']);
-                    for (c of nr) {
-                        var cveid = textUtil.deep_value(c, 'body.CVE_data_meta.ID');
-                        if (textUtil.deep_value(c, 'body.impact.cvss')) {
-                            cMap[cveid].impact = c.body.impact;
-                        }
-                        if(!cMap[cveid].summary) {
-                            var desc = textUtil.deep_value(c, 'body.description.description_data')[0].value;
-                            cMap[cveid].summary = desc ? desc : textUtil.deep_value(c, 'body.CVE_data_meta.TITLE') ;
-                        }
-                    }
-                }
-                document.getElementById("render").innerHTML = pugRender({
-                    renderTemplate: 'page',
-                    doc: j,
-                    cmap: cMap,
-                });
-            } else {
-                document.getElementById("render").innerHTML = pugRender({
-                    renderTemplate: 'page',
-                    doc: j
-                });
-            }
-        } else {
-            document.getElementById("render").innerHTML = pugRender({
-                renderTemplate: 'page',
-                doc: j
-            });
-        }
-    }
-    if (tab == "mitreTab" && document.getElementById("mitreweb")) {
-        document.getElementById("mitreweb").innerHTML = pugRender({
-            renderTemplate: 'mitre',
-            doc: j
-        });
-    }
-    if (tab == "jsonTab" && document.getElementById("outjson")) {
-        document.getElementById("outjson").textContent = textUtil.getMITREJSON(textUtil.reduceJSON(j));
-    }
-}
+var sourceEditor;
 
 JSONEditor.defaults.resolvers.unshift(function (schema) {
     if (schema.type === "string" && schema.format === "radio") {
@@ -859,7 +772,7 @@ var docEditorOptions = {
     //display_required_only: false
 };
 var docEditor;
-
+/*
 function hashChange() {
     if(window.location.hash) {
         var hash = window.location.hash.substring(1);
@@ -874,7 +787,7 @@ function hashChange() {
 }
 
 window.onhashchange = hashChange;
-
+*/
 var selected = "editorTab";
 if (typeof(defaultTab) !== 'undefined') {
     selected = defaultTab;
@@ -883,22 +796,127 @@ if (typeof(defaultTab) !== 'undefined') {
         var hash = window.location.hash.substring(1);
         if((hash) && document.getElementById(hash+'Tab')){
             selected = hash+'Tab';
-            //console.log(selected);
+            //console.log('DEFAULT ' + selected);
         }
     }
 }
-/*
-var tabs = document.getElementsByName("tabs");
-for (var i = 0; i < tabs.length; i++) {
-    if (tabs[i].checked === true) {
-        selected = tabs[i].id;
-        break;
+var insync = false;
+function Tabs(tabGroupId, tabOpts, primary) {
+    var elem = document.getElementById(tabGroupId);
+    var tg = {
+        changeIndex: [],
+        primary: primary,
+        tabOpts: tabOpts,
+        tabId: [],
+        element: elem,
+        tabs: elem.getElementsByClassName("tab"),
+    }; 
+    for (var i = 0; i < tg.tabs.length; i++) {
+        
+        var tab = tg.tabs[i];
+        //console.log(tab.nextElementSibling);
+        tab.nextElementSibling._tgIndex = tab._tgIndex = i;
+        if(tab.id){
+            tg.tabId[i] = tab.id;
+        }
+        tg.changeIndex[i]=0;
+        tab.addEventListener('change', function(event){
+            //console.log('CLicked ' + JSON.stringify( event) + ' ; ' + event.target);
+            tg.select(event, event.target);
+        });
     }
-}*/
-//console.log(selected);
+    tg.changeIndex[0] = 1;
+    tg.select = function (event, elem) {
+        errMsg.textContent = "";
+        var selected = elem._tgIndex;
+        //Does the tab need an update?
+        //console.log('===CLICK====' + selected + ' cI '  + tg.changeIndex);
+        if (tg.changeIndex[selected] < Math.max(...tg.changeIndex)) {
+            var val = tg.getValue();
+            //console.log('VAL = ' + val);
+            if (val) {
+                if(selected != primary){
+                    //console.log(' Then Setting ' + selected);
+                    tg.setValue(selected, val);
+                    tg.changeIndex[selected] = tg.changeIndex[primary];
+                }
+            } else {
+                event.preventDefault();
+                return;
+            }
+        }
+        window.location.hash = tg.tabId[selected].replace(/Tab$/,'');
+    },
+    tg.getValue = function (i) {
+        if(i == undefined) {
+            var maxi = 0;
+            for (var m = 0; m < tg.tabs.length; m++) {
+                if (tg.changeIndex[m] > tg.changeIndex[maxi]) {
+                    maxi = m;
+                }
+            }
+            var src = tg.tabId[maxi];
+            //console.log('Most current = ' + maxi);
+            if (src && tg.tabOpts[src].validate) {
+                    //console.log('Validating ' + src );
+                    var ret = tg.tabOpts[src].validate();
+                    //console.log(' Got = ' + ret)
+                    if(ret == -1) {
+                        //event.preventDefault();
+                        return undefined;
+                    }
+            }
+            var val = tg.getValue(maxi);
+            var primaryChanged = false;
+            if(maxi != primary) {
+                //console.log(' First Setting ' + primary);
+                tg.setValue(primary, val);
+                primaryChanged = true;
+                tg.changeIndex[primary] = tg.changeIndex[maxi];
+                var primaryOpts = tg.tabOpts[tg.tabId[primary]];
+                if (primaryOpts && primaryOpts.validate) {
+                    //console.log('validating Primary');
+                    primaryOpts.validate();
+                }
+            }
+            if (!primaryChanged) {
+                return val;
+            }
+            i = primary;
+        }
+        //console.log('geting tab '+i);
+        if(tg.tabOpts[tg.tabId[i]] && tg.tabOpts[tg.tabId[i]].getValue) {
+            return tg.tabOpts[tg.tabId[i]].getValue();
+        } else {
+            return undefined;
+        }
+    }
+    tg.setValue = function (index, val) {
+        //console.log('Seting tab '+index);
+        if(tg.tabOpts[tg.tabId[index]] && tg.tabOpts[tg.tabId[index]].setValue) {
+            return tg.tabOpts[tg.tabId[index]].setValue(val);
+        }
+    }
+    tg.change = function(index) {
+        if (!insync) {
+            tg.changeIndex[index]++;
+            errMsg.textContent = '';
+            editorLabel.className = "lbl";
+            infoMsg.textContent = 'Edited';
+            var nid = getDocID();
+            document.title = '• ' + (nid ? nid : 'Vulnogram');
+            if (document.getElementById("save1")) {
+                save2.className = "btn sfe gap save";
+                save1.className = "btn sfe save";
+            }
+            //console.log('Inc '+ tg.tabId[index] + ' is ' + tg.changeIndex[index]);
+        }
+    }
+    return tg;
+};
+
 var originalTitle = document.title;
 var changes = true;
-var insync = false;
 
 var autoButton = document.getElementById('auto');
 
@@ -914,18 +932,7 @@ autoButton.addEventListener('click', function (event) {
                     desc.splice(i, 1);
                 }
             }
-            var pts = [];
-            for(var j = 0; j < docJSON.problemtype.problemtype_data.length; j++) {
-                for(var k = 0; k < docJSON.problemtype.problemtype_data[j].description.length; k++) {
-                    if(docJSON.problemtype.problemtype_data[j].description[k].lang == "eng") {
-                       var pt =  docJSON.problemtype.problemtype_data[j].description[k].value;
-                        if (pt) {
-                            pts.push(pt.replace(/^CWE-[0-9 ]+/,''));
-                        }
-                    }
-                }
-            }
-            var ptstring = pts.join(', ');
+            var ptstring = textUtil.getProblemTypeString(docJSON);
             if (ptstring.length == 0) {
                 ptstring = "A"
             }
@@ -943,6 +950,7 @@ autoButton.addEventListener('click', function (event) {
 
         }
     });
+
 if (document.getElementById('remove')) {
     document.getElementById('remove').addEventListener('click', function () {
         //var e = docEditor.getValue();
@@ -974,15 +982,102 @@ if (document.getElementById('save1') && document.getElementById('save2')) {
     document.getElementById('save2').removeAttribute("style");
 }
 
+var defaultTabs = {
+    editorTab: {
+        setValue: function (val) {
+            insync = true;
+            docEditor.setValue(val);
+            insync = false;
+        },
+        getValue: function () {
+            return docEditor.getValue();
+        },
+        validate: function (x) {
+            var errors = [];
+            if (x) {
+                errors = docEditor.validate(x);
+            } else {
+                errors = docEditor.validate();
+            }
+            if (errors.length > 0) {
+                docEditor.setOption('show_errors', 'always');
+                errMsg.textContent = (errors.length > 1 ? errors.length + " errors found" : errors[0].path + ": " + errors[0].message);
+                console.log(errors);
+                editorLabel.className = "red lbl";
+                return 0;
+            } else {
+                errMsg.textContent = "";
+                editorLabel.className = "lbl";
+                return 1;
+            }
+        }
+    },
+    sourceTab: {
+        setValue: function (val) {
+            if (sourceEditor == undefined) {
+                sourceEditor = ace.edit("output");
+                sourceEditor.getSession().setMode("ace/mode/json");
+                sourceEditor.getSession().on('change', function () {
+                    mainTabGroup.change(1);
+                });
+                sourceEditor.setOptions({
+                    maxLines: 480,
+                    wrap: true
+                });
+                sourceEditor.$blockScrolling = Infinity;
+            }
+            insync = true;
+            sourceEditor.getSession().setValue(JSON.stringify(val, null, 2));
+            sourceEditor.clearSelection();
+            insync = false;
+        },
+        validate: function () {
+            try {
+                var hasError = false;
+                var firsterror = null;
+                var annotations = sourceEditor.getSession().getAnnotations();
+                for (var l in annotations) {
+                    var annotation = annotations[l];
+                    if (annotation.type === "error") {
+                        hasError = true;
+                        firsterror = annotation;
+                        //console.log('SOurce error'+annotation);
+                        break;
+                    }
+                }
+                if (!hasError) {
+                    return 1;
+                } else {
+                    sourceEditor.moveCursorTo(firsterror.row, firsterror.column, false);
+                    sourceEditor.clearSelection();
+                    errMsg.textContent = 'Please fix error: ' + firsterror.text;
+                    document.getElementById("sourceTab").checked = true;
+                    return -1;
+                }
+            } catch (err) {
+                errMsg.textContent = err.message;
+                document.getElementById("sourceTab").checked = true;
+                return -1;
+            } finally {}
+        },
+        getValue: function () {
+            return JSON.parse(sourceEditor.getSession().getValue());
+        }
+    }
+};
+if(typeof additionalTabs !== 'undefined') {
+    Object.assign(defaultTabs, additionalTabs);
+}
+var mainTabGroup = new Tabs('mainTabGroup', defaultTabs, 0);
 function loadJSON(res, id, message) {
     // workaround for JSON Editor issue with clearing arrays
     // https://github.com/jdorn/json-editor/issues/617
-    if(docEditor) {
+    if (docEditor) {
         docEditor.destroy();
     }
     docEditor = new JSONEditor(document.getElementById('docEditor'), docEditorOptions);
-    docEditor.on('ready', function () {
-        docEditor.root.setValue(res, true);
+    docEditor.on('ready', async function () {
+        await docEditor.root.setValue(res, true);
         infoMsg.textContent = message ? message : '';
         errMsg.textContent = "";
         if(id) {
@@ -998,15 +1093,16 @@ function loadJSON(res, id, message) {
         if (message) {
             selected = "editorTab";
         }
+        docEditor.watch('root', function(){mainTabGroup.change(0)});
+        editorLabel.className = "lbl";
+        postUrl = getDocID() ? './' + getDocID() : "./new";
+
         document.getElementById(selected).checked = true;
         var event = new Event('change');
-        document.getElementById(selected).dispatchEvent(event);
-        //selected = "editorTab";
-        syncContents(selected);
-        docEditor.watch('root', incEditorChanges);
-        editorLabel.className = "lbl";
-        changes = 0;
-        postUrl = getDocID() ? './' + getDocID() : "./new";
+        //document.getElementById(selected).dispatchEvent(event);
+        setTimeout(function (){
+            document.getElementById(selected).dispatchEvent(event);
+        }, 50);
 
         // hack to auto generate description/ needs improvement
         var descDiv = document.querySelector('[data-schemapath="root.description"] b span');
@@ -1014,94 +1110,15 @@ function loadJSON(res, id, message) {
             descDiv.appendChild(autoButton);
             autoButton.removeAttribute("style");
         }
-
     });
 }
 
-var errorsFound = false;
-function docEditorValid(j) {
-    var errors = [];
-    if (j) {
-        errors = docEditor.validate(j);
-    } else {
-        errors = docEditor.validate();
-    }
-    if (errors.length > 0) {
-        errorsFound = true;
-        docEditor.setOption('show_errors', 'always');
-        errMsg.textContent = (errors.length > 1 ? errors.length + " errors found" : errors[0].path + ": " + errors[0].message);
-        editorLabel.className = "red lbl";
-        return false;
-    } else {
-        errorsFound = false;
-        errMsg.textContent = "";
-        editorLabel.className = "lbl";
-        return true;
-    }
-}
-
-function source2editor() {
-    insync = true;
-    var result = JSON.parse(sourceEditor.getSession().getValue());
-    docEditor.root.setValue(result, true);
-    insync = false;
-    return result;
-}
-
-function sourceEditorValid() {
-    try {
-        var hasError = false;
-        var firsterror = null;
-        var annotations = sourceEditor.getSession().getAnnotations();
-        for (var l in annotations) {
-            var annotation = annotations[l];
-            if (annotation.type === "error") {
-                hasError = true;
-                firsterror = annotation;
-                break;
-            }
-        }
-        if (!hasError) {
-            return true;
-        } else {
-            sourceEditor.moveCursorTo(firsterror.row, firsterror.column, false);
-            sourceEditor.clearSelection();
-            errMsg.textContent = 'Please fix error: ' + firsterror.text;
-            document.getElementById("sourceTab").checked = true;
-            return false;
-        }
-    } catch (err) {
-        errMsg.textContent = err.message;
-        document.getElementById("sourceTab").checked = true;
-        return false;
-    } finally {}
-}
-
-function validAndSync() {
-    if (document.getElementById("sourceTab").checked === true) {
-        if (!sourceEditorValid()) {
-            return false;
-        } else {
-            var j = source2editor();
-            if (!docEditorValid(j)) {
-                document.getElementById("editorTab").checked = true;
-                return false;
-            }
-        }
-    }
-    if (!docEditorValid()) {
-        document.getElementById("editorTab").checked = true;
-        return false;
-    }
-    return true;
-}
-
 function save() {
-    if (!validAndSync()){
+    var j = mainTabGroup.getValue();
+    if (!j){
         return;
     }
     infoMsg.textContent = "Saving...";
-    var e = docEditor.getValue();
     fetch(postUrl ? postUrl : '', {
             method: 'POST',
             credentials: 'include',
@@ -1111,7 +1128,7 @@ function save() {
                 'CSRF-Token': csrfToken
             },
             redirect: 'error',
-            body: JSON.stringify(e),
+            body: JSON.stringify(j),
         })
         .then(function (response) {
             if (!response.ok) {
@@ -1158,74 +1175,6 @@ function getDocID() {
         }
     }
 }
-
-function incChanges() {
-    if (!insync) {
-        errMsg.textContent = '';
-        editorLabel.className = "lbl";
-
-        changes = true;
-        infoMsg.textContent = 'Edited';
-        //var idEditor = docEditor.getEditor('root.' + idpath);
-        var nid = getDocID();
-        document.title = '• ' + (nid ? nid : 'Vulnogram');
-        if (document.getElementById("save1")) {
-            save2.className = "btn sfe gap save";
-            save1.className = "btn sfe save";
-        }
-    }
-}
-
-function incEditorChanges() {
-    if (selected == 'editorTab') {
-        incChanges();
-    }
-}
-
-function incSourceChanges() {
-    if (selected == 'sourceTab') {
-        incChanges();
-    }
-}
-
-//trigger validation when either editor or Source editor is deselected
-function setupDeselectEvent() {
-    var tabs = document.getElementsByName("tabs");
-    for (var i = 0; i < tabs.length; i++) {
-        var t = tabs[i];
-        t.addEventListener('change', function () {
-            var clicked = this.id;
-            window.location.hash = this.id.replace(/Tab$/,'');
-            //console.log(selected + ' -to-> ' + clicked);
-            if (selected != clicked) {
-                switch (selected) {
-                    case "editorTab":
-                        docEditorValid();
-                        syncContents(clicked);
-                        break;
-                    case "sourceTab":
-                        if (sourceEditorValid()) {
-                            // for some setting value of GUI Editor and calling immediate validation returns no erroer
-                            // run validation against the actual JSON being copied to Editor
-                            var j = source2editor();
-                            docEditorValid(j);
-                            syncContents(clicked);
-                        } else {
-                            clicked = "sourceTab";
-                            document.getElementById("sourceTab").checked = true;
-                        }
-                        break;
-                    default:
-                        syncContents(clicked);
-                }
-            }
-            selected = clicked;
-        });
-    }
-}
-
-setupDeselectEvent();
-
 function copyText(element) {
     if (document.selection) {
         var range = document.body.createTextRange();
@@ -1262,12 +1211,13 @@ function loadFile(event, elem) {
     }
 }
 function downloadFile(event, link) {
-    if (!validAndSync()){
+    var j = mainTabGroup.getValue();
+    if (!j){
         event.preventDefault();
         alert('JSON Validation Failure: Fix the errors before downloading')
         return false;
     }
-    var file = new File([textUtil.getMITREJSON(textUtil.reduceJSON(docEditor.getValue()))], getDocID() + '.json', {
+    var file = new File([textUtil.getMITREJSON(textUtil.reduceJSON(j))], getDocID() + '.json', {
         type: "text/plain",
         lastModified: new Date()
     });
@@ -1278,13 +1228,33 @@ function downloadFile(event, link) {
 
 }
 function downloadText(element, link) {
-    if (!validAndSync()){
+    var j = mainTabGroup.getValue();
+    if (!j){
         event.preventDefault();
-        alert('JSON Validation Failure: Fix the errors before downloading')
+        alert('JSON Validation Failure: Fix the errors before downloading.')
         return false;
     }
     var file = new File([element.textContent], getDocID() + '.json', {
         type: "text/plain",
+        lastModified: new Date()
+    });
+    link.href = URL.createObjectURL(file);
+    link.download = file.name;
+}
+function downloadElement(id, link) {
+    var svg = document.getElementById(id);
+    var serializer = new XMLSerializer();
+    var source = serializer.serializeToString(svg);
+    if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
+        source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+    }
+    if(!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
+        source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+    }
+    source.replace('</svg>', '</svg><style>{font-size:22px}</style>');
+    source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+    var file = new File([source], id + '.svg', {
+        type: "text/svg",
         lastModified: new Date()
     });
     link.href = URL.createObjectURL(file);
