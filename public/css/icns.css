@@ -469,6 +469,7 @@ div[data-schematype="object"]>h3>span:before {
     flex-basis: 100%;
 }
 
+.vulnogram:before,
 .smalllogo:before {
     background-position: -60em 0;
 }
@@ -478,7 +479,7 @@ div[data-schematype="object"]>h3>span:before {
 .drafting:before {
     background-position: -1em 0;
 }
-
+.REJECT:before,
 .REJECTED:before,
 .rejected:before {
     background-position: -4em 0;
@@ -545,28 +546,30 @@ div[data-schematype="object"]>h3>span:before {
 .NETWORK:before {
     background-position: -17em 0;
 }
-
+.LOW[for*="accessComplexity"]:before,
 .LOW[for*="attackComplexity"]:before {
     background-position: -18em 0;
 }
-
+.HIGH[for*="accessComplexity"]:before,
 .HIGH[for*="attackComplexity"]:before {
     background-position: -19em 0;
 }
 
+.NONE[for*="authentication"]:before,
 .NONE[for*="privilegesRequired"]:before {
     background-position: -20em 0;
 }
-
+.SINGLE[for*="authentication"]:before,
 .LOW[for*="privilegesRequired"]:before {
     background-position: -21em 0;
 }
 
+.MULTIPLE[for*="authentication"]:before,
 .HIGH[for*="privilegesRequired"]:before {
     background-position: -22em 0;
 }
 
-.REQUIRED:before {
+.REQUIRED[for*="userInteraction"]:before {
     background-position: -23em 0;
 }
 
@@ -586,10 +589,12 @@ div[data-schematype="object"]>h3>span:before {
     background-position: -27em 0;
 }
 
+.PARTIAL[for*="confidentialityImpact"]:before,
 .LOW[for*="confidentialityImpact"]:before {
     background-position: -28em 0;
 }
 
+.COMPLETE[for*="confidentialityImpact"]:before,
 .HIGH[for*="confidentialityImpact"]:before {
     background-position: -29em 0;
 }
@@ -598,10 +603,12 @@ div[data-schematype="object"]>h3>span:before {
     background-position: -30em 0;
 }
 
+.PARTIAL[for*="integrityImpact"]:before,
 .LOW[for*="integrityImpact"]:before {
     background-position: -32em 0;
 }
 
+.COMPLETE[for*="integrityImpact"]:before,
 .HIGH[for*="integrityImpact"]:before {
     background-position: -31em 0;
 }
@@ -609,11 +616,11 @@ div[data-schematype="object"]>h3>span:before {
 .NONE[for*="availabilityImpact"]:before {
     background-position: -33em 0;
 }
-
+.PARTIAL[for*="availabilityImpact"]:before,
 .LOW[for*="availabilityImpact"]:before {
     background-position: -34em 0;
 }
-
+.COMPLETE[for*="availabilityImpact"]:before,
 .HIGH[for*="availabilityImpact"]:before {
     background-position: -35em 0;
 }
@@ -1025,7 +1032,15 @@ header .CVE:before,
 .box:before {
     background-position: -135em 0;
 }
-
+.twitter:before {
+    background-position: -140em 0;
+}
+.bar:before {
+    background-position: -141em 0;
+}
+.pie:before {
+    background-position: -142em 0;
+}
 .wysihtml5-commands-disabled .sbn {
     opacity: 0.2;
 }
@@ -1388,6 +1403,7 @@ svg {
     box-sizing: border-box;
     min-height: 300px;
     min-width: 320px;
+    max-height: 900px;
     background-color: var(--wht);
 }
 
