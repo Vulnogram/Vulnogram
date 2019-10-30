@@ -441,7 +441,7 @@ module.exports = function (name, opts) {
     });
     router.post('/json/', async function (req, res) {
         if (req.body.ids && req.body.ids.length > 0) {
-            console.log('REQ: ' + JSON.stringify(req.body.ids));
+            //console.log('REQ: ' + JSON.stringify(req.body.ids));
             var q = {};
             q[idpath] = {
                     "$in": req.body.ids
@@ -879,7 +879,6 @@ module.exports = function (name, opts) {
                 title: 'Error',
                 message: 'failed bulk updates: ' + err.message
             });
-
         }
     });    
     //check if Document ID exists, insert, then redirect to Document ID page
@@ -918,6 +917,7 @@ module.exports = function (name, opts) {
     router.get('/examples/', 
                querymen.middleware(qSchema),
                async function (req, res) {
+        //console.log(JSON.stringify(req.querymen.query));
         var r = await Document.find(req.querymen.query).distinct(req.query.field);
         res.json({examples:r});
     });
@@ -931,91 +931,151 @@ module.exports = function (name, opts) {
             f = [f];
         }
 
+        var pipeLine = normalizeQuery(req.querymen.query);
+            
         var prj = {};
         for(var k of f) {
             var options = opts.facet[k];
-            if (Array.isArray(options.path)) {
-                prj[k] = { "$setUnion": [options.path.map(x => {return '$' + x})] }
-            } else if (typeof options.path === 'string') {
-                prj[k] = '$' + options.path;
-            } else if(Object.keys(options.path).length != 0) {
-                prj[k] = options.path;
-            }
-        }
-
-        var g = {}, gg={};
-        if(f.length == 1) {
-            g = '$' + f[0];
-        } else {
-            for(var k of f) {
-                g[k]= '$'+k;
-                gg[k] = '$_id.'+k;
-            }
-        }
-
-        var agg = [
-            {
-                $match: req.querymen.query
-            }, {
-                $project: prj
-            }, {
-                $group: {_id: g, t:{$sum:1}}
-            }
-        ];
-        gg.t='$t';
-        if (f[1] && !req.query.ungroup) {
-            delete gg[f[0]];
-            agg.push({
-                $group: {
-                    _id: '$_id.' + f[0],
-                    t: {
-                        $sum: '$t'
-                    },
-                    items: {
-                        $push: gg
-                    }
+            if(options) {
+                if (Array.isArray(options.path)) {
+                    prj[k] = { "$setUnion": [options.path.map(x => {return '$' + x})] }
+                } else if (typeof options.path === 'string') {
+                    prj[k] = '$' + options.path;
+                } else if(Object.keys(options.path).length != 0) {
+                    prj[k] = options.path;
                 }
-            })        
+            }
         }
+        if (Object.keys(prj).length > 0) {
 
-        if(req.querymen.cursor.sort) {
-            agg.push({$sort: {'_id':1}})
+            var g = {},
+                gg = {};
+            if (f.length == 1) {
+                g = '$' + f[0];
+            } else {
+                for (var k of f) {
+                    g[k] = '$' + k;
+                    gg[k] = '$_id.' + k;
+                }
+            }
+
+            pipeLine = pipeLine.concat([{
+                    $project: prj
+            }, {
+                    $group: {
+                        _id: g,
+                        t: {
+                            $sum: 1
+                        }
+                    }
+            }
+        ]);
+            gg.t = '$t';
+            if (f[1] && !req.query.ungroup) {
+                delete gg[f[0]];
+                pipeLine.push({
+                    $group: {
+                        _id: '$_id.' + f[0],
+                        t: {
+                            $sum: '$t'
+                        },
+                        items: {
+                            $push: gg
+                        }
+                    }
+                })
+            }
+
+            if (req.querymen.cursor.sort) {
+                pipeLine.push({
+                    $sort: {
+                        '_id': 1
+                    }
+                })
+            }
+            //console.log('pipeLine:' + JSON.stringify(pipeLine,2,2,2));
+            var ret = await Document.aggregate(pipeLine);
+
+            res.json(ret);
+        } else {
+            res.json([{"_id":"Error: Wrong field specification","t":404}]);
         }
-            
-        var ret = await Document.aggregate(agg);
-
-        res.json(ret);
         } else {
             res.json([]);
         }
     });
-    
+    function normalizeQuery(q) {
+        //console.log('GOT' + JSON.stringify(q,2,2,2));
+        var pipeLine = [];
+        if(q['$text']) {
+            if (q['$text']['$in']) {
+                var terms = "";
+                for(var term of q['$text']['$in']) {
+                            terms = terms + ' ' + term;
+                }
+                delete q['$text']['$in'];
+                q['$text']['$search'] = terms;
+            }
+        }
+        // Translate queries for empty strings to match any of "", null, non-existant.
+        for(var p in q) {
+            if(q[p] && q[p]['$in'] && q[p]['$in'].includes('null')) {
+                q[p]['$in'].push("");
+                q[p]['$in'].push(null);
+            }
+            if(q[p] === '') {
+                q[p] = 
+                    {"$not":{
+                        "$exists": true,
+                        "$nin": ['',null]
+                        }
+                    };
+                    //{"$not":{"$exists": true, $ne: ""}}
+                //q[p] = {"$in":["",null]};
+            }
+            if(q[p] === 'null') {
+                //req.querymen.query[q] = {"$exists": false}
+                q[p] = {"$in":["",null]}
+            }
+        }
+        var lookups = {};        
+        if (Array.isArray(opts.conf.lookup) && opts.conf.lookup.length > 0) {
+            var lookupAsNames = {};
+            for(var l of opts.conf.lookup) {
+               lookupAsNames[l.$lookup.as]=true;
+            }
+            for(var p in q) {
+                var a = p.split('.',1)[0];
+                if (lookupAsNames[a]) {
+                    lookups[p] = q[p];
+                    delete q[p];
+                }
+            }
+            pipeLine = pipeLine.concat(opts.conf.lookup)
+            if(Object.keys(lookups).length != 0) {
+                pipeLine.push({"$match": lookups});
+            }
+        }
+        pipeLine.unshift({"$match": q});
+        //console.log('PIPEline' + JSON.stringify(pipeLine,2,2,2));
+        return pipeLine;
+    };
     /* The Main listing routine */
     router.get('/', csrfProtection, querymen.middleware(qSchema), async function (req, res) {
         try {
 
+            var pipeLine = normalizeQuery(req.querymen.query);
             // to get the documents
             // get top level tabs aggregated counts
             var tabs = [];
             if (Object.keys(tabFacet).length != 0) {
-                console.log('QUERY:' + JSON.stringify(req.querymen.query,2,3,4));
+                //console.log('QUERY:' + JSON.stringify(req.querymen.query,2,3,4));
                 tabs = await Document.aggregate([{
                                 $facet: tabFacet
                             }]).exec();
             }
             
-            // get the charts aggregated counts
-            
-            if(req.querymen.query['$text']) {
-                if (req.querymen.query['$text']['$in']) {
-                    var terms = "";
-                    for(var term of req.querymen.query['$text']['$in']) {
-                                terms = terms + ' ' + term;
-                    }
-                    delete req.querymen.query['$text']['$in'];
-                    req.querymen.query['$text']['$search'] = terms;
-                }
-            }
+            // get the charts aggregated counts            
             var sort = {};
             if(req.querymen.cursor.sort) {
                 for(var s in req.querymen.cursor.sort) {
@@ -1029,10 +1089,6 @@ module.exports = function (name, opts) {
             if (opts.conf.unwind) {
                 allQuery = [opts.conf.unwind];
             }
-            /*if (Array.isArray(opts.conf.lookup) && opts.conf.lookup.length > 0) {
-                //console.log('LOOKUPS' + JSON.stringify(lookups));
-                allQuery = allQuery.concat(opts.conf.lookup);
-            }*/
             if ((Object.keys(sort).length != 0)) {
                 allQuery.push({
                     $sort: sort
@@ -1057,87 +1113,10 @@ module.exports = function (name, opts) {
 
             if (chartCount > 0) {
                 chartFacet.all = allQuery;
-               /* if (opts.conf.unwind) {
-                    chartFacet.all = [opts.conf.unwind];
-                }
-                if (Array.isArray(opts.conf.lookup) && opts.conf.lookup.length > 0) {
-                    //console.log('LOOKUPS' + JSON.stringify(lookups));
-                    chartFacet.all = chartFacet.all.concat(opts.conf.lookup);
-                }
-                if((Object.keys(sort).length != 0)) {
-                    chartFacet.all.push({
-                        $sort: sort
-                    });
-                }                                                       
-                chartFacet.all = chartFacet.all.concat([
-                    {
-                        $skip: req.querymen.cursor.skip
-                    },
-                    {
-                        $limit: req.querymen.cursor.limit
-                    }]);
-                chartFacet.all.push({
-                        $project: project
-                });
-                */
-
-                // Translate queries for empty strings to match any of "", null, non-existant.
-                for(var q in req.querymen.query) {
-                    if(req.querymen.query[q] === '') {
-                        req.querymen.query[q] = 
-                            {"$not":{
-                                "$exists": true,
-                                "$nin": ['',null]
-                                }
-                            };
-                            //{"$not":{"$exists": true, $ne: ""}}
-                        //req.querymen.query[q] = {"$in":["",null]};
-                    }
-                    if(req.querymen.query[q] === 'null') {
-                        //req.querymen.query[q] = {"$exists": false}
-                        req.querymen.query[q] = {"$in":["",null]}
-                    }
-                }
-                var lookups = {};
-                
-                //console.log('ORIG QUERY:' +  JSON.stringify(req.querymen.query,3,3));
-                // if there are lookups then split query
-                if (Array.isArray(opts.conf.lookup) && opts.conf.lookup.length > 0) {
-                    var lookupAsNames = {};
-                    for(var l of opts.conf.lookup) {
-                       lookupAsNames[l.$lookup.as]=true;
-                    }
-                    for(var q in req.querymen.query) {
-                        var a = q.split('.',1)[0];
-                        if (lookupAsNames[a]) {
-                            lookups[q] = req.querymen.query[q];
-                            delete req.querymen.query[q];
-                        }
-                    }
-                }
-                
-                //console.log('LOOKUPs separated:' + JSON.stringify(lookups,3,3));
-
-                //console.log('NEW QUERY:' + JSON.stringify(req.querymen.query,2,3,4));
-                var aggQuery = [
-                    {
-                        "$match": req.querymen.query
-                    }];
-                if (Array.isArray(opts.conf.lookup) && opts.conf.lookup.length > 0) {
-                    aggQuery = aggQuery.concat(opts.conf.lookup)
-                    if(Object.keys(lookups).length != 0) {
-                        aggQuery.push({"$match": lookups});
-                    }
-                }
-                aggQuery.push({
+                pipeLine.push({
                         $facet: chartFacet
                 });
-                
-
-                var agg = Document.aggregate(aggQuery);
-                /*agg.options = {
-                    allowDiskUse: true
-                };*/
+                var agg = Document.aggregate(pipeLine);
                 charts = await agg.exec();
                 //console.log('Aggregation QUERY: ' + JSON.stringify(aggQuery, null, 3));
                 docs = charts[0].all;
@@ -1145,7 +1124,7 @@ module.exports = function (name, opts) {
                 if (charts[0] && charts[0].count && charts[0].count[0]) {
                     total = charts[0].count[0].total;
                 }
-                //console.log('docs:' + JSON.stringify(docs,null,1))
+                //console.log('Facet:' + JSON.stringify(charts,null,1))
                 delete charts[0].count;
             } else {
                 //console.log('PROJE' + JSON.stringify(project));
