@@ -1,0 +1,18 @@
+extends ../../views/edit
+
+block append scripts
+    script
+        include script.js
+
+block customtabs
+        script(src="/js/d3.v3.min.js")
+        script(src="/js/chart.js")
+        input.tab(name='tabs', type='radio', id='chartTab', value="4")
+        label.lbl(for='chartTab') Chart
+        .wht.fil.bor.pad
+            input#chartS.hid(type="radio" name="chsz")
+            input#chartZ.hid(type="radio" name="chsz"  checked=true)
+            div.btg.right.rnd.pad
+                label.out.pad.bor.icn.table(for="chartS",style="text-align:right;") Grid
+                label.out.pad.bor.icn.box(for="chartZ",style="text-align:right;") Large
+            #chartHolder.grd.pad
