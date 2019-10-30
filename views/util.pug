@@ -140,6 +140,13 @@ mixin hyperscopes(obj, name)
                     | 
                     = s['Resolution-Reason']
 
+mixin iconCVSS(obj,name)
+    if obj
+        - var vect=["accessVector","accessComplexity", "authentication","attackVector","attackComplexity","privilegesRequired","userInteraction","scope","confidentialityImpact","integrityImpact","availabilityImpact"]
+        each v in vect
+            if obj[v]
+                b.icn.lbl(class=obj[v],for=v,title=v + ': ' + obj[v])=obj[v][0]
+            
 mixin hyperCVSS(obj,name)
     - var value = obj[name]
     - var s = parseFloat(value)
@@ -160,7 +167,7 @@ mixin hyperCVSS(obj,name)
 
 mixin hypersize(obj, name)
     if(obj[name])
-        = textUtil.fileSize(obj[name])
+        = (function(a,b,c,d,e){return (b=Math,c=b.log,d=1024,e=c(a)/c(d)|0,a/b.pow(d,e)).toFixed(2)+' '+(e?'KMGTPEZY'[--e]+'B':'Bytes')})(obj[name])
 
 mixin hyperdate(obj, name)
     - var v = false;
@@ -188,6 +195,9 @@ mixin hyperdate(obj, name)
     else
         = obj[name]
 
+mixin hyperLink(value, url)
+    a(href=url + value)=value
+
 mixin hyperVal(obj, name)
     - var value = (obj !== Object(obj) || Array.isArray(obj))? obj : obj[name];
     if value instanceof Date || name == 'date' || name == 'updatedAt' || name == 'createdAt'
@@ -213,9 +223,10 @@ mixin hyperVal(obj, name)
                         - cls = cls + obj[fields[name].xref.class]
                     if fields[name].href != undefined
                         - var href = fields[name].href;
+                        - var hrefSuffix = fields[name].hrefSuffix;
                         - var target = (fields[name].target ? fields[name].target : (href && href.startsWith('http')?"_blank":false))
                         if fields[name].xref && fields[name].xref.href
-                            - href = href + obj[fields[name].xref.href];
+                            - href = href + obj[fields[name].xref.href] + (hrefSuffix? hrefSuffix:'');
                             a(target=target class=cls href=href onclick=onclick)=value
                         else
                             if Array.isArray(value)
@@ -225,7 +236,7 @@ mixin hyperVal(obj, name)
                                     //- a(target=(ahref.startsWith('http')?"_blank":false) class=cls, href=ahref)=v
                                     |  
                             else
-                                - href = href+(value ? value : '');
+                                - href = href+(value ? value : '')+ (hrefSuffix? hrefSuffix:'');
                                 a(target=target class=cls href=href onclick=onclick)=value
                     else
                         if Array.isArray(value)
@@ -248,8 +259,11 @@ mixin facetChart(facet, query, tfacet)
         if tfacet && tfacet.length && tfacet.length > 0
             each values, field in tfacet[0]
                 each v in values
+                    - var vx = v._id;
+                    - vx = (v._id == null) ? 'null': ((v._id == '') ? 'null': v._id);
+                    - vx = Array.isArray(vx) ? vx.join(',') : vx;
                     if (v._id == query[field] || ((typeof query[field] === 'string') && query[field].split(',').includes(v._id)) || ((query[field] instanceof Array) && query[field].includes(v._id)))
-                        input(type="hidden",name=field,value=v._id)
+                        input(type="hidden",name=field,value=vx)
         if facet.length > 0 && (Object.keys(facet[0]).length)
           div.ins.hig.flx.wlp.pad
             each values, field in facet[0]
@@ -257,10 +271,13 @@ mixin facetChart(facet, query, tfacet)
                 label.ico(class=field,for='flt'+field)=field
                 input.expand(id="flt"+field,type="checkbox")
                 each v in values
+                    - var vx = v._id;
+                    - vx = (v._id == null) ? 'null': ((v._id == '') ? 'null': v._id);
+                    - vx = Array.isArray(vx) ? vx.join(',') : vx;
                     div.bar(style="width:" + Math.round(v.count/total*170.0+1) + "px")
-                        input(type="checkbox", id=field+v._id, name=field, value= v._id ? (Array.isArray(v._id)? v._id.join(','): v._id): (v._id === null ? 'null':v._id), checked=(v._id != '' && query[field] && query[field].includes(v._id)) || (v._id === '' && query[field] && typeof query[field] != 'string' && query[field].includes('')))
-                        label.otl(class=v._id + (fields[field].class? ' ' + fields[field].class : ''), for=field+v._id,title=v._id+ " (" + v.count + ")")
-                            = v._id
+                        input(type="checkbox", id=field+vx, name=field, value= vx, checked=(v._id && query[field] && query[field].includes(v._id)) || (vx === 'null' && query[field] && query[field].includes('null')))
+                        label.otl(class=vx + (fields[field].class? ' ' + fields[field].class : ''), for=field+vx, title=vx+ " (" + v.count + ")")
+                            = vx
                             br
                             b=v.count
                 label(for="flt"+field)
