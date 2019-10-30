@@ -12,8 +12,9 @@ html
             header.ban.pad.wht.btm
                 .left
                     block topHeaderLeft
-                        //a.logo.big(title="Making the world safer one CVE at a time, since 2017", href=conf.homepage)="Vulnogram"
-                        //| 
+                        if min
+                            a.logo.big(title="Making the world safer one CVE at a time, since 2017", href=conf.homepage)="Vulnogram"
+                            | 
                         - var vs = Object.keys(confOpts).sort((a,b)=>(confOpts[a].conf.order-confOpts[b].conf.order));
                         //- console.log('JIRA order ' + confOpts['jira'].conf.order + '= '+ vs.map((a)=>(confOpts[a].conf.order)));
                         each section in vs
