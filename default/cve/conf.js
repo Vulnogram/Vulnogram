@@ -921,19 +921,18 @@ validators: [
 ],
 script: {
     tweetJSON: function(event, link) {
-        if (!validAndSync()){
+        var j = mainTabGroup.getValue();
+        if (!j){
             event.preventDefault();
-            alert('JSON Validation Failure: Fix the errors before tweeting')
-            return false;
+            return;
         }
-        var j = docEditor.getValue();
         var id = textUtil.deep_value(j, 'CVE_data_meta.ID');
         var cvelist = textUtil.deep_value(j, 'CNA_private.CVE_list');
         if(cvelist && cvelist.length > 0) {
             id = '';
         }
         var aka = textUtil.deep_value(j, 'CVE_data_meta.AKA')
-        var text = textUtil.deep_value(j, 'source.advisory') + ' '
+        var text = id + ' ' + textUtil.deep_value(j, 'source.advisory') + ' '
             + textUtil.getBestTitle(j) + ' '
             + (aka? ' aka ' + aka : '');
         text = text.replace(/ +(?= )/g,'');
@@ -945,8 +944,12 @@ script: {
     },
     draftEmail: async function(event, link, renderId) {
         var subject = ''
-        if(typeof(docEditor) !== 'undefined') {
-            var j = docEditor.getValue();
+        if(typeof(mainTabGroup) !== 'undefined') {
+            var j = mainTabGroup.getValue();
+            if (!j){
+                event.preventDefault();
+                return;
+            }
             var id = textUtil.deep_value(j, 'CVE_data_meta.ID');
             var cvelist = textUtil.deep_value(j, 'CNA_private.CVE_list');
             if(cvelist && cvelist.length > 0) {
