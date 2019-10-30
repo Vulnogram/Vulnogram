@@ -12,9 +12,11 @@ html
             header.ban.pad.wht.btm
                 .left
                     block topHeaderLeft
-                        a.logo.big(title="Making the world safer one CVE at a time, since 2017", href=conf.homepage)="Vulnogram"
-                        |   
-                        each vx, section in confOpts
+                        //a.logo.big(title="Making the world safer one CVE at a time, since 2017", href=conf.homepage)="Vulnogram"
+                        //| 
+                        - var vs = Object.keys(confOpts).sort((a,b)=>(confOpts[a].conf.order-confOpts[b].conf.order));
+                        //- console.log('JIRA order ' + confOpts['jira'].conf.order + '= '+ vs.map((a)=>(confOpts[a].conf.order)));
+                        each section in vs
                             if confOpts && confOpts[section]
                                 - var cf = confOpts[section].conf ? confOpts[section].conf : {};
                                 a.icn.fbn(class=cf.class + (page && page.startsWith('/' + section + '/') ? " hig ins " : ""), title=cf.title, href = (cf.uri? cf.uri : '/' + section + '/' ))=cf.name
