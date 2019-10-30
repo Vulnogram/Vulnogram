@@ -38,7 +38,7 @@ block scripts
         script var csrfToken = "#{csrfToken}";
 
 block content
-    div
+    div#mainTabGroup
         span.lbl &nbsp;
         input.tab(name='tabs', type='radio', id='editorTab', value="1",checked)
         label.lbl#editorLabel(for='editorTab') Editor
@@ -62,6 +62,7 @@ block content
             input.tab(name='tabs', type='radio', id='changesTab', value="6")
             label.lbl(for='changesTab') Changes
             .wht.fil.bor.pad
+                div#unSavedChanges
                 div#changelog
 
         
