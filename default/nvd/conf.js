@@ -11,19 +11,19 @@ facet: {
         regex: 'CVE-[0-9]{4}-[0-9]{4,10}',
         class: 'nobr'
     },
+    CVSS: {
+        path: 'impact.baseMetricV3.cvssV3.baseScore',
+        //chart: true,
+        //hideColumn: true
+    },
     severity: {
         path: 'impact.baseMetricV3.cvssV3.baseSeverity',
         //chart: true,
-        //hideColumn: true
     },
     date: {
         path: 'publishedDate',
         sortDefault: '-date'
     },
-/*    updated: {
-        path: 'lastModifiedDate'
-    },*/
-    
     type: {
         path: 'cve.problemtype.problemtype_data.description.value',
         //chart: true
