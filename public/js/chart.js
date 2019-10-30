@@ -7,17 +7,21 @@ function plotCharts(container, charts) {
         .data(charts)
         .enter()
             .append('div')
-        .attr("class", "")
                 .attr('class', 'vis bor wht rnd shd pad')
                 .html(function(d){
                     d.div = this;
                     if(d.type == 'pie') {
                        pieChart(d);
                     } else {
-                        barChart(d);
+                       barChart(d);
                     }
-                    return '<div class="center icn ' + d.key + '">' + (d.title? ' ' +  d.title : '') + '</div>';
+                    return '<a href="/home/' + encodeURI(d.ID) + '#chart" class="center icn ' + encodeURI(d.key) + '">' + (d.title? ' ' +  d.title : '') + '</a> ';
+                    //| <a onclick="downloadElement(\''+encodeURI(d.ID)+'\',this)">download</a>';
                 });
+    
+        d3.select(document.getElementById(container))
+        .selectAll('div')
+        .data(charts).exit().remove()
 }
 
 function showError(a) {
@@ -28,7 +32,7 @@ function pieChart(a) {
     var h = 500;
     var radius = 250;
     
-    if('color' in a && 'domain' in a.color && 'range' in a.color) {
+    if('color' in a && 'domain' in a.color && 'range' in a.color && a.color.domain.length > 0) {
         a.color = d3.scale.ordinal()
             .domain(a.color.domain)
             .range(a.color.range);
@@ -51,6 +55,7 @@ function pieChart(a) {
             .value(function(d) { return d.t; });
 
         var svgPie = d3.select(a.div).append("svg")
+                .attr("id", a.ID)
    // .attr("width", "100%")
     //    .attr("height", "90%")
         .attr("viewBox","0 0 710 500")
@@ -69,11 +74,11 @@ function pieChart(a) {
             .attr("class", "arc");
 
         g.append("svg:title")
-            .text(function(d) { return d.data._id + ' = ' + d.data.t});
+            .text(function(d) { return (d.data._id ? d.data._id : 'null') + ' = ' + d.data.t});
             
         g.append("a")
             .attr("xlink:href", function(d){
-                return a.list + "&" + a.key + "=" + d.data._id;
+                return a.list + "&" + a.key + "=" + (d.data._id ? d.data._id : 'null');
             })
             .append("path")
             .attr("d", arc)
@@ -83,7 +88,7 @@ function pieChart(a) {
         g.filter(function(d) { return d.endAngle - d.startAngle > .2; })
         .append("a")
             .attr("xlink:href", function(d){
-                return a.list + "&" + a.key + "=" + d.data._id;
+                return a.list + "&" + a.key + "=" + (d.data._id ? d.data._id : 'null');
             })
             .append("text")
             .attr("transform", function(d) {
@@ -118,7 +123,7 @@ function barChart (a) {
         .rangeRound([height, 0]);
     }
 
-    if('color' in a && 'domain' in a.color && 'range' in a.color) {
+    if('color' in a && 'domain' in a.color && 'range' in a.color  && a.color.domain.length > 0) {
         a.color = d3.scale.ordinal()
             .domain(a.color.domain)
             .range(a.color.range);
@@ -146,7 +151,7 @@ function barChart (a) {
         }
         
          svg = d3.select(a.div).append("svg")
-     //   .attr("width", "100%")
+        .attr("id", a.ID)
     //    .attr("height", "90%")
         .attr("viewBox","0 0 710 500")
        // .attr("preserveAspectRatio","xMidYMid meet")
@@ -154,14 +159,7 @@ function barChart (a) {
         .append("g")
         .attr("transform", "translate(" + a.marginLeft + "," + a.marginTop + ")");
 
-/*        keys = []
-        if (data.length > 1) {
-            keys = Object.keys(data[0]._id);
-        }
-        piv = [];
-        agg = {};
-//        var i = -1; var yo = -99;*/
-;
+
         var total = 0;
         data.forEach(function(d) {
             var c = d.t;
@@ -206,7 +204,9 @@ function barChart (a) {
 /* total counts above bar charts */
         svg.selectAll("total")
         .data(data)
-        .enter().append("a").attr("xlink:href", (d) => a.list + '&' + a.key + '=' + d._id).append("text")
+        .enter().append("a")
+            .attr("target", "_blank")
+            .attr("xlink:href", (d) => a.list + '&' + a.key[0] + '=' + (d._id?d._id:'null')).append("text")
         .text(function(d) {
             return d.t;
         })
@@ -244,8 +244,9 @@ function barChart (a) {
             }
         })
         .enter().append("a")
+            .attr("target", "_blank")
             .attr("xlink:href", function(i) {
-                return a.list + "&" + a.key + "=" + i._id + (ykey? "&" + ykey + '=' + i[ykey] : '')
+                return a.list + "&" + a.key[0] + "=" + (i._id ? i._id : 'null')+ (ykey? "&" + ykey + '=' + i[ykey] : '')
             })
         .append("rect")
             .attr("width", a.x.rangeBand())
@@ -271,8 +272,9 @@ function barChart (a) {
                 return [d];
             }
         }).enter().append("a")
+            .attr("target", "_blank")
             .attr("xlink:href", function(i){
-                return a.list + "&" + a.key + "=" + i._id + (ykey? "&" + ykey + '=' + i[ykey] : '')
+                return a.list + "&" + a.key[0] + "=" + (i._id?i._id:'null') + (ykey? "&" + ykey + '=' + i[ykey] : '')
         })
         .append("text").text(function(i) {
             if (a.y(i.y)-a.y(i.y + i.t) > 10) {
@@ -285,7 +287,5 @@ function barChart (a) {
             //a.y(i.y)+a.y(i.t)+10;
         })
         .attr("x", 2);
-        
-
     });
 };
