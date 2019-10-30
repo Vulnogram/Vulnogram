@@ -192,7 +192,7 @@ getAffectedProductString: function (cve) {
     var stringifyArray = function(ob) {
         var ret = [];
         for(var p in ob) {
-            ret.push(p + " " + ob[p].join(';\n') + ".");
+            ret.push(p + "\n" + ob[p].join(';\n') + ".");
         }
         return ret.join('\n');
     }
@@ -241,6 +241,27 @@ function (cve) {
         lines.push(pstring.join(" "));
     }
     return lines.join();  
+},
+getProblemTypeString: function (o) {
+    var pts = [];
+    for (var j = 0; j < o.problemtype.problemtype_data.length; j++) {
+        for (var k = 0; k < o.problemtype.problemtype_data[j].description.length; k++) {
+            if (o.problemtype.problemtype_data[j].description[k].lang == "eng") {
+                var pt = o.problemtype.problemtype_data[j].description[k].value;
+                if (pt) {
+                    pts.push(pt.replace(/^CWE-[0-9 ]+/, ''));
+                }
+            }
+        }
+    }
+    return pts.join(', ');
+},
+getBestTitle: function (o) {
+    var title = textUtil.deep_value(o, 'CVE_data_meta.TITLE');
+    if (!title) {
+        title = textUtil.getProblemTypeString(o) + ' vulnerability in ' + textUtil.getProductList(o);
+    }
+    return title;
 },
 mergeJSON : function (target, add) {
     function isObject(obj) {
