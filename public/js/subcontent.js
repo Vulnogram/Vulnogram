@@ -1,4 +1,4 @@
-function pug_attr(t,e,n,f){return!1!==e&&null!=e&&(e||"class"!==t&&"style"!==t)?!0===e?" "+(f?t:t+'="'+t+'"'):("function"==typeof e.toJSON&&(e=e.toJSON()),"string"==typeof e||(e=JSON.stringify(e),n||-1===e.indexOf('"'))?(n&&(e=pug_escape(e))," "+t+'="'+e+'"'):" "+t+"='"+e.replace(/'/g,"&#39;")+"'"):""}
+function pug_attr(t,e,n,r){if(!1===e||null==e||!e&&("class"===t||"style"===t))return"";if(!0===e)return" "+(r?t:t+'="'+t+'"');var f=typeof e;return"object"!==f&&"function"!==f||"function"!=typeof e.toJSON||(e=e.toJSON()),"string"==typeof e||(e=JSON.stringify(e),n||-1===e.indexOf('"'))?(n&&(e=pug_escape(e))," "+t+'="'+e+'"'):" "+t+"='"+e.replace(/'/g,"&#39;")+"'"}
 function pug_classes(s,r){return Array.isArray(s)?pug_classes_array(s,r):s&&"object"==typeof s?pug_classes_object(s):s||""}
 function pug_classes_array(r,a){for(var s,e="",u="",c=Array.isArray(a),g=0;g<r.length;g++)(s=pug_classes(r[g]))&&(c&&a[g]&&(s=pug_escape(s)),e=e+u+s,u=" ");return e}
 function pug_classes_object(r){var a="",n="";for(var o in r)o&&r[o]&&pug_has_own_property.call(r,o)&&(a=a+n+o,n=" ");return a}
@@ -301,6 +301,34 @@ pug_html = pug_html + "\u003C\u002Fspan\u003E\u003C\u002Fspan\u003E";
 }).call(this);
 
 };
+pug_mixins["iconCVSS"] = pug_interp = function(obj,name){
+var block = (this && this.block), attributes = (this && this.attributes) || {};
+if (obj) {
+var vect=["accessVector","accessComplexity", "authentication","attackVector","attackComplexity","privilegesRequired","userInteraction","scope","confidentialityImpact","integrityImpact","availabilityImpact"]
+// iterate vect
+;(function(){
+  var $$obj = vect;
+  if ('number' == typeof $$obj.length) {
+      for (var pug_index6 = 0, $$l = $$obj.length; pug_index6 < $$l; pug_index6++) {
+        var v = $$obj[pug_index6];
+if (obj[v]) {
+pug_html = pug_html + "\u003Cb" + (pug_attr("class", pug_classes(["icn","lbl",obj[v]], [false,false,true]), false, false)+pug_attr("for", v, true, false)+pug_attr("title", v + ': ' + obj[v], true, false)) + "\u003E" + (pug_escape(null == (pug_interp = obj[v][0]) ? "" : pug_interp)) + "\u003C\u002Fb\u003E";
+}
+      }
+  } else {
+    var $$l = 0;
+    for (var pug_index6 in $$obj) {
+      $$l++;
+      var v = $$obj[pug_index6];
+if (obj[v]) {
+pug_html = pug_html + "\u003Cb" + (pug_attr("class", pug_classes(["icn","lbl",obj[v]], [false,false,true]), false, false)+pug_attr("for", v, true, false)+pug_attr("title", v + ': ' + obj[v], true, false)) + "\u003E" + (pug_escape(null == (pug_interp = obj[v][0]) ? "" : pug_interp)) + "\u003C\u002Fb\u003E";
+}
+    }
+  }
+}).call(this);
+
+}
+};
 pug_mixins["hyperCVSS"] = pug_interp = function(obj,name){
 var block = (this && this.block), attributes = (this && this.attributes) || {};
 var value = obj[name]
@@ -335,7 +363,7 @@ pug_html = pug_html + (pug_escape(null == (pug_interp = value) ? "" : pug_interp
 pug_mixins["hypersize"] = pug_interp = function(obj, name){
 var block = (this && this.block), attributes = (this && this.attributes) || {};
 if ((obj[name])) {
-pug_html = pug_html + (pug_escape(null == (pug_interp = textUtil.fileSize(obj[name])) ? "" : pug_interp));
+pug_html = pug_html + (pug_escape(null == (pug_interp = (function(a,b,c,d,e){return (b=Math,c=b.log,d=1024,e=c(a)/c(d)|0,a/b.pow(d,e)).toFixed(2)+' '+(e?'KMGTPEZY'[--e]+'B':'Bytes')})(obj[name])) ? "" : pug_interp));
 }
 };
 pug_mixins["hyperdate"] = pug_interp = function(obj, name){
@@ -359,6 +387,10 @@ pug_html = pug_html + "\u003Cspan" + (pug_attr("class", pug_classes(["nobr",cl],
 else {
 pug_html = pug_html + (pug_escape(null == (pug_interp = obj[name]) ? "" : pug_interp));
 }
+};
+pug_mixins["hyperLink"] = pug_interp = function(value, url){
+var block = (this && this.block), attributes = (this && this.attributes) || {};
+pug_html = pug_html + "\u003Ca" + (pug_attr("href", url + value, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = value) ? "" : pug_interp)) + "\u003C\u002Fa\u003E";
 };
 pug_mixins["hyperVal"] = pug_interp = function(obj, name){
 var block = (this && this.block), attributes = (this && this.attributes) || {};
@@ -389,9 +421,10 @@ cls = cls + obj[fields[name].xref.class]
 }
 if (fields[name].href != undefined) {
 var href = fields[name].href;
+var hrefSuffix = fields[name].hrefSuffix;
 var target = (fields[name].target ? fields[name].target : (href && href.startsWith('http')?"_blank":false))
 if (fields[name].xref && fields[name].xref.href) {
-href = href + obj[fields[name].xref.href];
+href = href + obj[fields[name].xref.href] + (hrefSuffix? hrefSuffix:'');
 pug_html = pug_html + "\u003Ca" + (pug_attr("class", pug_classes([cls], [true]), false, false)+pug_attr("target", target, true, false)+pug_attr("href", href, true, false)+pug_attr("onclick", onclick, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = value) ? "" : pug_interp)) + "\u003C\u002Fa\u003E";
 }
 else {
@@ -418,7 +451,7 @@ pug_html = pug_html + " ";
 
 }
 else {
-href = href+(value ? value : '');
+href = href+(value ? value : '')+ (hrefSuffix? hrefSuffix:'');
 pug_html = pug_html + "\u003Ca" + (pug_attr("class", pug_classes([cls], [true]), false, false)+pug_attr("target", target, true, false)+pug_attr("href", href, true, false)+pug_attr("onclick", onclick, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = value) ? "" : pug_interp)) + "\u003C\u002Fa\u003E";
 }
 }
@@ -479,19 +512,25 @@ if (tfacet && tfacet.length && tfacet.length > 0) {
 ;(function(){
   var $$obj = values;
   if ('number' == typeof $$obj.length) {
-      for (var pug_index9 = 0, $$l = $$obj.length; pug_index9 < $$l; pug_index9++) {
-        var v = $$obj[pug_index9];
+      for (var pug_index10 = 0, $$l = $$obj.length; pug_index10 < $$l; pug_index10++) {
+        var v = $$obj[pug_index10];
+var vx = v._id;
+vx = (v._id == null) ? 'null': ((v._id == '') ? 'null': v._id);
+vx = Array.isArray(vx) ? vx.join(',') : vx;
 if ((v._id == query[field] || ((typeof query[field] === 'string') && query[field].split(',').includes(v._id)) || ((query[field] instanceof Array) && query[field].includes(v._id)))) {
-pug_html = pug_html + "\u003Cinput" + (" type=\"hidden\""+pug_attr("name", field, true, false)+pug_attr("value", v._id, true, false)) + "\u002F\u003E";
+pug_html = pug_html + "\u003Cinput" + (" type=\"hidden\""+pug_attr("name", field, true, false)+pug_attr("value", vx, true, false)) + "\u002F\u003E";
 }
       }
   } else {
     var $$l = 0;
-    for (var pug_index9 in $$obj) {
+    for (var pug_index10 in $$obj) {
       $$l++;
-      var v = $$obj[pug_index9];
+      var v = $$obj[pug_index10];
+var vx = v._id;
+vx = (v._id == null) ? 'null': ((v._id == '') ? 'null': v._id);
+vx = Array.isArray(vx) ? vx.join(',') : vx;
 if ((v._id == query[field] || ((typeof query[field] === 'string') && query[field].split(',').includes(v._id)) || ((query[field] instanceof Array) && query[field].includes(v._id)))) {
-pug_html = pug_html + "\u003Cinput" + (" type=\"hidden\""+pug_attr("name", field, true, false)+pug_attr("value", v._id, true, false)) + "\u002F\u003E";
+pug_html = pug_html + "\u003Cinput" + (" type=\"hidden\""+pug_attr("name", field, true, false)+pug_attr("value", vx, true, false)) + "\u002F\u003E";
 }
     }
   }
@@ -507,19 +546,25 @@ pug_html = pug_html + "\u003Cinput" + (" type=\"hidden\""+pug_attr("name", field
 ;(function(){
   var $$obj = values;
   if ('number' == typeof $$obj.length) {
-      for (var pug_index10 = 0, $$l = $$obj.length; pug_index10 < $$l; pug_index10++) {
-        var v = $$obj[pug_index10];
+      for (var pug_index11 = 0, $$l = $$obj.length; pug_index11 < $$l; pug_index11++) {
+        var v = $$obj[pug_index11];
+var vx = v._id;
+vx = (v._id == null) ? 'null': ((v._id == '') ? 'null': v._id);
+vx = Array.isArray(vx) ? vx.join(',') : vx;
 if ((v._id == query[field] || ((typeof query[field] === 'string') && query[field].split(',').includes(v._id)) || ((query[field] instanceof Array) && query[field].includes(v._id)))) {
-pug_html = pug_html + "\u003Cinput" + (" type=\"hidden\""+pug_attr("name", field, true, false)+pug_attr("value", v._id, true, false)) + "\u002F\u003E";
+pug_html = pug_html + "\u003Cinput" + (" type=\"hidden\""+pug_attr("name", field, true, false)+pug_attr("value", vx, true, false)) + "\u002F\u003E";
 }
       }
   } else {
     var $$l = 0;
-    for (var pug_index10 in $$obj) {
+    for (var pug_index11 in $$obj) {
       $$l++;
-      var v = $$obj[pug_index10];
+      var v = $$obj[pug_index11];
+var vx = v._id;
+vx = (v._id == null) ? 'null': ((v._id == '') ? 'null': v._id);
+vx = Array.isArray(vx) ? vx.join(',') : vx;
 if ((v._id == query[field] || ((typeof query[field] === 'string') && query[field].split(',').includes(v._id)) || ((query[field] instanceof Array) && query[field].includes(v._id)))) {
-pug_html = pug_html + "\u003Cinput" + (" type=\"hidden\""+pug_attr("name", field, true, false)+pug_attr("value", v._id, true, false)) + "\u002F\u003E";
+pug_html = pug_html + "\u003Cinput" + (" type=\"hidden\""+pug_attr("name", field, true, false)+pug_attr("value", vx, true, false)) + "\u002F\u003E";
 }
     }
   }
@@ -543,16 +588,22 @@ pug_html = pug_html + "\u003Cdiv" + (pug_attr("class", pug_classes(["wht","rnd",
 ;(function(){
   var $$obj = values;
   if ('number' == typeof $$obj.length) {
-      for (var pug_index12 = 0, $$l = $$obj.length; pug_index12 < $$l; pug_index12++) {
-        var v = $$obj[pug_index12];
-pug_html = pug_html + "\u003Cdiv" + (" class=\"bar\""+pug_attr("style", pug_style("width:" + Math.round(v.count/total*170.0+1) + "px"), true, false)) + "\u003E\u003Cinput" + (" type=\"checkbox\""+pug_attr("id", field+v._id, true, false)+pug_attr("name", field, true, false)+pug_attr("value", v._id ? v._id : '', true, false)+pug_attr("checked", (v._id != '' && query[field] && query[field].includes(v._id)) || (v._id === '' && query[field] && typeof query[field] != 'string' && query[field].includes('')), true, false)) + "\u002F\u003E\u003Clabel" + (pug_attr("class", pug_classes(["otl",v._id + (fields[field].class? ' ' + fields[field].class : '')], [false,true]), false, false)+pug_attr("for", field+v._id, true, false)+pug_attr("title", v._id+ " (" + v.count + ")", true, false)) + "\u003E" + (pug_escape(null == (pug_interp = v._id) ? "" : pug_interp)) + "\u003Cbr\u002F\u003E\u003Cb\u003E" + (pug_escape(null == (pug_interp = v.count) ? "" : pug_interp)) + "\u003C\u002Fb\u003E\u003C\u002Flabel\u003E\u003C\u002Fdiv\u003E";
+      for (var pug_index13 = 0, $$l = $$obj.length; pug_index13 < $$l; pug_index13++) {
+        var v = $$obj[pug_index13];
+var vx = v._id;
+vx = (v._id == null) ? 'null': ((v._id == '') ? 'null': v._id);
+vx = Array.isArray(vx) ? vx.join(',') : vx;
+pug_html = pug_html + "\u003Cdiv" + (" class=\"bar\""+pug_attr("style", pug_style("width:" + Math.round(v.count/total*170.0+1) + "px"), true, false)) + "\u003E\u003Cinput" + (" type=\"checkbox\""+pug_attr("id", field+vx, true, false)+pug_attr("name", field, true, false)+pug_attr("value", vx, true, false)+pug_attr("checked", (v._id && query[field] && query[field].includes(v._id)) || (vx === 'null' && query[field] && query[field].includes('null')), true, false)) + "\u002F\u003E\u003Clabel" + (pug_attr("class", pug_classes(["otl",vx + (fields[field].class? ' ' + fields[field].class : '')], [false,true]), false, false)+pug_attr("for", field+vx, true, false)+pug_attr("title", vx+ " (" + v.count + ")", true, false)) + "\u003E" + (pug_escape(null == (pug_interp = vx) ? "" : pug_interp)) + "\u003Cbr\u002F\u003E\u003Cb\u003E" + (pug_escape(null == (pug_interp = v.count) ? "" : pug_interp)) + "\u003C\u002Fb\u003E\u003C\u002Flabel\u003E\u003C\u002Fdiv\u003E";
       }
   } else {
     var $$l = 0;
-    for (var pug_index12 in $$obj) {
+    for (var pug_index13 in $$obj) {
       $$l++;
-      var v = $$obj[pug_index12];
-pug_html = pug_html + "\u003Cdiv" + (" class=\"bar\""+pug_attr("style", pug_style("width:" + Math.round(v.count/total*170.0+1) + "px"), true, false)) + "\u003E\u003Cinput" + (" type=\"checkbox\""+pug_attr("id", field+v._id, true, false)+pug_attr("name", field, true, false)+pug_attr("value", v._id ? v._id : '', true, false)+pug_attr("checked", (v._id != '' && query[field] && query[field].includes(v._id)) || (v._id === '' && query[field] && typeof query[field] != 'string' && query[field].includes('')), true, false)) + "\u002F\u003E\u003Clabel" + (pug_attr("class", pug_classes(["otl",v._id + (fields[field].class? ' ' + fields[field].class : '')], [false,true]), false, false)+pug_attr("for", field+v._id, true, false)+pug_attr("title", v._id+ " (" + v.count + ")", true, false)) + "\u003E" + (pug_escape(null == (pug_interp = v._id) ? "" : pug_interp)) + "\u003Cbr\u002F\u003E\u003Cb\u003E" + (pug_escape(null == (pug_interp = v.count) ? "" : pug_interp)) + "\u003C\u002Fb\u003E\u003C\u002Flabel\u003E\u003C\u002Fdiv\u003E";
+      var v = $$obj[pug_index13];
+var vx = v._id;
+vx = (v._id == null) ? 'null': ((v._id == '') ? 'null': v._id);
+vx = Array.isArray(vx) ? vx.join(',') : vx;
+pug_html = pug_html + "\u003Cdiv" + (" class=\"bar\""+pug_attr("style", pug_style("width:" + Math.round(v.count/total*170.0+1) + "px"), true, false)) + "\u003E\u003Cinput" + (" type=\"checkbox\""+pug_attr("id", field+vx, true, false)+pug_attr("name", field, true, false)+pug_attr("value", vx, true, false)+pug_attr("checked", (v._id && query[field] && query[field].includes(v._id)) || (vx === 'null' && query[field] && query[field].includes('null')), true, false)) + "\u002F\u003E\u003Clabel" + (pug_attr("class", pug_classes(["otl",vx + (fields[field].class? ' ' + fields[field].class : '')], [false,true]), false, false)+pug_attr("for", field+vx, true, false)+pug_attr("title", vx+ " (" + v.count + ")", true, false)) + "\u003E" + (pug_escape(null == (pug_interp = vx) ? "" : pug_interp)) + "\u003Cbr\u002F\u003E\u003Cb\u003E" + (pug_escape(null == (pug_interp = v.count) ? "" : pug_interp)) + "\u003C\u002Fb\u003E\u003C\u002Flabel\u003E\u003C\u002Fdiv\u003E";
     }
   }
 }).call(this);
@@ -569,16 +620,22 @@ pug_html = pug_html + "\u003Cdiv" + (pug_attr("class", pug_classes(["wht","rnd",
 ;(function(){
   var $$obj = values;
   if ('number' == typeof $$obj.length) {
-      for (var pug_index13 = 0, $$l = $$obj.length; pug_index13 < $$l; pug_index13++) {
-        var v = $$obj[pug_index13];
-pug_html = pug_html + "\u003Cdiv" + (" class=\"bar\""+pug_attr("style", pug_style("width:" + Math.round(v.count/total*170.0+1) + "px"), true, false)) + "\u003E\u003Cinput" + (" type=\"checkbox\""+pug_attr("id", field+v._id, true, false)+pug_attr("name", field, true, false)+pug_attr("value", v._id ? v._id : '', true, false)+pug_attr("checked", (v._id != '' && query[field] && query[field].includes(v._id)) || (v._id === '' && query[field] && typeof query[field] != 'string' && query[field].includes('')), true, false)) + "\u002F\u003E\u003Clabel" + (pug_attr("class", pug_classes(["otl",v._id + (fields[field].class? ' ' + fields[field].class : '')], [false,true]), false, false)+pug_attr("for", field+v._id, true, false)+pug_attr("title", v._id+ " (" + v.count + ")", true, false)) + "\u003E" + (pug_escape(null == (pug_interp = v._id) ? "" : pug_interp)) + "\u003Cbr\u002F\u003E\u003Cb\u003E" + (pug_escape(null == (pug_interp = v.count) ? "" : pug_interp)) + "\u003C\u002Fb\u003E\u003C\u002Flabel\u003E\u003C\u002Fdiv\u003E";
+      for (var pug_index14 = 0, $$l = $$obj.length; pug_index14 < $$l; pug_index14++) {
+        var v = $$obj[pug_index14];
+var vx = v._id;
+vx = (v._id == null) ? 'null': ((v._id == '') ? 'null': v._id);
+vx = Array.isArray(vx) ? vx.join(',') : vx;
+pug_html = pug_html + "\u003Cdiv" + (" class=\"bar\""+pug_attr("style", pug_style("width:" + Math.round(v.count/total*170.0+1) + "px"), true, false)) + "\u003E\u003Cinput" + (" type=\"checkbox\""+pug_attr("id", field+vx, true, false)+pug_attr("name", field, true, false)+pug_attr("value", vx, true, false)+pug_attr("checked", (v._id && query[field] && query[field].includes(v._id)) || (vx === 'null' && query[field] && query[field].includes('null')), true, false)) + "\u002F\u003E\u003Clabel" + (pug_attr("class", pug_classes(["otl",vx + (fields[field].class? ' ' + fields[field].class : '')], [false,true]), false, false)+pug_attr("for", field+vx, true, false)+pug_attr("title", vx+ " (" + v.count + ")", true, false)) + "\u003E" + (pug_escape(null == (pug_interp = vx) ? "" : pug_interp)) + "\u003Cbr\u002F\u003E\u003Cb\u003E" + (pug_escape(null == (pug_interp = v.count) ? "" : pug_interp)) + "\u003C\u002Fb\u003E\u003C\u002Flabel\u003E\u003C\u002Fdiv\u003E";
       }
   } else {
     var $$l = 0;
-    for (var pug_index13 in $$obj) {
+    for (var pug_index14 in $$obj) {
       $$l++;
-      var v = $$obj[pug_index13];
-pug_html = pug_html + "\u003Cdiv" + (" class=\"bar\""+pug_attr("style", pug_style("width:" + Math.round(v.count/total*170.0+1) + "px"), true, false)) + "\u003E\u003Cinput" + (" type=\"checkbox\""+pug_attr("id", field+v._id, true, false)+pug_attr("name", field, true, false)+pug_attr("value", v._id ? v._id : '', true, false)+pug_attr("checked", (v._id != '' && query[field] && query[field].includes(v._id)) || (v._id === '' && query[field] && typeof query[field] != 'string' && query[field].includes('')), true, false)) + "\u002F\u003E\u003Clabel" + (pug_attr("class", pug_classes(["otl",v._id + (fields[field].class? ' ' + fields[field].class : '')], [false,true]), false, false)+pug_attr("for", field+v._id, true, false)+pug_attr("title", v._id+ " (" + v.count + ")", true, false)) + "\u003E" + (pug_escape(null == (pug_interp = v._id) ? "" : pug_interp)) + "\u003Cbr\u002F\u003E\u003Cb\u003E" + (pug_escape(null == (pug_interp = v.count) ? "" : pug_interp)) + "\u003C\u002Fb\u003E\u003C\u002Flabel\u003E\u003C\u002Fdiv\u003E";
+      var v = $$obj[pug_index14];
+var vx = v._id;
+vx = (v._id == null) ? 'null': ((v._id == '') ? 'null': v._id);
+vx = Array.isArray(vx) ? vx.join(',') : vx;
+pug_html = pug_html + "\u003Cdiv" + (" class=\"bar\""+pug_attr("style", pug_style("width:" + Math.round(v.count/total*170.0+1) + "px"), true, false)) + "\u003E\u003Cinput" + (" type=\"checkbox\""+pug_attr("id", field+vx, true, false)+pug_attr("name", field, true, false)+pug_attr("value", vx, true, false)+pug_attr("checked", (v._id && query[field] && query[field].includes(v._id)) || (vx === 'null' && query[field] && query[field].includes('null')), true, false)) + "\u002F\u003E\u003Clabel" + (pug_attr("class", pug_classes(["otl",vx + (fields[field].class? ' ' + fields[field].class : '')], [false,true]), false, false)+pug_attr("for", field+vx, true, false)+pug_attr("title", vx+ " (" + v.count + ")", true, false)) + "\u003E" + (pug_escape(null == (pug_interp = vx) ? "" : pug_interp)) + "\u003Cbr\u002F\u003E\u003Cb\u003E" + (pug_escape(null == (pug_interp = v.count) ? "" : pug_interp)) + "\u003C\u002Fb\u003E\u003C\u002Flabel\u003E\u003C\u002Fdiv\u003E";
     }
   }
 }).call(this);
@@ -595,15 +652,15 @@ if (pages > 1) {
 ;(function(){
   var $$obj = columns;
   if ('number' == typeof $$obj.length) {
-      for (var pug_index14 = 0, $$l = $$obj.length; pug_index14 < $$l; pug_index14++) {
-        var c = $$obj[pug_index14];
+      for (var pug_index15 = 0, $$l = $$obj.length; pug_index15 < $$l; pug_index15++) {
+        var c = $$obj[pug_index15];
 pug_html = pug_html + "\u003Cbutton" + (" class=\"hid\""+pug_attr("id", "sort"+c, true, false)+" name=\"sort\""+pug_attr("value", (query.sort=="-" + c ? "" : "-") + c, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = c) ? "" : pug_interp)) + "\u003C\u002Fbutton\u003E";
       }
   } else {
     var $$l = 0;
-    for (var pug_index14 in $$obj) {
+    for (var pug_index15 in $$obj) {
       $$l++;
-      var c = $$obj[pug_index14];
+      var c = $$obj[pug_index15];
 pug_html = pug_html + "\u003Cbutton" + (" class=\"hid\""+pug_attr("id", "sort"+c, true, false)+" name=\"sort\""+pug_attr("value", (query.sort=="-" + c ? "" : "-") + c, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = c) ? "" : pug_interp)) + "\u003C\u002Fbutton\u003E";
     }
   }
@@ -695,15 +752,15 @@ pug_html = pug_html + "\u003Cselect" + (" class=\"btn\""+pug_attr("name", name, 
 ;(function(){
   var $$obj = spec.enum;
   if ('number' == typeof $$obj.length) {
-      for (var pug_index16 = 0, $$l = $$obj.length; pug_index16 < $$l; pug_index16++) {
-        var v = $$obj[pug_index16];
+      for (var pug_index17 = 0, $$l = $$obj.length; pug_index17 < $$l; pug_index17++) {
+        var v = $$obj[pug_index17];
 pug_html = pug_html + "\u003Coption" + (pug_attr("value", v, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = v) ? "" : pug_interp)) + "\u003C\u002Foption\u003E";
       }
   } else {
     var $$l = 0;
-    for (var pug_index16 in $$obj) {
+    for (var pug_index17 in $$obj) {
       $$l++;
-      var v = $$obj[pug_index16];
+      var v = $$obj[pug_index17];
 pug_html = pug_html + "\u003Coption" + (pug_attr("value", v, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = v) ? "" : pug_interp)) + "\u003C\u002Foption\u003E";
     }
   }
@@ -728,15 +785,15 @@ pug_html = pug_html + "\u003Cselect" + (" class=\"btn\""+pug_attr("name", name, 
 ;(function(){
   var $$obj = spec.enum;
   if ('number' == typeof $$obj.length) {
-      for (var pug_index17 = 0, $$l = $$obj.length; pug_index17 < $$l; pug_index17++) {
-        var v = $$obj[pug_index17];
+      for (var pug_index18 = 0, $$l = $$obj.length; pug_index18 < $$l; pug_index18++) {
+        var v = $$obj[pug_index18];
 pug_html = pug_html + "\u003Coption" + (pug_attr("value", v, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = v) ? "" : pug_interp)) + "\u003C\u002Foption\u003E";
       }
   } else {
     var $$l = 0;
-    for (var pug_index17 in $$obj) {
+    for (var pug_index18 in $$obj) {
       $$l++;
-      var v = $$obj[pug_index17];
+      var v = $$obj[pug_index18];
 pug_html = pug_html + "\u003Coption" + (pug_attr("value", v, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = v) ? "" : pug_interp)) + "\u003C\u002Foption\u003E";
     }
   }
@@ -765,8 +822,8 @@ tTime = new Date()
 ;(function(){
   var $$obj = columns;
   if ('number' == typeof $$obj.length) {
-      for (var pug_index18 = 0, $$l = $$obj.length; pug_index18 < $$l; pug_index18++) {
-        var column = $$obj[pug_index18];
+      for (var pug_index19 = 0, $$l = $$obj.length; pug_index19 < $$l; pug_index19++) {
+        var column = $$obj[pug_index19];
 if (fields[column] && fields[column].showDistinct) {
 var unique = [...new Set(docs.map(item => item[column]).reduce((a, b) => a.concat(b), []))];
 pug_html = pug_html + "\u003Cp\u003E\u003Csmall\u003EDisplayed  \u003Cb\u003E" + (pug_escape(null == (pug_interp = column) ? "" : pug_interp)) + "\u003C\u002Fb\u003Es (" + (pug_escape(null == (pug_interp = unique.length) ? "" : pug_interp)) + "):  " + (pug_escape(null == (pug_interp = unique.join(', ')) ? "" : pug_interp)) + "\u003C\u002Fsmall\u003E\u003C\u002Fp\u003E";
@@ -774,9 +831,9 @@ pug_html = pug_html + "\u003Cp\u003E\u003Csmall\u003EDisplayed  \u003Cb\u003E" +
       }
   } else {
     var $$l = 0;
-    for (var pug_index18 in $$obj) {
+    for (var pug_index19 in $$obj) {
       $$l++;
-      var column = $$obj[pug_index18];
+      var column = $$obj[pug_index19];
 if (fields[column] && fields[column].showDistinct) {
 var unique = [...new Set(docs.map(item => item[column]).reduce((a, b) => a.concat(b), []))];
 pug_html = pug_html + "\u003Cp\u003E\u003Csmall\u003EDisplayed  \u003Cb\u003E" + (pug_escape(null == (pug_interp = column) ? "" : pug_interp)) + "\u003C\u002Fb\u003Es (" + (pug_escape(null == (pug_interp = unique.length) ? "" : pug_interp)) + "):  " + (pug_escape(null == (pug_interp = unique.join(', ')) ? "" : pug_interp)) + "\u003C\u002Fsmall\u003E\u003C\u002Fp\u003E";
@@ -804,15 +861,15 @@ pug_html = pug_html + "\u003Ccol\u002F\u003E";
 ;(function(){
   var $$obj = columns;
   if ('number' == typeof $$obj.length) {
-      for (var pug_index19 = 0, $$l = $$obj.length; pug_index19 < $$l; pug_index19++) {
-        var column = $$obj[pug_index19];
+      for (var pug_index20 = 0, $$l = $$obj.length; pug_index20 < $$l; pug_index20++) {
+        var column = $$obj[pug_index20];
 pug_html = pug_html + "\u003Ccol" + (pug_attr("class", pug_classes([fields[column]? fields[column].class:''], [true]), false, false)) + "\u002F\u003E";
       }
   } else {
     var $$l = 0;
-    for (var pug_index19 in $$obj) {
+    for (var pug_index20 in $$obj) {
       $$l++;
-      var column = $$obj[pug_index19];
+      var column = $$obj[pug_index20];
 pug_html = pug_html + "\u003Ccol" + (pug_attr("class", pug_classes([fields[column]? fields[column].class:''], [true]), false, false)) + "\u002F\u003E";
     }
   }
@@ -828,8 +885,8 @@ pug_html = pug_html + "\u003Cth data-sort-method=\"none\"\u003E\u003Cinput type=
 ;(function(){
   var $$obj = columns;
   if ('number' == typeof $$obj.length) {
-      for (var pug_index20 = 0, $$l = $$obj.length; pug_index20 < $$l; pug_index20++) {
-        var column = $$obj[pug_index20];
+      for (var pug_index21 = 0, $$l = $$obj.length; pug_index21 < $$l; pug_index21++) {
+        var column = $$obj[pug_index21];
 if (pages > 1) {
 pug_html = pug_html + "\u003Cth class=\"sortth nobr pointer\"\u003E\u003Clabel" + (pug_attr("class", pug_classes(["block","pointer",(query ? (query['sort'] == column ? 'sortup': (query['sort'] == "-" + column ? 'sortdown' : '')): null)], [false,false,true]), false, false)+pug_attr("for", 'sort'+column, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = column) ? "" : pug_interp)) + "\u003C\u002Flabel\u003E\u003C\u002Fth\u003E";
 }
@@ -846,9 +903,9 @@ pug_html = pug_html + "\u003Cth\u003E" + (pug_escape(null == (pug_interp = colum
       }
   } else {
     var $$l = 0;
-    for (var pug_index20 in $$obj) {
+    for (var pug_index21 in $$obj) {
       $$l++;
-      var column = $$obj[pug_index20];
+      var column = $$obj[pug_index21];
 if (pages > 1) {
 pug_html = pug_html + "\u003Cth class=\"sortth nobr pointer\"\u003E\u003Clabel" + (pug_attr("class", pug_classes(["block","pointer",(query ? (query['sort'] == column ? 'sortup': (query['sort'] == "-" + column ? 'sortdown' : '')): null)], [false,false,true]), false, false)+pug_attr("for", 'sort'+column, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = column) ? "" : pug_interp)) + "\u003C\u002Flabel\u003E\u003C\u002Fth\u003E";
 }
@@ -882,17 +939,17 @@ pug_html = pug_html + "\u003Ctd class=\"rowCheckLabel\"\u003E\u003Clabel class=\
 ;(function(){
   var $$obj = columns;
   if ('number' == typeof $$obj.length) {
-      for (var pug_index22 = 0, $$l = $$obj.length; pug_index22 < $$l; pug_index22++) {
-        var column = $$obj[pug_index22];
+      for (var pug_index23 = 0, $$l = $$obj.length; pug_index23 < $$l; pug_index23++) {
+        var column = $$obj[pug_index23];
 pug_html = pug_html + "\u003Ctd" + (pug_attr("class", pug_classes([column], [true]), false, false)) + "\u003E";
 pug_mixins["hyperVal"](doc, column);
 pug_html = pug_html + "\u003C\u002Ftd\u003E";
       }
   } else {
     var $$l = 0;
-    for (var pug_index22 in $$obj) {
+    for (var pug_index23 in $$obj) {
       $$l++;
-      var column = $$obj[pug_index22];
+      var column = $$obj[pug_index23];
 pug_html = pug_html + "\u003Ctd" + (pug_attr("class", pug_classes([column], [true]), false, false)) + "\u003E";
 pug_mixins["hyperVal"](doc, column);
 pug_html = pug_html + "\u003C\u002Ftd\u003E";
@@ -916,17 +973,17 @@ pug_html = pug_html + "\u003Ctd class=\"rowCheckLabel\"\u003E\u003Clabel class=\
 ;(function(){
   var $$obj = columns;
   if ('number' == typeof $$obj.length) {
-      for (var pug_index23 = 0, $$l = $$obj.length; pug_index23 < $$l; pug_index23++) {
-        var column = $$obj[pug_index23];
+      for (var pug_index24 = 0, $$l = $$obj.length; pug_index24 < $$l; pug_index24++) {
+        var column = $$obj[pug_index24];
 pug_html = pug_html + "\u003Ctd" + (pug_attr("class", pug_classes([column], [true]), false, false)) + "\u003E";
 pug_mixins["hyperVal"](doc, column);
 pug_html = pug_html + "\u003C\u002Ftd\u003E";
       }
   } else {
     var $$l = 0;
-    for (var pug_index23 in $$obj) {
+    for (var pug_index24 in $$obj) {
       $$l++;
-      var column = $$obj[pug_index23];
+      var column = $$obj[pug_index24];
 pug_html = pug_html + "\u003Ctd" + (pug_attr("class", pug_classes([column], [true]), false, false)) + "\u003E";
 pug_mixins["hyperVal"](doc, column);
 pug_html = pug_html + "\u003C\u002Ftd\u003E";
@@ -1124,8 +1181,8 @@ pug_html = pug_html + "\u003Ctd\u003E\u003Cpre class=\"pre\"\u003E";
 ;(function(){
   var $$obj = diffs.lhs;
   if ('number' == typeof $$obj.length) {
-      for (var pug_index28 = 0, $$l = $$obj.length; pug_index28 < $$l; pug_index28++) {
-        var s = $$obj[pug_index28];
+      for (var pug_index29 = 0, $$l = $$obj.length; pug_index29 < $$l; pug_index29++) {
+        var s = $$obj[pug_index29];
 switch (s.t){
 case 0:
 pug_html = pug_html + (pug_escape(null == (pug_interp = s.str) ? "" : pug_interp));
@@ -1137,9 +1194,9 @@ pug_html = pug_html + "\u003Cspan class=\"red\"\u003E" + (pug_escape(null == (pu
       }
   } else {
     var $$l = 0;
-    for (var pug_index28 in $$obj) {
+    for (var pug_index29 in $$obj) {
       $$l++;
-      var s = $$obj[pug_index28];
+      var s = $$obj[pug_index29];
 switch (s.t){
 case 0:
 pug_html = pug_html + (pug_escape(null == (pug_interp = s.str) ? "" : pug_interp));
@@ -1159,8 +1216,8 @@ pug_html = pug_html + "\u003C\u002Ftd\u003E\u003Ctd\u003E\u003Cpre class=\"pre\"
 ;(function(){
   var $$obj = diffs.rhs;
   if ('number' == typeof $$obj.length) {
-      for (var pug_index29 = 0, $$l = $$obj.length; pug_index29 < $$l; pug_index29++) {
-        var s = $$obj[pug_index29];
+      for (var pug_index30 = 0, $$l = $$obj.length; pug_index30 < $$l; pug_index30++) {
+        var s = $$obj[pug_index30];
 switch (s.t){
 case 0:
 pug_html = pug_html + (pug_escape(null == (pug_interp = s.str) ? "" : pug_interp));
@@ -1172,9 +1229,9 @@ pug_html = pug_html + "\u003Cspan class=\"grn\"\u003E" + (pug_escape(null == (pu
       }
   } else {
     var $$l = 0;
-    for (var pug_index29 in $$obj) {
+    for (var pug_index30 in $$obj) {
       $$l++;
-      var s = $$obj[pug_index29];
+      var s = $$obj[pug_index30];
 switch (s.t){
 case 0:
 pug_html = pug_html + (pug_escape(null == (pug_interp = s.str) ? "" : pug_interp));
@@ -1229,8 +1286,8 @@ pug_html = pug_html + "\u003Ctd\u003E\u003Cpre class=\"pre\"\u003E";
 ;(function(){
   var $$obj = diffs.lhs;
   if ('number' == typeof $$obj.length) {
-      for (var pug_index30 = 0, $$l = $$obj.length; pug_index30 < $$l; pug_index30++) {
-        var s = $$obj[pug_index30];
+      for (var pug_index31 = 0, $$l = $$obj.length; pug_index31 < $$l; pug_index31++) {
+        var s = $$obj[pug_index31];
 switch (s.t){
 case 0:
 pug_html = pug_html + (pug_escape(null == (pug_interp = s.str) ? "" : pug_interp));
@@ -1242,9 +1299,9 @@ pug_html = pug_html + "\u003Cspan class=\"red\"\u003E" + (pug_escape(null == (pu
       }
   } else {
     var $$l = 0;
-    for (var pug_index30 in $$obj) {
+    for (var pug_index31 in $$obj) {
       $$l++;
-      var s = $$obj[pug_index30];
+      var s = $$obj[pug_index31];
 switch (s.t){
 case 0:
 pug_html = pug_html + (pug_escape(null == (pug_interp = s.str) ? "" : pug_interp));
@@ -1264,8 +1321,8 @@ pug_html = pug_html + "\u003C\u002Ftd\u003E\u003Ctd\u003E\u003Cpre class=\"pre\"
 ;(function(){
   var $$obj = diffs.rhs;
   if ('number' == typeof $$obj.length) {
-      for (var pug_index31 = 0, $$l = $$obj.length; pug_index31 < $$l; pug_index31++) {
-        var s = $$obj[pug_index31];
+      for (var pug_index32 = 0, $$l = $$obj.length; pug_index32 < $$l; pug_index32++) {
+        var s = $$obj[pug_index32];
 switch (s.t){
 case 0:
 pug_html = pug_html + (pug_escape(null == (pug_interp = s.str) ? "" : pug_interp));
@@ -1277,9 +1334,9 @@ pug_html = pug_html + "\u003Cspan class=\"grn\"\u003E" + (pug_escape(null == (pu
       }
   } else {
     var $$l = 0;
-    for (var pug_index31 in $$obj) {
+    for (var pug_index32 in $$obj) {
       $$l++;
-      var s = $$obj[pug_index31];
+      var s = $$obj[pug_index32];
 switch (s.t){
 case 0:
 pug_html = pug_html + (pug_escape(null == (pug_interp = s.str) ? "" : pug_interp));
@@ -1346,8 +1403,8 @@ pug_html = pug_html + "\u003Ctd\u003E\u003Cpre class=\"pre\"\u003E";
 ;(function(){
   var $$obj = diffs.lhs;
   if ('number' == typeof $$obj.length) {
-      for (var pug_index33 = 0, $$l = $$obj.length; pug_index33 < $$l; pug_index33++) {
-        var s = $$obj[pug_index33];
+      for (var pug_index34 = 0, $$l = $$obj.length; pug_index34 < $$l; pug_index34++) {
+        var s = $$obj[pug_index34];
 switch (s.t){
 case 0:
 pug_html = pug_html + (pug_escape(null == (pug_interp = s.str) ? "" : pug_interp));
@@ -1359,9 +1416,9 @@ pug_html = pug_html + "\u003Cspan class=\"red\"\u003E" + (pug_escape(null == (pu
       }
   } else {
     var $$l = 0;
-    for (var pug_index33 in $$obj) {
+    for (var pug_index34 in $$obj) {
       $$l++;
-      var s = $$obj[pug_index33];
+      var s = $$obj[pug_index34];
 switch (s.t){
 case 0:
 pug_html = pug_html + (pug_escape(null == (pug_interp = s.str) ? "" : pug_interp));
@@ -1381,8 +1438,8 @@ pug_html = pug_html + "\u003C\u002Ftd\u003E\u003Ctd\u003E\u003Cpre class=\"pre\"
 ;(function(){
   var $$obj = diffs.rhs;
   if ('number' == typeof $$obj.length) {
-      for (var pug_index34 = 0, $$l = $$obj.length; pug_index34 < $$l; pug_index34++) {
-        var s = $$obj[pug_index34];
+      for (var pug_index35 = 0, $$l = $$obj.length; pug_index35 < $$l; pug_index35++) {
+        var s = $$obj[pug_index35];
 switch (s.t){
 case 0:
 pug_html = pug_html + (pug_escape(null == (pug_interp = s.str) ? "" : pug_interp));
@@ -1394,9 +1451,9 @@ pug_html = pug_html + "\u003Cspan class=\"grn\"\u003E" + (pug_escape(null == (pu
       }
   } else {
     var $$l = 0;
-    for (var pug_index34 in $$obj) {
+    for (var pug_index35 in $$obj) {
       $$l++;
-      var s = $$obj[pug_index34];
+      var s = $$obj[pug_index35];
 switch (s.t){
 case 0:
 pug_html = pug_html + (pug_escape(null == (pug_interp = s.str) ? "" : pug_interp));
@@ -1451,8 +1508,8 @@ pug_html = pug_html + "\u003Ctd\u003E\u003Cpre class=\"pre\"\u003E";
 ;(function(){
   var $$obj = diffs.lhs;
   if ('number' == typeof $$obj.length) {
-      for (var pug_index35 = 0, $$l = $$obj.length; pug_index35 < $$l; pug_index35++) {
-        var s = $$obj[pug_index35];
+      for (var pug_index36 = 0, $$l = $$obj.length; pug_index36 < $$l; pug_index36++) {
+        var s = $$obj[pug_index36];
 switch (s.t){
 case 0:
 pug_html = pug_html + (pug_escape(null == (pug_interp = s.str) ? "" : pug_interp));
@@ -1464,9 +1521,9 @@ pug_html = pug_html + "\u003Cspan class=\"red\"\u003E" + (pug_escape(null == (pu
       }
   } else {
     var $$l = 0;
-    for (var pug_index35 in $$obj) {
+    for (var pug_index36 in $$obj) {
       $$l++;
-      var s = $$obj[pug_index35];
+      var s = $$obj[pug_index36];
 switch (s.t){
 case 0:
 pug_html = pug_html + (pug_escape(null == (pug_interp = s.str) ? "" : pug_interp));
@@ -1486,8 +1543,8 @@ pug_html = pug_html + "\u003C\u002Ftd\u003E\u003Ctd\u003E\u003Cpre class=\"pre\"
 ;(function(){
   var $$obj = diffs.rhs;
   if ('number' == typeof $$obj.length) {
-      for (var pug_index36 = 0, $$l = $$obj.length; pug_index36 < $$l; pug_index36++) {
-        var s = $$obj[pug_index36];
+      for (var pug_index37 = 0, $$l = $$obj.length; pug_index37 < $$l; pug_index37++) {
+        var s = $$obj[pug_index37];
 switch (s.t){
 case 0:
 pug_html = pug_html + (pug_escape(null == (pug_interp = s.str) ? "" : pug_interp));
@@ -1499,9 +1556,9 @@ pug_html = pug_html + "\u003Cspan class=\"grn\"\u003E" + (pug_escape(null == (pu
       }
   } else {
     var $$l = 0;
-    for (var pug_index36 in $$obj) {
+    for (var pug_index37 in $$obj) {
       $$l++;
-      var s = $$obj[pug_index36];
+      var s = $$obj[pug_index37];
 switch (s.t){
 case 0:
 pug_html = pug_html + (pug_escape(null == (pug_interp = s.str) ? "" : pug_interp));

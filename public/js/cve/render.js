@@ -1,10 +1,6 @@
-function pug_attr(t,e,n,f){return!1!==e&&null!=e&&(e||"class"!==t&&"style"!==t)?!0===e?" "+(f?t:t+'="'+t+'"'):("function"==typeof e.toJSON&&(e=e.toJSON()),"string"==typeof e||(e=JSON.stringify(e),n||-1===e.indexOf('"'))?(n&&(e=pug_escape(e))," "+t+'="'+e+'"'):" "+t+"='"+e.replace(/'/g,"&#39;")+"'"):""}
-function pug_classes(s,r){return Array.isArray(s)?pug_classes_array(s,r):s&&"object"==typeof s?pug_classes_object(s):s||""}
-function pug_classes_array(r,a){for(var s,e="",u="",c=Array.isArray(a),g=0;g<r.length;g++)(s=pug_classes(r[g]))&&(c&&a[g]&&(s=pug_escape(s)),e=e+u+s,u=" ");return e}
-function pug_classes_object(r){var a="",n="";for(var o in r)o&&r[o]&&pug_has_own_property.call(r,o)&&(a=a+n+o,n=" ");return a}
+function pug_attr(t,e,n,r){if(!1===e||null==e||!e&&("class"===t||"style"===t))return"";if(!0===e)return" "+(r?t:t+'="'+t+'"');var f=typeof e;return"object"!==f&&"function"!==f||"function"!=typeof e.toJSON||(e=e.toJSON()),"string"==typeof e||(e=JSON.stringify(e),n||-1===e.indexOf('"'))?(n&&(e=pug_escape(e))," "+t+'="'+e+'"'):" "+t+"='"+e.replace(/'/g,"&#39;")+"'"}
 function pug_escape(e){var a=""+e,t=pug_match_html.exec(a);if(!t)return e;var r,c,n,s="";for(r=t.index,c=0;r<a.length;r++){switch(a.charCodeAt(r)){case 34:n="&quot;";break;case 38:n="&amp;";break;case 60:n="&lt;";break;case 62:n="&gt;";break;default:continue}c!==r&&(s+=a.substring(c,r)),c=r+1,s+=n}return c!==r?s+a.substring(c,r):s}
-var pug_has_own_property=Object.prototype.hasOwnProperty;
-var pug_match_html=/["&<>]/;function pugRender(locals) {var pug_html = "", pug_mixins = {}, pug_interp;;var locals_for_with = (locals || {});(function (Array, Date, defectURL, doc, doc_id, isNaN, renderTemplate, textUtil) {pug_mixins["mitre"] = pug_interp = function(cve){
+var pug_match_html=/["&<>]/;function pugRender(locals) {var pug_html = "", pug_mixins = {}, pug_interp;;var locals_for_with = (locals || {});(function (Date, Object, cmap, defectURL, doc, doc_id, isNaN, renderTemplate, textUtil) {pug_mixins["mitre"] = pug_interp = function(cve){
 var block = (this && this.block), attributes = (this && this.attributes) || {};
 pug_html = pug_html + "\u003Ch2\u003EMITRE CVE entry preview\u003C\u002Fh2\u003E\u003Cdiv id=\"GeneratedTable\"\u003E\u003Ctable cellpadding=\"0\" cellspacing=\"0\" border=\"0\"\u003E\u003Ctbody\u003E\u003Ctr\u003E\u003Cth colspan=\"2\"\u003ECVE-ID\u003C\u002Fth\u003E\u003C\u002Ftr\u003E\u003Ctr\u003E\u003Ctd nowrap=\"nowrap\"\u003E\u003Ch2\u003E" + (pug_escape(null == (pug_interp = cve.CVE_data_meta.ID) ? "" : pug_interp)) + "\u003C\u002Fh2\u003E\u003C\u002Ftd\u003E\u003Ctd class=\"ltgreybackground\"\u003E\u003Cdiv class=\"larger\"\u003E\u003Ca\u003ELearn more at National Vulnerability Database (NVD)\u003C\u002Fa\u003E\u003C\u002Fdiv\u003E\u003Cdiv class=\"smaller\"\u003E• Severity Rating • Fix Information • Vulnerable Software Versions • SCAP Mappings\u003C\u002Fdiv\u003E\u003C\u002Ftd\u003E\u003C\u002Ftr\u003E\u003Ctr\u003E\u003Cth colspan=\"2\"\u003EDescription\u003C\u002Fth\u003E\u003C\u002Ftr\u003E\u003Ctr\u003E\u003Ctd colspan=\"2\"\u003E";
 // iterate cve.description.description_data
@@ -206,7 +202,7 @@ pug_html = pug_html + (pug_escape(null == (pug_interp = v) ? "" : pug_interp));
 pug_mixins["CVSS"] = pug_interp = function(value){
 var block = (this && this.block), attributes = (this && this.attributes) || {};
 pug_html = pug_html + (pug_escape(null == (pug_interp = value.baseScore.toFixed(1)) ? "" : pug_interp)) + " ";
-if (value.version >= "3.0") {
+if (value.version >= "3") {
 pug_html = pug_html + "(\u003Ca" + (pug_attr("href", "https://cvssjs.github.io/#" + value.vectorString, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = value.vectorString) ? "" : pug_interp)) + "\u003C\u002Fa\u003E)";
 }
 else {
@@ -224,80 +220,6 @@ if (v) {
 pug_html = pug_html + (pug_escape(null == (pug_interp = v.toJSON().substr(0,10)) ? "" : pug_interp));
 }
 };
-pug_mixins["page"] = pug_interp = function(obj){
-var block = (this && this.block), attributes = (this && this.attributes) || {};
-if (obj !== null) {
-if (typeof obj === 'string') {
-if (obj.length < 20) {
-pug_html = pug_html + "\u003Cspan" + (pug_attr("class", pug_classes([obj], [true]), false, false)) + "\u003E" + (pug_escape(null == (pug_interp = obj) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E";
-}
-else {
-pug_html = pug_html + "\u003Cspan class=\"wrp\"\u003E" + (pug_escape(null == (pug_interp = obj) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E";
-}
-}
-else
-if (obj instanceof Array) {
-if (obj.length > 0) {
-pug_html = pug_html + "\u003Col\u003E";
-// iterate obj
-;(function(){
-  var $$obj = obj;
-  if ('number' == typeof $$obj.length) {
-      for (var k = 0, $$l = $$obj.length; k < $$l; k++) {
-        var v = $$obj[k];
-pug_html = pug_html + "\u003Cli\u003E";
-pug_mixins["page"](v);
-pug_html = pug_html + "\u003C\u002Fli\u003E";
-      }
-  } else {
-    var $$l = 0;
-    for (var k in $$obj) {
-      $$l++;
-      var v = $$obj[k];
-pug_html = pug_html + "\u003Cli\u003E";
-pug_mixins["page"](v);
-pug_html = pug_html + "\u003C\u002Fli\u003E";
-    }
-  }
-}).call(this);
-
-pug_html = pug_html + "\u003C\u002Fol\u003E";
-}
-}
-else
-if (typeof obj === 'object') {
-// iterate obj
-;(function(){
-  var $$obj = obj;
-  if ('number' == typeof $$obj.length) {
-      for (var k = 0, $$l = $$obj.length; k < $$l; k++) {
-        var v = $$obj[k];
-if (obj.hasOwnProperty(k)) {
-pug_html = pug_html + "\u003Cdiv class=\"indent\"\u003E\u003Cb" + (pug_attr("class", pug_classes(["ico",k], [false,true]), false, false)) + "\u003E" + (pug_escape(null == (pug_interp = k) ? "" : pug_interp)) + ": \u003C\u002Fb\u003E ";
-pug_mixins["page"](v);
-pug_html = pug_html + "\u003C\u002Fdiv\u003E";
-}
-      }
-  } else {
-    var $$l = 0;
-    for (var k in $$obj) {
-      $$l++;
-      var v = $$obj[k];
-if (obj.hasOwnProperty(k)) {
-pug_html = pug_html + "\u003Cdiv class=\"indent\"\u003E\u003Cb" + (pug_attr("class", pug_classes(["ico",k], [false,true]), false, false)) + "\u003E" + (pug_escape(null == (pug_interp = k) ? "" : pug_interp)) + ": \u003C\u002Fb\u003E ";
-pug_mixins["page"](v);
-pug_html = pug_html + "\u003C\u002Fdiv\u003E";
-}
-    }
-  }
-}).call(this);
-
-}
-else {
-pug_html = pug_html + (pug_escape(null == (pug_interp = obj) ? "" : pug_interp));
-}
-}
-};
 pug_mixins["slide"] = pug_interp = function(cve){
 var block = (this && this.block), attributes = (this && this.attributes) || {};
 pug_html = pug_html + "\u003Cdiv class=\"page wht shd pad2 gap\"\u003E\u003Cb class=\"slideTitle\"\u003E";
@@ -310,6 +232,27 @@ pug_mixins["CVSS"](cve.impact.cvss);
 }
 pug_html = pug_html + "\u003C\u002Fspan\u003E\u003C\u002Fli\u003E\u003Cli\u003E\u003Cb class=\"term\"\u003EPR: \u003C\u002Fb\u003E\u003Cspan class=\"text\"\u003E" + (pug_escape(null == (pug_interp = cve.source.defect) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003C\u002Fli\u003E\u003Cli\u003E\u003Cb class=\"term\"\u003EAffects: \u003C\u002Fb\u003E\u003Cspan class=\"text\"\u003E" + (pug_escape(null == (pug_interp = textUtil.getProductAffected(cve)) ? "" : pug_interp)) + "\u003C\u002Fspan\u003E\u003C\u002Fli\u003E\u003Cli\u003E\u003Cb class=\"term\"\u003EProblem: \u003C\u002Fb\u003E\u003Cspan class=\"text\"\u003E";
 pug_mixins["mpara"](cve.description.description_data.slice(0,1));
+if (cmap && Object.keys(cmap).length > 0 && cmap.constructor === Object) {
+pug_mixins["mpara"](cve.CNA_private.CVE_table_description);
+// iterate cmap
+;(function(){
+  var $$obj = cmap;
+  if ('number' == typeof $$obj.length) {
+      for (var id = 0, $$l = $$obj.length; id < $$l; id++) {
+        var x = $$obj[id];
+pug_html = pug_html + (pug_escape(null == (pug_interp = id + " ") ? "" : pug_interp));
+      }
+  } else {
+    var $$l = 0;
+    for (var id in $$obj) {
+      $$l++;
+      var x = $$obj[id];
+pug_html = pug_html + (pug_escape(null == (pug_interp = id + " ") ? "" : pug_interp));
+    }
+  }
+}).call(this);
+
+}
 pug_html = pug_html + "\u003C\u002Fspan\u003E\u003C\u002Fli\u003E\u003Cli\u003E\u003Cb class=\"term\"\u003EWorkaround: \u003C\u002Fb\u003E\u003Cspan class=\"text\"\u003E";
 pug_mixins["mpara"](cve.work_around);
 pug_html = pug_html + "\u003C\u002Fspan\u003E\u003C\u002Fli\u003E\u003Cli\u003E\u003Cb class=\"term\"\u003ESolution: \u003C\u002Fb\u003E\u003Cspan class=\"text\"\u003E";
@@ -337,7 +280,49 @@ if (CDM.AKA) {
 pug_html = pug_html + "\u003Cp\u003EThis issue is also known as " + (pug_escape(null == (pug_interp = CDM.AKA) ? "" : pug_interp)) + ".\u003C\u002Fp\u003E";
 }
 }
-pug_html = pug_html + "\u003Cp\u003EThis issue has been assigned \u003Ca" + (pug_attr("href", "http://cve.mitre.org/cgi-bin/cvename.cgi?name="+cveid, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = cveid) ? "" : pug_interp)) + "\u003C\u002Fa\u003E.\u003C\u002Fp\u003E\u003Ch4\u003ESOLUTION:\u003C\u002Fh4\u003E";
+if (cmap && Object.keys(cmap).length > 0 && cmap.constructor === Object) {
+pug_mixins["mpara"](cve.CNA_private.CVE_table_description);
+pug_html = pug_html + "\u003Ctable class=\"striped\"\u003E\u003Ctr class=\"rowHead\"\u003E\u003Cth\u003ECVE\u003C\u002Fth\u003E\u003Cth\u003ECVSS\u003C\u002Fth\u003E\u003Cth\u003ESummary\u003C\u002Fth\u003E\u003C\u002Ftr\u003E";
+// iterate cmap
+;(function(){
+  var $$obj = cmap;
+  if ('number' == typeof $$obj.length) {
+      for (var id = 0, $$l = $$obj.length; id < $$l; id++) {
+        var x = $$obj[id];
+pug_html = pug_html + "\u003Ctr\u003E\u003Ctd\u003E" + (pug_escape(null == (pug_interp = id) ? "" : pug_interp)) + "\u003C\u002Ftd\u003E\u003Ctd\u003E";
+if (cmap[id] && cmap[id].impact) {
+pug_mixins["CVSS"](cmap[id].impact.cvss);
+}
+pug_html = pug_html + "\u003C\u002Ftd\u003E\u003Ctd\u003E";
+if (cmap[id] && cmap[id].summary) {
+pug_html = pug_html + (pug_escape(null == (pug_interp = cmap[id].summary) ? "" : pug_interp));
+}
+pug_html = pug_html + "\u003C\u002Ftd\u003E\u003C\u002Ftr\u003E";
+      }
+  } else {
+    var $$l = 0;
+    for (var id in $$obj) {
+      $$l++;
+      var x = $$obj[id];
+pug_html = pug_html + "\u003Ctr\u003E\u003Ctd\u003E" + (pug_escape(null == (pug_interp = id) ? "" : pug_interp)) + "\u003C\u002Ftd\u003E\u003Ctd\u003E";
+if (cmap[id] && cmap[id].impact) {
+pug_mixins["CVSS"](cmap[id].impact.cvss);
+}
+pug_html = pug_html + "\u003C\u002Ftd\u003E\u003Ctd\u003E";
+if (cmap[id] && cmap[id].summary) {
+pug_html = pug_html + (pug_escape(null == (pug_interp = cmap[id].summary) ? "" : pug_interp));
+}
+pug_html = pug_html + "\u003C\u002Ftd\u003E\u003C\u002Ftr\u003E";
+    }
+  }
+}).call(this);
+
+pug_html = pug_html + "\u003C\u002Ftable\u003E";
+}
+else {
+pug_html = pug_html + "\u003Cp\u003EThis issue has been assigned \u003Ca" + (pug_attr("href", "http://cve.mitre.org/cgi-bin/cvename.cgi?name="+cveid, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = cveid) ? "" : pug_interp)) + "\u003C\u002Fa\u003E.\u003C\u002Fp\u003E";
+}
+pug_html = pug_html + "\u003Ch4\u003ESOLUTION:\u003C\u002Fh4\u003E";
 pug_mixins["mpara"](cve.solution);
 if (cve.source.defect && cve.source.defect.length > 0) {
 pug_html = pug_html + "\u003Cp\u003EThis issue is being tracked as ";
@@ -429,4 +414,4 @@ pug_mixins["page"](doc);
 }
 else {
 pug_html = pug_html + "\u003Cdiv class=\"tred\"\u003EDocument not found\u003C\u002Fdiv\u003E";
-}}.call(this,"Array" in locals_for_with?locals_for_with.Array:typeof Array!=="undefined"?Array:undefined,"Date" in locals_for_with?locals_for_with.Date:typeof Date!=="undefined"?Date:undefined,"defectURL" in locals_for_with?locals_for_with.defectURL:typeof defectURL!=="undefined"?defectURL:undefined,"doc" in locals_for_with?locals_for_with.doc:typeof doc!=="undefined"?doc:undefined,"doc_id" in locals_for_with?locals_for_with.doc_id:typeof doc_id!=="undefined"?doc_id:undefined,"isNaN" in locals_for_with?locals_for_with.isNaN:typeof isNaN!=="undefined"?isNaN:undefined,"renderTemplate" in locals_for_with?locals_for_with.renderTemplate:typeof renderTemplate!=="undefined"?renderTemplate:undefined,"textUtil" in locals_for_with?locals_for_with.textUtil:typeof textUtil!=="undefined"?textUtil:undefined));;return pug_html;}
+}}.call(this,"Date" in locals_for_with?locals_for_with.Date:typeof Date!=="undefined"?Date:undefined,"Object" in locals_for_with?locals_for_with.Object:typeof Object!=="undefined"?Object:undefined,"cmap" in locals_for_with?locals_for_with.cmap:typeof cmap!=="undefined"?cmap:undefined,"defectURL" in locals_for_with?locals_for_with.defectURL:typeof defectURL!=="undefined"?defectURL:undefined,"doc" in locals_for_with?locals_for_with.doc:typeof doc!=="undefined"?doc:undefined,"doc_id" in locals_for_with?locals_for_with.doc_id:typeof doc_id!=="undefined"?doc_id:undefined,"isNaN" in locals_for_with?locals_for_with.isNaN:typeof isNaN!=="undefined"?isNaN:undefined,"renderTemplate" in locals_for_with?locals_for_with.renderTemplate:typeof renderTemplate!=="undefined"?renderTemplate:undefined,"textUtil" in locals_for_with?locals_for_with.textUtil:typeof textUtil!=="undefined"?textUtil:undefined));;return pug_html;}
