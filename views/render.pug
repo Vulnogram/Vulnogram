@@ -46,7 +46,7 @@ mixin linklist(l, url)
 mixin CVSS(value)
     = value.baseScore.toFixed(1)
     |  
-    if value.version >= "3.0"
+    if value.version >= "3"
         | (
         a(href="https://cvssjs.github.io/#" + value.vectorString)=value.vectorString
         | )

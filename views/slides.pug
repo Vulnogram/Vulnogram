@@ -19,17 +19,12 @@ block content
         +table(idx, ['Advisory', 'CVE', 'Defect', 'CVSS','Title'], false, 'indexTable')
         +tablesort
     ol
-      if sas
-        each sa, i in sas
-            block saBlock
-                +pageHolder(sa.body.ID)
-                    - cSum = csumSet[sa.body.ID];
-                    +slide(sa.body, cmap, cSum)
       if docs
-        each cve, i in docs
+        each doc, i in docs
             block cveBlock
-                +pageHolder(cve.body.source.advisory ? cve.body.source.advisory : i)
-                    +slide(cve.body)
+                +pageHolder(doc.body.source.advisory ? doc.body.source.advisory : i)
+                    - cmap = cveMap[doc.body.CVE_data_meta.ID];                
+                    +slide(doc.body)
     script(lang="javascript",src="https://cdn.rawgit.com/gitbrent/PptxGenJS/v2.0.0/dist/pptxgen.bundle.js",integrity="sha384-AqjfEM7+BEtbs6R3yOngNy+ZB+aVGJxq1vllC/h9ebWeB2Y0RmhWVxwzLYzlZXQZ",crossorigin="anonymous")
     script(src="/js/ppt.js")
     .pad2.gap2
