@@ -444,7 +444,7 @@ schema: {
       "properties": {
           "engine": {
               "type": "string",
-              "default": package.name+' '+package.version,
+              "template": '"' + package.name+' '+package.version + '"'
           }
       },
     "options": {
