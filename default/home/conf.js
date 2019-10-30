@@ -9,7 +9,7 @@ conf: {
 facet: {
     ID: {
         path: 'body.ID',
-        regex: 'PLOT-[A-Za-z0-9]+',        
+        regex: 'PLOT-[A-Za-z0-9]+',
         chart: false,
         href: '/home/',
         hrefSuffix: '#chart'
@@ -70,12 +70,15 @@ schema: {
   "properties": {
       "ID": {
           "type": "string",
+          "description": "Unique ID starting with PLOT-xxxxxxx..",
           "pattern": "^PLOT-([A-Za-z0-9]+)$",
       },
+      
     "title": {
       "$id": "#/properties/title",
       "type": "string",
       "title": "TITLE",
+      "description": "Chart title",
       "default": "",
       "examples": [
         "All CVEs by Severity"
@@ -107,13 +110,14 @@ schema: {
     },
     "query": {
         type: "string",
-        "$ref": "/home/examples?field=body.query"
+        "$ref": "/home/examples?field=body.query",
+        "description": "URI query string For eg., field1=value&field2=value1,value2"
     },
     "key": {
       "$id": "#/properties/key",
       "type": "array",
       "format": "taglist",
-      "title": "Group by fields (Max 2 for bar charts, Max 1 for pie charts)",
+      "title": "Group by field names (Max 2 for bar charts, Max 1 for pie charts)",
       "items": {
             "type": "string",   
         },
@@ -149,6 +153,7 @@ schema: {
         }
     },
     "color": {
+    "description": "Optionally specify colors to assign to specific values.",
     "format": "grid",
 
       "type": "object",
@@ -163,6 +168,8 @@ schema: {
             "format": "table",
           "title": "Values",
           "items": {
+            "title": "Names",
+
             "$id": "#/properties/color/properties/domain/items",
             "type": "string",
           },
@@ -172,7 +179,7 @@ schema: {
         },
         "range": {
           "type": "array",
-          "title": "The Range Schema",
+          "title": "Colors",
           "format": "table",
           "items": {
             "type": "string",
