@@ -3,6 +3,12 @@
 //- Extends default document editor for CVE
 
 extends ../../views/edit
+block append bannerItemsLeft
+    a.icn.fbn.twitter(type="button",oncontextmenu='tweetJSON(event, this);',onclick='tweetJSON(event, this);',value="Download",target="_blank",title="Share a tweet about this CVE") Tweet
+
+block append scripts
+    script
+        include script.js
 
 block prepend bannerItemsRight
     form.indent.out.nobr(onsubmit="event.preventDefault();loadCVE(this.git.value);return false;")
@@ -17,6 +23,8 @@ block customtabs
         input.tab(name='tabs', type='radio', id='advisoryTab', value="4")
         label.lbl(for='advisoryTab') Advisory
         .wht.fil.bor.pad
+            div(style='float:right')
+                a.icn.btn.email.right(type="button",oncontextmenu='draftEmail(event, this, "render");',onclick='draftEmail(event, this,"render");',value="Email") Email
             div.render(id="render")
         input.tab(name='tabs', type='radio', id='mitreTab', value="5")
         label.lbl(for='mitreTab') MITRE-Preview

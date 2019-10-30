@@ -24,6 +24,10 @@ block prepend content
                     b.term Problem: 
                     span.text
                         +mpara(cve.description.description_data.slice(0,1))
+                        if cmap && Object.keys(cmap).length > 0 && cmap.constructor === Object
+                            +mpara(cve.CNA_private.CVE_table_description)
+                            each x, id in cmap
+                                = id + " "
                 li
                     b.term Workaround: 
                     span.text

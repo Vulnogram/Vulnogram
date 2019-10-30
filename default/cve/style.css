@@ -5,10 +5,7 @@ body{
 span.product_data, b.version_data, b.vendor_data, b.reference_data, b.problemtype_data, b span.product, b span.version, b.description_data{
     display: none;
 }
-/*
-b.version_data + div table th:nth-child(3):after {
-    content: '*';
-}*/
+
 /* MITRE simulation styles */
 b span.product + div button.json-editor-btn-delete {
     float: right;

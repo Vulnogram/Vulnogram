@@ -9,7 +9,8 @@ conf: {
     title: 'CVE: Common Vulnerabilities and Exposures',
     name: 'CVE',
     uri: '/cve/?state=DRAFT,REVIEW,READY',
-    class: 'icn alert',    
+    class: 'icn alert',
+    order: 0.1, //Where to place the section on heading?
     shortcuts: [
     {
         label: 'My CVEs',
@@ -61,7 +62,7 @@ facet: {
         //chart: true,
         tabs: true,
         bulk: true,
-        enum: ["DRAFT", "REVIEW", "READY", "PUBLIC", "RESERVED", "REPLACED_BY", "REJECTED", "SPLIT_FROM", "MERGED_TO"],
+        enum: ["DRAFT", "REVIEW", "READY", "PUBLIC", "RESERVED", "REJECT",  "MERGED_TO"],
         class: 'icn nobr '
     },
     CVSS: {
@@ -479,6 +480,7 @@ schema: {
     "DATE_PUBLIC": {
      "type": "string",
      "format": "datetime",
+     "description": "YYYY-MM-DD",
      "options": {
          "class": "date",
          "input_width": "18em",
@@ -509,10 +511,10 @@ schema: {
       "READY",
       "PUBLIC",
       "RESERVED",
-      "REPLACED_BY",
-      "REJECTED",
-      "SPLIT_FROM",
-      "MERGED_TO"
+   //   "REPLACED_BY",
+      "REJECT",
+    //  "SPLIT_FROM",
+    //  "MERGED_TO"
      ],
      "default": "DRAFT",
      "format": "radio",
@@ -758,14 +760,33 @@ schema: {
    }
   },
   "credit": {
-   // "description": "Names of people credit for discovering, fixing, or helping with this CVE",
    "type": "array",
    "format": "table",
    "items": {
-    "title": "credit statement",
-    "$ref": "#/definitions/lang_string"
+       "title": "credit statement",
+       "type": "object",
+       "required": [
+            "lang",
+            "value"
+           ],
+       "properties": {
+           "lang": {
+               "type": "string",
+               "options": {
+                   "hidden": "true"
+               },
+               "default": "eng"
+           },
+           "value": {
+               "description": "Names of people acknowledged for discovering, fixing, or helping with this CVE",
+               "title": " ",
+               "type": "string",
+               "minLength": 2,
+               "maxLength": 3999,
+           }
+       }
    }
-  },
+   },
   "CNA_private": {
    "properties": {
     "owner": {
@@ -899,6 +920,48 @@ validators: [
     }
 ],
 script: {
+    tweetJSON: function(event, link) {
+        if (!validAndSync()){
+            event.preventDefault();
+            alert('JSON Validation Failure: Fix the errors before tweeting')
+            return false;
+        }
+        var j = docEditor.getValue();
+        var id = textUtil.deep_value(j, 'CVE_data_meta.ID');
+        var cvelist = textUtil.deep_value(j, 'CNA_private.CVE_list');
+        if(cvelist && cvelist.length > 0) {
+            id = '';
+        }
+        var aka = textUtil.deep_value(j, 'CVE_data_meta.AKA')
+        var text = textUtil.deep_value(j, 'source.advisory') + ' '
+            + textUtil.getBestTitle(j) + ' '
+            + (aka? ' aka ' + aka : '');
+        text = text.replace(/ +(?= )/g,'');
+        link.href = 'https://twitter.com/intent/tweet?&text=' 
+            + encodeURI(text)
+            + '&url=' + encodeURI(textUtil.deep_value(j, 'references.reference_data.0.url'));
+        //    + '&hashtags=' + encodeURI(id)
+        //via=vulnogram&hashtags=CVE
+    },
+    draftEmail: async function(event, link, renderId) {
+        var subject = ''
+        if(typeof(docEditor) !== 'undefined') {
+            var j = docEditor.getValue();
+            var id = textUtil.deep_value(j, 'CVE_data_meta.ID');
+            var cvelist = textUtil.deep_value(j, 'CNA_private.CVE_list');
+            if(cvelist && cvelist.length > 0) {
+                id = '';
+            }
+            subject = id +' ' + textUtil.getBestTitle(j);
+        } else {
+            var t = document.getElementById(renderId).getElementsByTagName('h2')[0];
+            if(t) {
+                subject = t.textContent;
+            }
+        }
+        var emailBody = document.getElementById(renderId).innerText;
+        link.href="mailto:?subject=" + encodeURI(subject) + '&body=' + encodeURI(emailBody);
+    },
     loadCVE: function (value) {    var realId = value.match(/(CVE-(\d{4})-(\d{1,12})(\d{3}))/);
     if (realId) {
         var id = realId[1];
@@ -968,4 +1031,5 @@ router: router.get('/pr:pr', csrfProtection, function (req, res) {
             postUrl: "./new"
         });
     })
+
 }
