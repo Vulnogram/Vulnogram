@@ -10,13 +10,13 @@ module.exports = {
     database: 'mongodb://127.0.0.1:27017/vulnogram',
 
     // Name of the organization that should be used in page titles etc.,
-    //orgName: 'Example Org',
+    orgName: 'Example Org',
 
     // Name of the group that should be used in page titles etc.,
     groupName: 'Security Incident Response Team',
 
     //CNA contact address
-    //contact: 'sirt@example.net',
+    contact: 'sirt@example.net',
 
     classification: 'Confidential INTERNAL USE ONLY',
     copyright: '© Example Org. Made with ' + package.name + ' ' + package.version,
@@ -61,39 +61,18 @@ module.exports = {
     usernameRegex: '[a-zA-Z0-9]{3,}',
     sections: [
         'cve',
-        'nvd'
+        'nvd',
+        'home'
     ],
     homepage: '/home',
-    charts: [
+
+    // Configure addional custom ExpressJS routes.
+    /*
+    customRoutes: [
         {
-            href: "/cve/agg?state=DRAFT,REVIEW,READY&sort=ym&f=ym&f=owner",
-            key: "ym", // X-axis
-            list: "/cve/?state=DRAFT,REVIEW,READY&sort=ym", //link prefix
-            title: "Active CVE Pipeline"
-        },
-        {
-            href: "/cve/agg?sort=ym&f=ym&f=owner",
-            key: "ym",
-            list: "/cve/?sort=ym",
-            title: "CVEs over time"
-        },
-        {
-            href: "/cve/agg?state=DRAFT,REVIEW,READY&f=product",
-            key: "product",
-            list: "/cve/?state=DRAFT,REVIEW,READY,PUBLIC",
-            title: "Active CVEs by Product",
-            type: "pie"
-        },
-        {
-            href: "/cve/agg?f=severity",
-            key: "severity",
-            list: "/cve/?",
-            title: "All CVEs by Severity",
-            type: "pie",
-            color: {
-                domain: ["CRITICAL", "HIGH", "MEDIUM", "LOW", "NONE", "", null],
-                range: ["orangered","salmon","orange","gold","green", "lightgray", "lightgray"]
-            }
+            path:"/info",
+            route: "./customRoutes/info"
         }
     ]
+    */
 };

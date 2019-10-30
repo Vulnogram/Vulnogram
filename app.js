@@ -115,9 +115,6 @@ let users = require('./routes/users');
 app.use('/users', users.public);
 app.use('/users', ensureAuthenticated, users.protected);
 
-//let nvd = require('./routes/nvd');
-//app.use('/nvd', ensureAuthenticated, nvd.router);
-
 let docs = require('./routes/doc');
 
 app.locals.confOpts = {};
@@ -135,10 +132,6 @@ for(section of sections) {
         app.use('/' + section, ensureAuthenticated, r.router);
     }
 }
-
-app.use('/home', ensureAuthenticated, async function(req, res, next){
-    res.render('home');
-});
 
 app.use('/home/stats', ensureAuthenticated, async function(req, res, next){
     var sections = [];
@@ -189,6 +182,12 @@ if (review.public) {
 }
 
 app.use('/review', ensureAuthenticated, review.protected);
+
+if(conf.customRoutes) {
+    for(r of conf.customRoutes) {
+        app.use(r.path, require(r.route));
+    }
+}
 
 app.get('/', function (req, res, next) {
     res.redirect('/cve/?state=DRAFT,READY,REVIEW');

@@ -6,7 +6,7 @@ module.exports = {
     // The Mongodb URL where CVE entries and users are stored.
     // WARNING: Configure MongoDB authentication and use a strong password
     // WARNING: Ensure MongoDB is not reachable from the network. 
-    database:'mongodb://vulnogram:StringLongPass@127.0.0.1:27017/vulnogram'
+    database:'mongodb://vulnogram:StrongLongPass@127.0.0.1:27017/vulnogram'
 
     // Name of the organization that should be used in page titles etc.,
     //orgName: 'Example Org',
@@ -63,36 +63,13 @@ module.exports = {
         'nvd'
     ],
     homepage: '/home',
-    charts: [
+     // Configure addional custom ExpressJS routes.
+    /*
+    customRoutes: [
         {
-            href: "/cve/agg?state=DRAFT,REVIEW,READY&sort=ym&f=ym&f=owner",
-            key: "ym", // X-axis
-            list: "/cve/?state=DRAFT,REVIEW,READY&sort=ym", //link prefix
-            title: "Active CVE Pipeline"
-        },
-        {
-            href: "/cve/agg?sort=ym&f=ym&f=owner",
-            key: "ym",
-            list: "/cve/?sort=ym",
-            title: "CVEs over time"
-        },
-        {
-            href: "/cve/agg?state=DRAFT,REVIEW,READY&f=product",
-            key: "product",
-            list: "/cve/?state=DRAFT,REVIEW,READY,PUBLIC",
-            title: "Active CVEs by Product",
-            type: "pie"
-        },
-        {
-            href: "/cve/agg?f=severity",
-            key: "severity",
-            list: "/cve/?",
-            title: "All CVEs by Severity",
-            type: "pie",
-            color: {
-                domain: ["CRITICAL", "HIGH", "MEDIUM", "LOW", "NONE", "", null],
-                range: ["orangered","salmon","orange","gold","green", "lightgray", "lightgray"]
-            }
+            path:"/info",
+            route: "./customRoutes/info"
         }
     ]
+    */
 };
