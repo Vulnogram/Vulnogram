@@ -6,17 +6,22 @@ include util
 mixin pageHolder(id)
     a(name=id,id=id)
     .wht.bor.shd.gap.pad2.brk
-        .tred
-            if(ext)
-                h5 Draft Security Advisory
-            else
-                h5 Confidential Information : INTERNAL USE ONLY
-        .render
+        div(style='float:right')
+            a.icn.btn.email.right(type="button",oncontextmenu='draftEmail(event, this, "r'+id+'");',onclick='draftEmail(event, this, "r'+id+'");',value="Email") Email
+            a.icn.btn.link(href="#"+id) Link
+        .render(id='r' + id)
+            .tred
+                if(ext)
+                    h5 Draft Security Advisory
+                else
+                    h5 Confidential Information : INTERNAL USE ONLY
             block
 
 block content
     if min
         link(rel='stylesheet', href='css/style.css')
+    script
+        | draftEmail = !{cveOpts.script.draftEmail.toString()};
     .tred.pad2
         if(ext)
             h5 Draft Security Advisories
@@ -27,16 +32,11 @@ block content
         +table(idx, ['Advisory', 'CVE', 'Defect', 'CVSS','Title'])
         +distinctSummary(idx, ['Defect'])
         +tablesort
-    if sas
-        each sa, i in sas
-            // var renderTemplate = 'saPage'
-            block saBlock
-                +pageHolder(sa.body.ID)
-                    - cSum = csumSet[sa.body.ID];
-                    +page(sa.body,cmap,csumSet[sa.body.ID])
     if docs
         each doc, i in docs
             block cveBlock
                 a(name=doc.body.CVE_data_meta.ID)
-                +pageHolder(doc.body.source.advisory ? doc.body.source.advisory : i)
+                - cmap = cveMap[doc.body.CVE_data_meta.ID];
+                - refid = doc.body.source.advisory ? doc.body.source.advisory : i
+                +pageHolder(refid)
                     +page(doc.body)
