@@ -318,7 +318,7 @@ function upload (type, files, comment, cbs) {
         }
     };
 
-    xhr.open("POST", window.location + '/file');
+    xhr.open("POST", window.location.pathname + '/file');
     xhr.setRequestHeader('X-CSRF-Token', csrfToken)
     xhr.overrideMimeType('text/plain; charset=x-user-defined-binary');
     xhr.send(fd);
