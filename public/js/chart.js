@@ -169,6 +169,8 @@ function barChart (a) {
                 keys = Object.keys(d.items);
                 delete keys.t;
                 var y = 0;
+                var skey = Object.keys(d.items[0])[0];
+                d.items.sort(function(a,b){return a[skey]>b[skey]});
                 for (item of d.items) {
                     item.y = y;
                     y = y+item.t;
