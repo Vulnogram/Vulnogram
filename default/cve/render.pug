@@ -85,16 +85,18 @@ block pageDef
                 a(href="http://cve.mitre.org/cgi-bin/cvename.cgi?name="+cveid)=cveid
                 |.
 
-        h4 SOLUTION:
+        if cve.solution && cve.solution.length > 0
+            h4 SOLUTION:
 
-        +mpara(cve.solution)
+            +mpara(cve.solution)
 
         if cve.source.defect && cve.source.defect.length > 0
             p This issue is being tracked as 
                 +linklist(cve.source.defect, defectURL)
                 |.
-        h4 WORKAROUND:
-        +mpara(cve.work_around)
+        if cve.work_around && cve.work_around.length > 0
+            h4 WORKAROUND:
+            +mpara(cve.work_around)
 
         h4 MODIFICATION HISTORY:
 
@@ -114,8 +116,8 @@ block pageDef
                 li
                     a(href=r.url)=r.url
 
-        h4 CVSS SCORE:
         if cve.impact && cve.impact.cvss
+            h4 CVSS SCORE:
             p
                 +CVSS(cve.impact.cvss)
             if cve.impact.cvss.baseSeverity
