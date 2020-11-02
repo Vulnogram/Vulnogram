@@ -190,7 +190,7 @@ if(conf.customRoutes) {
 }
 
 app.get('/', function (req, res, next) {
-    res.redirect('/cve/?state=DRAFT,READY,REVIEW');
+    res.redirect(app.locals.confOpts['cve'].conf.uri);
 });
 
 if(conf.httpsOptions) {
