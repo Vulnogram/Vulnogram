@@ -127,8 +127,10 @@ for(section of sections) {
     var s = optSet(section, ['default', 'custom']);
     //var s = conf.sections[section];
     if(s.facet && s.facet.ID) {
-        app.locals.confOpts[section] = s;
-        let r = docs(section, app.locals.confOpts[section]);
+        if (conf.sections.includes(section)){
+            app.locals.confOpts[section] = s;
+        }
+        let r = docs(section, s);
         app.use('/' + section, ensureAuthenticated, r.router);
     }
 }
