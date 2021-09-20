@@ -22,11 +22,16 @@ module.exports = function (setName, paths) {
         if(!conf.style && fs.existsSync(path + '/' + setName + '/style.css')) {
             result.style = fs.readFileSync(path + '/' + setName + '/style.css', 'utf8');
         }
+        if(!conf.script && fs.existsSync(path + '/' + setName + '/script.js')) {
+            result.script = (result.script ? result.script : '')+fs.readFileSync(path + '/' + setName + '/script.js', {encoding:'utf8'});
+        }
         for (template of ['list', 'edit', 'render']) {
             if (fs.existsSync(path + '/' + setName + '/' + template + '.pug')) {
                 result[template] = '../' + path + '/' + setName + '/' + template;
             }
         }
     }
-    return extend(conf, result);
+    var ret = extend(conf, result);
+    //TODO: merge old script object with new file
+    return ret;
 }
