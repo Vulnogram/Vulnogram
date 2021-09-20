@@ -1,18 +1,23 @@
 OUT = ./standalone
 CSS = $(OUT)/css
 JS = $(OUT)/js
-CVE = $(OUT)/cve
+CVE = $(OUT)/cve5
 CSSO = ./node_modules/.bin/csso
 UJS = ./node_modules/.bin/uglifyjs
 
-TARGETS := $(OUT)/index.html $(CSS)/sprite.svg $(CSS)/min.css $(CSS)/icns.css $(CSS)/logo.png $(CSS)/logo.gif $(JS)/util.js $(JS)/editor.js $(JS)/cvss.json $(JS)/cwe-frequent.json
+TARGETS := $(OUT) $(OUT)/index.html $(CSS)/min.css $(CSS)/vg-icons.css $(CSS)/logo.png $(CSS)/logo.gif $(JS)/util.js $(JS)/editor.js $(JS)/mode-json.js $(JS)/cvss.json $(JS)/cwe-frequent.json $(JS)/capec.json $(JS)/wy/ $(JS)/wy/
 
-$(OUT)/index.html: ./scripts/standalone.js ./config/conf-standalone.js ./[cd][ue][sf]*[mt]/cve/* ./views/*
-	if [ -e "./custom/cve/conf.js" ]; then node $< custom ;  else node $< ; fi
+$(OUT):
+	mkdir $(OUT)
 
+$(OUT)/index.html: ./scripts/standalone.js ./config/conf-standalone.js ./[cd][ue][sf]*[mt]/cve5/* ./views/*
+	if [ -e "./custom/cve5/conf.js" ]; then node $< custom ;  else node $< ; fi
 
 $(OUT)/js:
 	mkdir -p $(OUT)/js
+
+$(OUT)/js/wy:
+	mkdir -p $(OUT)/js/wy
 
 $(OUT)/css:
 	mkdir -p $(OUT)/css
@@ -31,9 +36,13 @@ $(CSS)/%.png: ./public/css/%.png
 
 $(CSS)/%.gif: ./public/css/%.gif
 	cp -f $< $@
+
+$(OUT)/js/wy/: ./public/js/wy/
+	cp -pr $< $@
     
 $(JS)/%.js: ./public/js/%.js
 	$(UJS) $< -c -o $@
+
 
 $(JS)/%.json: ./public/js/%.json
 	node -e 'console.log(JSON.stringify(require("./" + process.argv[1])))' $< > $@

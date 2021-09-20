@@ -1,0 +1,14 @@
+[Unit]
+Description=Vulnogram
+Documentation=https://github.com/Vulnogram
+After=network.target
+
+[Service]
+Environment=NODE_ENV=production
+Type=simple
+User=webapp
+ExecStart=/data/server/node/bin/node /data/server/repos/Vulnogram/app.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
