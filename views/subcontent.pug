@@ -153,25 +153,33 @@ mixin changes
                         - op.old = op.value
                         - delete op.value
                     if op.op == 'replace' && typeof op.old === 'string' && typeof op.value === 'string'
-                        - var diffs = textUtil.diffline(op.old, op.value);
-                        td
-                          pre.pre
-                            for s in diffs.lhs
-                                case s.t
-                                  when 0
-                                    = s.str
-                                  when 1
-                                    span.red=s.str
-                        td
+                        if textUtil
+                          - var diffs = textUtil.diffline(op.old, op.value);
+                          td
+                            pre.pre
+                              for s in diffs.lhs
+                                  case s.t
+                                    when 0
+                                      = s.str
+                                    when 1
+                                      span.red=s.str
+                          td
+                              +changeIcon(op.op)
+                          td
+                            pre.pre
+                              for s in diffs.rhs
+                                  case s.t
+                                    when 0
+                                      = s.str
+                                    when 1
+                                      span.grn=s.str
+                        else
+                          td
+                            pre.pre=op.old
+                          td
                             +changeIcon(op.op)
-                        td
-                          pre.pre
-                            for s in diffs.rhs
-                                case s.t
-                                  when 0
-                                    = s.str
-                                  when 1
-                                    span.grn=s.str
+                          td
+                            pre.pre=op.value
                     else
                         td
                             if op.old instanceof Object

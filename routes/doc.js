@@ -32,7 +32,7 @@ module.exports = function (name, opts) {
     }
     var jsonidpath = opts.jsonidpath = idpath.substr(5);
     var idpattern = opts.idpattern = opts.facet.ID.regex;
-    console.log('ID pattern' +idpattern);
+    //console.log('ID pattern' +idpattern);
     var project = {};
     var columns = [];
     var tabFacet = {};
@@ -529,7 +529,7 @@ module.exports = function (name, opts) {
         }
     });
 
-    var onedoc = require('./onedoc');
+    var onedoc = require('./onedoc')(Document, opts);
     //UPDATE many
     router.post('/update',
         csrfProtection,
@@ -618,7 +618,7 @@ module.exports = function (name, opts) {
     }
 
     var comments = require('./comments');
-    router.use(onedoc(Document, opts));
+    router.use(onedoc.router);
     if (opts.conf.files) {
         var attachment = require('./attachments');
         router.use(attachment(Document, opts));

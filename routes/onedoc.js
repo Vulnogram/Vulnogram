@@ -343,7 +343,7 @@ module.exports = function (Document, opts) {
             }
         });
     });
-
-    return router;
+    module.router = router;
+    return module;
 
 }
