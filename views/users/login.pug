@@ -3,7 +3,6 @@
 extends ../splash
 
 block content
-  
   form(method='POST', action='/users/login')
     input(type='hidden', name='_csrf', value=csrfToken)
     .pad
