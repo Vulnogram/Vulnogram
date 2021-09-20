@@ -392,6 +392,7 @@ mergeJSON : function (target, add) {
         return false;
     }
     for (var key in add) {
+        if (key === "__proto__" || key === "constructor") continue;
         if (add.hasOwnProperty(key)) {
             if (target[key] && isObject(target[key]) && isObject(add[key])) {
                 this.mergeJSON(target[key], add[key]);

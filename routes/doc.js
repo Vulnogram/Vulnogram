@@ -279,7 +279,7 @@ module.exports = function (name, opts) {
                         gg = {},
                         sor = {};
 
-                    if (f.length == 1) {
+                    if (typeof f !== 'string' && f.length == 1) {
                         g = '$' + f[0];
                     } else {
                         for (var k of f) {
