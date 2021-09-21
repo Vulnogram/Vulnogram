@@ -6,7 +6,7 @@ module.exports = {
     // The Mongodb URL where CVE entries and users are stored.
     // WARNING: Configure MongoDB authentication and use a strong password
     // WARNING: Ensure MongoDB is not reachable from the network. 
-    database:'mongodb://vulnogram:StrongLongPass@127.0.0.1:27017/vulnogram'
+    database:'mongodb://vulnogram:StrongLongPass@127.0.0.1:27017/vulnogram',
 
     // Name of the organization that should be used in page titles etc.,
     //orgName: 'Example Org',
@@ -46,16 +46,21 @@ module.exports = {
     publicDefectURL: 'https://example.net/bugs/',
 
     // ACE editor
-    ace: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.3/ace.js',
-    aceHash: "sha384-rP/6HzF4Ap08EuRS9yaQsEPDqb8xS5WVTAzL7/LKTnUmJawbKoeSNyqHnNaiXY5X",
+    ace: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.min.js',
+    aceHash: "sha512-GZ1RIgZaSc8rnco/8CXfRdCpDxRCphenIiZ2ztLy3XQfCbQUSCuk8IudvNHxkRA3oUg6q0qejgN/qqyG1duv5Q==",
     // if you want this served locally, download ace editor to /public/js/ directory and point to that:
-    //ace: '/js/ace.js',
+    //ace: '/js/ace.js', // v 1.4.12
+    //aceHash: "sha512-GZ1RIgZaSc8rnco/8CXfRdCpDxRCphenIiZ2ztLy3XQfCbQUSCuk8IudvNHxkRA3oUg6q0qejgN/qqyG1duv5Q==",
+
 
     // JSON Editor
-    jsoneditor: 'https://cdn.jsdelivr.net/npm/@json-editor/json-editor@1.2.1/dist/jsoneditor.min.js',
-    jsoneditorHash: 'sha384-iSUg2WRV2cauD+nwMuv7ITxwSe+2heHjWFIOjiWk5/Yve5ovwg/t7qp3ht6VlQBL',
+    jsoneditor: 'https://cdnjs.cloudflare.com/ajax/libs/json-editor/2.5.4/jsoneditor.min.js',
+    //jsoneditor: 'https://cdn.jsdelivr.net/npm/@json-editor/json-editor@latest/dist/jsoneditor.min.js',
+    jsoneditorHash: 'sha512-uWu+rXQQB3W440i9GCPMZZL2/tf58decmRv8uD5KWo0CQn5Qu8JVkK1EXBmJv9Gj1q7TZeRbbntnrz1hcFkdPQ==',
     // if you want this served locally, download above jsoneditor editor to /public/js/ directory and point to that:
-    //jsoneditor: '/js/jsoneditor.min.js',
+    //jsoneditor: '/js/jsoneditor.min.js', //version 2.5.4
+    //jsoneditorHash: 'sha512-uWu+rXQQB3W440i9GCPMZZL2/tf58decmRv8uD5KWo0CQn5Qu8JVkK1EXBmJv9Gj1q7TZeRbbntnrz1hcFkdPQ==',
+
 
     usernameRegex: '[a-zA-Z0-9]{3,}',
     sections: [
