@@ -6,7 +6,7 @@ const fs = require('fs');
 const mongoose = require('mongoose');
 const flash = require('connect-flash');
 const https = require('https');
-
+const pug = require('pug');
 // TODO: don't use express-session for large-scale production use
 const session = require('express-session');
 
@@ -24,7 +24,8 @@ mongoose.Promise = global.Promise;
 mongoose.connect(conf.database, {
     keepAlive: true,
     useNewUrlParser: true,
-    useCreateIndex: true
+    useCreateIndex: true,
+    useUnifiedTopology: true
 });
 const db = mongoose.connection;
 
@@ -54,6 +55,7 @@ app.set('view engine', 'pug');
 
 // make conf available for pug
 app.locals.conf = conf;
+app.locals.pugLib = pug;
 
 // parse urlencoded forms
 app.use(express.urlencoded({
@@ -103,6 +105,8 @@ function ensureAuthenticated(req, res, next) {
 app.use(function (req, res, next) {
     res.setHeader('X-Frame-Options', 'SAMEORIGIN');
     res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader("Access-Control-Allow-Origin", "*");// XXX investigate
+    res.setHeader("Access-Control-Request-Headers", "cve-api-cna,cve-api-secret,cve-api-submitter");
 
     if (req.path != '/users/login' && req.session.returnTo) {
         delete req.session.returnTo
@@ -157,7 +161,8 @@ app.use('/home/stats', ensureAuthenticated, async function(req, res, next){
             avgSize: s.avgObjSize
         });
     }
-    res.render('list', {
+    res.render('list',
+    {
         docs: sections,
         columns: ['name', 'items', 'size', 'avgSize'],
         fields: {
@@ -190,7 +195,7 @@ if(conf.customRoutes) {
 }
 
 app.get('/', function (req, res, next) {
-    res.redirect(app.locals.confOpts['cve'].conf.uri);
+    res.redirect(conf.homepage? conf.homepage : '/home');
 });
 
 if(conf.httpsOptions) {
