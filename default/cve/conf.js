@@ -9,7 +9,7 @@ conf: {
     title: 'CVE: Common Vulnerabilities and Exposures',
     name: 'CVE',
     uri: '/cve/?state=DRAFT,REVIEW,READY',
-    class: 'icn alert',
+    class: 'vgi-alert',
     order: 0.1, //Where to place the section on heading?
     shortcuts: [
     {
@@ -33,7 +33,12 @@ conf: {
     }
     ]
 },
-
+icons: {
+    'TYPE': 'bucket',
+    'CVE_data_meta': 'info',
+    'STATE': 'knob',
+    'new': 'new'
+},
 /*
 Configure important query and aggregation parameters for index page
 
@@ -143,16 +148,14 @@ schema: {
   "cve_id": {
    "type": "string",
    "pattern": "^CVE-[0-9]{4}-[0-9A-Za-z._-]{4,}$",
+   "options": {
+       "class": "vgi-tag",
+     "patternmessage": "Invalid CVE ID"
+   },
    "message": "Valid CVE ID is required!",
    "links": [
     {
-     "class": "btn sml lbl icn extlink",
-     "href": "'http://cve.mitre.org/cgi-bin/cvename.cgi?name=' + context.self",
-     "title": "'MITRE's CVE Entry",
-     "rel": "'MITRE'"
-    },
-    {
-     "class": "btn sml lbl icn extlink",
+     "class": "sml vgi-ext",
      "href": "'https://nvd.nist.gov/vuln/detail/' + context.self",
      "title": "'NVD's CVE Entry",
      "rel": "'NVD'"
@@ -162,13 +165,15 @@ schema: {
   "email_address": {
    "type": "string",
    "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$",
-   "message": "Valid email required"
+   "message": "Valid email required",
+   "options": {
+    "class": "vgi-user",
+    "patternmessage": "Invalid email"
+    },   
   },
   "product": {
    "type": "object",
-   "options": {
-        "layout": "grid"  
-   },
+   "format": "grid",
    "required": [
     "product_name",
     "version"
@@ -191,10 +196,17 @@ schema: {
      ],
      "properties": {
       "version_data": {
+        "title": " ",
+        "options": {
+            "class": "hid"
+        },
        "type": "array",
        "minItems": 1,
        "items": {
-        "title": "version",
+        "title": "Version",
+        "options": {
+            "class": "hid"
+        },
         "type": "object",
         "required": [
          "version_value"
@@ -227,6 +239,7 @@ schema: {
            "?>="
           ],
           "options": {
+              "input_width": "5em",
            "enum_titles": [
             "Not Selected",
             "< (affects X versions prior to n)",
@@ -359,7 +372,7 @@ schema: {
      "message": "Valid URL is required!",
      "links": [
       {
-       "class": "btn sml icn extlink",
+       "class": "fbn sml icn extlink",
        "href": "context.self",
        "title": "context.self",
        "rel": "'Open link'"
@@ -453,6 +466,7 @@ schema: {
   },
   "CVE_data_meta": {
    "type": "object",
+   "format": "grid",
    "required": [
     "ID",
     "ASSIGNER",
@@ -463,9 +477,7 @@ schema: {
      "$ref": "#/definitions/cve_id",
      "description": "CVE-yyyy-nnnn",
      "options": {
-         "class": "ID",
-      "input_width": "10em",
-    "grid_columns": 6
+        "grid_columns": 4
      }
     },
     "ASSIGNER": {
@@ -473,8 +485,7 @@ schema: {
      "description": "Email of CNA assigning this CVE ID",
      "default": (conf.contact ? conf.contact : ''),
      "options": {
-      "input_width": "12em",
-    "grid_columns": 6
+    "grid_columns": 3
      }
     },
     "DATE_PUBLIC": {
@@ -482,17 +493,16 @@ schema: {
      "format": "datetime",
      "description": "YYYY-MM-DD",
      "options": {
-         "class": "date",
-         "input_width": "18em",
-         "grid_columns": 6
+         "class": "date vgi-cal",
+         "grid_columns": 4
      }
     },
     "TITLE": {
      "type": "string",
      "description": "Short summary",
       "options": {
-          
-         "grid_columns": 12
+        "class": "vgi-title",
+         "grid_columns": 9
      }
    },
     "AKA": {
@@ -500,7 +510,7 @@ schema: {
      "title": "Also known as",
      "description": "eg., HeartBleed, Shellshock",
        "options": {
-         "grid_columns": 6
+         "grid_columns": 3
      }
    },
     "STATE": {
@@ -530,6 +540,7 @@ schema: {
   },
   "source": {
    "type": "object",
+   "format": "grid",
    "properties": {
     "defect": {
      "title": "Defect",
@@ -539,12 +550,20 @@ schema: {
      "uniqueItems": true,
      "items": {
       "type": "string"
-     }
+     },
+     "options": {
+        "class": "vgi-bug",
+        "gird_columns": 2
+     }     
     },
     "advisory": {
      "title": "Advisory-ID",
      "type": "string",
-     "description": "CNA specific advisory IDs (Optional)"
+     "description": "CNA specific advisory IDs (Optional)",
+     "options": {
+        "class": "vgi-alert",
+        "gird_columns": 3
+     }
     },
     "discovery": {
      "type": "radio",
@@ -556,6 +575,8 @@ schema: {
       "UNKNOWN"
      ],
      "options": {
+        "class": "vgi-info",
+        "gird_columns": 12,
       "enum_titles": [
        "internal research",
        "external research",
@@ -569,6 +590,7 @@ schema: {
   },
   "affects": {
    "type": "object",
+   "title": "Affected products",
    "required": [
     "vendor"
    ],
@@ -580,6 +602,10 @@ schema: {
      ],
      "properties": {
       "vendor_data": {
+          "title": " ",
+          "options": {
+            "class": "hid"
+       },
        "type": "array",
        "minItems": 1,
        "items": {
@@ -603,6 +629,10 @@ schema: {
           ],
           "properties": {
            "product_data": {
+               "title": " ",
+               "options": {
+                    "class": "hid"
+               },
             "type": "array",
             "minItems": 1,
             "items": {
@@ -628,6 +658,10 @@ schema: {
    ],
    "properties": {
     "problemtype_data": {
+        "title": " ",
+        "options": {
+             "class": "hid"
+        },
      "type": "array",
      "minItems": 1,
      "items": {
@@ -677,6 +711,9 @@ schema: {
    }
   },
   "description": {
+    "options": {
+        "class": "vgi-text"
+   },
    "type": "object",
    "required": [
     "description_data"
@@ -684,6 +721,10 @@ schema: {
    "properties": {
     "description_data": {
      "type": "array",
+     "title": " ",
+     "options": {
+          "class": "hid"
+     },
      "minItems": 1,
      "items": {
       "title": "description",
@@ -919,90 +960,6 @@ validators: [
         return errors;
     }
 ],
-script: {
-    tweetJSON: function(event, link) {
-        var j = mainTabGroup.getValue();
-        if (!j){
-            event.preventDefault();
-            return;
-        }
-        var id = textUtil.deep_value(j, 'CVE_data_meta.ID');
-        var cvelist = textUtil.deep_value(j, 'CNA_private.CVE_list');
-        if(cvelist && cvelist.length > 0) {
-            id = '';
-        }
-        var aka = textUtil.deep_value(j, 'CVE_data_meta.AKA')
-        var text = id + ' ' + textUtil.deep_value(j, 'source.advisory') + ' '
-            + textUtil.getBestTitle(j) + ' '
-            + (aka? ' aka ' + aka : '');
-        text = text.replace(/ +(?= )/g,'');
-        link.href = 'https://twitter.com/intent/tweet?&text=' 
-            + encodeURI(text)
-            + '&url=' + encodeURI(textUtil.deep_value(j, 'references.reference_data.0.url'));
-        //    + '&hashtags=' + encodeURI(id)
-        //via=vulnogram&hashtags=CVE
-    },
-    draftEmail: async function(event, link, renderId) {
-        var subject = ''
-        if(typeof(mainTabGroup) !== 'undefined') {
-            var j = mainTabGroup.getValue();
-            if (!j){
-                event.preventDefault();
-                return;
-            }
-            var id = textUtil.deep_value(j, 'CVE_data_meta.ID');
-            var cvelist = textUtil.deep_value(j, 'CNA_private.CVE_list');
-            if(cvelist && cvelist.length > 0) {
-                id = '';
-            }
-            subject = id +' ' + textUtil.getBestTitle(j);
-        } else {
-            var t = document.getElementById(renderId).getElementsByTagName('h2')[0];
-            if(t) {
-                subject = t.textContent;
-            }
-        }
-        var emailBody = document.getElementById(renderId).innerText;
-        link.href="mailto:?subject=" + encodeURI(subject) + '&body=' + encodeURI(emailBody);
-    },
-    loadCVE: function (value) {    var realId = value.match(/(CVE-(\d{4})-(\d{1,12})(\d{3}))/);
-    if (realId) {
-        var id = realId[1];
-        var year = realId[2];
-        var bucket = realId[3];
-        fetch('https://raw.githubusercontent.com/CVEProject/cvelist/master/' + year + '/' + bucket + 'xxx/' + id + '.json', {
-                method: 'GET',
-                credentials: 'omit',
-                headers: {
-                    'Accept': 'application/json, text/plain, */*'
-                },
-                redirect: 'error'
-            })
-            .then(function (response) {
-                if (!response.ok) {
-                    errMsg.textContent = "Failed to load valid CVE JSON";
-                    infoMsg.textContent = "";
-                    throw Error(id + ' ' + response.statusText);
-                }
-                return response.json();
-            })
-            .then(function (res) {
-                if (res.CVE_data_meta) {
-                    loadJSON(res, id, "Loaded "+id+" from GIT!");
-                } else {
-                    errMsg.textContent = "Failed to load valid CVE JSON";
-                    infoMsg.textContent = "";
-                }
-            })
-            .catch(function (error) {
-                errMsg.textContent = error;
-            })
-    } else {
-        errMsg.textContent = "CVE ID required";
-    }
-    return false;
-}
-},
 router: router.get('/pr:pr', csrfProtection, function (req, res) {
         var CVE_JSON_skeleton = {
             "data_type": "CVE",

@@ -8,8 +8,8 @@ block facetBanner
         input#chartS.hid(type="radio" name="chsz" checked=true)
         input#chartZ.hid(type="radio" name="chsz")
         div.btg.right.rnd.pad
-            label.out.pad.bor.icn.table(for="chartS",style="text-align:right;") Grid
-            label.out.pad.bor.icn.box(for="chartZ",style="text-align:right;") Large
+            label.out.pad.bor.vgi-table(for="chartS",style="text-align:right;") Grid
+            label.out.pad.bor.vgi-box(for="chartZ",style="text-align:right;") Large
         #charts.grd.pad
         script.
             var charts = !{JSON.stringify(docs)};

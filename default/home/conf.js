@@ -2,7 +2,7 @@ module.exports = {
 conf: {
     title: 'Dashboard',
     name: 'Vulnogram',
-    class: 'vulnogram',
+    class: 'vgi-logo',
     order: -10,
     uri: '/home/'
 },
