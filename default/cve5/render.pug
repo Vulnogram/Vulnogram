@@ -1,0 +1,217 @@
+extends ../../views/render.pug
+
+mixin spara(l, hypertext)
+    if l
+        each d in l
+            if d.supportingMedia && d.supportingMedia.length > 0 && d.supportingMedia[0].type == 'text/html'
+                p !{d.supportingMedia[0].value}
+            else if d.value
+                +para(d.value)
+
+block prepend content
+    mixin slide(cve)
+        .page.wht.shd.pad2.gap
+            b.slidetitle
+                if cve.source && cve.source.advisory
+                    = cve.source.advisory
+                    |              
+                = cve.cveMetadata.title + ' (' + cve.cveMetadata.ID + ')'
+            ul.bullets
+                li
+                    b.term CVSS: 
+                    span.text
+                        if cve.impact && cve.impact.cvss
+                            +CVSS(cve.impact.cvss)
+                li
+                    b.term PR: 
+                    span.text= cve.source.defect
+                li
+                    b.term Affects: 
+                    //span.text= getProductAffected(cna) 
+                li
+                    b.term Problem: 
+                    span.text
+                        +spara(cve.description.description_data.slice(0,1))
+                        if cmap && Object.keys(cmap).length > 0 && cmap.constructor === Object
+                            +spara(cve.CNA_private.CVE_table_description)
+                            each x, id in cmap
+                                = id + " "
+                li
+                    b.term Workaround: 
+                    span.text
+                        +spara(cve.work_around)
+                li
+                    b.term Solution: 
+                    span.text
+                        +spara(cve.solution)
+
+block pageDef
+    mixin page(cve)
+      - var CDM = cve.cveMetadata;
+      if CDM.state == 'PUBLISHED'
+        - var cna = cve.containers? cve.containers.cna: {};
+        - var PMD = cve.containers.cna.providerMetadata;
+        - var sourceText = {"INTERNAL":"This issue was found during internal product security testing or research.", "EXTERNAL":"This issue was discovered during an external security research.", "USER":"This issue was seen during production usage.", "UNKNOWN":""};
+        - var cveid = CDM.id.match(/^CVE-[0-9-]+$/)? CDM.id : 'CVE-yyyy-nnnn';
+        h2#cvetitle
+            if cve.source && cve.source.advisory
+                = cve.source.advisory
+                |  
+            = cveid + ' ' + PMD.title 
+            
+        h4 PRODUCT(S) AFFECTED:
+        ul
+            each p, i in cna.affected
+                li
+                    =p.vendor
+                    |  
+                    =p.product
+                    if p.platforms
+                        |  for 
+                        = p.platforms.join(", ")
+
+        h4 PROBLEM:
+        +spara(cna.descriptions)
+
+        h4 CVSS SCORE(s):
+        if cna.metrics && cna.metrics && cna.metrics.length > 0
+            ol
+                each x, i in cna.metrics
+                    - cvss = x.cvssV3_1 ? x.cvssV3_1 : x.cvssV3_0 ? x.cvssV3_0 : x.cvssV2_0 ? x.cvssV2_0 : null
+                    if cvss
+                        li 
+                            +spara(x.scenarios)
+                            if cvss.baseSeverity
+                                =cvss.baseSeverity
+                            |  
+                            +CVSS(cvss)
+
+        if cna.configurations && cna.configurations.length > 0
+            h4 CONFIGURATIONS REQUIRED FOR EXPOSURE:
+            +spara(cna.configurations)
+
+        if cna.configurations && cna.configurations.length > 0
+            h4 EXPLOIT STATUS:
+            +spara(cna.exploits)
+
+        if cve.source
+            if sourceText[cna.source.discovery]
+                p=sourceText[cna.source.discovery]
+
+        if cmap && Object.keys(cmap).length > 0 && cmap.constructor === Object
+            +spara(cve.CNA_private.CVE_table_description)
+            table.striped
+                tr.rowHead
+                    th CVE
+                    th CVSS
+                    th Summary
+                each x, id in cmap
+                    tr
+                        td=id
+                        td
+                            if cmap[id] && cmap[id].impact
+                                +CVSS(cmap[id].impact.cvss)
+                        td
+                            if cmap[id] && cmap[id].summary
+                                =cmap[id].summary
+
+        else
+            p This issue has been assigned 
+                a(href="http://cve.mitre.org/cgi-bin/cvename.cgi?name="+cveid)=cveid
+                |.
+
+        h4 SOLUTION:
+
+        +spara(cna.solutions)
+
+        if cna.source.defect && cna.source.defect.length > 0
+            p This issue is being tracked as 
+                +linklist(cna.source.defect, defectURL)
+                |.
+        h4 WORKAROUND:
+        +spara(cna.workarounds)
+
+        h4 RELATED LINKS:
+
+        ul
+            if CDM.ID
+                li
+                    a(href="http://cve.mitre.org/cgi-bin/cvename.cgi?name="+cveid)=cveid + " at cve.mitre.org"
+            each r in cna.references
+                li
+                    a(href=r.url)=r.url
+                    if r.tags && r.tags.length > 0
+                        |  (  
+                        =r.tags.join(" ")
+                        |  ) 
+
+        if cna.credits && cna.credits.length > 0
+            h4 ACKNOWLEDGEMENTS:
+            ul
+                each c in cna.credits
+                    li= c.value
+                        |  (  
+                        =c.type
+                        |  )
+
+        if cna.timeline && cna.timeline.length > 0
+            h4 TIMELINE:
+            each x, i in cna.timeline
+                p
+                    ul
+                        li
+                            +renderDate(x.time)
+                            |  - 
+                            = x.value
+
+        if cve.CNA_private && cve.CNA_private.internal_comments
+            h4 INTERNAL COMMENTS:
+            p
+                +para(cve.CNA_private.internal_comments)
+
+mixin mitre(cve)
+    h2 MITRE CVE entry preview
+    - var cna = cve.containers.cna;
+    #GeneratedTable
+        table(cellpadding=0,cellspacing=0,border=0)
+            tbody
+                tr
+                    th(colspan=2) CVE-ID
+                tr
+                    td(nowrap="nowrap")
+                        h2=cve.cveMetadata.id
+                    td.ltgreybackground
+                        .larger
+                            a Learn more at National Vulnerability Database (NVD)
+                        .smaller • Severity Rating • Fix Information • Vulnerable Software Versions • SCAP Mappings
+                tr
+                    th(colspan=2) Description
+                tr
+                    td(colspan=2)
+                        each d in cna.descriptions
+                            =d.value
+                            = ' '
+                tr
+                    th(colspan=2) References
+                tr
+                    td.note(colspan=2)
+                        b Note: 
+                        a References
+                        |  are provided for the convenience of the reader to help distinguish between vulnerabilities. The list is not intended to be complete.
+                tr
+                    td(colspan=2)
+                        ul
+                            each r in cna.references
+                                li
+                                    a(target="_blank",href=r.url)=r.url
+                tr
+                    th(colspan=2) Assigning CNA
+                tr
+                    td(colspan=2)=cve.cveMetadata.assignerShortName
+                tr
+                    th(colspan=2) Date Entry Created
+                tr
+                    td
+                        b YYYYMMDD
+                    td.ltgreybackground Disclaimer: The entry creation date may reflect when the CVE-ID was allocated or reserved, and does not necessarily indicate when this vulnerability was discovered, shared with the affected vendor, publicly disclosed, or updated in CVE.
+
