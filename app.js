@@ -43,6 +43,14 @@ db.on('error', function (err) {
 
 const app = express();
 
+var RateLimit = require('express-rate-limit');
+var limiter = new RateLimit({
+  windowMs: 1*60*1000, // 1 minute
+  max: 200
+});
+// apply rate limiter to all requests
+app.use(limiter);
+
 app.disable('x-powered-by');
 
 // enable compression
