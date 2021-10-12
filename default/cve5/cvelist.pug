@@ -1,0 +1,100 @@
+mixin userstats
+    details.lbl.popup
+        summary.vgi-user= userInfo.name.first
+        dl.pop.wht.bor.rnd.shd.pad.left(style="right:20px")
+            b.vgi-user= userInfo.username
+            dt Roles:  
+                b.vgi-cap=userInfo.authority.active_roles
+            hr
+            dt Org:  
+                b=org.name
+            dt ShortName:  
+                b= org.short_name
+            dt Role:  
+                b= org.authority.active_roles
+            hr
+            button.vgi-exit.fbn Logout 
+
+mixin htext
+    if t
+        each line in t.split(/\n/)
+            if line
+                if line.startsWith('  ')
+                    code=line
+                    br
+                else
+                    p=line
+    else
+        p=t
+
+mixin date(value)
+    - var v = false;
+    - if (value instanceof Date) { v = value;} else {
+    -   var timestamp = Date.parse(value);
+    -   v = isNaN(timestamp) ? false : new Date(timestamp)
+    - }
+    if v
+        - var nowt = Date.now();
+        - var vtime = v.getTime();
+        - var delta = nowt-vtime;
+        - var hidet = '';
+        - if (Math.abs(delta) > 43000000) { hidet = 'hid';}
+        span.nobr.date(class=cl, title=v.toString())
+            = v.toISOString().slice(0,10)
+            span.nobr(class=hidet)
+                |  
+                = v.toLocaleTimeString("de-US", {hour:"2-digit", minute:"2-digit"})
+    else
+        = obj[name]
+
+mixin editables
+    each c in cveIds
+        //-if c.state == 'RESERVED'
+            option(value=c.cve_id)='📝 ' + c.cve_id
+        if c.state == 'PUBLISHED'
+            option(value=c.cve_id)='🌐 Published on '
+                +date(c.time.modified)
+        if c.state == 'REJECTED'
+            option(value=c.cve_id)='⛔ Rejected on ' 
+                +date(c.time.modified)
+
+mixin reserveds
+    each c in cveIds
+        if c.state == 'RESERVED'
+            option(value=c.cve_id)
+                i='📝 Reserved by ' + c.requested_by.user
+        //-if c.state == 'PUBLISHED'
+            option(value=c.cve_id)='🌐 Published by ' + c.requested_by.user
+        //-if c.state == 'REJECTED'
+            option(value=c.cve_id)='⛔ Rejected by ' + c.requested_by.user
+
+mixin listIds
+    - var stateIcons = {'RESERVED':'vgi-edit', 'PUBLISHED':'vgi-globe', 'REJECTED':'vgi-no'}
+    table.tbl
+        thead
+            tr
+                th ID
+                th State
+                th Requester
+                th Created
+                th Modified
+        tbody
+          each c in cveIds
+            tr
+                td
+                    a(href="javascript:cveLoad('"+c.cve_id+"')")=c.cve_id
+                td
+                    if c.state == 'RESERVED'
+                        i(class=stateIcons[c.state]?stateIcons[c.state]:'')=c.state
+                    else
+                        a.vgi-ext(class=stateIcons[c.state]?stateIcons[c.state]:'', href="https://www.cve.org/CVERecord?id="+c.cve_id)
+                            =c.state
+                td=c.requested_by.user
+                td
+                    +date(c.time.created)
+                td
+                    +date(c.time.modified)
+
+block red
+    if ctemplate != undefined
+        +#{ctemplate}

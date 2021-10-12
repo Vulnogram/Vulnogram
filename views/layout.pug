@@ -48,7 +48,7 @@ html
                                         a.fbn(class=shortcut.class,href=href,target=shortcut.target)=(shortcut.label instanceof Function ? shortcut.label(locals) : shortcut.label)
                                 form.indent.out.nobr(action='/' + schemaName,method="GET",style="flex-grow:1")
                                     input.txt(size=20,style="flex-grow:1",type="text",name="q",placeholder=" Search all "+schemaName,value=query ? (Array.isArray(query.q) ? query.q.join(' ') : query.q) :'',results="10",required)
-                                    button.vgi-search.btn(type="submit")
+                                    button.vgi-search.sbn(type="submit")
     block facetBanner
     if user && !min
         script.

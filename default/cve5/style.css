@@ -1,5 +1,6 @@
 body{
- --hig: hsla(200, 56%, 95%, 1);
+ /*--hig:#f6f6f7;*/
+ --hig: #e5ebec;
 }   
 
 .lessThan::before {

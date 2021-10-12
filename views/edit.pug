@@ -1,7 +1,7 @@
 //- Copyright (c) 2020 Chandan B N. All rights reserved.
 
 extends layout
-    
+  
 block info
     if doc && doc.updatedAt
         ='Last updated ' + textUtil.timeSince(doc.updatedAt) + ' ago by ' + doc.author + ' (v' + doc.__v + ')'
@@ -20,7 +20,7 @@ block append bannerItemsLeft
         input#importJSON.hid(type="file",accept="application/json",onchange="loadFile(event,this);")
         a.fbn.vgi-folder(type="file",onclick='importFile(event, this);') Open
         if !min
-            button.fbn.vgi-put(id="save1") SAVE    
+            button.fbn.sfe.vgi-put(id="save1") SAVE    
         a.fbn.vgi-download(type="button",oncontextmenu='downloadFile(event, this);',onclick='downloadFile(event, this);',value="Download") Download
 
 block scripts
@@ -57,7 +57,11 @@ block content
     div#mainTabGroup
         span.lbl &nbsp;
         input.tab(name='tabs', type='radio', id='editorTab', value="1",checked)
-        label.lbl#editorLabel(for='editorTab') Editor
+        label.lbl#editorLabel(for='editorTab')
+            span.flx Editor
+                details.popup#errPop
+                    summary.sml.hid#errCount
+                    div.wht.pop.pad.bor.shd#errList
         .wht.fil.bor.pad
             div.hid
                 button.lbl.sml.indent.btn.vgi-magic.sfe(id="auto",style="visibility:hidden") Auto-Text

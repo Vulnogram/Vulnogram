@@ -42,8 +42,10 @@ JSONEditor.defaults.templates.custom = function () {
     return {
         compile: function (template) {
             return function (context) {
+                // context contains values of watched fields.
+                // XXX: careful with remote JSON schemas.
                 var ret = eval(template);
-                return eval(template);
+                return ret;
             };
         }
     };
@@ -149,6 +151,7 @@ JSONEditor.defaults.editors.string = class mystring extends JSONEditor.defaults.
                 dlist.appendChild(v);
             }
             this.input.setAttribute('list', this.path + '-datalist');
+            this.input.type='search';
             this.container.appendChild(dlist);
         }
     }
@@ -426,6 +429,13 @@ JSONEditor.defaults.editors.simplehtml = class simplehtml extends JSONEditor.def
         this.schema.format = this.format = 'hidden';
 //        this.schema.format = "simplehtml";
         super.build();
+        if(this.label && this.options.class) {
+            this.label.className = this.label.className + ' ' + this.options.class;
+            if(this.isRequired()){
+                this.label.className = this.label.className + ' req'; 
+            }
+        }
+        this.control.className = 'simplehtml form-control bor';
         this.toolbar = document.createElement('div');
         this.toolbar.innerHTML = '<div class="toolbar"><div><span class="btg indent"><a class="sbn vgi-bold" data-wysihtml5-command="bold" title="Bold CTRL+B" href="javascript:;" unselectable="on"></a><a class="sbn vgi-italic" data-wysihtml5-command="italic" title="Italic CTRL+I" href="javascript:;" unselectable="on"></a><a class="sbn vgi-underline" data-wysihtml5-command="underline" title="Underline CTRL+U" href="javascript:;" unselectable="on"></a><a class="sbn vgi-highlight" data-wysihtml5-command="bgColorStyle" title="highlight" color="#666699" data-wysihtml5-command-value="#effa66" href="javascript:;" unselectable="on"></a><!-- <a class="fbn icn strikethrough" data-wysihtml5-command="strike" title="Strike"></a>--></span><span class="btg indent"><a class="sbn vgi-p" data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="p" title="paragraph style" href="javascript:;" unselectable="on"></a><a class="sbn vgi-h1" data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="h1" title="Heading 1" href="javascript:;" unselectable="on"></a><a class="sbn vgi-h2" data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="h2" title="Heading 2" href="javascript:;" unselectable="on"></a><a class="sbn vgi-h3" data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="h3" title="Heading 3" href="javascript:;" unselectable="on"></a><a class="sbn vgi-noformat" data-wysihtml5-command="formatBlock" data-wysihtml5-command-blank-value="true" unselectable="on" title="Clear styles" href="javascript:;"></a></span><span class="btg indent"><a class="sbn vgi-link" data-wysihtml5-command="createLink" title="Hyperlink" href="javascript:;" unselectable="on"></a><a class="sbn vgi-unlink" data-wysihtml5-command="removeLink" title="Unlink" href="javascript:;" unselectable="on"></a><a class="sbn vgi-pic" data-wysihtml5-command="insertImage" title="Insert image" href="javascript:;" unselectable="on"></a><a class="sbn vgi-console" data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="tt" title="Code text" href="javascript:;" unselectable="on"></a><a class="sbn vgi-quote" data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="blockquote" title="Block quote" href="javascript:;" unselectable="on"></a><a class="sbn vgi-table" data-wysihtml5-command="createTable" title="Insert Table" href="javascript:;" unselectable="on"></a></span><span class="btg indent"><a class="sbn vgi-bullet" data-wysihtml5-command="insertUnorderedList" title="Bulletted list" href="javascript:;" unselectable="on"></a><a class="sbn vgi-numbered" data-wysihtml5-command="insertOrderedList" title="Numbered list" href="javascript:;" unselectable="on"></a></span><span class="btg indent"><a class="sbn vgi-undo" data-wysihtml5-command="undo" title="Undo" href="javascript:;" unselectable="on"></a><a class="sbn vgi-redo" data-wysihtml5-command="redo" title="Redo" href="javascript:;" unselectable="on"></a><a class="sbn vgi-markup" data-wysihtml5-action="change_view" title="HTML source view" href="javascript:;" unselectable="on"></a></span><span class="btg indent" data-wysihtml5-hiddentools="table" style="display: none;"><a class="sbn vgi-add-row-top" data-wysihtml5-command="addTableCells" data-wysihtml5-command-value="above" title="Insert row above" href="javascript:;" unselectable="on"></a><a class="sbn vgi-add-row-down" data-wysihtml5-command="addTableCells" data-wysihtml5-command-value="below" title="Insert row below" href="javascript:;" unselectable="on"></a><a class="sbn vgi-add-col-left" data-wysihtml5-command="addTableCells" data-wysihtml5-command-value="before" title="Insert column before" href="javascript:;" unselectable="on"></a><a class="sbn vgi-add-col-right" data-wysihtml5-command="addTableCells" data-wysihtml5-command-value="after" title="Insert column after" href="javascript:;" unselectable="on"></a><a class="sbn vgi-row-red" data-wysihtml5-command="deleteTableCells" data-wysihtml5-command-value="row" title="Delete row" href="javascript:;" unselectable="on"></a><a class="sbn vgi-col-red" data-wysihtml5-command="deleteTableCells" data-wysihtml5-command-value="column" title="Delete column" href="javascript:;" unselectable="on"></a></span></div><div data-wysihtml5-dialog="createLink" style="display: none;"><label class="lbl sml vgi-link">Link: </label><input class="vgi-text" size="90" data-wysihtml5-dialog-field="href" value="https://" title="URL"><a class="btn vgi-ext" onclick="window.open(this.previousElementSibling.value)">Open</a><a class="btn indent vgi-ok" data-wysihtml5-dialog-action="save">OK</a><a class="btn vgi-cancel" data-wysihtml5-dialog-action="cancel">Cancel</a></div><div data-wysihtml5-dialog="insertImage" style="display: none;"><label class="lbl vgi-link">URL</label><input class="vgi-txt" data-wysihtml5-dialog-field="src" size="50" value="https://"><label class="lbl">or</label><label class="btn vgi-folder" title="Browse for local images to insert">Insert Image ..<input class="hid" type="file" onchange="loadimg.call(this, event)" accept="image/*"></label><a class="btn indent vgi-ok" data-wysihtml5-dialog-action="save">OK</a><a class="btn vgi-cancel" data-wysihtml5-dialog-action="cancel">Cancel</a></div><div data-wysihtml5-dialog="createTable" style="display: none;"><label class="vgi-table lbl">Rows: </label><input class="txt" type="text" data-wysihtml5-dialog-field="rows"><label class="lbl">Cols: </label><input class="txt" type="text" data-wysihtml5-dialog-field="cols"><a class="btn vgi-ok indent" data-wysihtml5-dialog-action="save">OK</a><a class="btn vgi-cancel" data-wysihtml5-dialog-action="cancel">Cancel</a></div></div>'
         //document.getElementById('commentTemplate')?.getElementsByClassName('toolbar')[0].cloneNode(true);
@@ -636,7 +646,7 @@ JSONEditor.defaults.themes.customTheme = class customTheme extends JSONEditor.Ab
   getFormControl(label, input, description, infoText) {
       var el = super.getFormControl(label, input, description, infoText);
       if(input.type =='text')
-        input.className = 'icn txt';
+        input.className = 'txt';
       return el;
   }
     getFormInputLabel(text) {
@@ -944,7 +954,7 @@ function Tabs(tabGroupId, tabOpts, primary) {
             document.title = '• ' + (nid ? nid : 'Vulnogram');
             if (document.getElementById("save1")) {
                 save2.className = "btn sfe gap save";
-                save1.className = "btn sfe save";
+                save1.className = "fbn sfe save";
             }
             //console.log('Inc '+ tg.tabId[index] + ' is ' + tg.changeIndex[index]);
         }
@@ -986,6 +996,28 @@ if (document.getElementById('save1') && document.getElementById('save2')) {
     document.getElementById('save2').removeAttribute("style");
 }
 
+
+function showJSONerrors(errors) {
+    var totalMessage = '';
+    for(e of errors) {
+        totalMessage += e.path + ": <i>" + e.message + '.</i></br>';
+    }
+    errCount.className = 'indent bdg';
+    errPop.className = 'popup';
+    errCount.innerText = errors.length;
+    errList.innerHTML = 
+        //(errors.length > 1 ? errors.length + " errors! " : "") + 
+        totalMessage;
+    editorLabel.className = "red lbl";
+}
+
+function hideJSONerrors() {
+    errCount.innerText = "";
+    errPop.className = 'hid';
+    errList.textContent = "";
+    editorLabel.className = "lbl";
+}
+
 var defaultTabs = {
     editorTab: {
         setValue: function (val) {
@@ -1008,18 +1040,10 @@ var defaultTabs = {
             }
             if (errors.length > 0) {
                 docEditor.setOption('show_errors', 'always');
-                var totalMessage = '';
-                for(e of errors) {
-                    totalMessage += e.path + ": <i>" + e.message + '.</i></br>';
-                }
-                errMsg.innerHTML = 
-                    //(errors.length > 1 ? errors.length + " errors! " : "") + 
-                    totalMessage;
-                editorLabel.className = "red lbl";
+                showJSONerrors(errors);
                 return 0;
             } else {
-                errMsg.textContent = "";
-                editorLabel.className = "lbl";
+                hideJSONerrors();
                 return 1;
             }
         }
@@ -1099,8 +1123,8 @@ function loadJSON(res, id, message) {
             document.title = nid ? nid : 'Vulnogram';
         }
         if (document.getElementById("save1")) {
-            save2.className = "btn save gap";
-            save1.className = "btn save";
+            save2.className = "btn sfe gap";
+            save1.className = "fbn sfe";
         }
         if (message) {
             selected = "editorTab";
@@ -1154,8 +1178,8 @@ function save() {
                 // turn button to normal, indicate nothing to save,
                 // but do not disable it.
                 if (document.getElementById("save1")) {
-                    save2.className = "btn save gap";
-                    save1.className = "btn save";
+                    save2.className = "btn sfe gap";
+                    save1.className = "fbn sfe";
                 }
                 getChanges(getDocID());
             }
@@ -1166,7 +1190,6 @@ function save() {
         });
     // This is a trick for brower auto completion to work
         document.getElementById('docEditor').submit();
-
 }
 
 function getDocID() {
