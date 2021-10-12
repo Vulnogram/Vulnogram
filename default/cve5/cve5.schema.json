@@ -9,6 +9,9 @@
         "patternmessage": "invalid UUID"
     },
     "definitions": {
+        "generator": {
+
+        },     
         "uriType": {
             "description": "A universal resource identifier (URI), according to [RFC 3986](https://tools.ietf.org/html/rfc3986).",
             "type": "string",
@@ -91,12 +94,18 @@
                 "class": "vgi-tag",
                 "grid_columns": 4,
                 "patternmessage": "CVE-yyyy-nnnn required",
-                "remove_empty_properties": false
-            }
+                "remove_empty_properties": false,
+                "inputAttributes": {
+                    "placeholder":  "CVE-yyyy-nnnn or pick from existing",
+                    "type": "search"
+                }
+            },
+            "examples": ["CVE-yyyy-nnnn"]
         },
         "orgId": {
             "description": "a UUID for an organization participating in the CVE program. This UUID can be used to lookup the organization record in the user registry service.",
-            "$ref": "#/definitions/uuidType"
+            "$ref": "#/definitions/uuidType",
+            "template": "cveApi && cveApi.org?cveApi.org.UUID:''"
         },
         "userId": {
             "description": "a UUID for a user participating in the CVE program. This UUID can be used to lookup the user record in the user registry service.",
@@ -533,6 +542,7 @@
         "cveMetadataPublished": {
             "description": "This is meta data about the CVE ID such as the CVE ID, who requested it, who assigned it, when it was requested, the current state (PUBLISHED, REJECTED, etc.) and so on.  These fields are controlled by the CVE Services.",
             "title": " ",
+            "id": "pubmd",
             "type": "object",
             "format": "grid",
             "options": {},
@@ -566,7 +576,8 @@
                     "description": "the user that requested the CVE identifier",
                     "options": {
                         "hidden": true
-                    }
+                    },
+                    "default": ""
                 },
                 "updated": {
                     "description": "the date/time the record was last updated",
@@ -746,7 +757,8 @@
                     "description": "the container provider's organizational UUID",
                     "options": {
                         "hidden": true
-                    }
+                    },
+                    "template": "cveApi.org?cveApi.org.UUID:''"
                 },
                 "shortName": {
                     "$ref": "#/definitions/shortName",
@@ -836,6 +848,9 @@
                 "metrics": {
                     "$ref": "#/definitions/metrics"
                 },
+                "references": {
+                    "$ref": "#/definitions/references"
+                },                
                 "solutions": {
                     "$ref": "#/definitions/solutions"
                 },
@@ -853,9 +868,6 @@
                 },
                 "credits": {
                     "$ref": "#/definitions/credits"
-                },
-                "references": {
-                    "$ref": "#/definitions/references"
                 },
                 "source": {
                     "$ref": "#/definitions/source"
@@ -1047,17 +1059,19 @@
                 },
                 "supportingMedia": {
                     "type": "array",
-                    "format": "table",
                     "title": " ",
                     "description": "Supporting media data for the description such as markdown, diagrams, .. (optional). Similar to RFC 2397 each media object has three main parts: media type, media data value, and an optional boolean flag to indicate if the media data is base64 encoded.",
                     "uniqueItems": true,
                     "minItems": 1,
                     "options": {
+                        "class": "hid",
                         "disable_array_add": true
                     },
                     "items": {
+                        "title": " ",
                         "type": "object",
                         "options": {
+                            "class": "hid",
                             "remove_empty_properties": false
                         },
                         "properties": {
@@ -1091,6 +1105,9 @@
                             "value": {
                                 "type": "string",
                                 "format": "simplehtml",
+                                "options": {
+                                    "class": "hid"
+                                },
                                 "title": " ",
                                 "description": "Supporting media content, up to 16K. If base64 is true, this field stores base64 encoded data.",
                                 "minLength": 1,
@@ -1110,6 +1127,12 @@
             ],
             "additionalProperties": false
         },
+        "englishLanguageDescription": {
+            "type": "object",
+            "description": "A description with lang set to an English language (en, en_US, en_UK, and so on).",
+            "properties": {"lang": {"$ref": "#/definitions/englishLanguage"}},
+            "required": ["lang"]
+        },
         "descriptions": {
             "type": "array",
             "title": "CVE Description",
@@ -1127,6 +1150,9 @@
                 "options": {
                     "class": "hid"
                 }
+            },
+            "contains": {
+                "$ref": "#/definitions/englishLanguageDescription"
             }
         },
         "problemTypes": {
@@ -1309,7 +1335,8 @@
                 "type": "object",
                 "title": "Scoring Metric",
                 "options": {
-                    "class": "vgi-dial tgap"
+                    "class": "vgi-dial tgap",
+                    "remove_empty_properties": true
                 },
                 "description": "This is impact type information (e.g. a text description, CVSSv2, CVSSv3, etc.). Must contain: At least one entry, can be text, CVSSv2, CVSSv3, others may be added",
                 "minimumProperties": 1,
@@ -1551,11 +1578,13 @@
                         "required": ["version", "vectorString", "baseScore", "baseSeverity"]
                     },
                     "cvssV3_0": {
+                        "type":"object",
                         "options": {
                             "hidden": true
                         }
                     },
                     "cvssV2_0": {
+                        "type":"object",
                         "options": {
                             "hidden": true
                         }
@@ -1596,18 +1625,19 @@
         },
         "solutions": {
             "title": "Solution (optional)",
+            "format": "table",
             "type": "array",
             "description": "Information about solutions or remediations available for this vulnerability.",
-            "minItems": 1,
             "uniqueItems": true,
             "options": {
                 "class": "vgi-safe tgap",
-                "disable_array_add": true
+                "disable_array_add": false
             },
             "items": {
-                "title": " ",
+                "title": "Solution",
                 "options": {
-                    "class": "hid"
+                    "class": "hid",
+                    "disable_array_add": true
                 },
                 "$ref": "#/definitions/description"
             }
@@ -1616,25 +1646,25 @@
             "type": "array",
             "format": "table",
             "title": "Workaround (optional)",
-            "minItems": 1,
             "description": "Workarounds and mitigations for this vulnerability.",
             "uniqueItems": true,
             "options": {
                 "class": "vgi-avoid tgap",
-                "disable_array_add": true,
                 "disable_array_delete": false,
                 "disable_array_delete_last_row": false
             },
             "items": {
-                "title": " ",
+                "title": "Workaround",
                 "options": {
-                    "class": "hid"
+                    "class": "hid",
+                    "disable_array_add": true
                 },
                 "$ref": "#/definitions/description"
             }
         },
         "configurations": {
             "type": "array",
+            "format": "table",
             "options": {
                 "class": "vgi-cog tgap"
             },
@@ -1656,6 +1686,7 @@
                 "class": "vgi-bomb tgap"
             },
             "type": "array",
+            "format": "table",
             "description": "Information about exploits of the vulnerability.",
             "uniqueItems": true,
             "items": {
@@ -1845,6 +1876,11 @@
             "options": {
                 "hidden": true
             }
+        },
+        "englishLanguage": {
+            "type": "string",
+            "description": "BCP 47 language code, language-region, required to be English",
+            "pattern": "^en([_-][A-Za-z]{4})?([_-]([A-Za-z]{2}|[0-9]{3}))?$"
         },
         "taxonomyMappings": {
             "type": "array",
