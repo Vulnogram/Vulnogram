@@ -44,6 +44,18 @@ block prepend content
                     b.term Solution: 
                     span.text
                         +spara(cve.solution)
+mixin versionPairs(v)
+    if v && v.length > 1
+        - var l = v.length/2;
+        - var n = 0;
+        while n < l
+            = v[2*n]
+            |  to  
+            = v[2*n+1]
+            br
+            - n++
+    else
+        = v
 
 block pageDef
     mixin page(cve)
@@ -59,7 +71,10 @@ block pageDef
                 |  
             = cveid + ' ' + PMD.title 
             
-        h4 PRODUCT(S) AFFECTED:
+        h4 PROBLEM:
+        +spara(cna.descriptions)
+
+        h4 RELEVANT PRODUCTS:
         ul
             each p, i in cna.affected
                 li
@@ -70,8 +85,38 @@ block pageDef
                         |  for 
                         = p.platforms.join(", ")
 
-        h4 PROBLEM:
-        +spara(cna.descriptions)
+        h4 PRODUCT STATUS:
+        - var st = versionStatusTable(cve);
+        table.tbl
+            colgroup
+                col
+                if st.show.platforms 
+                    col
+                col.affectedCol
+            thead
+                tr
+                    th Product
+                    if st.show.platforms 
+                        th Platforms
+                    th Affected
+                    if st.show.unaffected
+                        th Unaffected
+                    if st.show.unknown
+                        th Unknown
+            tbody
+                each p, i in st.cols
+                    tr
+                        td=p[0]
+                        if st.show.platforms 
+                            td=p[1]
+                        td
+                            +versionPairs(st.vals.affected[i])
+                        if st.show.unaffected
+                            td
+                                +versionPairs(st.vals.unaffected[i])
+                        if st.show.unknown
+                            td
+                                +versionPairs(st.vals.unknown[i])
 
         h4 CVSS SCORE(s):
         if cna.metrics && cna.metrics && cna.metrics.length > 0

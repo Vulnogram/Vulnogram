@@ -3,6 +3,9 @@ body{
  --hig: #e5ebec;
 }   
 
+.affectedCol {
+  border: 4px solid #fa582d
+}
 .lessThan::before {
   content: '<';
 }

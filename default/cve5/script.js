@@ -139,6 +139,74 @@ var additionalTabs = {
     }
 }
 
+function versionStatusTable(cve) {
+    var table= {
+        affected: {},
+        unaffected: {},
+        unknown: {}
+    };
+    nameAndPlatforms = {};
+    var showCols = {
+        platforms: false,
+        affected: false,
+        unaffected: false,
+        unknown: false
+    };
+    for(var p of cve.containers.cna.affected) {
+        var pname = p.product ? p.product : p.packageName ? p.packageName : '';
+        if (p.platforms)
+            showCols.platforms = true;
+        if (p.status)
+            showCols[status] = true;
+        var platforms =
+            (p.platforms ? p.platforms.join(', '): '');
+        //pname = pname + platforms;
+        var modules = p.modules ? p.modules.join(', ') : '';
+        if(p.versions) {
+            for(v of p.versions) {
+                var major = v.version ? v.version.match(/^(.*)\./): null;
+                major = major ? major[1] : '';
+                var pFullName = [pname + (major ? ' ' + major : ''), platforms ? platforms : ''];
+                nameAndPlatforms[pFullName] = pFullName;
+                if(!table[v.status][pFullName]) {
+                    table[v.status][pFullName] = [];
+                }
+                if (v.version)
+                    table[v.status][pFullName].push('>= '+v.version);
+                var prevStatus = v.status;
+                if(v.changes) {
+                    for(c of v.changes) {
+                        showCols[c.status] = true;
+                        if(!table[c.status][pFullName]) {
+                            table[c.status][pFullName] = [];
+                        }
+                        table[prevStatus][pFullName].push('< ' + c.at);
+                        table[c.status][pFullName].push('>= ' + c.at);
+                        prevStatus = c.status;
+                    }
+                }
+                if(v.lessThan) {
+                    table[v.status][pFullName].push('< ' + v.lessThan);
+                }
+                if(v.lessThanOrEqual) {
+                    table[v.status][pFullName].push('<= ' + v.lessThan);
+                }
+            }
+        }
+        var defaultLabel = '';
+        if (Object.keys(table[p.defaultStatus]).length > 0) {
+            defaultLabel = ' - all other versions';
+        }
+        var pFullName = [pname + defaultLabel, platforms ? platforms : ''];
+        nameAndPlatforms[pFullName] = pFullName;
+        table[p.defaultStatus][pFullName] = [ p.defaultStatus ];
+        if (p.defaultStatus)
+            showCols[p.defaultStatus] = true;
+    }
+    return({cols:nameAndPlatforms,vals:table, show: showCols});
+    
+}
+
 function getProductAffected(cve) {
     var lines = [];
     for (var vendor of cve.affected.vendors) {
@@ -358,7 +426,7 @@ async function cveReserve() {
             console.log(e);
         }
     } else {
-        alert('Login to CVE.org first');
+        alert('Please login to CVE.org');
     }
 }
 
@@ -367,7 +435,7 @@ async function cveSelectLoad(event) {
     if(cveClient){
     cveLoad(event.target.elements.id.value)
     } else {
-        alert('Please login to CVE');
+        alert('Please login to CVE.org');
     }
     return false;
 }
@@ -446,7 +514,10 @@ async function cveLoad(cveId) {
             if (res.cveMetadata) {
                 //defaultTabs.editorTab.setValue(res);
                 cveApi.state[cveId] = res.cveMetadata.state;
-                loadJSON(addRichTextCVE(res), cveId, "Loaded " + cveId + " from CVE.org!");
+                if(res.cveMetadata.containers) {
+                    res = addRichTextCVE(res);
+                }
+                loadJSON(res, cveId, "Loaded " + cveId + " from CVE.org!");
                 mainTabGroup.change(0);
                 return res;
             } else {
@@ -498,10 +569,10 @@ async function cvePost() {
             }
         } else {
             //todo enable/disable post button
-            alert('please login to CVE');
+            alert('Please login to CVE.org');
         }
     } else {
-        alert('Fix errors in document');
+        alert('Please fix errors before posting');
     }
 }
 
@@ -510,7 +581,7 @@ async function cveReserveAndRender() {
         await cveReserve();
         await cveGetList();
     } else {
-        alert('please login to CVE');
+        alert('Please login to CVE.org');
     }
 } 
 /*
