@@ -119,7 +119,7 @@ mixin hyperVal(obj, name)
                         else
                             if (typeof value === 'string') && value.match(/^[a-zA-Z0-9\-_]{1,30}$/) || typeof value === 'boolean'
                                 if(fields[name].icons && fields[name].icons[value])
-                                    - cls = (cls ? cls + ' ' : '')+ 'icon-'+fields[name].icons[value]
+                                    - cls = (cls ? cls + ' ' : '')+ 'vgi-'+fields[name].icons[value]
                                 else
                                     - cls = (cls ? cls + ' ' : '')+ value
                             span(class=cls title=value onclick=onlick)=value
