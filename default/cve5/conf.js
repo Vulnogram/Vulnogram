@@ -20,7 +20,7 @@ module.exports = {
                 },
                 class: 'vgi-folder'
             },
-            {
+           /* {
                 label: 'Preview',
                 href: '/review/drafts',
                 class: 'vgi-eye',
@@ -31,7 +31,7 @@ module.exports = {
                 href: '/review/slides',
                 class: 'vgi-show',
                 target: '_blank'
-            }
+            }*/
         ]
     },
     icons: {
@@ -111,13 +111,20 @@ module.exports = {
             regex: 'CVE-[a-zA-Z0-9\._-]+',
             showDistinct: true
         },
+        title: {
+            path: 'body.containers.cna.providerMetadata.title',
+            href: '/cve5/',
+            xref: {
+                href: 'ID'
+            }
+        },        
         state: {
-            path: 'body.CNA_private.STATE',
+            path: 'body.CNA_private.state',
             //chart: true,
             tabs: true,
             bulk: true,
             enum: ["new", "open", "draft", "review", "waiting", "pending", "closed"],
-            class: 'icn nobr ',
+            class: 'nobr ',
             icons: {
                 new: 'inbox',
                 open: 'inbox1',
@@ -129,12 +136,12 @@ module.exports = {
             }
         },
         type: {
-            path: 'body.CNA_private.TYPE',
+            path: 'body.CNA_private.type',
             //chart: true,
             tabs: true,
             bulk: true,
             enum: ["unsure", "no-vuln", "advisory", "no-advisory", "doc", "misc", "duplicate"],
-            class: 'icn nobr ',
+            class: 'nobr ',
             icons: {
                 unsure: 'what',
                 'no-vuln': 'safe',
@@ -145,7 +152,19 @@ module.exports = {
                 duplicate: 'ext'
             }
         },
-        CVSS: {
+        cveState: {
+            path: 'body.cveMetadata.state',
+            //chart: true,
+            tabs: true,
+            enum: ["RESERVED", "PUBLISHED", "REJECTED"],
+            class: 'nobr ',
+            icons: {
+                RESERVED: 'edit',
+                PUBLISHED: 'globe',
+                REJECTED: 'delete'
+            }
+        },
+        cvss: {
             path: 'body.containers.cna.metrics.cvssV3_1.baseScore',
         },
         severity: {
@@ -158,9 +177,15 @@ module.exports = {
             chart: true,
             bulk: true,
             enum: ['INTERNAL', 'EXTERNAL', 'USER', 'UNKNOWN'],
-            class: 'icn nobr '
+            icons: {
+                INTERNAL: 'hardhat',
+                EXTERNAL: 'hat',
+                USER: 'cap',
+                UNKNOWN: 'what'
+            },
+            class: 'nobr '
         },
-        Defect: {
+        defect: {
             path: 'body.containers.cna.source.defect',
             href: conf.defectURL,
             showDistinct: true
@@ -179,19 +204,12 @@ module.exports = {
             path: 'body.containers.cna.affected.product',
             chart: true
         },
-        Title: {
-            path: 'body.containers.cna.providerMetadata.title',
-            href: '/cve/',
-            xref: {
-                href: 'ID'
-            }
-        },
-        /*   todo: {
+        todo: {
                path: {
                    $size: "$body.CNA_private.todo"
                },
                class: 'bdg'
-           },*/
+        },
         ym: {
             path: 'body.CNA_private.publish.ym',
             chart: true,

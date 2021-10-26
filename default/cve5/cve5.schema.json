@@ -9,6 +9,87 @@
         "patternmessage": "invalid UUID"
     },
     "definitions": {
+        "CNA_private": {
+            "title": "CNA Internal Workflow",
+            "format": "grid",
+            "properties": {
+             "owner": {
+              "type": "string",
+              "format": "radio",
+              "$ref": "/users/list/json",
+              "options": {
+                  "grid_columns": 12,
+                  "class": "vgi-user"
+              }
+             },
+             "state": {
+                "type": "string",
+                "format": "radio",
+                "enum": ["new", "open", "draft", "review", "waiting", "pending", "closed"],
+                "default": "new",
+                "options": {
+                    "grid_columns": 12,
+                    "class": "vgi-knob"
+                }
+              },
+            "type": {
+                "type": "string",
+                "format": "radio",
+                "enum": ["unsure", "no-vuln", "advisory", "no-advisory","doc", "misc", "duplicate"],
+                "default": "unsure",
+                "options": {
+                    "grid_columns": 12,
+                    "class": "vgi-bucket"
+                }
+            },
+             "publish": {
+              "type": "object",
+              "options": {
+               "hidden": true
+              },
+              "properties": {
+               "ym": {
+                "type": "string",
+                "template": "(context.d ? context.d.substr(0,7) : '')",
+                "watch": {
+                 "d": "root.containers.cna.providerMetadata.datePublic"
+                }
+               },
+               "year": {
+                "type": "string",
+                "template": "(context.d ? context.d.substr(0,4) : '')",
+                "watch": {
+                 "d": "root.containers.cna.providerMetadata.datePublic"
+                }
+               },
+               "month": {
+                "type": "string",
+                "template": "(context.d ? context.d.substr(5,2) : '')",
+                "watch": {
+                 "d": "root.containers.cna.providerMetadata.datePublic"
+                }
+               }
+              }
+             },
+             "todo": {
+              "title": "Reminders",
+              "type": "array",
+              "format": "table",
+              "items": {
+               "title": "action item",
+               "type": "string"
+              },
+              "options": {
+                "grid_columns": 6,
+                "class": "vgi-task"
+              }
+             }
+            },
+            "required": [
+             "owner",
+             "todo"
+            ]
+        },
         "generator": {
 
         },     
@@ -2031,6 +2112,9 @@
                 },
                 "dataVersion": {
                     "$ref": "#/definitions/dataVersion"
+                },
+                "CNA_private": {
+                    "$ref": "#/definitions/CNA_private"
                 },
                 "cveMetadata": {
                     "$ref": "#/definitions/cveMetadataPublished",
