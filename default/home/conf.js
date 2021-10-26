@@ -1,3 +1,5 @@
+var appConf = require('../../config/conf');
+
 module.exports = {
 conf: {
     title: 'Dashboard',
@@ -9,7 +11,7 @@ conf: {
 facet: {
     ID: {
         path: 'body.ID',
-        regex: 'PLOT-[A-Za-z0-9]+',
+        regex: 'PLOT-[A-Za-z0-9-_]+',
         chart: false,
         href: '/home/',
         hrefSuffix: '#chart'
@@ -106,9 +108,11 @@ schema: {
     },
     "section": {
         type: "string",
-       examples: ["pr","cve","sir","jira","note","nvd","contact"]
+        format: "radio",
+        enum: appConf.sections
     },
     "query": {
+      "title": "Query (eg., severity=CRITICAL,HIGH&product=Example) - Copy it from a filtered section view.",
         type: "string",
         "$ref": "/home/examples?field=body.query",
         "description": "URI query string For eg., field1=value&field2=value1,value2"
@@ -118,6 +122,7 @@ schema: {
       "type": "array",
       "format": "taglist",
       "title": "Group by field names (Max 2 for bar charts, Max 1 for pie charts)",
+      "$ref": "/home/examples?field=body.key",
       "items": {
             "type": "string",   
         },
