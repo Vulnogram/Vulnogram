@@ -46,11 +46,11 @@ module.exports = {
     publicDefectURL: 'https://example.net/bugs/',
 
     // ACE editor
-    ace: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.min.js',
-    aceHash: "sha512-GZ1RIgZaSc8rnco/8CXfRdCpDxRCphenIiZ2ztLy3XQfCbQUSCuk8IudvNHxkRA3oUg6q0qejgN/qqyG1duv5Q==",
-    // if you want this served locally, download ace editor to /public/js/ directory and point to that:
-    //ace: '/js/ace.js', // v 1.4.12
+    //ace: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.min.js',
     //aceHash: "sha512-GZ1RIgZaSc8rnco/8CXfRdCpDxRCphenIiZ2ztLy3XQfCbQUSCuk8IudvNHxkRA3oUg6q0qejgN/qqyG1duv5Q==",
+    // if you want this served locally, download ace editor to /public/js/ directory and point to that:
+    ace: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/ace.js',
+    aceHash: "sha512-OMjy8oWtPbx9rJmoprdaQdS2rRovgTetHjiBf7RL7LvRSouoMLks5aIcgqHb6vGEAduuPdBTDCoztxLR+nv45g==",
 
 
     // JSON Editor
@@ -65,6 +65,7 @@ module.exports = {
     usernameRegex: '[a-zA-Z0-9]{3,}',
     sections: [
         'cve',
+        'cve5',
         'nvd'
     ],
     homepage: '/home',

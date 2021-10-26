@@ -47,8 +47,8 @@ module.exports = {
     publicDefectURL: 'https://example.net/bugs/',
 
     // ACE editor
-    ace: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.min.js',
-    aceHash: "sha512-GoORoNnxst42zE3rYPj4bNBm0Q6ZRXKNH2D9nEmNvVF/z24ywVnijAWVi/09iBiVDQVf3UlZHpzhAJIdd9BXqw==",
+    ace: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/ace.js',
+    aceHash: "sha512-OMjy8oWtPbx9rJmoprdaQdS2rRovgTetHjiBf7RL7LvRSouoMLks5aIcgqHb6vGEAduuPdBTDCoztxLR+nv45g==",
     // if you want this served locally, download ace editor to /public/js/ directory and point to that:
     //ace: '/js/ace.min.js',
     //aceHash: "sha512-GoORoNnxst42zE3rYPj4bNBm0Q6ZRXKNH2D9nEmNvVF/z24ywVnijAWVi/09iBiVDQVf3UlZHpzhAJIdd9BXqw=="

@@ -7,8 +7,8 @@ module.exports = {
     defectURL: 'https://example.com/bugtracker=',
 
     // ACE editor
-    ace: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.min.js',
-    aceHash: "sha512-GoORoNnxst42zE3rYPj4bNBm0Q6ZRXKNH2D9nEmNvVF/z24ywVnijAWVi/09iBiVDQVf3UlZHpzhAJIdd9BXqw==",
+    ace: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/ace.js',
+    aceHash: "sha512-OMjy8oWtPbx9rJmoprdaQdS2rRovgTetHjiBf7RL7LvRSouoMLks5aIcgqHb6vGEAduuPdBTDCoztxLR+nv45g==",
 
     // JSON Editor
     jsoneditor: 'https://cdnjs.cloudflare.com/ajax/libs/json-editor/2.5.4/jsoneditor.min.js',
