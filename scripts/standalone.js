@@ -23,14 +23,15 @@ confOpts = {
 }
 //console.log(confOpts.cve.render);
 confOpts.cve.conf.uri = '.';
-var cveProps = confOpts.cve.schema.properties;
-if (cveProps && cveProps.CNA_private) {
-    delete cveProps.CNA_private;
+var cd = confOpts.cve.schema?.definitions;
+if (cd && cd.CNA_private) {
+    delete cd.CNA_private;
 }
-/*
-cveProps.CVE_data_meta.properties.STATE.enum = 
- cveProps.CVE_data_meta.properties.STATE.enum.filter(x => !['DRAFT','REVIEW', 'READY'].includes(x));
-*/
+cd = confOpts.cve.schema.oneOf[0]?.properties;
+if (cd && cd.CNA_private) {
+    delete cd.CNA_private;
+}
+
 fs.writeFileSync("standalone/index.html", cveEdit({
     title: 'Vulnogram CVE Editor',
     idpath: 'cveMetadata.id',
