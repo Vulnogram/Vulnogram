@@ -487,6 +487,10 @@ box-shadow: 0 0 0 0.2em rgba(3,102,214,0.3);
     text-align: center;    
 }
 
+.bdg[title="0"] {
+    display: none;
+}
+
 .icn {
    display: inline-flex; 
    padding-top: 5px;

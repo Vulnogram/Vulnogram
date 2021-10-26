@@ -9,6 +9,7 @@ body{
 .lessThan::before {
   content: '<';
 }
+
 /*
 b span.product + div button.json-editor-btn-delete {
   float: right;
