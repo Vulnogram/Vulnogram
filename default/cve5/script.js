@@ -171,8 +171,13 @@ function versionStatusTable(cve) {
                 if(!table[v.status][pFullName]) {
                     table[v.status][pFullName] = [];
                 }
-                if (v.version)
-                    table[v.status][pFullName].push('>= '+v.version);
+                if (v.version) {
+                    if(v.lessThan != undefined || v.lessThanOrEqual != undefined) {
+                        table[v.status][pFullName].push('>= '+v.version);
+                    } else {
+                        table[v.status][pFullName].push('= '+v.version);
+                    }
+                }
                 var prevStatus = v.status;
                 if(v.changes) {
                     for(c of v.changes) {
@@ -189,7 +194,7 @@ function versionStatusTable(cve) {
                     table[v.status][pFullName].push('< ' + v.lessThan);
                 }
                 if(v.lessThanOrEqual) {
-                    table[v.status][pFullName].push('<= ' + v.lessThan);
+                    table[v.status][pFullName].push('<= ' + v.lessThanOrEqual);
                 }
             }
         }
@@ -538,6 +543,7 @@ async function cvePost() {
         if(cveClient) {
             console.log('uploading...');
             var j = mainTabGroup.getValue();
+            var j = textUtil.getMITREJSON(textUtil.reduceJSON(j))
             var ret = null;
             if(cveApi.state[j.cveMetadata.id] == 'RESERVED') {
                 console.log('Creating');

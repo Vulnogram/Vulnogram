@@ -45,17 +45,16 @@ block prepend content
                     span.text
                         +spara(cve.solution)
 mixin versionPairs(v)
-    if v && v.length > 1
-        - var l = v.length/2;
-        - var n = 0;
-        while n < l
-            = v[2*n]
-            |  to  
-            = v[2*n+1]
+    if v
+        - n = v.shift();
+        while n != undefined
+            = n
+            if n.startsWith('>')
+                - n = v.shift()
+                |  to 
+                = n
             br
-            - n++
-    else
-        = v
+            - n = v.shift();
 
 block pageDef
     mixin page(cve)
