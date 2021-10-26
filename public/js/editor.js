@@ -248,6 +248,12 @@ JSONEditor.defaults.editors.radio = class radio extends JSONEditor.AbstractEdito
         if (!this.options.compact) {
             this.header = this.label = this.theme.getFormInputLabel(this.getTitle());
         }
+        if(this.label && this.options.class) {
+            this.label.className = this.label.className + ' ' + this.options.class;
+            if(this.isRequired()){
+                this.label.className = this.label.className + ' req'; 
+            }
+        }
         if (this.schema.description) this.description = this.theme.getFormInputDescription(this.schema.description);
 
         this.select_options = {};
@@ -1129,7 +1135,24 @@ function loadJSON(res, id, message) {
         if (message) {
             selected = "editorTab";
         }
-        docEditor.watch('root', function(){mainTabGroup.change(0)});
+        docEditor.watch('root', function(){
+            mainTabGroup.change(0);
+        });
+        docEditor.on('change', async function(){
+            var errors = [];
+            if(docEditor.validation_results && docEditor.validation_results.length > 0) {
+                if (typeof(errorFilter) !== 'undefined'){
+                    errors = errorFilter(docEditor.validation_results);
+                } else {
+                    errors = docEditor.validation_results;
+                }
+            }
+            if(errors.length > 0) {
+                showJSONerrors(errors);
+            } else {
+                hideJSONerrors();
+            }
+        });
         editorLabel.className = "lbl";
         postUrl = getDocID() ? './' + getDocID() : "./new";
 
