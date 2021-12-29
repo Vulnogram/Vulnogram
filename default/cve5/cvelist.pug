@@ -1,6 +1,6 @@
 mixin userstats
     details.lbl.popup
-        summary.vgi-user= userInfo.name.first
+        summary.vgi-user= userInfo.name ? userInfo.name.first : userInfo.username
         dl.pop.wht.bor.rnd.shd.pad.left(style="right:20px")
             b.vgi-user= userInfo.username
             dt Roles:  
@@ -13,7 +13,7 @@ mixin userstats
             dt Role:  
                 b= org.authority.active_roles
             hr
-            button.vgi-exit.fbn Logout 
+            span.vgi-exit.fbn Logout: close browser tab to logout!
 
 mixin htext
     if t
@@ -70,7 +70,7 @@ mixin reserveds
 
 mixin listIds
     - var stateIcons = {'RESERVED':'vgi-edit', 'PUBLISHED':'vgi-globe', 'REJECTED':'vgi-no'}
-    table.tbl
+    table.tbl.sortable
         thead
             tr
                 th ID

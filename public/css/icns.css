@@ -758,20 +758,6 @@ th[role="columnheader"] {
     cursor: pointer;
 }
 
-.sortup:after,
-[aria-sort="descending"]:after {
-    content: "▲";
-    color: var(--lnk);
-    overflow-x: hidden;
-}
-
-.sortdown:after,
-[aria-sort="ascending"]:after {
-    content: "▼";
-    color: var(--lnk);
-    overflow-x: hidden;
-}
-
 .json-editor-btn-delete:focus,
 .json-editor-btn-delete:active,
 .json-editor-btn-delete:hover,

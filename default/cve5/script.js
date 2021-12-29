@@ -357,40 +357,70 @@ var cveApi = {
     list: null,
     state: {}
 }
-
-async function cveLogin() {
+function resetClient() {
+    cveClient = null;
+    var cveApi = {
+        user: null,
+        uuid: null,
+        org: null,
+        list: null,
+        state: {}
+    } 
+}
+async function cveLogin(URL) {
     if (!cveClient) {
-        cveClient = new CveServices('https://cveawg-test.mitre.org/api');
-        cveApi.user = await cveClient._request.userName;
-        cveApi.short_name = await cveClient._request.orgName;
-        cveApi.org = await cveClient.getOrgInfo();
-        cveApi.userInfo = await cveClient.getOrgUser(cveApi.user);
-        var pid = docEditor.getEditor('root.containers.cna.providerMetadata.id');
-        if (pid && pid.getValue() == '00000000-0000-4000-9000-000000000000') {
-            pid.setValue(cveApi.org.UUID);
+        try {
+            cveClient = new CveServices(URL);
+            cveApi.user = await cveClient._request.userName;
+            cveApi.short_name = await cveClient._request.orgName;
+            cveApi.org = await cveClient.getOrgInfo();
+            if(cveApi.org.error) {
+                alert('Error logging in: '+cveApi.org.error + " : "+ cveApi.org.message);
+                resetClient()
+                return;
+            }
+            cveApi.userInfo = await cveClient.getOrgUser(cveApi.user);
+            if(cveApi.userInfo.error) {
+                alert('Error logging in: '+cveApi.org.error + " : "+ cveApi.org.message);
+                resetClient();
+                return;
+            }
+        } catch (e) {
+            alert('Error logging in!');
+            resetClient();
+            return;
         }
-        var aid = docEditor.getEditor('root.cveMetadata.assigner');
-        if (aid && aid.getValue() == '00000000-0000-4000-9000-000000000000') {
-            aid.setValue(cveApi.org.UUID);
+        if(cveApi.org.UUID) {
+ 
+            var pid = docEditor.getEditor('root.containers.cna.providerMetadata.id');
+            if (pid && pid.getValue() == '00000000-0000-4000-9000-000000000000') {
+                pid.setValue(cveApi.org.UUID);
+            }
+            var aid = docEditor.getEditor('root.cveMetadata.assigner');
+            if (aid && aid.getValue() == '00000000-0000-4000-9000-000000000000') {
+                aid.setValue(cveApi.org.UUID);
+            }
+            document.getElementById('portalName').innerHTML = URL;
+            document.getElementById('cveUser').innerHTML = cveRender({
+                ctemplate: 'userstats',
+                userInfo: cveApi.userInfo,
+                org: cveApi.org
+            });
+            await cveGetList(cveClient);
+            window.sessionStorage.cveApi = JSON.stringify(cveApi);
         }
-        document.getElementById('cveUser').innerHTML = cveRender({
-            ctemplate: 'userstats',
-            userInfo: cveApi.userInfo,
-            org: cveApi.org
-        });
-        await cveGetList(cveClient);
-        window.sessionStorage.cveApi = JSON.stringify(cveApi);
     }
 }
 
 async function cveRenderList(l) {
     if (l) {
-        document.getElementById('cveList').innerHTML = cveRender({
+        document.getElementById('cveListTable').innerHTML = cveRender({
             ctemplate: 'listIds',
             cveIds: l
         })
+        new Tablesort(document.getElementById('cveListTable'));
         docSchema.definitions.cveId.examples = l.map(i=>i.cve_id);
-        document.getElementById('root.cveMetadata.id-datalist').innerHTML = cveRender({
+        document.getElementById('root.cveMetadata.cveId-datalist').innerHTML = cveRender({
             ctemplate: 'reserveds',
             cveIds: l
         })
@@ -416,9 +446,9 @@ async function cveGetList() {
     }
 }
 
-async function cveReserve() {
+async function cveReserve(yearOffset) {
     if (cveClient) {
-        var year = new Date().getFullYear();
+        var year = new Date().getFullYear() + (yearOffset ? yearOffset : 0);
         try {
             var json = await cveClient.reserveCveIds({
                 amount: 1,
@@ -542,8 +572,8 @@ async function cvePost() {
         }*/
         if(cveClient) {
             console.log('uploading...');
-            var j = mainTabGroup.getValue();
-            var j = textUtil.getMITREJSON(textUtil.reduceJSON(j))
+            var j = await mainTabGroup.getValue();
+            var j = textUtil.reduceJSON(j);
             var ret = null;
             if(cveApi.state[j.cveMetadata.id] == 'RESERVED') {
                 console.log('Creating');
@@ -582,9 +612,9 @@ async function cvePost() {
     }
 }
 
-async function cveReserveAndRender() {
+async function cveReserveAndRender(yearOffset) {
     if(cveClient) {
-        await cveReserve();
+        await cveReserve(yearOffset);
         await cveGetList();
     } else {
         alert('Please login to CVE.org');

@@ -24,8 +24,15 @@ block append loadEditor
 
 block prepend topHeaderRight
     span#cveUser
-            btn.fbn.vgi-export(onclick='cveLogin()') CVE.org Login
-
+        details.lbl.popup
+            summary.vgi-export CVE Login
+            dl.pop.wht.bor.rnd.shd.pad.left(style="right:20px")
+                dt
+                    btn.fbn.vgi-king(onclick='cveLogin("https://cveawg.mitre.org/api")') CVE Production
+                dt
+                    btn.fbn.vgi-hat(onclick='cveLogin("https://cveawg-test.mitre.org/api")') CVE AWG Test
+                dt
+                    btn.fbn.vgi-hardhat(onclick='cveLogin("https://cveawg-dev.mitre.org/api")') CVE AWG Development
 block prepend bannerItemsRight
     form.indent.out.nobr(onsubmit="cveSelectLoad(event);return false;")
         input.txt.lbl#cveEditable(type="search",name="id",list="editablelist",placeholder="CVE-yyyy-nnnn..",title="Load CVE for editing",required)
@@ -56,8 +63,14 @@ block customtabs
         label.lbl(for='cveApiTab') CVE Portal
         .wht.fil.bor.pad
             div.pad
-                button.btn.vgi-magic(onclick='cveReserveAndRender()') Reserve a CVE ID
+                label.vgi-globe.lbl Portal
+                label#portalName
+            div.pad
+                button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve a CVE ID
+                button.btn.vgi-magic(onclick='cveReserveAndRender(1)') Reserve one for next year
                 button.btn.vgi-reuse(onclick='cveGetList()') Refresh
             div.gap
                 b.lbl.vgi-inbox My CVE IDs
             div#cveList
+                table#cveListTable.tbl.sortable
+            script(src="/js/tablesort.min.js")

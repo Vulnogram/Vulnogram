@@ -15,13 +15,22 @@ block prepend content
                 if cve.source && cve.source.advisory
                     = cve.source.advisory
                     |              
-                = cve.cveMetadata.title + ' (' + cve.cveMetadata.ID + ')'
+                = cve.cveMetadata.title + ' (' + cve.cveMetadata.cveId + ')'
             ul.bullets
                 li
                     b.term CVSS: 
                     span.text
-                        if cve.impact && cve.impact.cvss
-                            +CVSS(cve.impact.cvss)
+                        if cna.metrics && cna.metrics && cna.metrics.length > 0
+                            ol
+                                each x, i in cna.metrics
+                                    - cvss = x.cvssV3_1 ? x.cvssV3_1 : x.cvssV3_0 ? x.cvssV3_0 : x.cvssV2_0 ? x.cvssV2_0 : null
+                                    if cvss
+                                        li 
+                                            +spara(x.scenarios)
+                                            if cvss.baseSeverity
+                                                =cvss.baseSeverity
+                                            |  
+                                            +CVSS(cvss)
                 li
                     b.term PR: 
                     span.text= cve.source.defect
@@ -63,7 +72,7 @@ block pageDef
         - var cna = cve.containers? cve.containers.cna: {};
         - var PMD = cve.containers.cna.providerMetadata;
         - var sourceText = {"INTERNAL":"This issue was found during internal product security testing or research.", "EXTERNAL":"This issue was discovered during an external security research.", "USER":"This issue was seen during production usage.", "UNKNOWN":""};
-        - var cveid = CDM.id.match(/^CVE-[0-9-]+$/)? CDM.id : 'CVE-yyyy-nnnn';
+        - var cveid = CDM.cveId.match(/^CVE-[0-9-]+$/)? CDM.cveId : 'CVE-yyyy-nnnn';
         h2#cvetitle
             if cve.source && cve.source.advisory
                 = cve.source.advisory
@@ -178,7 +187,7 @@ block pageDef
         h4 RELATED LINKS:
 
         ul
-            if CDM.ID
+            if CDM.cveId
                 li
                     a(href="http://cve.mitre.org/cgi-bin/cvename.cgi?name="+cveid)=cveid + " at cve.mitre.org"
             each r in cna.references
@@ -223,7 +232,7 @@ mixin mitre(cve)
                     th(colspan=2) CVE-ID
                 tr
                     td(nowrap="nowrap")
-                        h2=cve.cveMetadata.id
+                        h2=cve.cveMetadata.cveId
                     td.ltgreybackground
                         .larger
                             a Learn more at National Vulnerability Database (NVD)

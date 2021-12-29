@@ -121,6 +121,20 @@ body {
     background-color: var(--hig);
 }
 
+.sortup:after,
+[aria-sort="descending"]:after {
+    content: "▲";
+    color: var(--lnk);
+    overflow-x: hidden;
+}
+
+.sortdown:after,
+[aria-sort="ascending"]:after {
+    content: "▼";
+    color: var(--lnk);
+    overflow-x: hidden;
+}
+
 /*POSTITION*/
 .stk {
     position: sticky;
