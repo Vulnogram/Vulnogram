@@ -320,7 +320,7 @@ pug_html = pug_html + "\u003C\u002Ftd\u003E\u003C\u002Ftr\u003E";
 pug_html = pug_html + "\u003C\u002Ftable\u003E";
 }
 else {
-pug_html = pug_html + "\u003Cp\u003EThis issue has been assigned \u003Ca" + (pug_attr("href", "http://cve.mitre.org/cgi-bin/cvename.cgi?name="+cveid, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = cveid) ? "" : pug_interp)) + "\u003C\u002Fa\u003E.\u003C\u002Fp\u003E";
+pug_html = pug_html + "\u003Cp\u003EThis issue has been assigned \u003Ca" + (pug_attr("href", "https://www.cve.org/CVERecord?id="+cveid, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = cveid) ? "" : pug_interp)) + "\u003C\u002Fa\u003E.\u003C\u002Fp\u003E";
 }
 pug_html = pug_html + "\u003Ch4\u003ESOLUTION:\u003C\u002Fh4\u003E";
 pug_mixins["mpara"](cve.solution);
@@ -335,7 +335,7 @@ pug_html = pug_html + "\u003Ch4\u003EMODIFICATION HISTORY:\u003C\u002Fh4\u003E\u
 pug_mixins["renderDate"](CDM.DATE_PUBLIC);
 pug_html = pug_html + ": Initial Publication.\u003C\u002Fli\u003E\u003C\u002Ful\u003E\u003C\u002Fp\u003E\u003Ch4\u003ERELATED LINKS:\u003C\u002Fh4\u003E\u003Cul\u003E";
 if (CDM.ID) {
-pug_html = pug_html + "\u003Cli\u003E\u003Ca" + (pug_attr("href", "http://cve.mitre.org/cgi-bin/cvename.cgi?name="+cveid, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = cveid + " at cve.mitre.org") ? "" : pug_interp)) + "\u003C\u002Fa\u003E\u003C\u002Fli\u003E";
+pug_html = pug_html + "\u003Cli\u003E\u003Ca" + (pug_attr("href", "https://www.cve.org/CVERecord?id="+cveid, true, false)) + "\u003E" + (pug_escape(null == (pug_interp = cveid + " at www.cve.org") ? "" : pug_interp)) + "\u003C\u002Fa\u003E\u003C\u002Fli\u003E";
 }
 // iterate cve.references.reference_data
 ;(function(){
