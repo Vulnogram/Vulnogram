@@ -107,7 +107,7 @@ module.exports = {
     */
     facet: {
         ID: {
-            path: 'body.cveMetadata.id',
+            path: 'body.cveMetadata.cveId',
             regex: 'CVE-[a-zA-Z0-9\._-]+',
             showDistinct: true
         },
