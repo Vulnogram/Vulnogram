@@ -185,7 +185,8 @@ schema: {
      "description": "eg., Example Express",
      "message": "A product name is required!",
         "options": {
-        "grid_columns": 10
+        "grid_columns": 10,
+        "formClass": "lni"
         },
         //"$ref":"/product/examples/?field=body.product"
     },
@@ -214,7 +215,7 @@ schema: {
         "id": "v",
         "properties": {
          "version_name": {
-          "title": "Version name (X)",
+          "title": "Version group name (X)",
           "type": "string",
           "description": "eg., 4.0"
          },
@@ -380,6 +381,9 @@ schema: {
      ]
     },
     "name": {
+    "options": {
+        "hidden": true,
+    },
      "maxLength": 500,
      "type": "string"
     }
@@ -481,6 +485,7 @@ schema: {
      }
     },
     "ASSIGNER": {
+     "title": "Assigning CNA",
      "$ref": "#/definitions/email_address",
      "description": "Email of CNA assigning this CVE ID",
      "default": (conf.contact ? conf.contact : ''),
@@ -489,6 +494,7 @@ schema: {
      }
     },
     "DATE_PUBLIC": {
+     "title": "Date Public",
      "type": "string",
      "format": "datetime",
      "description": "YYYY-MM-DD",
@@ -538,56 +544,6 @@ schema: {
     "grid_columns": 12
    }
   },
-  "source": {
-   "type": "object",
-   "format": "grid",
-   "properties": {
-    "defect": {
-     "title": "Defect",
-     "type": "array",
-     "description": "CNA specific bug tracking IDs",
-     "format": "taglist",
-     "uniqueItems": true,
-     "items": {
-      "type": "string"
-     },
-     "options": {
-        "class": "vgi-bug",
-        "gird_columns": 2
-     }     
-    },
-    "advisory": {
-     "title": "Advisory-ID",
-     "type": "string",
-     "description": "CNA specific advisory IDs (Optional)",
-     "options": {
-        "class": "vgi-alert",
-        "gird_columns": 3
-     }
-    },
-    "discovery": {
-     "type": "radio",
-     "title": "Found during",
-     "enum": [
-      "INTERNAL",
-      "EXTERNAL",
-      "USER",
-      "UNKNOWN"
-     ],
-     "options": {
-        "class": "vgi-info",
-        "gird_columns": 12,
-      "enum_titles": [
-       "internal research",
-       "external research",
-       "production use",
-       "unknown"
-      ]
-     },
-     "default": "UNKNOWN"
-    }
-   }
-  },
   "affects": {
    "type": "object",
    "title": "Affected products",
@@ -620,7 +576,10 @@ schema: {
           "type": "string",
           "description": "eg., Example Org",
              "default": conf.orgName ? conf.orgName: '',
-          "minLength": 1
+          "minLength": 1,
+          "options": {
+              "formClass": "lni"
+          }
          },
          "product": {
           "type": "object",
@@ -634,6 +593,7 @@ schema: {
                     "class": "hid"
                },
             "type": "array",
+            "format": "grid",
             "minItems": 1,
             "items": {
              "title": "product",
@@ -644,7 +604,6 @@ schema: {
          }
         }
        },
-       "format": "table"
       }
      }
     }
@@ -712,7 +671,7 @@ schema: {
   },
   "description": {
     "options": {
-        "class": "vgi-text"
+        "class": "vgi-text tgap"
    },
    "type": "object",
    "required": [
@@ -828,6 +787,71 @@ schema: {
        }
    }
    },
+   "source": {
+    "type": "object",
+    "format": "grid",
+    "options": {
+     "class": "vgi-info tgap",
+     "grid_columns": 12
+ 
+   },   
+    "properties": {
+     "defect": {
+      "title": "Defect",
+      "type": "array",
+      "description": "CNA specific bug tracking IDs",
+      "format": "taglist",
+      "uniqueItems": true,
+      "items": {
+       "type": "string"
+      },
+      "options": {
+         "class": "vgi-bug",
+         "gird_columns": 2,
+         "formClass": "lni"
+      }     
+     },
+     "advisory": {
+      "title": "Advisory-ID",
+      "type": "string",
+      "description": "CNA specific advisory IDs (Optional)",
+      "options": {
+         "class": "vgi-alert",
+         "gird_columns": 2,
+         "formClass": "lni"
+      }
+     },
+     "discovery": {
+         "type": "string",
+         "title": "Source of vulnerability discovery",
+         "format": "radio",
+      "enum": [
+       "INTERNAL",
+       "EXTERNAL",
+       "USER",
+       "UNKNOWN"
+      ],
+      "options": {
+         "class": "vgi-info",
+         "grid_columns": 6,
+         "enum_titles": [
+        "internal",
+        "external",
+        "during use",
+        "unknown"
+       ],
+       "icons": {
+        "INTERNAL":"hardhat",
+        "EXTERNAL": "hat",
+        "USER":"cap",
+        "UPSTREAM":"in",
+        "UNKNOWN":"what"
+      }
+      },
+      "default": "UNKNOWN"
+     }
+    }
+   },   
   "CNA_private": {
    "properties": {
     "owner": {

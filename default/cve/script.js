@@ -53,17 +53,20 @@ var additionalTabs =  {
                     document.getElementById("render").innerHTML = pugRender({
                         renderTemplate: 'page',
                         doc: j,
+                        getProductAffected: getProductAffected,
                         cmap: cMap,
                     });
                 } else {
                     document.getElementById("render").innerHTML = pugRender({
                         renderTemplate: 'page',
+                        getProductAffected: getProductAffected,
                         doc: j
                     });
                 }
             } else {
                 document.getElementById("render").innerHTML = pugRender({
                     renderTemplate: 'page',
+                    getProductAffected: getProductAffected,
                     doc: j
                 });
             }
@@ -172,3 +175,36 @@ function loadCVE(value) {
     }
     return false;
 }
+
+function getProductAffected(cve) {
+    var lines = [];
+    for (var vendor of cve.affects.vendor.vendor_data) {
+        var pstring = [];
+        for(var product of vendor.product.product_data) {
+            var versions = {};
+            var includePlatforms = true;
+            var platforms = {};
+            for (var version of product.version.version_data) {
+                if(version.version_affected && version.version_affected.indexOf('!') < 0 && version.version_affected.indexOf('?') < 0) {
+                    versions[version.version_name] = 1;
+                    if (version.platform == "all" || version.platform == "") {
+                        includePlatforms = false;
+                    }
+                    if (includePlatforms && version.platform) {
+                        var ps = version.platform.split(',');
+                        for (var p of ps) {
+                            platforms[p.trim()] = true;
+                        }
+                    }
+                }
+            }
+            pstring.push('This issue affects ' + product.product_name + ' ' +
+                Object.keys(versions).sort().join(", ")+ '.');
+            if(includePlatforms && (Object.keys(platforms).length > 0)) {
+                pstring.push('Affected platforms: ' + Object.keys(platforms).sort().join(', ') + '.');
+            }
+        }
+        lines.push(pstring.join(" "));
+    }
+    return lines.join();  
+};
