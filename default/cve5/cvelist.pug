@@ -13,7 +13,7 @@ mixin userstats
             dt Role:  
                 b= org.authority.active_roles
             hr
-            span.vgi-exit.fbn Logout: close browser tab to logout!
+            span.vgi-exit.fbn(onclick="cveLogout()") Logout!
 
 mixin htext
     if t
@@ -82,7 +82,10 @@ mixin listIds
           each c in cveIds
             tr
                 td
-                    a(href="javascript:cveLoad('"+c.cve_id+"')")=c.cve_id
+                    if editable
+                        a(href="javascript:cveLoad('"+c.cve_id+"')")=c.cve_id
+                    else
+                        =c.cve_id
                 td
                     if c.state == 'RESERVED'
                         i(class=stateIcons[c.state]?stateIcons[c.state]:'')=c.state
