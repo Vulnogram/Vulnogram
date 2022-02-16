@@ -849,8 +849,9 @@ label[for="compactTable"][val="false"]:after {
 .bld, .editor .req {
     font-weight: bold;
   }
+
 .editor .req::after {
-    content: '(required)';
+    content: '*';
     padding-left: 0.5em;
     color: coral;
 }
@@ -883,6 +884,14 @@ label[for="compactTable"][val="false"]:after {
     align-items: left;
 }
 
+/* lni Label next to Input */
+.editor .lni {
+    flex-direction: row;
+} 
+.editor .lni > input {
+    flex-grow: 1;
+}
+/*
 .editor input[type="file"],
 .editor input[type="text"],
 .editor input[type="url"],
@@ -890,7 +899,7 @@ label[for="compactTable"][val="false"]:after {
 .editor input[type="email"] {
     flex-grow: 1;
 }
-
+*/
 .editor input,
 .editor textarea {
     background-color: transparent;
@@ -1051,6 +1060,7 @@ div[data-schematype="object"]>h3>span:before {
 .editor .je-object__controls {
     display: none;
 }
+
 .editor div.je-indented-panel {
     padding-left: 0px;
     margin-left: 0px;
@@ -1071,7 +1081,7 @@ div[data-schematype="object"]>h3>span:before {
     background-position-x:0px;
     background-size: 1em;
 }
-td span .json-editor-btn-delete{
+td > span:first-child > .json-editor-btn-delete{
     border: none !important;
     box-shadow: none !important;
     padding: 5px !important;
@@ -1232,12 +1242,6 @@ select2-hidden-accessible, .tbl .select2-container--default, .tbl .select2-conta
     box-shadow: none;
 }
 
-.editor div[data-schemapath *='metrics.'] > div.je-indented-panel,
-  .editor div[data-schemapath *='affected.'] div.je-indented-panel {
-    padding-left: 10px;
-    margin-left: 10px;
-    border-left: 1px solid rgb(204, 204, 204);
-  }
 
 /*.je-object__title {
     padding: .5em 0em;
