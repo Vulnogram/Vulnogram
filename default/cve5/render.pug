@@ -170,7 +170,7 @@ block pageDef
 
         else
             p This issue has been assigned 
-                a(href="http://cve.mitre.org/cgi-bin/cvename.cgi?name="+cveid)=cveid
+                a(href="https://www.cve.org/CVERecord?id="+cveid)=cveid
                 |.
 
         h4 SOLUTION:
@@ -189,7 +189,7 @@ block pageDef
         ul
             if CDM.cveId
                 li
-                    a(href="http://cve.mitre.org/cgi-bin/cvename.cgi?name="+cveid)=cveid + " at cve.mitre.org"
+                    a(href="https://www.cve.org/CVERecord?id="+cveid)=cveid + " at cve.org"
             each r in cna.references
                 li
                     a(href=r.url)=r.url

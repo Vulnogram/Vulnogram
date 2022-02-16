@@ -10,6 +10,13 @@ body{
   content: '<';
 }
 
+.editor div[data-schemapath *='metrics.'] div.je-indented-panel,
+  .editor div[data-schemapath *='affected.'] div.je-indented-panel {
+    padding-left: 10px !important;
+    margin-left: 10px !important;
+    border-left: 1px solid rgb(204, 204, 204) !important;
+  }
+
 /*
 b span.product + div button.json-editor-btn-delete {
   float: right;

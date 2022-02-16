@@ -357,6 +357,8 @@ var cveApi = {
     list: null,
     state: {}
 }
+var preLogin = "";
+
 function resetClient() {
     cveClient = null;
     var cveApi = {
@@ -367,10 +369,11 @@ function resetClient() {
         state: {}
     } 
 }
-async function cveLogin(URL) {
+async function cveLogin(URL, type) {
     if (!cveClient) {
         try {
             cveClient = new CveServices(URL);
+            cveApi.apiType = type;
             cveApi.user = await cveClient._request.userName;
             cveApi.short_name = await cveClient._request.orgName;
             cveApi.org = await cveClient.getOrgInfo();
@@ -390,8 +393,7 @@ async function cveLogin(URL) {
             resetClient();
             return;
         }
-        if(cveApi.org.UUID) {
- 
+        if(cveApi.org.UUID) { 
             var pid = docEditor.getEditor('root.containers.cna.providerMetadata.id');
             if (pid && pid.getValue() == '00000000-0000-4000-9000-000000000000') {
                 pid.setValue(cveApi.org.UUID);
@@ -400,7 +402,8 @@ async function cveLogin(URL) {
             if (aid && aid.getValue() == '00000000-0000-4000-9000-000000000000') {
                 aid.setValue(cveApi.org.UUID);
             }
-            document.getElementById('portalName').innerHTML = URL;
+            document.getElementById('portalName').innerHTML = "<b class=\"lbl tred\">" +  type + "</b> " + URL;
+            preLogin = document.getElementById('cveUser').innerHTML;
             document.getElementById('cveUser').innerHTML = cveRender({
                 ctemplate: 'userstats',
                 userInfo: cveApi.userInfo,
@@ -412,11 +415,19 @@ async function cveLogin(URL) {
     }
 }
 
+async function cveLogout(URL) {
+    resetClient();
+    cveApi = {};
+    window.sessionStorage.cveApi = "";
+    document.getElementById('cveUser').innerHTML = preLogin;
+}
+
 async function cveRenderList(l) {
     if (l) {
         document.getElementById('cveListTable').innerHTML = cveRender({
             ctemplate: 'listIds',
-            cveIds: l
+            cveIds: l,
+            editable: (cveApi.apiType == 'test')
         })
         new Tablesort(document.getElementById('cveListTable'));
         docSchema.definitions.cveId.examples = l.map(i=>i.cve_id);
@@ -521,7 +532,7 @@ async function cveLoad(cveId) {
             "dataType": "CVE_RECORD",
             "dataVersion": "5.0",
             "cveMetadata": {
-              "id": cveId,
+              "cveId": cveId,
               "assigner": cveApi.org ? cveApi.org.UUID : "",
               "state": "RESERVED"
             },
