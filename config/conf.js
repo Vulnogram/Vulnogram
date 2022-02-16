@@ -42,7 +42,7 @@ module.exports = {
     },
 */
     
-    mitreURL: 'https://cve.mitre.org/cgi-bin/cvename.cgi?name=',
+    mitreURL: 'https://www.cve.org/CVERecord?id=',
     defectURL: 'https://example.net/internal/bugs/',
     publicDefectURL: 'https://example.net/bugs/',
 
@@ -55,9 +55,9 @@ module.exports = {
 
 
     // JSON Editor
-    jsoneditor: 'https://cdnjs.cloudflare.com/ajax/libs/json-editor/2.5.4/jsoneditor.min.js',
+    jsoneditor: 'https://cdnjs.cloudflare.com/ajax/libs/json-editor/2.6.1/jsoneditor.min.js',
     //jsoneditor: 'https://cdn.jsdelivr.net/npm/@json-editor/json-editor@latest/dist/jsoneditor.min.js',
-    jsoneditorHash: 'sha512-uWu+rXQQB3W440i9GCPMZZL2/tf58decmRv8uD5KWo0CQn5Qu8JVkK1EXBmJv9Gj1q7TZeRbbntnrz1hcFkdPQ==',
+    jsoneditorHash: 'sha512-wKxQaNjG9D/GAVUp3sWH/OnnYDQ6NO3rcNGmmZ+YBjSqh7vwKvkBhNvSg91qmz2QSq/rsrrJjOmhdbd/LkbxGw==',
     // if you want this served locally, download above jsoneditor editor to /public/js/ directory and point to that:
     //jsoneditor: '/js/jsoneditor.js',
 
