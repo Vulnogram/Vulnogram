@@ -140,6 +140,9 @@ JSONEditor.defaults.editors.string = class mystring extends JSONEditor.defaults.
                 this.label.className = this.label.className + ' req'; 
             }
         }
+        if(this.options.formClass) {
+            this.control.className = this.control.className + ' ' + this.options.formClass;
+        }
         //Use html5 datalist to show examples 
         if(this.schema.examples && this.schema.examples.length > 0){
             var dlist = document.createElement('datalist');
@@ -511,6 +514,27 @@ JSONEditor.defaults.editors.simplehtml = class simplehtml extends JSONEditor.def
                   this.addClass('dragging');
         });
     }
+    showValidationErrors(errs) {
+        var self = this;
+        
+        if(this.jsoneditor.options.show_errors === "always") {}
+        else if(!this.is_dirty && this.previous_error_setting===this.jsoneditor.options.show_errors) return;
+        
+        this.previous_error_setting = this.jsoneditor.options.show_errors;
+    
+        var messages = [];
+        errs.forEach(i => {
+            if(i.path === self.path) {
+                messages.push(i.message);
+            }
+        });    
+        if(messages.length) {
+          this.theme.addInputError(this.control, messages.join('. ')+'.');
+        }
+        else {
+          this.theme.removeInputError(this.control);
+        }
+      }
 };
 
 // Instruct the json-editor to use the custom datetime-editor.
@@ -703,29 +727,35 @@ JSONEditor.defaults.themes.customTheme = class customTheme extends JSONEditor.Ab
         return el;
     }
     addInputError(input, text) {
-        input.setCustomValidity(text);
-        input.onfocus = function(){ this.reportValidity(); }
-        input.oninput = function(){ this.setAttribute("novalidate", true); this.setCustomValidity('')}
+        try {
+            input.setCustomValidity(text);
+            input.onfocus = function(){ this.reportValidity(); }
+            input.oninput = function(){ this.setAttribute("novalidate", true); this.setCustomValidity('')}
+        } catch(e) {}
         input.style.boxShadow = "0px 0px 0px 2px rgba(252, 114, 114, 0.33)";        
         input.style.border = "1px solid coral";
-        if (!input.errmsg) {
-            var group = this.closest(input, '.form-control');
-            var label = group.getElementsByClassName('lbl');
-            if(label && label[0]){
-                group = label[0];
+        if(text && text != 'Value required.') {
+            if (!input.errmsg) {
+                var group = this.closest(input, '.form-control');
+               /* var label = group.getElementsByClassName('lbl');
+                if(label && label[0]){
+                    group = label[0];
+                }*/
+                input.errmsg = document.createElement('div');
+                input.errmsg.setAttribute('class', 'lbl tred indent');
+                input.errmsg.style = input.errmsg.style || {};
+                group.appendChild(input.errmsg);
+            } else {
+                input.errmsg.style.display = 'block';
             }
-            input.errmsg = document.createElement('div');
-            input.errmsg.setAttribute('class', 'tred indent');
-            input.errmsg.style = input.errmsg.style || {};
-            group.appendChild(input.errmsg);
-        } else {
-            input.errmsg.style.display = 'block';
+            input.errmsg.textContent = '';
+            input.errmsg.appendChild(document.createTextNode(' ' + text));
         }
-        input.errmsg.textContent = '';
-        input.errmsg.appendChild(document.createTextNode(' ' + text));
     }
     removeInputError(input) {
+        try{
         input.setCustomValidity('');
+        } catch(e) {}
         input.style.border = '';
         input.style.boxShadow = '';
         if (input.errmsg) input.errmsg.style.display = 'none';
