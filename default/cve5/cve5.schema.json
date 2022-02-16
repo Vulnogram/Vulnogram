@@ -189,8 +189,9 @@
       "pattern": "^CVE-[0-9]{4}-[0-9]{4,19}$",
       "options": {
         "class": "vgi-tag",
-        "grid_columns": 4,
-        "patternmessage": "CVE-yyyy-nnnn required",
+        "formClass": "lni",
+        "grid_columns": 6,
+        "patternmessage": "CVE-yyyy-nnnn format required",
         "remove_empty_properties": false,
         "inputAttributes": {
           "placeholder": "CVE-yyyy-nnnn or pick from existing",
@@ -895,9 +896,11 @@
         },
         "datePublic": {
           "$ref": "#/definitions/timestamp",
+          "title": "Publish date",
           "description": "If known, the date/time the vulnerability was disclosed publicly.",
           "options": {
-            "grid_columns": 3
+            "grid_columns": 4,
+            "formClass": "lni"
           }
         },
         "title": {
@@ -908,18 +911,22 @@
           "maxLength": 128,
           "options": {
             "class": "vgi-title",
-            "grid_columns": 9
+            "grid_columns": 8,
+            "formClass": "lni"
           }
         },
         "problemTypes": {
           "options": {
-            "grid_columns": 6
+            "grid_columns": 6,
+            "formClass": "lni"
+            
           },
           "$ref": "#/definitions/problemTypes"
         },
         "impacts": {
           "options": {
-            "grid_columns": 6
+            "grid_columns": 6,
+            "formClass": "lni"
           },
           "$ref": "#/definitions/impacts"
         },
@@ -1000,9 +1007,13 @@
           "$ref": "#/definitions/descriptions"
         },
         "replacedBy": {
+          "title": "Replaced by CVE IDs",
           "type": "array",
+          "format": "table",
+          "options": {
+            "class": "vgi-reuse tgap"
+          },
           "description": "Contains an array of CVE IDs that this CVE ID was rejected in favor of because the this CVE ID was assigned to the vulnerabilities.",
-          "minItems": 1,
           "uniqueItems": true,
           "items": {
             "$ref": "#/definitions/cveId"
@@ -1960,7 +1971,8 @@
           },
           "options": {
             "class": "vgi-bug",
-            "grid_columns": 3
+            "grid_columns": 6,
+            "formClass": "lni"
           }
         },
         "advisory": {
@@ -1970,7 +1982,8 @@
           "maxLength": 64,
           "options": {
             "class": "vgi-alert",
-            "grid_columns": 2
+            "grid_columns": 6,
+            "formClass": "lni"
           }
         },
         "discovery": {
@@ -1987,7 +2000,7 @@
           "description": "Source of vulnerability discovery. This may be a factor for some consumers in prioritizing vulnerability response. \nINTERNAL: this vulnerability was found by the CNA's internal research.\nEXTERNAL: this vulnerability was found during research external to a CNA.\nUSER: This vulnerability was discovered during product use.\nUPSTREAM: This vulnerability was found by an upstream vendor or producer.\nUNKNOWN: Source of discovery is not defined or is unknown",
           "default": "UNKNOWN",
           "options": {
-            "grid_columns": 7,
+            "grid_columns": 9,
             "class": "vgi-bulb",
             "enum_titles": [
               "internal",
@@ -1997,7 +2010,11 @@
               "undefined"
             ],
             "icons": {
-              "UPSTREAM": "in"
+              "INTERNAL":"hardhat",
+              "EXTERNAL": "hat",
+              "USER":"cap",
+              "UPSTREAM":"in",
+              "UNKNOWN":"what"
             }
           }
         },
@@ -2191,6 +2208,9 @@
         "containers": {
           "description": "A set of structures (called containers) used to store vulnerability information related to a specific CVE ID provided by a specific organization participating in the CVE program. Each container includes information provided by a different source.\n\nAt minimum, a 'cna' container containing the vulnerability information provided by the CNA who initially assigned the CVE ID must be included.\n\nThere can only be one 'cna' container, as there can only be one assigning CNA. However, there can be multiple 'adp' containers, allowing multiple organizations participating in the CVE program to add additional information related to the vulnerability. For the most part, the 'cna' and 'adp' containers contain the same properties. The main differences are the source of the information and the 'cna' container requires the CNA include certain fields, while the 'adp' container does not.",
           "type": "object",
+          "options": {
+            "class": "hid"
+          },
           "properties": {
             "cna": {
               "$ref": "#/definitions/cnaPublishedContainer"
@@ -2233,6 +2253,9 @@
         "containers": {
           "description": "A set of structures (called containers) used to store vulnerability information related to a specific CVE ID provided by a specific organization participating in the CVE program. Each container includes information provided by a different source.\n\nAt minimum, a 'cna' container containing the vulnerability information provided by the CNA who initially assigned the CVE ID must be included.\n\nThere can only be one 'cna' container, as there can only be one assigning CNA.",
           "type": "object",
+          "options": {
+            "class": "hid"
+          },          
           "properties": {
             "cna": {
               "$ref": "#/definitions/cnaRejectedContainer"
