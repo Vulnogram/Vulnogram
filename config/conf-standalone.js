@@ -14,7 +14,8 @@ module.exports = {
     jsoneditor: 'https://cdnjs.cloudflare.com/ajax/libs/json-editor/2.6.1/jsoneditor.min.js',
     jsoneditorHash: 'sha512-wKxQaNjG9D/GAVUp3sWH/OnnYDQ6NO3rcNGmmZ+YBjSqh7vwKvkBhNvSg91qmz2QSq/rsrrJjOmhdbd/LkbxGw==',
     sections: [
-        'cve'
+        'cve',
+        'cve5'
     ],
     homepage: 'https://vulnogram.github.io'
 };

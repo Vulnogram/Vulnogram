@@ -19,8 +19,12 @@ var editTemplate = fs.existsSync('custom/cve5/edit.pug') ? 'custom/cve5/edit.pug
 
 var cveEdit = pug.compileFile(editTemplate, {compileDebug: false});
 confOpts = {
-    cve: optSet('cve5', ['default'].concat(process.argv.slice(2)))
+    cve: optSet('cve5', ['default'].concat(process.argv.slice(2))),
+    cve4: optSet('cve', ['default'].concat(process.argv.slice(2)))
 }
+confOpts.cve4.conf.name = 'CVE 4.0';
+confOpts.cve4.conf.uri = '../';
+
 //console.log(confOpts.cve.render);
 confOpts.cve.conf.uri = '.';
 var cd = confOpts.cve.schema?.definitions;
@@ -34,7 +38,7 @@ if (cd && cd.CNA_private) {
 
 fs.writeFileSync("standalone/index.html", cveEdit({
     title: 'Vulnogram CVE Editor',
-    idpath: 'cveMetadata.id',
+    idpath: 'cveMetadata.cveId',
     min: true,
     doc: null,
     pugLib: pug,
