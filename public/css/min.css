@@ -1277,6 +1277,8 @@ select2-hidden-accessible, .tbl .select2-container--default, .tbl .select2-conta
 input[type="datetime-local"] {
     height: 17px;
     font-size: small;
+    background-color: var(--wht);
+    min-width: 16em;
 }
 
 input[type="datetime-local"]::after {
