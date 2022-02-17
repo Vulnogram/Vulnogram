@@ -1,7 +1,7 @@
 mixin userstats
     details.lbl.popup
         summary.vgi-user= userInfo.name ? userInfo.name.first : userInfo.username
-        dl.pop.wht.bor.rnd.shd.pad.left(style="right:20px")
+        dl.pop.wht.bor.rnd.shd.pad
             b.vgi-user= userInfo.username
             dt Roles:  
                 b.vgi-cap=userInfo.authority.active_roles
@@ -76,11 +76,11 @@ mixin listIds
                 th ID
                 th State
                 th Requester
-                th Created
+                th(aria-sort="ascending") Created
                 th Modified
         tbody
           each c in cveIds
-            tr
+            tr(data=c.state)
                 td
                     if editable
                         a(href="javascript:cveLoad('"+c.cve_id+"')")=c.cve_id

@@ -409,6 +409,7 @@ async function cveLogin(URL, type) {
                 userInfo: cveApi.userInfo,
                 org: cveApi.org
             });
+            document.getElementById('cveToolbar').className = "pad";
             await cveGetList(cveClient);
             window.sessionStorage.cveApi = JSON.stringify(cveApi);
         }
@@ -417,9 +418,11 @@ async function cveLogin(URL, type) {
 
 async function cveLogout(URL) {
     resetClient();
-    cveApi = {};
-    window.sessionStorage.cveApi = "";
+    window.sessionStorage.cveApi = JSON.stringify(cveApi);
     document.getElementById('cveUser').innerHTML = preLogin;
+    document.getElementById('portalName').innerText = 'disconnected';
+    document.getElementById('cveToolbar').className = "hid";
+
 }
 
 async function cveRenderList(l) {
@@ -444,10 +447,14 @@ async function cveRenderList(l) {
         }        
     }
 }
+//var collator = new Intl.Collator(undefined, {numeric: true});
+
 async function cveGetList() {
     if(cveClient) {
         var json = await cveClient.getCveIds();
-        cveApi.list = json;
+
+        cveApi.list = json.sort(function(a,b){return b.reserved > a.reserved});
+
         for(var i=0; i< json.length; i++) {
             cveApi.state[json[i].cve_id] = json[i].state;
         }
@@ -466,10 +473,10 @@ async function cveReserve(yearOffset) {
                 cve_year: year,
                 short_name: cveApi.short_name
             });
-            console.log(json);
+            //console.log(json);
             return json;
         } catch (e) {
-            console.log(e);
+            //console.log(e);
         }
     } else {
         alert('Please login to CVE.org');
@@ -582,15 +589,16 @@ async function cvePost() {
             await save();
         }*/
         if(cveClient) {
-            console.log('uploading...');
+            if(cveApi.apiType === 'test') {
+            //console.log('uploading...');
             var j = await mainTabGroup.getValue();
             var j = textUtil.reduceJSON(j);
             var ret = null;
             if(cveApi.state[j.cveMetadata.id] == 'RESERVED') {
-                console.log('Creating');
+                //console.log('Creating');
                 ret = await cveClient.createCve(j.cveMetadata.id, j);
             } else {
-                console.log('uploading');
+                //console.log('uploading');
                 ret = await cveClient.updateCve(j.cveMetadata.id, j);
             }
             if (ret.ok) {
@@ -610,13 +618,16 @@ async function cvePost() {
                         });}
                         ));
                 } else {
-                   console.log(ret);
+                   //console.log(ret);
                     alert(ret.error + ': ' + ret.message);
                 }
             }
         } else {
+            alert('CVE posting is not currently supported by production CVE services! Try Logging to CVE -> AWG Test');
+        }
+        } else {
             //todo enable/disable post button
-            alert('Please login to CVE.org');
+            alert('Please login to CVE.org (CVE AWG Test)');
         }
     } else {
         alert('Please fix errors before posting');
