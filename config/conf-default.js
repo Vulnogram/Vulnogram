@@ -41,7 +41,7 @@ module.exports = {
     },
 */
     
-    mitreURL: 'https://cve.mitre.org/cgi-bin/cvename.cgi?name=',
+    mitreURL: 'https://www.cve.org/CVERecord?id=',
     defectURL: 'https://example.net/internal/bugs/',
     publicDefectURL: 'https://example.net/bugs/',
 
