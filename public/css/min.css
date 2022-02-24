@@ -1086,6 +1086,7 @@ td > span:first-child > .json-editor-btn-delete{
     box-shadow: none !important;
     padding: 5px !important;
     background: none !important;
+    margin: 0px;
     font-size: 1.5em;
 }
 .json-editor-btn-add {

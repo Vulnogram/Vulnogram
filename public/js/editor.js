@@ -63,6 +63,12 @@ JSONEditor.defaults.editors.array = class mystring extends JSONEditor.defaults.e
             }
         }
     }
+    /* move the delete button next to object title */
+    _createDeleteButton (i, holder) {
+        var r = super._createDeleteButton(i, holder);
+        holder.parentNode.firstElementChild.appendChild(r);
+        return r;
+    }
 }
 JSONEditor.defaults.editors.table = class mystring extends JSONEditor.defaults.editors.table {
     build() {
@@ -408,6 +414,9 @@ JSONEditor.defaults.editors.taglist = class taglist extends JSONEditor.defaults.
     build() {
         this.schema.format = "taglist";
         super.build();
+        if(this.options && this.options.inputAttributes && this.options.inputAttributes.placeholder) {
+            this.input.setAttribute('placeholder', this.options.inputAttributes.placeholder)
+        }
     }
 };
 
@@ -516,7 +525,7 @@ JSONEditor.defaults.editors.simplehtml = class simplehtml extends JSONEditor.def
     }
     showValidationErrors(errs) {
         var self = this;
-        
+
         if(this.jsoneditor.options.show_errors === "always") {}
         else if(!this.is_dirty && this.previous_error_setting===this.jsoneditor.options.show_errors) return;
         
@@ -534,7 +543,7 @@ JSONEditor.defaults.editors.simplehtml = class simplehtml extends JSONEditor.def
         else {
           this.theme.removeInputError(this.control);
         }
-      }
+    }
 };
 
 // Instruct the json-editor to use the custom datetime-editor.
@@ -830,7 +839,7 @@ var docEditorOptions = {
     // Enable fetching schemas via ajax
     ajax: allowAjax,
     theme: 'customTheme',
-    show_errors: 'change',
+    show_errors: 'always',
     disable_collapse: true,
     disable_array_reorder: true,
     disable_properties: true,

@@ -14,13 +14,16 @@ body{
   .editor div[data-schemapath *='affected.'] div.je-indented-panel {
     padding-left: 10px !important;
     margin-left: 10px !important;
-    border-left: 1px solid rgb(204, 204, 204) !important;
+    border-left: 1px dashed #669 !important;
+    border-bottom: 1px solid transparent;
+    border-bottom-left-radius: 1em;
   }
 
-/*
-b span.product + div button.json-editor-btn-delete {
-  float: right;
-}*/
+
+button.json-editor-btn-delete {
+  margin-left: 1em;
+}
+
 /* MITRE simulation styles */
 
 #GeneratedTable { border:1px solid #000000; border-collapse: collapse;}
