@@ -186,12 +186,12 @@ mixin container(con)
                 = con.source.advisory
                 |  
             = cveShowId + ' ' + con.title 
-        if cna[con.shortName] && cna[con.shortName].i
+        //if cna[con.shortName] && cna[con.shortName].i
             b
                 img.logo(src="https://www.google.com/s2/favicons?sz=64&domain_url="+cna[con.shortName].i)
         span
             |  
-            b=cna[con.shortName]? cna[con.shortName].n : con.shortName
+            //b=cna[con.shortName]? cna[con.shortName].n : con.shortName
             br
             +renderDate(con.datePublic)
             if con.dateUpdated && con.dateUpdated != con.datePublic
