@@ -238,7 +238,6 @@ module.exports = {
                 value = {}
             }
             if(schema.id == "pE") {
-                console.log(value);
                 if((value.vendor != undefined && value.product != undefined) || (value.collectionURL != undefined && value.packageName != undefined)) {
                     // it is valid 
                 } else {
@@ -295,32 +294,32 @@ module.exports = {
                 */
             }
             if(schema.id == "vE") {
-                    if(value.lessThan != undefined && value.lessThanOrEqual != undefined) {
-                        errors.push({
-                            path: path+'.lessThan',
-                            property: 'format',
-                            message: 'Enter either lessThan or lessThanOrEqual, but not both'
-                        });
-                        errors.push({
-                            path: path+'.lessThanOrEqual',
-                            property: 'format',
-                            message: 'Enter either lessThan or lessThanOrEqual, but not both'
-                        });
-                    }
-                    if(value.version != undefined && (value.version == value.lessThan)) {
-                        errors.push({
-                            path: path+'.lessThan',
-                            property: 'format',
-                            message: 'End of the version range is same as the start (lessThan)'
-                        });
-                    }
-                    if(value.version != undefined && (value.version == value.lessThanOrEqual)) {
-                        errors.push({
-                            path: path+'.lessThanOrEqual',
-                            property: 'format',
-                            message: 'End of the version range is same as the start (lessThanOrEqual)'
-                        });
-                    }
+                if(value.lessThan != undefined && value.lessThanOrEqual != undefined) {
+                    errors.push({
+                        path: path+'.lessThan',
+                        property: 'format',
+                        message: 'Enter either lessThan or lessThanOrEqual, but not both'
+                    });
+                    errors.push({
+                        path: path+'.lessThanOrEqual',
+                        property: 'format',
+                        message: 'Enter either lessThan or lessThanOrEqual, but not both'
+                    });
+                }
+                if(value.version != undefined && (value.version == value.lessThan)) {
+                    errors.push({
+                        path: path+'.lessThan',
+                        property: 'format',
+                        message: 'End of the version range is same as the start (lessThan)'
+                    });
+                }
+                if(value.version != undefined && (value.version == value.lessThanOrEqual)) {
+                    errors.push({
+                        path: path+'.lessThanOrEqual',
+                        property: 'format',
+                        message: 'End of the version range is same as the start (lessThanOrEqual)'
+                    });
+                }
             }
             return errors;
         }
