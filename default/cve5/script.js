@@ -123,12 +123,6 @@ var additionalTabs = {
             });
         }
     },
-    jsonTab: {
-        title: 'CVE-JSON',
-        setValue: function (j) {
-            document.getElementById("outjson").textContent = textUtil.getMITREJSON(textUtil.reduceJSON(j));
-        }
-    },
     cveApiTab: {
         title: 'CVE Org',
         setValue: function() {
@@ -139,7 +133,7 @@ var additionalTabs = {
     }
 }
 
-function versionStatusTable(cve) {
+function versionStatusTable5(affected) {
     var table= {
         affected: {},
         unaffected: {},
@@ -148,53 +142,76 @@ function versionStatusTable(cve) {
     nameAndPlatforms = {};
     var showCols = {
         platforms: false,
+        modules: false,
         affected: false,
         unaffected: false,
         unknown: false
     };
-    for(var p of cve.containers.cna.affected) {
+    for(var p of affected) {
         var pname = p.product ? p.product : p.packageName ? p.packageName : '';
         if (p.platforms)
             showCols.platforms = true;
+        if (p.modules)
+            showCols.modules = true;
         if (p.status)
-            showCols[status] = true;
+            showCols[p.status] = true;
         var platforms =
             (p.platforms ? p.platforms.join(', '): '');
+        var others = {};
+        if(p.collectionURL) {
+            others.collectionURL = p.collectionURL;
+        }
+        if(p.repo) {
+            others.repo = p.repo;
+        }
+        if(p.programFiles) {
+            others.programFiles = p.programFiles;
+        }
+        if(p.programRoutines) {
+            others.programRoutines = p.programRoutines;
+        }
         //pname = pname + platforms;
         var modules = p.modules ? p.modules.join(', ') : '';
         if(p.versions) {
             for(v of p.versions) {
-                var major = v.version ? v.version.match(/^(.*)\./): null;
-                major = major ? major[1] : '';
-                var pFullName = [pname + (major ? ' ' + major : ''), platforms ? platforms : ''];
+                //var major = v.version != 'unspecified' ? v.version: undefined;//? v.version.match(/^(.*)\./): null;
+                var major = undefined;//major ? major[1] : '';
+                var pFullName = [(p.vendor ? p.vendor + ' ' : '') + pname + (major ? ' ' + major : ''), platforms, modules, others];
                 nameAndPlatforms[pFullName] = pFullName;
                 if(!table[v.status][pFullName]) {
                     table[v.status][pFullName] = [];
                 }
                 if (v.version) {
-                    if(v.lessThan != undefined || v.lessThanOrEqual != undefined) {
-                        table[v.status][pFullName].push('>= '+v.version);
-                    } else {
-                        table[v.status][pFullName].push('= '+v.version);
-                    }
-                }
-                var prevStatus = v.status;
-                if(v.changes) {
-                    for(c of v.changes) {
-                        showCols[c.status] = true;
-                        if(!table[c.status][pFullName]) {
-                            table[c.status][pFullName] = [];
+                    showCols[v.status] = true;
+                    if(!v.changes) {
+                        if(v.lessThan) {
+                            table[v.status][pFullName].push('>= ' + v.version + ' to < ' + v.lessThan);
+                        } else if(v.lessThanOrEqual) {
+                            table[v.status][pFullName].push('>= ' + v.version + ' to <= ' + v.lessThan);
+                        } else {
+                            table[v.status][pFullName].push(v.version);
                         }
-                        table[prevStatus][pFullName].push('< ' + c.at);
-                        table[c.status][pFullName].push('>= ' + c.at);
-                        prevStatus = c.status;
+                    } else {
+                        var prevStatus = v.status;
+                        var prevVersion = v.version;
+                        for(c of v.changes) {
+                            showCols[c.status] = true;
+                            if(!table[c.status][pFullName]) {
+                                table[c.status][pFullName] = [];
+                            }
+                            table[prevStatus][pFullName].push('>= ' + prevVersion + ' to < ' + c.at);
+                            //table[c.status][pFullName].push('>= ' + c.at);
+                            prevStatus = c.status;
+                            prevVersion = c.at;
+                        }
+                        if(v.lessThan) {
+                            table[prevStatus][pFullName].push('>= ' + prevVersion + (v.lessThan != prevVersion ? ' to < ' + v.lessThan : ''));
+                        } else if(v.lessThanOrEqual) {
+                            table[prevStatus][pFullName].push('>= ' + prevVersion + (v.lessThanOrEqual != prevVersion ? ' to < ' + v.lessThanOrEqual : ''));
+                        } else {
+                            table[prevStatus][pFullName].push(prevVersion);
+                        }                  
                     }
-                }
-                if(v.lessThan) {
-                    table[v.status][pFullName].push('< ' + v.lessThan);
-                }
-                if(v.lessThanOrEqual) {
-                    table[v.status][pFullName].push('<= ' + v.lessThanOrEqual);
                 }
             }
         }
@@ -202,14 +219,17 @@ function versionStatusTable(cve) {
         if (Object.keys(table[p.defaultStatus]).length > 0) {
             defaultLabel = ' - all other versions';
         }
-        var pFullName = [pname + defaultLabel, platforms ? platforms : ''];
+        var pFullName = [(p.vendor ? p.vendor + ' ' : '') + pname + (major ? ' ' + major : ''), platforms, modules, others];
         nameAndPlatforms[pFullName] = pFullName;
-        table[p.defaultStatus][pFullName] = [ p.defaultStatus ];
+        if(!table[p.defaultStatus][pFullName]) {
+            table[p.defaultStatus][pFullName] = ['everything else is ' + p.defaultStatus];
+        } else {
+            table[p.defaultStatus][pFullName].push( 'everything else is ' + p.defaultStatus );
+        }
         if (p.defaultStatus)
             showCols[p.defaultStatus] = true;
     }
-    return({cols:nameAndPlatforms,vals:table, show: showCols});
-    
+    return({cols:nameAndPlatforms, vals:table, show: showCols});
 }
 
 function getProductAffected(cve) {
@@ -295,7 +315,6 @@ function getProductList(cna) {
     }
     return lines.join("; ");
 };
-
 function getBestTitle(o) {
     var title = o.providerMetadata.title;
     if (!title) {
@@ -303,7 +322,6 @@ function getBestTitle(o) {
     }
     return title;
 };
-
 
 document.addEventListener("click", function (e) {
     var popup = document.querySelector(".popup");
@@ -536,27 +554,13 @@ function addRichTextCVE(j) {
 async function cveLoad(cveId) {
     if(cveApi.state && cveApi.state[cveId] == 'RESERVED') {
         var res = {
-            "dataType": "CVE_RECORD",
-            "dataVersion": "5.0",
             "cveMetadata": {
               "cveId": cveId,
               "assigner": cveApi.org ? cveApi.org.UUID : "",
-              "state": "RESERVED"
-            },
-            "descriptions": [
-              {
-                "lang": "en",
-                "value": "",
-                "supportingMedia": [
-                  {
-                    "type": "text/html",
-                    "base64": false
-                  }
-                ]
-              }
-            ]
+              "state": "PUBLISHED"
+            }
         };
-        cveApi.state[cveId] = 'RESERVED';
+        //cveApi.state[cveId] = 'RESERVED';
         //defaultTabs.editorTab.setValue(res);
         loadJSON(res, cveId, "Loaded " + cveId);
         mainTabGroup.change(0);

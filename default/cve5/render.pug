@@ -19,7 +19,7 @@ block prepend content
             ul.bullets
                 li
                     b.term CVSS: 
-                    span.text
+                    //span.text
                         if cna.metrics && cna.metrics && cna.metrics.length > 0
                             ol
                                 each x, i in cna.metrics
@@ -53,174 +53,393 @@ block prepend content
                     b.term Solution: 
                     span.text
                         +spara(cve.solution)
-mixin versionPairs(v)
+
+mixin cvssList(cvssList)
+    if cvssList
+        - var nonSpec = ['baseScore', 'version', 'vectorString', 'baseSeverity']
+        each cvss, i in cvssList
+            details.popup
+                summary.lbl.rnd.sec.CVSS(class= cvss.baseSeverity ? cvss.baseSeverity : 'gray')
+                    = cvss.baseSeverity
+                    | · 
+                    sup=cvss.baseScore
+                    | ⁄10
+                div.pop.wht.rnd.shd.pad.bor
+                    each x, i in cvss
+                        if !nonSpec.includes(i)
+                            div
+                                =i
+                                | :  
+                                b=x
+                    div
+                        if cvss.version >= "3"
+                            a.vgi-ext(href="https://cvssjs.github.io/#" + cvss.vectorString) Open CVSS Calc
+                        else
+                            a.vgi-ext(href='https://nvd.nist.gov/vuln-metrics/cvss/v2-calculator?vector='+cvss.vectorString) Open CVSS Calc
+
+mixin statusTable(st)
+    table.tbl
+        colgroup
+            col
+            if st.show.platforms 
+                col
+            if st.show.modules 
+                col
+            col.affectedCol
+        thead
+            tr
+                th Product
+                if st.show.platforms 
+                    th Platforms
+                if st.show.modules 
+                    th Modules
+                th Affected
+                if st.show.unaffected
+                    th Unaffected
+                if st.show.unknown
+                    th Unknown
+        tbody
+            each p, i in st.cols
+                tr
+                    td=p[0]
+                        if p[3]
+                            br
+                            if p[3].collectionURL
+                                a.vgi-package(href=p[3].collectionURL) package repo
+                            if p[3].repo
+                                a.vgi-ext(href=p[3].repo) source repo
+                            if p[3].programFiles
+                                each f, i in p[3].programFiles
+                                    span.vgi-text= f
+                            if p[3].programRoutines
+                                each f, i in p[3].programRoutines
+                                    span.vgi-edit= f.name
+       
+                    if st.show.platforms 
+                        td=p[1]
+                    if st.show.modules 
+                        td=p[2]
+                    td
+                        +versionList(st.vals.affected[i])
+                    if st.show.unaffected
+                        td
+                            +versionList(st.vals.unaffected[i])
+                    if st.show.unknown
+                        td
+                            +versionList(st.vals.unknown[i])
+
+mixin creditList(credits)
+    for c in credits
+        p=c.value
+
+mixin tagList(tags)
+    if tags
+        for t in tags
+            b.tag.rnd.CRITICAL=t
+            |   
+
+mixin timeList(c)
+    ul
+        each x, i in c.timeline
+            li
+                +renderDate(x.time)
+                |  - 
+                = x.value
+
+mixin refList(references)
+    each r in references
+        if r.url
+            div
+                - var u ; try { u = (new URL(r.url)) } catch(e){};
+                if u
+                    img(width=16,height=16,class="lbl",src="https://www.google.com/s2/favicons?sz=32&domain_url="+u.protocol + '//'+ encodeURIComponent(u.hostname))
+                    a(href=r.url)=(r.name && (r.name != r.url)) ?  u.hostname + " : " + r.name : u.hostname + u.pathname + u.search
+                else
+                    =r.url
+                if r.tags && r.tags.length > 0
+                    |  
+                    =r.tags.join(" ")
+
+mixin errors(con)
+    if con.x_ValidationErrors
+        each x in con.x_ValidationErrors
+            p.sec.rnd.pad
+                b.vgi-alert Validation Error : 
+                |   
+                span=x
+
+mixin warnings(con)
+    if con.x_ConverterErrors
+        each x, i in con.x_ConverterErrors
+            p.sec.rnd.pad
+                b.vgi-alert Conversion Warning :  
+                |  
+                b=x.error
+                | 
+                span=x.message
+
+mixin container(con)
+    .cna.pad
+        h2#cvetitle
+            - var cveShowId = con.cveId.match(/^CVE-[0-9-]+$/)? con.cveId : 'CVE-yyyy-nnnn';
+            if con.source && con.source.advisory
+                = con.source.advisory
+                |  
+            = cveShowId + ' ' + con.title 
+        if cna[con.shortName] && cna[con.shortName].i
+            b
+                img.logo(src="https://www.google.com/s2/favicons?sz=64&domain_url="+cna[con.shortName].i)
+        span
+            |  
+            b=cna[con.shortName]? cna[con.shortName].n : con.shortName
+            br
+            +renderDate(con.datePublic)
+            if con.dateUpdated && con.dateUpdated != con.datePublic
+                |  (updated 
+                +renderDate(con.dateUpdated)
+                |)
+        if con.cvssList
+            span.right.row
+                b.lbl.vgi-dial CVSS        
+                +cvssList(con.cvssList)
+    .desc.pad
+        if con.state == 'REJECTED'
+            b.tag.CRITICAL REJECTED
+            |  ·  
+        +tagList(con.tags)
+        | 
+        +spara(con.descriptions)
+        +spara(con.rejectedReasons)
+    if con.configurations
+        .configs.pad
+            b.vgi-cog Required configuration for exposure: 
+            +spara(con.configurations)
+    if con.problemTypes
+        .problem.pad
+            b.vgi-bug Problem: 
+            |  
+            for t in con.problemTypes
+                if t.description
+                    for d in t.description
+                        =d.value
+                        br 
+                if t.descriptions
+                    for d in t.descriptions
+                        =d.description
+                        |   
+                        if d.cweId
+                            a(href="https://cwe.mitre.org/data/definitions/"+d.cweId)
+                                small=d.cweId
+                            br  
+    if con.impacts
+        .impact.pad
+            b.vgi-impact Impact:  
+            |  
+            for t in con.impacts
+                if t.descriptions
+                    for d in t.descriptions
+                        =d.value
+                        |   
+                if t.capecId
+                    a(href="https://capec.mitre.org/data/definitions/"+t.capecId)
+                        small=t.capecId
+                    br  
+    if con.exploits
+        .exploits.pad
+            b.vgi-bomb Exploits
+            +spara(con.exploits)
+    
+    if con.pvstatus
+        +statusTable(con.pvstatus)
+
+    if con.solutions
+        .solution.pad
+            b.vgi-safe Solution
+            +spara(con.solutions)
+
+    if con.workarounds
+        .workaround.pad
+            b.vgi-avoid Workaround
+            +spara(con.workarounds)
+
+    if con.credits
+        .credits.rnd.pad.sec
+            b.vgi-like Credits
+            +creditList(con.credits)
+
+    if con.timeline
+        .timeline.pad
+            details(open=true) 
+                summary
+                    b.vgi-cal Timeline
+                +timeList(con)
+
+    if con.references
+        .references.pad
+            details(open=true) 
+                summary
+                    b.vgi-ext References
+                +refList(con.references)
+    if con.json
+        pre=JSON.stringify(con.json,1,1)
+
+mixin para(t, hypertext)
+    if t
+        if hypertext
+            p=t
+        else
+            each line in t.split(/\n/)
+                if line
+                    if line.startsWith('  ')
+                        code=line
+                        br
+                    else
+                        p=line
+
+mixin mpara(l, hypertext)
+    if l
+        each d in l
+            if d.value
+                +para(d.value, hypertext)
+
+mixin aggpara(l)
+    if l
+        ul
+            each k, v in l
+                li
+                    b=k.join(', ')
+                    p
+                        +para(v)
+
+mixin spara(l, hypertext)
+    if l
+        each d in l
+            if d.supportingMedia && d.supportingMedia.length > 0 && d.supportingMedia[0].type == 'text/html'
+                p !{d.supportingMedia[0].value}
+            else if d.value
+                +para(d.value)
+
+mixin linklist(l, url)
+    each v, i in l
+        if(i < l.length-2)
+            if(url)
+                a(href=url+v)=v
+            else
+                = v
+            | , 
+        else
+            if(i == l.length - 1 && i > 0)
+                |  and 
+            if(url)
+                a(href=url+v)=v
+            else
+                =v
+
+mixin CVSS(value)
+    = value && value.baseScore >= 0 ? value.baseScore.toFixed(1) : 'n/a'
+    |  
+    if value.version >= "3"
+        | (
+        a(href="https://cvssjs.github.io/#" + value.vectorString)=value.vectorString
+        | )
+    else
+        a(href='https://nvd.nist.gov/vuln-metrics/cvss/v2-calculator?vector='+value.vectorString)=value.vectorString
+
+mixin renderDate(value)
+    - var v = false;
+    - if (value instanceof Date) { v = value;} else {
+    -   var timestamp = Date.parse(value);
+    -   v = isNaN(timestamp) ? false : new Date(timestamp)
+    - }
     if v
-        - n = v.shift();
+        = v.toJSON().substr(0,10)
+
+mixin JSON(d, par, comma)
+    - var k;
+    if d instanceof Array
+        details.arr(open)
+            summary
+                b=(par? par + ' : [' : '[')
+            .in
+                each s, i in d
+                    +JSON(s, undefined, i < d.length-1)
+                b ]
+                if comma
+                    i ,
+    else if d instanceof Object
+        details.obj(open)
+            summary
+                b=(par? par + ' : {' : '{')
+            .in
+                - var keys = Object.keys(d)
+                each k, i in keys
+                    if d.hasOwnProperty(k)
+                        +JSON(d[k], k, i < keys.length-1)
+                b }
+                if comma
+                    i ,
+    else
+        if par
+            div.i(class=(typeof d === 'number' ? 'n' : ''))
+                b=par + ' : '
+                +showVal(d, comma)
+        else
+            div(class=(typeof d === 'number' ? 'n' : ''))
+                +showVal(d, comma)
+
+mixin showVal(d, comma)
+    if typeof d === 'string'
+        i "
+        =d
+        i "
+    else
+        =d
+    if comma
+        i ,
+
+mixin versionList(v)
+    if v
+        - var n = v.shift();
         while n != undefined
             = n
-            if n.startsWith('>')
-                - n = v.shift()
-                |  to 
-                = n
-            br
+            if v.length > 0
+                hr
             - n = v.shift();
 
 block pageDef
-    mixin page(cve)
-      - var CDM = cve.cveMetadata;
-      if CDM.state == 'PUBLISHED'
-        - var cna = cve.containers? cve.containers.cna: {};
-        - var PMD = cve.containers.cna.providerMetadata;
-        - var sourceText = {"INTERNAL":"This issue was found during internal product security testing or research.", "EXTERNAL":"This issue was discovered during an external security research.", "USER":"This issue was seen during production usage.", "UNKNOWN":""};
-        - var cveid = CDM.cveId.match(/^CVE-[0-9-]+$/)? CDM.cveId : 'CVE-yyyy-nnnn';
-        h2#cvetitle
-            if cve.source && cve.source.advisory
-                = cve.source.advisory
-                |  
-            = cveid + ' ' + PMD.title 
-            
-        h4 PROBLEM:
-        +spara(cna.descriptions)
-
-        h4 RELEVANT PRODUCTS:
-        ul
-            each p, i in cna.affected
-                li
-                    =p.vendor
-                    |  
-                    =p.product
-                    if p.platforms
-                        |  for 
-                        = p.platforms.join(", ")
-
-        h4 PRODUCT STATUS:
-        - var st = versionStatusTable(cve);
-        table.tbl
-            colgroup
-                col
-                if st.show.platforms 
-                    col
-                col.affectedCol
-            thead
-                tr
-                    th Product
-                    if st.show.platforms 
-                        th Platforms
-                    th Affected
-                    if st.show.unaffected
-                        th Unaffected
-                    if st.show.unknown
-                        th Unknown
-            tbody
-                each p, i in st.cols
-                    tr
-                        td=p[0]
-                        if st.show.platforms 
-                            td=p[1]
-                        td
-                            +versionPairs(st.vals.affected[i])
-                        if st.show.unaffected
-                            td
-                                +versionPairs(st.vals.unaffected[i])
-                        if st.show.unknown
-                            td
-                                +versionPairs(st.vals.unknown[i])
-
-        h4 CVSS SCORE(s):
-        if cna.metrics && cna.metrics && cna.metrics.length > 0
-            ol
-                each x, i in cna.metrics
-                    - cvss = x.cvssV3_1 ? x.cvssV3_1 : x.cvssV3_0 ? x.cvssV3_0 : x.cvssV2_0 ? x.cvssV2_0 : null
+    mixin page(d)
+        div.pad
+            -
+                var cve = {}, con = {};
+                Object.assign(cve, d);
+                var CDM = cve.cveMetadata;
+                if (cve.containers) { 
+                    Object.assign(con, cve.containers.cna)
+                };
+                //var jsonClone = {};
+                //delete con.json;
+                //con.json = jsonClone;
+                //delete con.json.x_legacyV4Record;
+                //con.x_ValidationErrors = cve.x_ValidationErrors;
+                con.state = CDM.state;
+                con.cveId = CDM.cveId;
+                var PMD = cve.containers.cna.providerMetadata;
+                con.dateUpdated = PMD.dateUpdated;
+                con.shortName = PMD.shortName;
+                var title = con.title;
+                var sourceText = {"INTERNAL":"This issue was found during internal product security testing or research.", "EXTERNAL":"This issue was discovered during an external security research.", "USER":"This issue was seen during production usage.", "UNKNOWN":""};
+                var cveId = CDM.cveId.match("^CVE-[0-9-]+$") ? CDM.cveId : 'CVE-yyyy-nnnn';
+                con.cvssList = [];
+                con.pvstatus = con.affected ? versionStatusTable5(con.affected) : null;
+            if (con.metrics && con.metrics.length > 0)
+                each x, i in con.metrics
+                    - var cvss = x.cvssV3_1 ? x.cvssV3_1 : x.cvssV3_0 ? x.cvssV3_0 : x.cvssV2_0 ? x.cvssV2_0 : null;
                     if cvss
-                        li 
-                            +spara(x.scenarios)
-                            if cvss.baseSeverity
-                                =cvss.baseSeverity
-                            |  
-                            +CVSS(cvss)
-
-        if cna.configurations && cna.configurations.length > 0
-            h4 CONFIGURATIONS REQUIRED FOR EXPOSURE:
-            +spara(cna.configurations)
-
-        if cna.configurations && cna.configurations.length > 0
-            h4 EXPLOIT STATUS:
-            +spara(cna.exploits)
-
-        if cve.source
-            if sourceText[cna.source.discovery]
-                p=sourceText[cna.source.discovery]
-
-        if cmap && Object.keys(cmap).length > 0 && cmap.constructor === Object
-            +spara(cve.CNA_private.CVE_table_description)
-            table.striped
-                tr.rowHead
-                    th CVE
-                    th CVSS
-                    th Summary
-                each x, id in cmap
-                    tr
-                        td=id
-                        td
-                            if cmap[id] && cmap[id].impact
-                                +CVSS(cmap[id].impact.cvss)
-                        td
-                            if cmap[id] && cmap[id].summary
-                                =cmap[id].summary
-
-        else
-            p This issue has been assigned 
-                a(href="https://www.cve.org/CVERecord?id="+cveid)=cveid
-                |.
-
-        h4 SOLUTION:
-
-        +spara(cna.solutions)
-
-        if cna.source.defect && cna.source.defect.length > 0
-            p This issue is being tracked as 
-                +linklist(cna.source.defect, defectURL)
-                |.
-        h4 WORKAROUND:
-        +spara(cna.workarounds)
-
-        h4 RELATED LINKS:
-
-        ul
-            if CDM.cveId
-                li
-                    a(href="https://www.cve.org/CVERecord?id="+cveid)=cveid + " at cve.org"
-            each r in cna.references
-                li
-                    a(href=r.url)=r.url
-                    if r.tags && r.tags.length > 0
-                        |  (  
-                        =r.tags.join(" ")
-                        |  ) 
-
-        if cna.credits && cna.credits.length > 0
-            h4 ACKNOWLEDGEMENTS:
-            ul
-                each c in cna.credits
-                    li= c.value
-                        |  (  
-                        =c.type
-                        |  )
-
-        if cna.timeline && cna.timeline.length > 0
-            h4 TIMELINE:
-            each x, i in cna.timeline
-                p
-                    ul
-                        li
-                            +renderDate(x.time)
-                            |  - 
-                            = x.value
-
-        if cve.CNA_private && cve.CNA_private.internal_comments
-            h4 INTERNAL COMMENTS:
-            p
-                +para(cve.CNA_private.internal_comments)
+                        - var cvssdup = {};
+                        - Object.assign(cvssdup, cvss);
+                        - cvssdup.scenarios = x.scenarios;
+                        - con.cvssList.push(cvssdup);
+            +container(con)
 
 mixin mitre(cve)
     h2 MITRE CVE entry preview
