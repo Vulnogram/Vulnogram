@@ -237,14 +237,93 @@ module.exports = {
             if (schema.id == "desc" && value.value == "") {
                 value = {}
             }
-/*                            errors.push({
-                                path: path,
-                                property: 'format',
-                                message: 'Input required'
-                            });
-                        }*/
-            return errors;
+            if(schema.id == "pE") {
+                console.log(value);
+                if((value.vendor != undefined && value.product != undefined) || (value.collectionURL != undefined && value.packageName != undefined)) {
+                    // it is valid 
+                } else {
+                    if (value.vendor == undefined && value.product != undefined) {
+                        errors.push({
+                            path: path+'.vendor',
+                            property: 'format',
+                            message: 'Enter vendor name'
+                        });
+                    } else if (value.product == undefined && value.vendor != undefined) {
+                        errors.push({
+                            path: path+'.product',
+                            property: 'format',
+                            message: 'Enter product name'
+                        });
+                    } else if (value.collectionURL == undefined && value.packageName != undefined) {
+                        errors.push({
+                            path: path+'.collectionURL',
+                            property: 'format',
+                            message: 'Enter a URL for the package collection'
+                        });
+                    } else if (value.packageName == undefined && value.collectionURL != undefined) {
+                        errors.push({
+                            path: path+'.packageName',
+                            property: 'format',
+                            message: 'Enter package name'
+                        });
+                    } else {
+                        errors.push({
+                            path: path,
+                            property: 'format',
+                            message: 'Enter a vendor and product OR a package and a collection'
+                        });
+                    }
+                }
+                /* 
+                p v c pkg
+                0 0 0 0 = vendor or pkg needed
+                0 0 0 1 = c needed
+                0 0 1 0 = pkg needed
+                0 0 1 1 = ok
+                0 1 0 0 = prod needed
+                0 1 0 1 = p or c needed
+                0 1 1 0 = product or pkg needed
+                0 1 1 1 = ok
+                1 0 0 0 = vendor needed
+                1 0 0 1 = vendor or collection url needed
+                1 0 1 0 = v or pkg needed
+                1 0 1 1 = ok
+                1 1 0 0 = ok
+                1 1 0 1 = ok
+                1 1 1 0 = ok
+                1 1 1 1 = ok
+                */
             }
+            if(schema.id == "vE") {
+                    if(value.lessThan != undefined && value.lessThanOrEqual != undefined) {
+                        errors.push({
+                            path: path+'.lessThan',
+                            property: 'format',
+                            message: 'Enter either lessThan or lessThanOrEqual, but not both'
+                        });
+                        errors.push({
+                            path: path+'.lessThanOrEqual',
+                            property: 'format',
+                            message: 'Enter either lessThan or lessThanOrEqual, but not both'
+                        });
+                    }
+                    if(value.version != undefined && (value.version == value.lessThan)) {
+                        errors.push({
+                            path: path+'.lessThan',
+                            property: 'format',
+                            message: 'End of the version range is same as the start (lessThan)'
+                        });
+                    }
+                    if(value.version != undefined && (value.version == value.lessThanOrEqual)) {
+                        errors.push({
+                            path: path+'.lessThanOrEqual',
+                            property: 'format',
+                            message: 'End of the version range is same as the start (lessThanOrEqual)'
+                        });
+                    }
+            }
+            return errors;
+        }
     ],
     errorFilter: function(errors) {
         if(errors && errors.length > 0) {
