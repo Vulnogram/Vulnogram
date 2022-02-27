@@ -5,7 +5,7 @@ CVE = $(OUT)/cve5
 CSSO = ./node_modules/.bin/csso
 UJS = ./node_modules/.bin/uglifyjs
 
-TARGETS := $(OUT) $(OUT)/index.html $(CSS)/min.css $(CSS)/vg-icons.css $(CSS)/logo.png $(CSS)/logo.gif $(JS)/util.js $(JS)/editor.js $(JS)/mode-json.js $(JS)/cvss.json $(JS)/cwe-frequent.json $(JS)/capec.json $(JS)/wy/ $(JS)/wy/ $(JS)/tablesort.min.js
+TARGETS := $(OUT) $(OUT)/index.html $(CSS)/min.css $(CSS)/vg-icons.css $(CSS)/tagify.css $(CSS)/logo.png $(CSS)/logo.gif $(JS)/util.js $(JS)/editor.js $(JS)/mode-json.js $(JS)/cvss.json $(JS)/cwe-frequent.json $(JS)/capec.json $(JS)/wy/ $(JS)/wy/ $(JS)/tablesort.min.js $(JS)/tagify.min.js
 
 $(OUT):
 	mkdir $(OUT)
@@ -42,7 +42,6 @@ $(OUT)/js/wy/: ./public/js/wy/
     
 $(JS)/%.js: ./public/js/%.js
 	$(UJS) $< -c -o $@
-
 
 $(JS)/%.json: ./public/js/%.json
 	node -e 'console.log(JSON.stringify(require("./" + process.argv[1])))' $< > $@
