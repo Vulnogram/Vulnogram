@@ -18,6 +18,53 @@ function tweetJSON(event, link) {
     //via=vulnogram&hashtags=CVE
 }
 
+function loadCVE(value) {
+    var realId = value.match(/(CVE-(\d{4})-(\d{1,12})(\d{3}))/);
+    if (realId) {
+        var id = realId[1];
+        var year = realId[2];
+        var bucket = realId[3];
+        fetch('https://raw.githubusercontent.com/CVEProject/cvelistv5/master/review_set/' + year + '/' + bucket + 'xxx/' + id + '.json', {
+                method: 'GET',
+                credentials: 'omit',
+                headers: {
+                    'Accept': 'application/json, text/plain, */*'
+                },
+                redirect: 'error'
+            })
+            .then(function (response) {
+                if (!response.ok) {
+                    errMsg.textContent = "Failed to load valid CVE JSON";
+                    infoMsg.textContent = "";
+                    throw Error(id + ' ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(function (res) {
+                if (res.dataVersion && res.dataVersion == '5.0') {
+                    if(res.containers.cna.x_legacyV4Record) {
+                        delete res.containers.cna.x_legacyV4Record;
+                    }
+                    if(res.containers) {
+                        res = addRichTextCVE(res);
+                        res = cvssv3_0_to_cvss3_1(res);
+                    }
+                    loadJSON(res, id, "Loaded "+id+" from GIT!");
+                    mainTabGroup.change(0);
+                } else {
+                    errMsg.textContent = "Failed to load valid CVE JSON v 5.0 record";
+                    infoMsg.textContent = "";
+                }
+            })
+            .catch(function (error) {
+                errMsg.textContent = error;
+            })
+    } else {
+        errMsg.textContent = "CVE ID required";
+    }
+    return false;
+}
+
 async function draftEmail(event, link, renderId) {
     var subject = ''
     if (typeof (mainTabGroup) !== 'undefined') {
@@ -133,12 +180,10 @@ var additionalTabs = {
     }
 }
 
+/* fullname = vendor . product . platforms . module .others 
+/* table --> [ fullname ][version][affected|unaffected|unknown] = [ list of ranges ] */
 function versionStatusTable5(affected) {
-    var table= {
-        affected: {},
-        unaffected: {},
-        unknown: {}
-    };
+    var t = {};
     nameAndPlatforms = {};
     var showCols = {
         platforms: false,
@@ -174,62 +219,62 @@ function versionStatusTable5(affected) {
         var modules = p.modules ? p.modules.join(', ') : '';
         if(p.versions) {
             for(v of p.versions) {
+                var rows = {
+                    affected: [],
+                    unaffected: [],
+                    unknown: []
+                };
                 //var major = v.version != 'unspecified' ? v.version: undefined;//? v.version.match(/^(.*)\./): null;
                 var major = undefined;//major ? major[1] : '';
                 var pFullName = [(p.vendor ? p.vendor + ' ' : '') + pname + (major ? ' ' + major : ''), platforms, modules, others];
                 nameAndPlatforms[pFullName] = pFullName;
-                if(!table[v.status][pFullName]) {
-                    table[v.status][pFullName] = [];
-                }
                 if (v.version) {
                     showCols[v.status] = true;
                     if(!v.changes) {
                         if(v.lessThan) {
-                            table[v.status][pFullName].push('>= ' + v.version + ' to < ' + v.lessThan);
+                            rows[v.status].push('>= ' + v.version + ' to < ' + v.lessThan);
                         } else if(v.lessThanOrEqual) {
-                            table[v.status][pFullName].push('>= ' + v.version + ' to <= ' + v.lessThan);
+                            rows[v.status].push('>= ' + v.version + ' to <= ' + v.lessThan);
                         } else {
-                            table[v.status][pFullName].push(v.version);
+                            rows[v.status].push('= ' + v.version);
                         }
                     } else {
                         var prevStatus = v.status;
                         var prevVersion = v.version;
                         for(c of v.changes) {
                             showCols[c.status] = true;
-                            if(!table[c.status][pFullName]) {
-                                table[c.status][pFullName] = [];
-                            }
-                            table[prevStatus][pFullName].push('>= ' + prevVersion + ' to < ' + c.at);
-                            //table[c.status][pFullName].push('>= ' + c.at);
+                            rows[prevStatus].push('>= ' + prevVersion + ' to < ' + c.at);
                             prevStatus = c.status;
                             prevVersion = c.at;
                         }
                         if(v.lessThan) {
-                            table[prevStatus][pFullName].push('>= ' + prevVersion + (v.lessThan != prevVersion ? ' to < ' + v.lessThan : ''));
+                            rows[prevStatus].push('>= ' + prevVersion + (v.lessThan != prevVersion ? ' to < ' + v.lessThan : ''));
                         } else if(v.lessThanOrEqual) {
-                            table[prevStatus][pFullName].push('>= ' + prevVersion + (v.lessThanOrEqual != prevVersion ? ' to < ' + v.lessThanOrEqual : ''));
+                            rows[prevStatus].push('>= ' + prevVersion + (v.lessThanOrEqual != prevVersion ? ' to < ' + v.lessThanOrEqual : ''));
                         } else {
-                            table[prevStatus][pFullName].push(prevVersion);
+                            rows[prevStatus].push(">=" + prevVersion);
                         }                  
                     }
                 }
+                if(!t[pFullName]) t[pFullName] = [];
+                //if(!t[pFullName][v.version]) t[pFullName][v.version] = [];
+                t[pFullName].push(rows);
             }
-        }
-        var defaultLabel = '';
-        if (Object.keys(table[p.defaultStatus]).length > 0) {
-            defaultLabel = ' - all other versions';
         }
         var pFullName = [(p.vendor ? p.vendor + ' ' : '') + pname + (major ? ' ' + major : ''), platforms, modules, others];
         nameAndPlatforms[pFullName] = pFullName;
-        if(!table[p.defaultStatus][pFullName]) {
-            table[p.defaultStatus][pFullName] = ['everything else is ' + p.defaultStatus];
+        var rows = {};
+        rows[p.defaultStatus] = ["everything else"];
+        if(!t[pFullName]) {
+            t[pFullName] = [rows];
         } else {
-            table[p.defaultStatus][pFullName].push( 'everything else is ' + p.defaultStatus );
+            t[pFullName].push(rows);
         }
         if (p.defaultStatus)
             showCols[p.defaultStatus] = true;
     }
-    return({cols:nameAndPlatforms, vals:table, show: showCols});
+    console.log(t);
+    return({groups:nameAndPlatforms, vals:t, show: showCols});
 }
 
 function getProductAffected(cve) {
@@ -542,13 +587,34 @@ function addRichTextCVE(j) {
         'descriptions',
         'solutions',
         'workarounds',
-        'exploits'
+        'exploits',
+        'configurations'
     ];
+
     if(j && j.containers.cna) {
         var cna = j.containers.cna
-        htmlFields.forEach(element => addRichTextArray(cna[element]));
+        htmlFields.forEach(element => {
+            addRichTextArray(cna[element])
+        });
     }
     return j;
+}
+
+function cvssv3_0_to_cvss3_1(j) {
+    if(j && j.containers && j.containers.cna && j.containers.cna.metrics) {
+        j.containers.cna.metrics.forEach(m => {
+            console.log(m);
+            if(m.cvssV3_0) {
+                m.cvssV3_1 = m.cvssV3_0;
+                m.cvssV3_1.version = "3.1";
+                if(m.cvssV3_1.vectorString) {
+                    m.cvssV3_1.vectorString = m.cvssV3_1.vectorString.replace('CVSS:3.0', 'CVSS:3.1');
+                }
+                delete m.cvssV3_0;
+            }
+        });
+    }
+    return j
 }
 
 async function cveLoad(cveId) {
@@ -573,6 +639,7 @@ async function cveLoad(cveId) {
                 cveApi.state[cveId] = res.cveMetadata.state;
                 if(res.cveMetadata.containers) {
                     res = addRichTextCVE(res);
+                    res = cvssv3_0_to_cvss3_1(res);
                 }
                 loadJSON(res, cveId, "Loaded " + cveId + " from CVE.org!");
                 mainTabGroup.change(0);

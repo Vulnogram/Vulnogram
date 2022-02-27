@@ -26,7 +26,7 @@ block prepend content
                                     - cvss = x.cvssV3_1 ? x.cvssV3_1 : x.cvssV3_0 ? x.cvssV3_0 : x.cvssV2_0 ? x.cvssV2_0 : null
                                     if cvss
                                         li 
-                                            +spara(x.scenarios)
+                                            =x.scenarios
                                             if cvss.baseSeverity
                                                 =cvss.baseSeverity
                                             |  
@@ -56,15 +56,20 @@ block prepend content
 
 mixin cvssList(cvssList)
     if cvssList
-        - var nonSpec = ['baseScore', 'version', 'vectorString', 'baseSeverity']
+        - var nonSpec = ['baseScore', 'version', 'vectorString', 'baseSeverity', 'scenarios']
         each cvss, i in cvssList
             details.popup
                 summary.lbl.rnd.sec.CVSS(class= cvss.baseSeverity ? cvss.baseSeverity : 'gray')
+                    | CVSS · 
                     = cvss.baseSeverity
-                    | · 
+                    |  · 
                     sup=cvss.baseScore
                     | ⁄10
                 div.pop.wht.rnd.shd.pad.bor
+                    if cvss.scenarios
+                        each s, i in cvss.scenarios
+                            span Scoring scenario: 
+                            = s.value
                     each x, i in cvss
                         if !nonSpec.includes(i)
                             div
@@ -73,60 +78,62 @@ mixin cvssList(cvssList)
                                 b=x
                     div
                         if cvss.version >= "3"
-                            a.vgi-ext(href="https://cvssjs.github.io/#" + cvss.vectorString) Open CVSS Calc
+                            a.vgi-dial(href="https://cvssjs.github.io/#" + cvss.vectorString) Open CVSS Calc
                         else
-                            a.vgi-ext(href='https://nvd.nist.gov/vuln-metrics/cvss/v2-calculator?vector='+cvss.vectorString) Open CVSS Calc
+                            a.vgi-dial(href='https://nvd.nist.gov/vuln-metrics/cvss/v2-calculator?vector='+cvss.vectorString) Open CVSS Calc
+
+mixin prodDetails(p)
+    b.vgi-package=p[0]
+    if p[2]
+        span  » 
+            =p[2]
+    if p[1]
+        i.lbl  on 
+        |  
+        span.vgi-stack=p[1]
+    if p[3]
+        br
+        if p[3].collectionURL
+            a.vgi-package(href=p[3].collectionURL) package repo
+        if p[3].repo
+            a.vgi-ext(href=p[3].repo) source repo
+        if p[3].programFiles
+            each f, i in p[3].programFiles
+                span.vgi-text= f
+        if p[3].programRoutines
+            each f, i in p[3].programRoutines
+                span.vgi-edit= f.name
 
 mixin statusTable(st)
-    table.tbl
+    table.tbl.gap
         colgroup
             col
-            if st.show.platforms 
-                col
-            if st.show.modules 
-                col
             col.affectedCol
         thead
             tr
                 th Product
-                if st.show.platforms 
-                    th Platforms
-                if st.show.modules 
-                    th Modules
                 th Affected
                 if st.show.unaffected
                     th Unaffected
                 if st.show.unknown
                     th Unknown
-        tbody
-            each p, i in st.cols
-                tr
-                    td=p[0]
-                        if p[3]
-                            br
-                            if p[3].collectionURL
-                                a.vgi-package(href=p[3].collectionURL) package repo
-                            if p[3].repo
-                                a.vgi-ext(href=p[3].repo) source repo
-                            if p[3].programFiles
-                                each f, i in p[3].programFiles
-                                    span.vgi-text= f
-                            if p[3].programRoutines
-                                each f, i in p[3].programRoutines
-                                    span.vgi-edit= f.name
-       
-                    if st.show.platforms 
-                        td=p[1]
-                    if st.show.modules 
-                        td=p[2]
-                    td
-                        +versionList(st.vals.affected[i])
-                    if st.show.unaffected
-                        td
-                            +versionList(st.vals.unaffected[i])
-                    if st.show.unknown
-                        td
-                            +versionList(st.vals.unknown[i])
+            tbody
+                each p, i in st.groups
+                    - var showProd = st.vals[i].length
+                    each x, j in st.vals[i]
+                        tr
+                            if showProd
+                                td(rowspan=showProd)
+                                    +prodDetails(p)
+                                - showProd = false
+                            td
+                                +versionList(x.affected)
+                            if st.show.unaffected
+                                td
+                                    +versionList(x.unaffected)
+                            if st.show.unknown
+                                td
+                                    +versionList(x.unknown)
 
 mixin creditList(credits)
     for c in credits
@@ -186,22 +193,17 @@ mixin container(con)
                 = con.source.advisory
                 |  
             = cveShowId + ' ' + con.title 
-        //if cna[con.shortName] && cna[con.shortName].i
-            b
-                img.logo(src="https://www.google.com/s2/favicons?sz=64&domain_url="+cna[con.shortName].i)
-        span
-            |  
-            //b=cna[con.shortName]? cna[con.shortName].n : con.shortName
-            br
-            +renderDate(con.datePublic)
-            if con.dateUpdated && con.dateUpdated != con.datePublic
-                |  (updated 
-                +renderDate(con.dateUpdated)
-                |)
+        if con.shortName
+            span assigned by 
+                b=con.shortName
+        br
+        +renderDate(con.datePublic)
+        if con.dateUpdated && con.dateUpdated != con.datePublic
+            |  (updated 
+            +renderDate(con.dateUpdated)
+            |)
         if con.cvssList
-            span.right.row
-                b.lbl.vgi-dial CVSS        
-                +cvssList(con.cvssList)
+            +cvssList(con.cvssList)
     .desc.pad
         if con.state == 'REJECTED'
             b.tag.CRITICAL REJECTED
@@ -250,7 +252,9 @@ mixin container(con)
             +spara(con.exploits)
     
     if con.pvstatus
-        +statusTable(con.pvstatus)
+        .status.pad
+            b Affected Product Status
+            +statusTable(con.pvstatus)
 
     if con.solutions
         .solution.pad
@@ -398,6 +402,12 @@ mixin showVal(d, comma)
         i ,
 
 mixin versionList(v)
+    if v
+        each x, i in v
+            =x
+            br
+
+mixin del_versionList(v)
     if v
         - var n = v.shift();
         while n != undefined
