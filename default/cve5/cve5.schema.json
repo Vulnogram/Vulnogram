@@ -113,7 +113,7 @@
       "format": "uri",
       "pattern": "^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?",
       "minLength": 1,
-      "maxLength": 2000
+      "maxLength": 2048
     },
     "uuidType": {
       "description": "A version 4 (random) universally unique identifier (UUID) as defined by [RFC 4122](https://tools.ietf.org/html/rfc4122#section-4.1.3).",
@@ -146,22 +146,26 @@
         "name": {
           "description": "User created name for the reference, often the title of the page.",
           "type": "string",
-          "maxLength": 500,
+          "maxLength": 512,
           "minLength": 1,
           "options": {
             "hidden": true
           }
         },
         "tags": {
+          "id":"xtag",
           "description": "An array of one or more tags that describe the resource referenced by 'url'.",
           "type": "array",
           "minItems": 1,
-          "format": "select2",
+          "format": "taglist",
           "uniqueItems": true,
+          "options": {
+            "input_width": "15em"
+          },
           "items": {
             "type": "string",
             "description": "broken-link: The reference link is returning a 404 error, or the site is no longer online.\n\ncustomer-entitlement: Similar to Privileges Required, but specific to references that require non-public/paid access for customers of the particular vendor.\n\nexploit: Reference contains an in-depth/detailed description of steps to exploit a vulnerability OR the reference contains any legitimate Proof of Concept (PoC) code or exploit kit.\n\ngovernment-resource: All reference links that are from a government agency or organization should be given the Government Resource tag.\n\nissue-tracking: The reference is a post from a bug tracking tool such as MantisBT, Bugzilla, JIRA, Github Issues, etc...\n\nmailing-list: The reference is from a mailing list -- often specific to a product or vendor.\n\nmitigation: The reference contains information on steps to mitigate against the vulnerability in the event a patch can't be applied or is unavailable or for EOL product situations.\n\nnot-applicable: The reference link is not applicable to the vulnerability and was likely associated by MITRE accidentally (should be used sparingly).\n\npatch: The reference contains an update to the software that fixes the vulnerability.\n\npermissions-required: The reference link provided is blocked by a logon page. If credentials are required to see any information this tag must be applied.\n\nmedia-coverage: The reference is from a media outlet such as a newspaper, magazine, social media, or weblog. This tag is not intended to apply to any individual's personal social media account. It is strictly intended for public media entities.\n\nproduct: A reference appropriate for describing a product for the purpose of CPE or SWID.\n\nrelated: A reference that is for a related (but not the same) vulnerability.\n\nrelease-notes: The reference is in the format of a vendor or open source project's release notes or change log.\n\nsignature: The reference contains a method to detect or prevent the presence or exploitation of the vulnerability.\n\ntechnical-description: The reference contains in-depth technical information about a vulnerability and its exploitation process, typically in the form of a presentation or whitepaper.\n\nthird-party-advisory: Advisory is from an organization that is not the vulnerable product's vendor/publisher/maintainer.\n\nvendor-advisory: Advisory is from the vendor/publisher/maintainer of the product or the parent organization.\n\nvdb-entry: VDBs are loosely defined as sites that provide information about this vulnerability, such as advisories, with identifiers. Included VDBs are free to access, substantially public, and have broad scope and coverage (not limited to a single vendor or research organization). See: https://www.first.org/global/sigs/vrdx/vdb-catalog",
-            "enum": [
+            "examples": [
               "broken-link",
               "customer-entitlement",
               "exploit",
@@ -215,10 +219,10 @@
       "$ref": "#/definitions/uuidType"
     },
     "shortName": {
-      "description": "A 3-12 character name that can be used to complement an organization's UUID.",
+      "description": "A 2-32 character name that can be used to complement an organization's UUID.",
       "type": "string",
-      "minLength": 3,
-      "maxLength": 12,
+      "minLength": 2,
+      "maxLength": 32,
       "options": {
         "class": "vgi-factory",
         "input_width": "5em",
@@ -308,7 +312,7 @@
           "title": "Product name",
           "description": "Name of the affected product.",
           "minLength": 1,
-          "maxLength": 2058,
+          "maxLength": 2048,
           "options": {
             "show_errors": "always",
             "infoText": "Name of the affected product.",
@@ -328,24 +332,22 @@
             "grid_columns": 4,
             "class": "vgi-stack",
             "inputAttributes": {
-              "placeholder": "eg., x86 Android Windows MacOS PS5 MISP"
+              "placeholder": "eg., x86, Android, Windows, MacOS, .."
             }
           },
           "uniqueItems": true,
           "items": {
             "type": "string",
             "examples": [
-              "iOS",
-              "Android",
               "Windows",
-              "macOS",
+              "MacOS",
+              "Liniux",
               "x86",
               "ARM",
               "64 bit",
-              "Big Endian",
-              "iPad",
-              "Chromebook",
-              "Docker"
+              "iOS",
+              "Android",
+              "Big Endian"
             ],
             "maxLength": 1024
           }
@@ -355,7 +357,7 @@
           "description": "URL identifying a package collection (determines meaning of packageName).",
           "$ref": "#/definitions/uriType",
           "type": "string",
-          "maxLength": 500,
+          "maxLength": 512,
           "minLength": 0,
           "pattern": "^(ftp|http)s?://\\S+$",
           "examples": [
@@ -438,7 +440,7 @@
           "type": "string",
           "description": "Name or identifier of the affected software package as used in the package collection.",
           "minLength": 1,
-          "maxLength": 2058,
+          "maxLength": 2048,
           "options": {
             "show_errors": "always",
             "grid_columns": 4,
@@ -475,7 +477,7 @@
             "description": "Common Platform Enumeration (CPE) Name in either 2.2 or 2.3 format",
             "pattern": "([c][pP][eE]:/[AHOaho]?(:[A-Za-z0-9._\\-~%]*){0,6})|(cpe:2\\.3:[aho*\\-](:(((\\?*|\\*?)([a-zA-Z0-9\\-._]|(\\\\[\\\\*?!\"#$%&'()+,/:;<=>@\\[\\]\\^`{|}~]))+(\\?*|\\*?))|[*\\-])){5}(:(([a-zA-Z]{2,3}(-([a-zA-Z]{2}|[0-9]{3}))?)|[*\\-]))(:(((\\?*|\\*?)([a-zA-Z0-9\\-._]|(\\\\[\\\\*?!\"#$%&'()+,/:;<=>@\\[\\]\\^`{|}~]))+(\\?*|\\*?))|[*\\-])){4})",
             "minLength": 1,
-            "maxLength": 2000,
+            "maxLength": 2048,
             "options": {
               "patternmessage": "Enter a valid CPE"
             }
@@ -491,7 +493,7 @@
             "type": "string",
             "description": "Name of the affected component, feature, module, sub-component, sub-product, API, command, utility, program, or functionality (optional).",
             "minLength": 1,
-            "maxLength": 4000
+            "maxLength": 4096
           },
           "options": {
             "grid_columns": 4,
@@ -542,7 +544,7 @@
                 "type": "string",
                 "description": "Name of the affected source code file, function, method, subroutine, or procedure.",
                 "minLength": 1,
-                "maxLength": 4000,
+                "maxLength": 4096,
                 "options": {
                   "inputAttributes": {
                     "placeholder": "parse_file()"
@@ -643,7 +645,7 @@
                 "options": {
                   "inputAttributes": {
                     "placeholder": "eg., patch 10, 1.2.5a, 1.2.6",
-                    "size": "3"
+                    "size": "5"
                   }                  
                 },
                 "maxLength": 128,
@@ -927,7 +929,7 @@
           "title": "Title",
           "description": "Short title - if the description is long we may want a short title to refer to.",
           "minLength": 1,
-          "maxLength": 128,
+          "maxLength": 256,
           "options": {
             "class": "vgi-title",
             "grid_columns": 8,
@@ -1014,6 +1016,19 @@
         "taxonomyMappings": {
           "$ref": "#/definitions/taxonomyMappings"
         }
+        ,
+        "x_generator": {
+          "type": "object",
+          "properties": {
+            "engine": {
+              "type": "string",
+              "default": "Vulnogram 0.1.0-dev"
+            }
+          },
+          "options": {
+            "hidden": "true"
+          }
+        }
       },
       "required": [
         "providerMetadata",
@@ -1087,7 +1102,7 @@
           "type": "string",
           "description": "Short english language title - if the description is long we may want a short title to refer to.",
           "minLength": 1,
-          "maxLength": 128
+          "maxLength": 256
         },
         "problemTypes": {
           "$ref": "#/definitions/problemTypes"
@@ -1171,7 +1186,7 @@
           "format": "textarea",
           "description": "Plain text description.",
           "minLength": 1,
-          "maxLength": 4000,
+          "maxLength": 4096,
           "template": "domhtml(context.sm)",
           "watch": {
             "sm": "desc.supportingMedia.0.value"
@@ -1203,7 +1218,7 @@
                 "title": "Media type",
                 "minLength": 1,
                 "default": "text/html",
-                "maxLength": 255,
+                "maxLength": 256,
                 "description": "RFC2046 compliant IANA Media type for eg., text/markdown, text/html.",
                 "examples": [
                   "text/markdown",
@@ -1339,7 +1354,7 @@
                   "type": "string",
                   "description": "string description of problemType, or title from CWE, OWASP",
                   "minLength": 1,
-                  "maxLength": 4000,
+                  "maxLength": 4096,
                   "options": {
                     "inputAttributes": {
                       "placeholder": "eg., CWE-20 Improper Input Validation"
@@ -1386,7 +1401,7 @@
         "$ref": "#/definitions/reference"
       },
       "minItems": 1,
-      "maxItems": 500,
+      "maxItems": 512,
       "uniqueItems": true
     },
     "impacts": {
@@ -1447,7 +1462,7 @@
                   "title": " ",
                   "description": "Plain text description.",
                   "minLength": 1,
-                  "maxLength": 4000,
+                  "maxLength": 4096,
                   "$ref": "js/capec.json",
                   "options": {
                     "inputAttributes": {
@@ -1511,7 +1526,7 @@
                   "default": "GENERAL",
                   "description": "Description of the scenario this metrics object applies to. If no specific scenario is given, GENERAL is used as the default and applies when no more specific metric matches.",
                   "minLength": 1,
-                  "maxLength": 4000
+                  "maxLength": 4096
                 }
               },
               "required": [
@@ -1940,7 +1955,7 @@
             "description": "A summary of the event.",
             "type": "string",
             "minLength": 1,
-            "maxLength": 4000,
+            "maxLength": 4096,
             "options": {
               "grid_columns": 9
             }
@@ -1969,7 +1984,7 @@
             "title": "Name",
             "type": "string",
             "minLength": 1,
-            "maxLength": 4000
+            "maxLength": 4096
           },
           "user": {
             "options": {
@@ -2013,7 +2028,7 @@
         "class": "vgi-info tgap"
       },
       "properties": {
-        "defects": {
+        "defect": {
           "title": "Defects",
           "type": "array",
           "format": "taglist",
@@ -2070,18 +2085,6 @@
               "UPSTREAM":"in",
               "UNKNOWN":"what"
             }
-          }
-        },
-        "generator": {
-          "type": "object",
-          "properties": {
-            "engine": {
-              "type": "string",
-              "default": "Vulnogram 0.1.0-dev"
-            }
-          },
-          "options": {
-            "hidden": "true"
           }
         }
       }
@@ -2158,7 +2161,7 @@
                   "type": "string",
                   "description": "Identifier of the item in the taxonomy.  Used as the subject of the relationship.",
                   "minLength": 1,
-                  "maxLength": 2000,
+                  "maxLength": 2048,
                   "options": {
                     "inputAttributes": {
                       "placeholder": "eg., T1234, CWE-123"
@@ -2180,7 +2183,7 @@
                   "type": "string",
                   "description": "The target of the relationship.  Can be the CVE ID or another taxonomy identifier.",
                   "minLength": 1,
-                  "maxLength": 2000,
+                  "maxLength": 2048,
                   "options": {
                     "inputAttributes": {
                       "placeholder": "eg., T1235, CWE-134"
@@ -2200,15 +2203,16 @@
       "pattern": "^x_.*$"
     },
     "cnaTags": {
+      "id": "xtag",
       "type": "array",
       "title": "Tags",
-      "format": "select2",
+      "format": "taglist",
       "description": "Tags describing the CVE entry",
       "uniqueItems": true,
       "items": {
         "type": "string",
         "description": "exclusively-hosted-service: All known software and/or hardware affected by this CVE Record is known to exist only in the affected hosted service. If the vulnerability affects both hosted and on-prem software and/or hardware, then the tag should not be used.\n\nunsupported-when-assigned: Used by the assigning CNA to indicate that when a request for a CVE assignment was received, the product was already end-of-life (EOL) or a product or specific version was deemed not to be supported by the vendor. This tag should only be applied to a CVE Record when all affected products or version lines referenced in the CVE-Record are EOL.\n\ndisputed: When one party disagrees with another party's assertion that a particular issue in software is a vulnerability, a CVE Record assigned to that issue may be tagged as being 'disputed'.",
-        "enum": [
+        "examples": [
           "unsupported-when-assigned",
           "exclusively-hosted-service",
           "disputed"
@@ -2216,25 +2220,17 @@
       }
     },
     "adpTags": {
+      "id": "xtag",
       "type": "array",
-      "format": "select2",
+      "format": "taglist",
       "description": "Tags provided by an ADP describing the CVE Record.",
       "uniqueItems": true,
       "minItems": 1,
       "items": {
-        "oneOf": [
-          {
-            "$ref": "#/definitions/tagExtension"
-          },
-          {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "$id": "https://cve.mitre.org/cve/v5_00/tags/adp/",
-            "type": "string",
-            "description": "disputed: When one party disagrees with another party's assertion that a particular issue in software is a vulnerability, a CVE Record assigned to that issue may be tagged as being 'disputed'.",
-            "enum": [
-              "disputed"
-            ]
-          }
+        "type": "string",
+        "description": "disputed: When one party disagrees with another party's assertion that a particular issue in software is a vulnerability, a CVE Record assigned to that issue may be tagged as being 'disputed'.",
+        "examples": [
+          "disputed"
         ]
       }
     }
