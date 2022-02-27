@@ -141,7 +141,8 @@
             "inputAttributes": {
                 "placeholder": "eg., https://example.org/CVE-yyyy-nnnn"
             }
-          }
+          },
+          "default": "https://"
         },
         "name": {
           "description": "User created name for the reference, often the title of the page.",

@@ -4,7 +4,6 @@ body{
 }   
 
 .CVSS.NONE {
-  color: white;
   background-color: rgb(162, 213, 114);
 }
 .CVSS.LOW {

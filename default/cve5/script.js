@@ -542,7 +542,7 @@ async function cveReserve(yearOffset) {
             //console.log(e);
         }
     } else {
-        alert('Please login to CVE.org');
+        alert('Please login to CVE Portal');
     }
 }
 
@@ -551,7 +551,7 @@ async function cveSelectLoad(event) {
     if(cveClient){
     cveLoad(event.target.elements.id.value)
     } else {
-        alert('Please login to CVE.org');
+        alert('Please login to CVE Portal');
     }
     return false;
 }
@@ -649,7 +649,7 @@ async function cveLoad(cveId) {
                 infoMsg.textContent = "";
             }
         } else {
-            alert('Please login to CVE.org!');
+            alert('Please login to CVE Portal');
         }
     }
 }
@@ -698,7 +698,7 @@ async function cvePost() {
         }
         } else {
             //todo enable/disable post button
-            alert('Please login to CVE.org (CVE AWG Test)');
+            alert('Please login to CVE Portal -> (CVE AWG Test)');
         }
     } else {
         alert('Please fix errors before posting');
@@ -710,7 +710,7 @@ async function cveReserveAndRender(yearOffset) {
         await cveReserve(yearOffset);
         await cveGetList();
     } else {
-        alert('Please login to CVE.org');
+        alert('Please login to CVE Portal');
     }
 } 
 /*

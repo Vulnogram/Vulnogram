@@ -1,6 +1,7 @@
 mixin userstats
     details.lbl.popup
-        summary.vgi-user= userInfo.name ? userInfo.name.first : userInfo.username
+        summary.fbn.vgi-user= userInfo.name ? userInfo.name.first : userInfo.username
+            |  ▼ 
         dl.pop.wht.bor.rnd.shd.pad
             b.vgi-user= userInfo.username
             dt Roles:  

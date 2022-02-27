@@ -193,15 +193,16 @@ mixin container(con)
                 = con.source.advisory
                 |  
             = cveShowId + ' ' + con.title 
-        if con.shortName
-            span assigned by 
-                b=con.shortName
-        br
-        +renderDate(con.datePublic)
-        if con.dateUpdated && con.dateUpdated != con.datePublic
-            |  (updated 
-            +renderDate(con.dateUpdated)
-            |)
+        p
+            if con.shortName
+                span Published by 
+                    b=con.shortName
+                |   
+            +renderDate(con.datePublic)
+            if con.dateUpdated && con.dateUpdated != con.datePublic
+                |  (updated 
+                +renderDate(con.dateUpdated)
+                |)
         if con.cvssList
             +cvssList(con.cvssList)
     .desc.pad
