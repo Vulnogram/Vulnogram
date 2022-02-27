@@ -321,6 +321,20 @@ module.exports = {
                     });
                 }
             }
+            if(schema.id == "xtag") {
+                if(value && schema.items && schema.items.examples) {
+                    for(i = 0; i < value.length; i++) {
+                        if(value[i] && !schema.items.examples.includes(value[i]) && !value[i].match("^x_.*$")) {
+                            errors.push({
+                                path: path,
+                                property: 'format',
+                                message: 'Select from the suggested tags or enter custom tags starting with x_'
+                            });
+                            break;
+                        }
+                    }
+                }
+            }
             return errors;
         }
     ],
