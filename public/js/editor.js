@@ -394,32 +394,44 @@ JSONEditor.defaults.editors.dateTime = class dateTime extends JSONEditor.default
     }
 };
 
+
 JSONEditor.defaults.editors.taglist = class taglist extends JSONEditor.defaults.editors.string {
     getValue() {
-        if (this.input && this.input.value) {
-            return this.input.value.match(/[\S]+/g) || [];
+        if(this.tagify && this.tagify.value) {
+            return this.tagify.value.map(item => item.value);
         } else {
             return [];
         }
     }
     setValue(val) {
         if (val instanceof Array) {
-            //this.value = val.split();
-            this.input.value = val.join(' ');
+            this.tagify.removeAllTags();
+            this.tagify.addTags(val);
         } else {
-            this.input.value = val;
+            this.tagify.addTags(val.split(','));
         }
         this.onChange(true);
     }
     build() {
         this.schema.format = "taglist";
         super.build();
+        console.log('list'+ this.schema.items.examples);
+        this.tagify = new Tagify(this.input, {
+            whitelist: this.schema.items.enum ? this.schema.items.enum : (this.schema.items.examples ? this.schema.items.examples : []),
+            enforceWhitelist: this.schema.items.enum ? true : false,
+            maxTags: this.schema.maxItems ? this.schema.maxItems : 512,
+            dropdown: {
+              maxItems: 40,           // <- mixumum allowed rendered suggestions
+              classname: "tags-look", // <- custom classname for this dropdown, so it could be targeted
+              enabled: 0,             // <- show suggestions on focus
+              closeOnSelect: false    // <- do not hide the suggestions dropdown once an item has been selected
+            }
+          })
         if(this.options && this.options.inputAttributes && this.options.inputAttributes.placeholder) {
             this.input.setAttribute('placeholder', this.options.inputAttributes.placeholder)
         }
     }
 };
-
 
 JSONEditor.defaults.editors.simplehtml = class simplehtml extends JSONEditor.defaults.editors.string {
     getValue() {
