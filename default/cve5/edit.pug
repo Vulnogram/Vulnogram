@@ -4,6 +4,9 @@
 
 extends ../../views/edit
 block append bannerItemsLeft
+    form.indent.out.nobr(onsubmit="event.preventDefault();loadCVE(this.git.value);return false;")
+        input.txt(type="text",name="git",placeholder="CVE-YYYY-NNNN",pattern=".*CVE-[0-9]{4}-[0-9]{4,12}.*",size=17,title="CVE ID CVE-yyyy-nnnn+",required)
+        button.btn.vgi-in(type="submit") GIT
     button.fbn.sfe.vgi-put(id="post1") Post to CVE.org
     a.vgi-tweet.fbn(type="button",oncontextmenu='tweetJSON(event, this);',onclick='tweetJSON(event, this);',value="Download",target="_blank",title="Share a tweet about this CVE") Tweet
 
