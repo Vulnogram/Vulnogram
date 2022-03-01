@@ -415,7 +415,7 @@ JSONEditor.defaults.editors.taglist = class taglist extends JSONEditor.defaults.
     build() {
         this.schema.format = "taglist";
         super.build();
-        console.log('list'+ this.schema.items.examples);
+        //console.log('list'+ this.schema.items.examples);
         this.tagify = new Tagify(this.input, {
             whitelist: this.schema.items.enum ? this.schema.items.enum : (this.schema.items.examples ? this.schema.items.examples : []),
             enforceWhitelist: this.schema.items.enum ? true : false,
