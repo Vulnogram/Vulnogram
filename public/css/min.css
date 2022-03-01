@@ -197,6 +197,10 @@ body {
     z-index: 100;
 }
 
+details.popup summary::-webkit-details-marker {
+    display: none;
+    color: transparent;
+}
 details summary { 
     cursor: pointer;
 }
@@ -600,7 +604,7 @@ input.tab[type="radio"] + .lbl:focus
 
 .tab + .red {
     background: var(--red);
-    background: linear-gradient(0deg, rgba(255,255,255,255) 0%, var(--red) 190%)!important;
+    background: linear-gradient(0deg, rgba(255,255,255,255) 0%, var(--red) 400%)!important;
 }
 
 .lyel {
@@ -1219,34 +1223,10 @@ td.compact .form-control {
     margin: 0px;
 }
 
-.select2-selection--multiple {
-    border: 0px !important;
-}
-.select2-container--default {
-    height: auto;
-    padding: 0px !important;
-    background-color: none !important;
-    border: 1px solid var(--bor) !important;
-    outline: none;
-    border-radius: 3px;
-}
-.select2-container--default:hover, .select2-container--focus {
-    border-color: var(--lnk) !important;
-    outline: none;
-    box-shadow: 0 0 0 0.2em rgba(3,102,214,0.3);
-}
-
-select2-hidden-accessible, .tbl .select2-container--default, .tbl .select2-container--focus, .tbl .select2-selection--multiple {
-    border: 0px !important;
-    outline: none !important;
-    background-color: transparent !important;
-    box-shadow: none;
-}
-
-
 /*.je-object__title {
     padding: .5em 0em;
 }*/
+
 .je-switcher {
    display: inline-block !important;
    height: 28px!important;
