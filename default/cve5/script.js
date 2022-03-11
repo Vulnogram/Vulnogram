@@ -173,9 +173,9 @@ var additionalTabs = {
     cveApiTab: {
         title: 'CVE Org',
         setValue: function() {
-            if(cveApi && cveApi.list) {
+        /*    if(cveApi && cveApi.list) {
                 cveRenderList(cveApi.list);
-            }
+            }*/
         }
     }
 }
@@ -273,7 +273,7 @@ function versionStatusTable5(affected) {
         if (p.defaultStatus)
             showCols[p.defaultStatus] = true;
     }
-    console.log(t);
+    //console.log(t);
     return({groups:nameAndPlatforms, vals:t, show: showCols});
 }
 
@@ -424,7 +424,7 @@ var preLogin = "";
 
 function resetClient() {
     cveClient = null;
-    var cveApi = {
+    cveApi = {
         user: null,
         uuid: null,
         org: null,
@@ -432,64 +432,111 @@ function resetClient() {
         state: {}
     } 
 }
-async function cveLogin(URL, type) {
+/*
+async function updateLogin(event, uInput) {
+    console.log(uInput.form);
+    var u = uInput.value;
+    if(u && u.includes('|')) {
+        var [user, org] = u.split('|');
+        console.log(user + org);
+        uInput.form.x.value = user;
+        uInput.form.y.value = org;
+    }
+}*/
+
+async function newCVESession(URL, type, creds) {
+    if(!URL && cveApi) {
+        URL = cveApi.URL;
+    }
+    if(!type && cveApi) {
+        type = cveApi.apiType;
+    }
+    if(!creds && cveApi) {
+        type = cveApi.creds;
+    }
+
+    cveClient = new CveServices(URL, creds);
+    if(!cveApi || !cveApi.org || !cveApi.creds) { 
+        cveApi.URL = URL; 
+        cveApi.apiType = type;
+        cveApi.user = creds.user;
+        cveApi.short_name = creds.org;
+        cveApi.creds = creds;
+        cveApi.org = await cveClient.getOrgInfo();
+        if(cveApi.org.error) {
+            alert('Error logging in: '+cveApi.org.error + " : "+ cveApi.org.message);
+            resetClient()
+            return false;
+        }
+        cveApi.userInfo = await cveClient.getOrgUser(cveApi.user);
+        if(cveApi.userInfo.error) {
+            alert('Error logging in: '+cveApi.org.error + " : "+ cveApi.org.message);
+            resetClient();
+            return false;
+        }
+        window.sessionStorage.cveApi = JSON.stringify(cveApi);
+    }
+    if(cveApi.org && cveApi.org.UUID) {
+        var pid = docEditor.getEditor('root.containers.cna.providerMetadata.id');
+        if (pid && pid.getValue() == '00000000-0000-4000-9000-000000000000') {
+            pid.setValue(cveApi.org.UUID);
+        }
+        var aid = docEditor.getEditor('root.cveMetadata.assigner');
+        if (aid && aid.getValue() == '00000000-0000-4000-9000-000000000000') {
+            aid.setValue(cveApi.org.UUID);
+        }
+        return true;
+    }
+    return false;
+}
+
+async function cveLogin(en, credForm) {
+    en.preventDefault();
+    var URL=credForm.portal.value;
+    var type = credForm.portal.options[credForm.portal.selectedIndex].text;
     if (!cveClient) {
+        var loggedIn = false;
         try {
-            cveClient = new CveServices(URL);
-            cveApi.apiType = type;
-            cveApi.user = await cveClient._request.userName;
-            cveApi.short_name = await cveClient._request.orgName;
-            cveApi.org = await cveClient.getOrgInfo();
-            if(cveApi.org.error) {
-                alert('Error logging in: '+cveApi.org.error + " : "+ cveApi.org.message);
-                resetClient()
-                return;
+            if(!credForm.checkValidity()) {
+                return(false);
             }
-            cveApi.userInfo = await cveClient.getOrgUser(cveApi.user);
-            if(cveApi.userInfo.error) {
-                alert('Error logging in: '+cveApi.org.error + " : "+ cveApi.org.message);
-                resetClient();
-                return;
-            }
-        } catch (e) {
-            alert('Error logging in!' + e.message);
+            var creds = {
+                key:credForm.key.value,
+                org:credForm.org.value,
+                user:credForm.user.value
+            };
+            loggedIn = await newCVESession(URL, type, creds);
+        } catch (er) {
+            alert('Error logging in!' + er.message);
             resetClient();
             return;
         }
-        if(cveApi.org.UUID) { 
-            var pid = docEditor.getEditor('root.containers.cna.providerMetadata.id');
-            if (pid && pid.getValue() == '00000000-0000-4000-9000-000000000000') {
-                pid.setValue(cveApi.org.UUID);
-            }
-            var aid = docEditor.getEditor('root.cveMetadata.assigner');
-            if (aid && aid.getValue() == '00000000-0000-4000-9000-000000000000') {
-                aid.setValue(cveApi.org.UUID);
-            }
-            document.getElementById('portalName').innerHTML = "<b class=\"lbl tred\">" +  type + "</b> " + URL;
-            preLogin = document.getElementById('cveUser').innerHTML;
-            document.getElementById('cveUser').innerHTML = cveRender({
-                ctemplate: 'userstats',
-                userInfo: cveApi.userInfo,
-                org: cveApi.org
+        //credForm.reset();
+        //preLogin = document.getElementById('cvePortal').innerHTML;
+        if(loggedIn) {
+            document.getElementById('cvePortal').innerHTML = cveRender({
+                    portalType: type,
+                    portalURL: URL, 
+                    ctemplate: 'portal',
+                    userInfo: cveApi.userInfo,
+                    org: cveApi.org
             });
-            document.getElementById('cveToolbar').className = "pad";
             await cveGetList(cveClient);
-            window.sessionStorage.cveApi = JSON.stringify(cveApi);
         }
     }
 }
 
 async function cveLogout(URL) {
     resetClient();
-    window.sessionStorage.cveApi = JSON.stringify(cveApi);
-    document.getElementById('cveUser').innerHTML = preLogin;
-    document.getElementById('portalName').innerText = 'disconnected';
-    document.getElementById('cveToolbar').className = "hid";
-
+    window.sessionStorage.removeItem('cveApi');
+    window.sessionStorage.removeItem('cve-services-creds');
+    document.getElementById('cvePortal').innerHTML = cveRender({
+        ctemplate: 'cveLoginBox'
+    })
 }
 
 async function cveRenderList(l) {
-    if (l) {
+    if (l && document.getElementById('cveListTable')) {
         document.getElementById('cveListTable').innerHTML = cveRender({
             ctemplate: 'listIds',
             cveIds: l,
@@ -513,21 +560,29 @@ async function cveRenderList(l) {
 //var collator = new Intl.Collator(undefined, {numeric: true});
 
 async function cveGetList() {
+    if(!cveClient) {
+        await newCVESession();
+    }
     if(cveClient) {
-        var json = await cveClient.getCveIds();
+        var json = await cveClient.getCveIds({state:'RESERVED'});
 
         cveApi.list = json.sort(function(a,b){return b.reserved > a.reserved});
 
         for(var i=0; i< json.length; i++) {
             cveApi.state[json[i].cve_id] = json[i].state;
         }
-        cveRenderList(json);
+        cveApi.listUpdated = (new Date()).getTime();
+        window.sessionStorage.cveApi = JSON.stringify(cveApi);
+        cveRenderList(cveApi.list);
     } else {
-        alert('Login to CVE.org first');
+        alert('Login to CVE.org first!');
     }
 }
 
 async function cveReserve(yearOffset) {
+    if(!cveClient) {
+        await newCVESession();
+    }
     if (cveClient) {
         var year = new Date().getFullYear() + (yearOffset ? yearOffset : 0);
         try {
@@ -536,10 +591,9 @@ async function cveReserve(yearOffset) {
                 cve_year: year,
                 short_name: cveApi.short_name
             });
-            //console.log(json);
             return json;
         } catch (e) {
-            //console.log(e);
+            alert('Error reserving ID: ' + e.message);
         }
     } else {
         alert('Please login to CVE Portal');
@@ -603,7 +657,7 @@ function addRichTextCVE(j) {
 function cvssv3_0_to_cvss3_1(j) {
     if(j && j.containers && j.containers.cna && j.containers.cna.metrics) {
         j.containers.cna.metrics.forEach(m => {
-            console.log(m);
+            //console.log(m);
             if(m.cvssV3_0) {
                 m.cvssV3_1 = m.cvssV3_0;
                 m.cvssV3_1.version = "3.1";

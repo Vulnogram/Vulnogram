@@ -8,6 +8,8 @@ if(window.sessionStorage.cveApi) {
             docSchema.definitions.orgId.default = cveApi.org.UUID;
             docSchema.definitions.cveId.examples = cveApi.list.map(i=>i.cve_id);   
         }
+    } else {
+        cveGetList();
     }
 }
 

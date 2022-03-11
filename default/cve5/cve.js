@@ -26,16 +26,16 @@
     class NoCredentialsError extends Error {};
 
     class CveServices {
-        constructor(serviceUri) {
+        constructor(serviceUri, creds) {
             if (serviceUri == null) {
                 serviceUri = 'https://cweawg.mitre.org/api';
             }
 
-            this._request = new CveServicesRequest(serviceUri);
+            this._request = new CveServicesRequest(serviceUri, creds);
         }
 
-        getCveIds() {
-            return this._request.get('cve-id')
+        getCveIds(args) {
+            return this._request.get('cve-id', args)
                 .then(data => data.cve_ids);
         };
 
@@ -135,8 +135,8 @@
     };
 
     class CveServicesRequest {
-        constructor(serviceUri) {
-            this._clientAuth = null;
+        constructor(serviceUri, creds) {
+            this._clientAuth = creds;
             this._serviceUri = serviceUri;
         }
 
@@ -210,9 +210,9 @@
                 this._clientAuth = creds;
             }
 
-            if (window.sessionStorage.getItem('cve-services-creds') == null) {
-                sessionStorage.setItem('cve-services-creds', JSON.stringify(creds));
-            }
+            //if (window.sessionStorage.getItem('cve-services-creds') == null) {
+            //    sessionStorage.setItem('cve-services-creds', JSON.stringify(creds));
+            //}
         }
 
         clientLoginLocalStorage() {
@@ -278,7 +278,6 @@
                     let [user, org] = cred.id.split("|");
                     let key = cred.password;
                     let creds = { key, org, user };
-
                     this.cacheLogin(creds);
 
                     return this._clientAuth;

@@ -1,6 +1,49 @@
+mixin cveLoginBox
+    center.sec.shd.rnd.gap2.pad
+        include CVE.svg
+        br
+        i CVE Services Portal 
+        br
+        i Instantly providing you CVE IDs since 2022
+        form#cveLoginForm(method='POST', onsubmit='cveLogin(event, this); return false;')
+            .pad
+                label.lbl(style="width:10em;") Portal
+                select.bor.txt(name='portal' style="width:11em;")
+                    option(value="https://cveawg.mitre.org/api" selected) production
+                    option(value="https://cveawg-test.mitre.org/api") test
+            .pad
+                label.lbl(style="width:10em;") CNA Short Name
+                input.bor.txt(name='org', type='text', autocomplete='on', "pattern"=".{2,64}" required=true)
+            .pad
+                label.lbl(style="width:10em;") CVE User
+                input.bor.txt(name='user', type='text', autocomplete="on", "pattern"=".+@.+" required=true)
+            .pad
+                label.lbl(style="width:10em;") CNA API Key
+                input.bor.txt(name='key', type='password', autocomplete='off' required=true)
+            .pad.center
+                input.bor.fbn.sfe(type='submit', value='Login')
+
+
+mixin portal
+    div.pad.bor.rnd.sec
+        label.vgi-globe.lbl Portal: 
+            =portalType
+        label.lbl#portalName
+            =portalURL
+        label#cveUser
+            +userstats
+    div.pad#cveToolbar
+        button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve a CVE ID
+        //button.btn.vgi-magic(onclick='cveReserveAndRender(1)') Reserve one for next year
+        button.btn.vgi-reuse(onclick='cveGetList()') Refresh
+    div.gap
+        b.lbl.vgi-inbox My CVE IDs
+    div#cveList
+        table#cveListTable.tbl.sortable
+
 mixin userstats
     details.lbl.popup
-        summary.fbn.vgi-user= userInfo.name ? userInfo.name.first : userInfo.username
+        summary.fbn.vgi-user= userInfo && userInfo.name ? userInfo.name.first : userInfo.username
             |  ▼ 
         dl.pop.wht.bor.rnd.shd.pad
             b.vgi-user= userInfo.username
