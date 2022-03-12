@@ -4,7 +4,7 @@ function tweetJSON(event, link) {
         event.preventDefault();
         return;
     }
-    var id = j.cveMetadata.id;
+    var id = j.cveMetadata.cveId;
    /* var cvelist = textUtil.deep_value(j, 'CNA_private.CVE_list');
     if (cvelist && cvelist.length > 0) {
         id = '';
@@ -73,7 +73,7 @@ async function draftEmail(event, link, renderId) {
             event.preventDefault();
             return;
         }
-        var id = textUtil.deep_value(j, 'cveMetadata.id');
+        var id = textUtil.deep_value(j, 'cveMetadata.cveId');
        /* var cvelist = textUtil.deep_value(j, 'CNA_private.CVE_list');
         if (cvelist && cvelist.length > 0) {
             id = '';
@@ -713,23 +713,26 @@ async function cvePost() {
         /*if (save != undefined) {
             await save();
         }*/
+        if(!cveApi) {
+            await newCVESession();
+        }
         if(cveClient) {
             if(cveApi.apiType === 'test') {
             //console.log('uploading...');
             var j = await mainTabGroup.getValue();
             var j = textUtil.reduceJSON(j);
             var ret = null;
-            if(cveApi.state[j.cveMetadata.id] == 'RESERVED') {
+            if(cveApi.state[j.cveMetadata.cveId] == 'RESERVED') {
                 //console.log('Creating');
-                ret = await cveClient.createCve(j.cveMetadata.id, j);
+                ret = await cveClient.createCve(j.cveMetadata.cveId, j);
             } else {
                 //console.log('uploading');
-                ret = await cveClient.updateCve(j.cveMetadata.id, j);
+                ret = await cveClient.updateCve(j.cveMetadata.cveId, j);
             }
             if (ret.ok) {
                 ret = await ret.json();
                 if(ret && ret.cveMetadata && ret.cveMetadata.state)
-                    cveApi.state[j.cveMetadata.id] = ret.cveMetadata.state;
+                    cveApi.state[j.cveMetadata.cveId] = ret.cveMetadata.state;
                 infoMsg.innerText = ret.message;
                 hideJSONerrors();
             } else {
