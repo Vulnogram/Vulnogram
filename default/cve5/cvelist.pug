@@ -25,24 +25,53 @@ mixin cveLoginBox
 
 
 mixin portal
-    div.pad.bor.rnd.sec
-        label.vgi-globe.lbl Portal: 
-            =portalType
-        label.lbl#portalName
-            =portalURL
-        label#cveUser
+    - var y = new Date().getFullYear()
+    header.pad.ban.sec.rnd
+        .left
+            label.vgi-globe.lbl Portal: 
+                =portalType
+            span.btg
+                        button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve One CVE
+                        details.popup
+                            summary.btn ▼ 
+                            dl.pop.wht.bor.rnd.shd.pad.rows
+                                dt 
+                                    button.btn.vgi-magic(onclick='cveReserveAndRender(1)') Reserve one for year 
+                                        = y + 1
+                                dt
+                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve 5
+                                dt
+                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve 10
+            #cveStatusMessage
+        label.right#cveUser
             +userstats
-    div.pad#cveToolbar
-        button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve a CVE ID
-        //button.btn.vgi-magic(onclick='cveReserveAndRender(1)') Reserve one for next year
-        button.btn.vgi-reuse(onclick='cveGetList()') Refresh
-    div.gap
-        b.lbl.vgi-inbox My CVE IDs
+    form#cvePortalFilter.gap
+        .lbl State
+        .rdg
+            .form-control
+                input.hid(id="chkall" type="radio" name="fstate" value="")
+                label.lbl.vgi-misc(for="chkall") All
+            .form-control
+                input.hid(id="chkres" type="radio" name="fstate" value="RESERVED" checked=true)
+                label.lbl.vgi-edit(for="chkres") Reserved
+            .form-control
+                input.hid(id="chkpub" type="radio" name="fstate" value=(portalType == 'test' ? "PUBLISHED" : "PUBLIC"))
+                label.lbl.vgi-globe(for="chkpub") Published
+            .form-control
+                input.hid(id="chkrej" type="radio" name="fstate" value=(portalType == 'test' ? "REJECT" : "REJECTED"))
+                label.lbl.vgi-no(for="chkrej") Rejected
+        .lbl Year
+        select.lbl.txt(name="y")
+            while y > 1998
+                option(value=y)=y
+                - y--;
+        |  
+        button.btn.vgi-reuse(onclick='event.preventDefault();cveGetList();return false;') Go
     div#cveList
         table#cveListTable.tbl.sortable
 
 mixin userstats
-    details.lbl.popup
+    details.popup
         summary.fbn.vgi-user= userInfo && userInfo.name ? userInfo.name.first : userInfo.username
             |  ▼ 
         dl.pop.wht.bor.rnd.shd.pad

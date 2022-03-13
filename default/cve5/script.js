@@ -1,3 +1,5 @@
+var currentYear = new Date().getFullYear();
+
 function tweetJSON(event, link) {
     var j = mainTabGroup.getValue();
     if (!j) {
@@ -564,7 +566,24 @@ async function cveGetList() {
         await newCVESession();
     }
     if(cveClient) {
-        var json = await cveClient.getCveIds({state:'RESERVED'});
+        var filter = {
+            state: 'RESERVED',
+            cve_id_year: currentYear
+        }
+        var cveForm = document.getElementById("cvePortalFilter");
+        if(cveForm) {
+            if(cveForm.fstate) {
+                if(cveForm.fstate.value) {
+                    filter.state = cveForm.fstate.value;
+                } else {
+                    delete filter.state;
+                }
+            }
+            if(cveForm.y) {
+                filter.cve_id_year = cveForm.y.value;
+            }
+        }
+        var json = await cveClient.getCveIds(filter);
 
         cveApi.list = json.sort(function(a,b){return b.reserved > a.reserved});
 
@@ -578,19 +597,19 @@ async function cveGetList() {
         alert('Login to CVE.org first!');
     }
 }
-
 async function cveReserve(yearOffset) {
     if(!cveClient) {
         await newCVESession();
     }
     if (cveClient) {
-        var year = new Date().getFullYear() + (yearOffset ? yearOffset : 0);
+        var year = currentYear + (yearOffset ? yearOffset : 0);
         try {
             var json = await cveClient.reserveCveIds({
                 amount: 1,
                 cve_year: year,
                 short_name: cveApi.short_name
             });
+            console.log(json);
             return json;
         } catch (e) {
             alert('Error reserving ID: ' + e.message);
@@ -724,10 +743,10 @@ async function cvePost() {
             var ret = null;
             if(cveApi.state[j.cveMetadata.cveId] == 'RESERVED') {
                 //console.log('Creating');
-                ret = await cveClient.createCve(j.cveMetadata.cveId, j);
+                ret = await cveClient.createCve(j.cveMetadata.cveId, {cnaContainer:j.containers.cna});
             } else {
                 //console.log('uploading');
-                ret = await cveClient.updateCve(j.cveMetadata.cveId, j);
+                ret = await cveClient.updateCve(j.cveMetadata.cveId, {cnaContainer:j.containers.cna});
             }
             if (ret.ok) {
                 ret = await ret.json();
@@ -764,8 +783,16 @@ async function cvePost() {
 
 async function cveReserveAndRender(yearOffset) {
     if(cveClient) {
-        await cveReserve(yearOffset);
+        var r = await cveReserve(yearOffset);
+        console.log(r);
+        var m = document.getElementById("cveStatusMessage");
+        if(m && r.cve_ids) {
+            m.innerText = "Got " + r.cve_ids[0].cve_id
+        } else {
+            m.innerText = "Failed to get a CVE ID";
+        }
         await cveGetList();
+        return r;
     } else {
         alert('Please login to CVE Portal');
     }

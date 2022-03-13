@@ -3,6 +3,10 @@ body{
  --hig: #e5ebec;
 }   
 
+#cveUser .pop {
+  right: 2em !important;
+}
+
 .CVSS.NONE {
   background-color: rgb(162, 213, 114);
 }

@@ -102,11 +102,11 @@
         }
 
         createCve(id, schema) {
-            return this._request.post(`cve/${id}`, undefined, schema);
+            return this._request.post(`cve/${id}/cna`, undefined, schema);
         }
 
         updateCve(id, schema) {
-            return this._request.put(`cve/${id}`, undefined, schema);
+            return this._request.put(`cve/${id}/cna`, undefined, schema);
         }
 
         getOrgInfo() {

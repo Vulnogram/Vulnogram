@@ -193,7 +193,7 @@ body {
   font-size: 0;
 }
 .pop {
-    position: absolute;
+    position:absolute;
     z-index: 100;
 }
 
@@ -439,6 +439,15 @@ box-shadow: 0 0 0 0.2em rgba(147, 147, 147, 0.3);
     transition: all 0.2s;
 }
 
+/* button group */
+.btg {
+    display: inline-flex;
+    flex-direction: row;
+}
+.btg .btn{
+    margin-right: 0px;
+}
+
 .rdg {
     font-size: 14px;
     display: inline-flex;
@@ -455,28 +464,26 @@ box-shadow: 0 0 0 0.2em rgba(147, 147, 147, 0.3);
     border-radius: 0px;
 }
 
-.rdg input[type="radio"] {
+.rdg input[type="checkbox"], .rdg input[type="radio"] {
     display: none;
 }
 
-
+.rdg input[type="checkbox"]:checked + .lbl,
 .rdg input[type="radio"]:checked + .lbl,
 .rdg input[type="radio"] + .lbl:hover,
 .rdg input[type="radio"] + .lbl:active {
-    background-color: var(--sec);
+    background-color: Highlight;
+    color: HighlightText;
     border: 1px solid var(--bor2);
     z-index: 1;
 }
+.rdg input[type="checkbox"]:checked + .lbl:hover,
 .rdg input[type="radio"] + .lbl:hover,
 .rdg input[type="radio"] + .lbl:active {
     z-index: 2;
     border-color: var(--lnk);
 outline: none;
 box-shadow: 0 0 0 0.2em rgba(3,102,214,0.3);
- 
-    
-/*    outline: 3px solid rgba(114, 162, 217, 0.33);
-    outline-offset: -1px;*/
 }
 
 
