@@ -275,7 +275,6 @@ function versionStatusTable5(affected) {
         if (p.defaultStatus)
             showCols[p.defaultStatus] = true;
     }
-    //console.log(t);
     return({groups:nameAndPlatforms, vals:t, show: showCols});
 }
 
@@ -316,7 +315,6 @@ function domhtml(html) {
     text = htmltoText(html) || "";
     let doc = new DOMParser().parseFromString('<pre>' + text + '</pre>', 'text/html');
     var ret = doc.body.innerText || "";
-    //console.log(html + '\n' + text + '\n' + ret);
     return ret;
 }
 
@@ -436,11 +434,9 @@ function resetClient() {
 }
 /*
 async function updateLogin(event, uInput) {
-    console.log(uInput.form);
     var u = uInput.value;
     if(u && u.includes('|')) {
         var [user, org] = u.split('|');
-        console.log(user + org);
         uInput.form.x.value = user;
         uInput.form.y.value = org;
     }
@@ -538,13 +534,15 @@ async function cveLogout(URL) {
 }
 
 async function cveRenderList(l) {
-    if (l && document.getElementById('cveListTable')) {
-        document.getElementById('cveListTable').innerHTML = cveRender({
+    if (l && document.getElementById('cveList')) {
+        document.getElementById('cveList').innerHTML = cveRender({
             ctemplate: 'listIds',
             cveIds: l,
             editable: (cveApi.apiType == 'test')
         })
-        new Tablesort(document.getElementById('cveListTable'));
+        if(l.length > 0) {
+            new Tablesort(document.getElementById('cveListTable'));
+        }
         docSchema.definitions.cveId.examples = l.map(i=>i.cve_id);
         document.getElementById('root.cveMetadata.cveId-datalist').innerHTML = cveRender({
             ctemplate: 'reserveds',
@@ -583,12 +581,19 @@ async function cveGetList() {
                 filter.cve_id_year = cveForm.y.value;
             }
         }
+        if (document.getElementById('cveList')) {
+            document.getElementById('cveList').innerHTML = '<center><div class="spinner"></div></center>';
+        }
         var json = await cveClient.getCveIds(filter);
+        if(json && json.length > 0) {
+            cveApi.list = json.sort((b,a) => (a.reserved > b.reserved) ? 1 : ((b.reserved > a.reserved) ? -1 : 0));
 
-        cveApi.list = json.sort(function(a,b){return b.reserved > a.reserved});
-
-        for(var i=0; i< json.length; i++) {
-            cveApi.state[json[i].cve_id] = json[i].state;
+            for(var i=0; i< json.length; i++) {
+                cveApi.state[json[i].cve_id] = json[i].state;
+            }
+        } else {
+            cveApi.list = [];
+            cveApi.state = {};
         }
         cveApi.listUpdated = (new Date()).getTime();
         window.sessionStorage.cveApi = JSON.stringify(cveApi);
@@ -609,7 +614,6 @@ async function cveReserve(yearOffset) {
                 cve_year: year,
                 short_name: cveApi.short_name
             });
-            console.log(json);
             return json;
         } catch (e) {
             alert('Error reserving ID: ' + e.message);
@@ -676,7 +680,6 @@ function addRichTextCVE(j) {
 function cvssv3_0_to_cvss3_1(j) {
     if(j && j.containers && j.containers.cna && j.containers.cna.metrics) {
         j.containers.cna.metrics.forEach(m => {
-            //console.log(m);
             if(m.cvssV3_0) {
                 m.cvssV3_1 = m.cvssV3_0;
                 m.cvssV3_1.version = "3.1";
@@ -784,10 +787,9 @@ async function cvePost() {
 async function cveReserveAndRender(yearOffset) {
     if(cveClient) {
         var r = await cveReserve(yearOffset);
-        console.log(r);
         var m = document.getElementById("cveStatusMessage");
-        if(m && r.cve_ids) {
-            m.innerText = "Got " + r.cve_ids[0].cve_id
+        if(m && r.length > 0) {
+            m.innerText = "Got " + r.map(x=>x.cve_id).join(', ');
         } else {
             m.innerText = "Failed to get a CVE ID";
         }

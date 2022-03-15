@@ -42,7 +42,7 @@ mixin portal
                                     button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve 5
                                 dt
                                     button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve 10
-            #cveStatusMessage
+            .lbl#cveStatusMessage
         label.right#cveUser
             +userstats
     form#cvePortalFilter.gap
@@ -68,7 +68,6 @@ mixin portal
         |  
         button.btn.vgi-reuse(onclick='event.preventDefault();cveGetList();return false;') Go
     div#cveList
-        table#cveListTable.tbl.sortable
 
 mixin userstats
     details.popup
@@ -142,34 +141,38 @@ mixin reserveds
             option(value=c.cve_id)='⛔ Rejected by ' + c.requested_by.user
 
 mixin listIds
-    - var stateIcons = {'RESERVED':'vgi-edit', 'PUBLISHED':'vgi-globe', 'REJECTED':'vgi-no'}
-    table.tbl.sortable
-        thead
-            tr
-                th ID
-                th State
-                th Requester
-                th(aria-sort="ascending") Created
-                th Modified
-        tbody
-          each c in cveIds
-            tr(data=c.state)
-                td
-                    if editable
-                        a(href="javascript:cveLoad('"+c.cve_id+"')")=c.cve_id
-                    else
-                        =c.cve_id
-                td
-                    if c.state == 'RESERVED'
-                        i(class=stateIcons[c.state]?stateIcons[c.state]:'')=c.state
-                    else
-                        a.vgi-ext(class=stateIcons[c.state]?stateIcons[c.state]:'', href="https://www.cve.org/CVERecord?id="+c.cve_id)
-                            =c.state
-                td=c.requested_by.user
-                td
-                    +date(c.time.created)
-                td
-                    +date(c.time.modified)
+    if cveIds && cveIds.length > 0
+        - var stateIcons = {'RESERVED':'vgi-edit', 'PUBLISHED':'vgi-globe', 'REJECTED':'vgi-no'}
+        table#cveListTable.tbl.sortable
+            thead
+                tr
+                    th ID
+                    th State
+                    th Requester
+                    th(aria-sort="ascending") Created
+                    th Modified
+            tbody
+                each c in cveIds
+                    tr(data=c.state)
+                        td
+                            if editable
+                                a(href="javascript:cveLoad('"+c.cve_id+"')")=c.cve_id
+                            else
+                                =c.cve_id
+                        td
+                            if c.state == 'RESERVED'
+                                i(class=stateIcons[c.state]?stateIcons[c.state]:'')=c.state
+                            else
+                                a.vgi-ext(class=stateIcons[c.state]?stateIcons[c.state]:'', href="https://www.cve.org/CVERecord?id="+c.cve_id)
+                                    =c.state
+                        td=c.requested_by.user
+                        td
+                            +date(c.time.created)
+                        td
+                            if c.time.modified != c.time.created
+                                +date(c.time.modified)
+    else
+        i No CVE IDs found!
 
 block red
     if ctemplate != undefined

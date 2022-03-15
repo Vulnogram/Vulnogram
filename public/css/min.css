@@ -1294,3 +1294,29 @@ div[data-schemapath*=".cvss"] .rdg .form-control:first-child input[type="radio"]
   div[data-schemapath*=".cvss"] .rdg .form-control:last-child input[type="radio"]:checked+label {
     background-color: rgb(240, 130, 120);
   }
+
+  .spinner {
+    background-image: url(logo.gif);
+    content: "";
+    display: block;
+    width: 120px;
+    height: 120px;
+    background-repeat: no-repeat;
+    background-position: center center;
+  }
+  .spinner::before {
+    border: 10px solid #f3f3f3; /* Light grey */
+    border-top: 10px solid #3498db; /* Blue */
+    border-radius: 50%;
+    content: "";
+    display: block;
+    width: 100px;
+    height: 100px;
+    animation: spin 1s linear infinite;
+    text-align: center;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }

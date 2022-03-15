@@ -40,8 +40,10 @@
         };
 
         reserveCveIds(args) {
-            return this._request.post('cve-id', args)
+            var x = this._request.post('cve-id', args)
                 .then(data => data.cve_ids);
+            console.log(x);
+            return x;
         }
 
         reserveCveId(year = new Date().getFullYear()) {
@@ -376,7 +378,8 @@
                         opts.body = JSON.stringify(body);
                     }
 
-                    return fetch(`${this._serviceUri}/${path}${queryPath}`, opts);
+                    return fetch(`${this._serviceUri}/${path}${queryPath}`, opts)
+                        .then(res => res.json());
                 });
         }
 
