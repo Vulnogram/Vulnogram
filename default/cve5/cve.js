@@ -33,12 +33,8 @@
     class MiddlewareError extends Error {};
 
     class CveServices {
-        constructor(serviceUri) {
-            if (serviceUri == undefined) {
-                serviceUri = 'https://cveawg-test.mitre.org/api';
-            }
-
-            this._middleware = new CveServicesMiddleware(serviceUri);
+        constructor(serviceUri = 'https://cveawg.mitre.org/api', swPath = 'sw.js') {
+            this._middleware = new CveServicesMiddleware(serviceUri, swPath);
             this._request = null;
         }
 
@@ -178,41 +174,53 @@
     };
 
     class CveServicesMiddleware {
-        constructor(serviceUri) {
-            this.worker;
+        constructor(serviceUri = 'https://cweawg.mitre.org/api', swPath = 'sw.js') {
+            this.serviceUri = serviceUri;
+            this.registration;
+            this.swPath = swPath;
 
             if (!('serviceWorker' in navigator)) {
                 throw MiddlewareError("Service Workers are not available in your browser.");
             }
-
-            let setServiceUri = () => {
-                let msg = {
-                    type: 'init',
-                    serviceUri,
-                };
-
-                this.send(msg);
-            }
-
-            navigator.serviceWorker.register("/js/cve5sw.js")
-                     .then(reg => {
-                         this.worker = reg;
-
-                         reg.onupdatefound = () => {
-                             const worker = reg.installing;
-
-                             if (worker) {
-                                 worker.onstatechange = () => {
-                                    if (worker.state === 'activated') {
-                                        setServiceUri();
-                                    }
-                                 }
-                             }
-                         }
-                    });
         }
 
-        simpleMessage(msg) {
+        get worker() {
+            if (this.registration) {
+                return Promise.resolve(this.registration.active);
+            }
+
+            let serviceUri = this.serviceUri;
+
+            let initWorker = (worker) => {
+                let init_msg = { type: 'init',
+                                serviceUri };
+
+                this.simpleMessage(worker, init_msg);
+            };
+
+            return navigator.serviceWorker.register(this.swPath)
+                .then(reg => {
+                    this.registration = reg;
+
+                    if (reg.installing != undefined) {
+                        return new Promise(resolve => {
+                            let worker = reg.installing;
+
+                            worker.addEventListener('statechange', (e) => {
+                                if (e.target.state == 'activated') {
+                                    initWorker(e.target);
+                                    resolve(e.target);
+                                }
+                            });
+                        });
+                    } else {
+                        initWorker(reg.active);
+                        return reg.active;
+                    }
+                });
+        }
+
+        simpleMessage(worker, msg) {
             return new Promise(resolve => {
                 let channel = new MessageChannel();
 
@@ -220,19 +228,21 @@
                     resolve(msg.data);
                 };
 
-                this.worker.active.postMessage(msg, [channel.port2]);
+                worker.postMessage(msg, [channel.port2]);
             }, reject => {
-                this.worker.onmessageerror = reject;
+                worker.onmessageerror = reject;
             });
         }
 
         send(msg) {
-            return this.simpleMessage(msg).then(res => {
-                if ('error' in res) {
-                    return Promise.reject(res.error);
-                } else {
-                    return res.data;
-                }
+            return this.worker.then(worker => {
+                return this.simpleMessage(worker, msg).then(res => {
+                    if ('error' in res) {
+                        return Promise.reject(res.error);
+                    } else {
+                        return res.data;
+                    }
+                });
             });
         }
 
@@ -294,7 +304,10 @@
         }
 
         destroy() {
-            return this.worker.unregister();
+            if (this.registration)
+                return this.registration.unregister();
+
+            return Promise.resolve(false);
         }
     }
 

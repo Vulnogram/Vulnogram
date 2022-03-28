@@ -57,7 +57,7 @@ defaultOpts = () => {
 };
 
 getURL = (path, query) => {
-    let url = new URL('/api/'+path, storage.serviceUri);
+    let url = new URL(`/api/${path}`, storage.serviceUri);
 
     if (query) {
         for (const [k, v] of Object.entries(query)) {
@@ -100,11 +100,9 @@ requestService = (event) => {
 };
 
 self.onmessage = e => {
-    console.log(e);
     switch (e.data.type) {
         case 'init':
             if ('serviceUri' in e.data) {
-                console.log(e.data);
                 storage.serviceUri = e.data.serviceUri;
                 clientReply(e, {data: 'ok'});
             }
