@@ -492,36 +492,30 @@ async function cveLogin(elem, credForm) {
     elem.preventDefault();
     var URL=credForm.portal.value;
     var type = credForm.portal.options[credForm.portal.selectedIndex].text;
+
     if (!cveClient) {
         console.log(URL);
-        cveClient = await new CveServices();
+        cveClient = new CveServices("https://cveawg.mitre.org/api", "/js/cve5sw.js");
     }
-    var loggedIn = false;
-    try {
-        if(!credForm.checkValidity()) {
-            return(false);
-        }
-        var a = await cveClient.login(credForm.user.value, credForm.org.value, credForm.key.value);
-        //cveApi.userInfo = await cveClient.getOrgUser(credForm.user.value);
-        console.log(a);
-        loggedIn = true;
-    } catch (er) {
-        alert('Error logging in!' + er.message);
-        console.log(er);
-        //resetClient();
-        return;
+
+    if(!credForm.checkValidity()) {
+        return(false);
     }
-    if(loggedIn) {
+
+    let renderForm = async () => {
         document.getElementById('cvePortal').innerHTML = cveRender({
-                portalType: type,
-                portalURL: URL, 
-                ctemplate: 'portal',
-                userInfo: cveApi.userInfo,
-                org: cveApi.org
+            portalType: type,
+            portalURL: URL,
+            ctemplate: 'portal',
+            userInfo: cveApi.userInfo,
+            org: cveApi.org
         });
+
         await cveGetList(cveClient);
-    }
-    
+    };
+
+    cveClient.login(credForm.user.value, credForm.org.value, credForm.key.value)
+             .then(res => renderForm());
 }
 
 async function cveLogout(URL) {
