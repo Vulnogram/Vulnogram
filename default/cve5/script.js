@@ -495,7 +495,7 @@ async function cveLogin(elem, credForm) {
 
     if (!cveClient) {
         console.log(URL);
-        cveClient = new CveServices("https://cveawg.mitre.org/api", "/js/cve5sw.js");
+        cveClient = new CveServices(URL, "/js/cve5sw.js");
     }
 
     if(!credForm.checkValidity()) {
@@ -514,8 +514,9 @@ async function cveLogin(elem, credForm) {
         await cveGetList(cveClient);
     };
 
-    cveClient.login(credForm.user.value, credForm.org.value, credForm.key.value)
-             .then(res => renderForm());
+    await cveClient.login(credForm.user.value, credForm.org.value, credForm.key.value);
+    cveApi.userInfo = await cveClient.getOrgUser(credForm.user.value);
+    renderForm();
 }
 
 async function cveLogout(URL) {
