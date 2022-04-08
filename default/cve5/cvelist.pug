@@ -71,19 +71,19 @@ mixin portal
 
 mixin userstats
     details.popup
-        summary.fbn.vgi-user= userInfo && userInfo.name ? userInfo.name.first : userInfo.username
+        summary.fbn.vgi-user= userInfo && userInfo.name ? userInfo.name.first : userInfo.username ? userInfo.username : 'undef'
             |  ▼ 
         dl.pop.wht.bor.rnd.shd.pad
             b.vgi-user= userInfo ? userInfo.username : 'undefined!'
             dt Roles:  
-                b.vgi-cap=userInfo ? userInfo.authority.active_roles : 'undefined!'
+                b.vgi-cap=userInfo && userInfo.authority ? userInfo.authority.active_roles : 'undefined!'
             hr
             dt Org:  
-                b=org.name
+                b=org ? org.name : 'undefined'
             dt ShortName:  
-                b= org.short_name
+                b= org ? org.short_name : 'undefined'
             dt Role:  
-                b= org.authority.active_roles
+                b= org && org.authority ? org.authority.active_roles : 'undefined'
             hr
             span.vgi-exit.fbn(onclick="cveLogout()") Logout!
 

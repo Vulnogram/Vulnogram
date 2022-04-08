@@ -230,33 +230,34 @@ function versionStatusTable5(affected) {
                 var major = undefined;//major ? major[1] : '';
                 var pFullName = [(p.vendor ? p.vendor + ' ' : '') + pname + (major ? ' ' + major : ''), platforms, modules, others];
                 nameAndPlatforms[pFullName] = pFullName;
-                if (v.version) {
-                    showCols[v.status] = true;
-                    if(!v.changes) {
-                        if(v.lessThan) {
-                            rows[v.status].push('>= ' + v.version + ' to < ' + v.lessThan);
-                        } else if(v.lessThanOrEqual) {
-                            rows[v.status].push('>= ' + v.version + ' to <= ' + v.lessThan);
-                        } else {
-                            rows[v.status].push('= ' + v.version);
-                        }
+                if (!v.version) {
+                    v.version = 'unspecified';
+                }
+                showCols[v.status] = true;
+                if(!v.changes) {
+                    if(v.lessThan) {
+                        rows[v.status].push('>= ' + v.version + ' to < ' + v.lessThan);
+                    } else if(v.lessThanOrEqual) {
+                        rows[v.status].push('>= ' + v.version + ' to <= ' + v.lessThanOrEqual);
                     } else {
-                        var prevStatus = v.status;
-                        var prevVersion = v.version;
-                        for(c of v.changes) {
-                            showCols[c.status] = true;
-                            rows[prevStatus].push('>= ' + prevVersion + ' to < ' + c.at);
-                            prevStatus = c.status;
-                            prevVersion = c.at;
-                        }
-                        if(v.lessThan) {
-                            rows[prevStatus].push('>= ' + prevVersion + (v.lessThan != prevVersion ? ' to < ' + v.lessThan : ''));
-                        } else if(v.lessThanOrEqual) {
-                            rows[prevStatus].push('>= ' + prevVersion + (v.lessThanOrEqual != prevVersion ? ' to < ' + v.lessThanOrEqual : ''));
-                        } else {
-                            rows[prevStatus].push(">=" + prevVersion);
-                        }                  
+                        rows[v.status].push('= ' + v.version);
                     }
+                } else {
+                    var prevStatus = v.status;
+                    var prevVersion = v.version;
+                    for(c of v.changes) {
+                        showCols[c.status] = true;
+                        rows[prevStatus].push('>= ' + prevVersion + ' to < ' + c.at);
+                        prevStatus = c.status;
+                        prevVersion = c.at;
+                    }
+                    if(v.lessThan) {
+                        rows[prevStatus].push('>= ' + prevVersion + (v.lessThan != prevVersion ? ' to < ' + v.lessThan : ''));
+                    } else if(v.lessThanOrEqual) {
+                        rows[prevStatus].push('>= ' + prevVersion + (v.lessThanOrEqual != prevVersion ? ' to < ' + v.lessThanOrEqual : ''));
+                    } else {
+                        rows[prevStatus].push(">=" + prevVersion);
+                    }                  
                 }
                 if(!t[pFullName]) t[pFullName] = [];
                 //if(!t[pFullName][v.version]) t[pFullName][v.version] = [];
@@ -266,15 +267,18 @@ function versionStatusTable5(affected) {
         var pFullName = [(p.vendor ? p.vendor + ' ' : '') + pname + (major ? ' ' + major : ''), platforms, modules, others];
         nameAndPlatforms[pFullName] = pFullName;
         var rows = {};
-        rows[p.defaultStatus] = ["everything else"];
-        if(!t[pFullName]) {
-            t[pFullName] = [rows];
-        } else {
-            t[pFullName].push(rows);
-        }
-        if (p.defaultStatus)
+        if (p.defaultStatus) {
+            rows[p.defaultStatus] = ["everything else"];
             showCols[p.defaultStatus] = true;
+            if(!t[pFullName]) {
+                t[pFullName] = [rows];
+            } else {
+                t[pFullName].push(rows);
+            }
+        }
     }
+    //console.log(nameAndPlatforms);
+    //console.log(t);
     return({groups:nameAndPlatforms, vals:t, show: showCols});
 }
 
@@ -432,6 +436,24 @@ function resetClient() {
         state: {}
     } 
 }
+
+async function checkSession() {
+    if('serviceWorker' in navigator && 'cveApi' in window.sessionStorage) {
+        cveApi = JSON.parse(window.sessionStorage.cveApi);
+        cveClient = new CveServices(URL, "/js/cve5sw.js");
+        var u = undefined;
+        try{
+            u = await cveClient.getOrgUser();
+        } catch(e) {
+            return false;
+        }
+        if(u) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
 /*
 async function updateLogin(event, uInput) {
     var u = uInput.value;
@@ -502,26 +524,28 @@ async function cveLogin(elem, credForm) {
         return(false);
     }
 
-    let renderForm = async () => {
+    let renderForm = async (userInfo, orgInfo) => {
         document.getElementById('cvePortal').innerHTML = cveRender({
             portalType: type,
             portalURL: URL,
             ctemplate: 'portal',
-            userInfo: cveApi.userInfo,
-            org: cveApi.org
+            userInfo:userInfo,
+            org: orgInfo
         });
-
-        await cveGetList(cveClient);
+        await cveGetList();
     };
 
     await cveClient.login(credForm.user.value, credForm.org.value, credForm.key.value);
-    cveApi.userInfo = await cveClient.getOrgUser(credForm.user.value);
-    renderForm();
+    var userInfo = await cveClient.getOrgUser(credForm.user.value);
+    var orgInfo = await cveClient.getOrgInfo();
+    cveApi.url = URL;
+    window.sessionStorage.cveApi = JSON.stringify(cveApi);
+    renderForm(userInfo, orgInfo);
 }
 
 async function cveLogout(URL) {
     resetClient();
-    //window.sessionStorage.removeItem('cveApi');
+    window.sessionStorage.removeItem('cveApi');
     document.getElementById('cvePortal').innerHTML = cveRender({
         ctemplate: 'cveLoginBox'
     })
@@ -566,24 +590,25 @@ async function cveGetList() {
         if(cveForm) {
             if(cveForm.fstate) {
                 if(cveForm.fstate.value) {
-                    filter.state = cveForm.fstate.value;
+                    filter.state = cveForm.fstate.value + '';
                 } else {
                     delete filter.state;
                 }
             }
             if(cveForm.y) {
-                filter.cve_id_year = cveForm.y.value;
+                filter.cve_id_year = cveForm.y.value + '';
             }
         }
         if (document.getElementById('cveList')) {
             document.getElementById('cveList').innerHTML = '<center><div class="spinner"></div></center>';
         }
-        var json = await cveClient.getCveIds(filter);
-        if(json && json.length > 0) {
-            cveApi.list = json.sort((b,a) => (a.reserved > b.reserved) ? 1 : ((b.reserved > a.reserved) ? -1 : 0));
+        var ret = await cveClient.getCveIds(filter);
+        if(ret && ret.cve_ids) {
+            var idList = ret.cve_ids
+            cveApi.list = idList.sort((b,a) => (a.reserved > b.reserved) ? 1 : ((b.reserved > a.reserved) ? -1 : 0));
 
-            for(var i=0; i< json.length; i++) {
-                cveApi.state[json[i].cve_id] = json[i].state;
+            for(var i=0; i< idList.length; i++) {
+                cveApi.state[idList[i].cve_id] = idList[i].state;
             }
         } else {
             cveApi.list = [];

@@ -72,7 +72,7 @@ doFetch = (event, url, opts) => {
     return fetch(url, opts)
         .then(res => {
             if (res.ok) {
-                clientReply(event, { data: res.body });
+                res.json().then(data => clientReply(event, { data }));
             } else {
                 clientReply(event, { error: res.status });
             }

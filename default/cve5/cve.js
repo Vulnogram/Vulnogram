@@ -50,8 +50,8 @@
 
         // API methods
 
-        getCveIds() {
-            return this._middleware.get('cve-id');
+        getCveIds(args) {
+            return this._middleware.get('cve-id', args);
         };
 
         reserveCveIds(args) {
@@ -104,7 +104,8 @@
             return this._middleware.get('cve-id/'.concat(id));
         }
 
-        updateCveId(id, record) {
+        updateCveId(id, state, org) {
+            let record = { state, org };
             return this._middleware.put('cve-id/'.concat(id), record);
         }
 
@@ -145,7 +146,7 @@
         updateOrgUser(username, userInfo) {
             return this._middleware.orgName
                 .then(orgName =>
-                    this._middleware.put(`org/${orgName}/user/${username}`, userInfo));
+                    this._middleware.put(`org/${orgName}/user/${username}`, undefined, userInfo));
         }
 
         resetOrgUserApiKey(username) {
@@ -174,7 +175,7 @@
     };
 
     class CveServicesMiddleware {
-        constructor(serviceUri = 'https://cweawg.mitre.org/api', swPath = 'sw.js') {
+        constructor(serviceUri = 'https://cveawg.mitre.org/api', swPath = 'sw.js') {
             this.serviceUri = serviceUri;
             this.registration;
             this.swPath = swPath;
@@ -304,8 +305,12 @@
         }
 
         destroy() {
-            if (this.registration)
-                return this.registration.unregister();
+            if (this.registration) {
+                this.registration.unregister();
+                this.registration = undefined;
+
+                return Promise.resolve(true);
+            }
 
             return Promise.resolve(false);
         }
