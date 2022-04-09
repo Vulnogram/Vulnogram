@@ -1,22 +1,15 @@
 docEditor.on('ready', async ()=> {
-    if(cveApi && cveApi.userInfo) {
+    var org = await checkSession();
+    if(org) {
         document.getElementById('cvePortal').innerHTML = cveRender({
                 portalType: cveApi.apiType,
-                portalURL: cveApi.URL, 
+                portalURL: cveApi.url, 
                 ctemplate: 'portal',
-                userInfo: cveApi.userInfo,
-                org: cveApi.org
+                userInfo: await cveClient.getOrgUser(cveApi.user),
+                org: org
         });
         var t = new Date().getTime();
-        if(cveApi.list && cveApi.listUpdated && ((t - cveApi.listUpdated) < 300000)) {
-            cveRenderList(cveApi.list)
-        } else {
-            if(!cveClient) {
-                await newCVESession(cveApi.URL, cveApi.apiType, cveApi.creds);
-            }
-            if(cveClient)
-                cveGetList();
-        }
+        cveGetList();
     } else {
         document.getElementById('cvePortal').innerHTML = cveRender({
             ctemplate: 'cveLoginBox'

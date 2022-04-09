@@ -124,3 +124,9 @@ table.striped td {
   border-width: 0px 1px 0px 1px;
   border : #c1c1c1 1px solid;
 }
+
+#loginErr {
+  font-weight: bold;
+  color: #880000;
+  margin: 1em;
+}

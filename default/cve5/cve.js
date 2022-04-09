@@ -118,11 +118,11 @@
         }
 
         createCve(id, schema) {
-            return this._middleware.post('cve/'.concat(id), undefined, schema);
+            return this._middleware.post(`cve/${id}/cna`, undefined, schema);
         }
 
         updateCve(id, schema) {
-            return this._middleware.put('cve/'.concat(id), undefined, schema);
+            return this._middleware.put(`cve/${id}/cna`, undefined, schema);
         }
 
         getOrgInfo() {

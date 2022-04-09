@@ -5,6 +5,7 @@ mixin cveLoginBox
         i CVE Services Portal 
         br
         i Instantly providing you CVE IDs since 2022
+        #loginErr
         form#cveLoginForm(method='POST', onsubmit='cveLogin(event, this); return false;')
             .pad
                 label.lbl(style="width:10em;") Portal
@@ -46,7 +47,7 @@ mixin portal
         label.right#cveUser
             +userstats
     form#cvePortalFilter.gap
-        .lbl State
+        .lbl Show
         .rdg
             .form-control
                 input.hid(id="chkall" type="radio" name="fstate" value="")
@@ -58,7 +59,7 @@ mixin portal
                 input.hid(id="chkpub" type="radio" name="fstate" value=(portalType == 'test' ? "PUBLISHED" : "PUBLIC"))
                 label.lbl.vgi-globe(for="chkpub") Published
             .form-control
-                input.hid(id="chkrej" type="radio" name="fstate" value=(portalType == 'test' ? "REJECT" : "REJECTED"))
+                input.hid(id="chkrej" type="radio" name="fstate" value=(portalType == 'test' ? "REJECTED" : "REJECTED"))
                 label.lbl.vgi-no(for="chkrej") Rejected
         .lbl Year
         select.lbl.txt(name="y")
@@ -151,6 +152,7 @@ mixin listIds
                     th Requester
                     th(aria-sort="ascending") Created
                     th Modified
+                    th
             tbody
                 each c in cveIds
                     tr(data=c.state)
@@ -171,6 +173,9 @@ mixin listIds
                         td
                             if c.time.modified != c.time.created
                                 +date(c.time.modified)
+                        td
+                            if editable && c.state == 'RESERVED'
+                                a.fbn.vgi-cancel(data=c.cve_id, onclick="cveReject(this, event)") reject
     else
         i No CVE IDs found!
 

@@ -1,16 +1,10 @@
-if(window.sessionStorage.cveApi) {
-    cveApi = JSON.parse(window.sessionStorage.cveApi);
-    if(!cveApi.state) {
-        cveApi.state = {}
-    }
-    if(cveApi.list) {
-        if(docSchema) {
-            docSchema.definitions.orgId.default = cveApi.org.UUID;
-            docSchema.definitions.cveId.examples = cveApi.list.map(i=>i.cve_id);   
-        }
-    } else {
-        cveGetList();
+async function preloadCve() {
+    var cveOrg = await checkSession();
+    if(cveOrg) {
+        var l = await cveGetList();
+        docSchema.definitions.orgId.default = cveOrg.UUID;
+        docSchema.definitions.cveId.examples = l.map(i=>i.cve_id);
     }
 }
-
+preloadCve();
 document.getElementById('post1').addEventListener('click', cvePost);
