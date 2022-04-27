@@ -148,7 +148,6 @@ mixin listIds
             thead
                 tr
                     th ID
-                    th State
                     th Requester
                     th(aria-sort="ascending") Created
                     th Modified
@@ -158,15 +157,13 @@ mixin listIds
                     tr(data=c.state)
                         td
                             if editable
-                                a(href="javascript:cveLoad('"+c.cve_id+"')")=c.cve_id
+                                a(class=stateIcons[c.state]?stateIcons[c.state]:'',href="javascript:cveLoad('"+c.cve_id+"')", title='Load ' + c.state + ' ' + c.cve_id + ' to edit')
+                                    =c.cve_id
                             else
-                                =c.cve_id
-                        td
-                            if c.state == 'RESERVED'
-                                i(class=stateIcons[c.state]?stateIcons[c.state]:'')=c.state
-                            else
-                                a.vgi-ext(class=stateIcons[c.state]?stateIcons[c.state]:'', href="https://www.cve.org/CVERecord?id="+c.cve_id)
-                                    =c.state
+                                span(class=stateIcons[c.state]?stateIcons[c.state]:'', title=c.state)
+                                    =c.cve_id
+                            if c.state != 'RESERVED'
+                                a.vgi-ext(href="https://www.cve.org/CVERecord?id="+c.cve_id)
                         td=c.requested_by.user
                         td
                             +date(c.time.created)
@@ -175,7 +172,7 @@ mixin listIds
                                 +date(c.time.modified)
                         td
                             if editable && c.state == 'RESERVED'
-                                a.fbn.vgi-cancel(data=c.cve_id, onclick="cveReject(this, event)") reject
+                                a.vgi-cancel(data=c.cve_id, onclick="cveReject(this, event)", title="Reject this CVE ID",)
     else
         i No CVE IDs found!
 

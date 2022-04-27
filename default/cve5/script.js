@@ -423,6 +423,7 @@ var preLogin = "";
 
 function resetClient() {
     cveClient.logout();
+    cveClient = null;
     cveApi = {
         user: null,
         org: null
@@ -568,7 +569,7 @@ async function cveLogout(URL) {
     })
 }
 
-async function cveRenderList(l) {
+async function cveRenderList(l, refreshEditor) {
     if (l && document.getElementById('cveList')) {
         document.getElementById('cveList').innerHTML = cveRender({
             ctemplate: 'listIds',
@@ -578,11 +579,10 @@ async function cveRenderList(l) {
         if(l.length > 0) {
             new Tablesort(document.getElementById('cveListTable'));
         }
-        docSchema.definitions.cveId.examples = l.map(i=>i.cve_id);
-        document.getElementById('root.cveMetadata.cveId-datalist').innerHTML = cveRender({
-            ctemplate: 'reserveds',
-            cveIds: l
-        })
+        if(refreshEditor) {
+            docSchema.definitions.cveId.examples = l.map(i=>i.cve_id);
+            editorSetCveDatalist(l);
+        }
         var editableList = document.getElementById('editablelist');
         if(editableList) {
             editableList.innerHTML = cveRender({
@@ -592,11 +592,18 @@ async function cveRenderList(l) {
         }        
     }
 }
+async function editorSetCveDatalist(l) {
+    document.getElementById('root.cveMetadata.cveId-datalist').innerHTML = cveRender({
+        ctemplate: 'reserveds',
+        cveIds: l
+    })
+}
 //var collator = new Intl.Collator(undefined, {numeric: true});
 
 async function cveGetList() {
     var org = await checkSession();
     if(cveClient) {
+        var currentReserved = true;
         var filter = {
             state: 'RESERVED',
             cve_id_year: currentYear
@@ -606,12 +613,18 @@ async function cveGetList() {
             if(cveForm.fstate) {
                 if(cveForm.fstate.value) {
                     filter.state = cveForm.fstate.value + '';
+                    if (filter.state != 'RESERVED') {
+                        currentReserved = false;
+                    }
                 } else {
                     delete filter.state;
                 }
             }
             if(cveForm.y) {
                 filter.cve_id_year = cveForm.y.value + '';
+                if(filter.cve_id_year != currentYear) {
+                    currentReserved = false;
+                }
             }
         }
         if (document.getElementById('cveList')) {
@@ -628,7 +641,7 @@ async function cveGetList() {
                     idState[idList[i].cve_id] = idList[i].state;
                 }
             }
-            cveRenderList(idList);
+            cveRenderList(idList, currentReserved);
             return idList;
         } catch(e) {
             alert(e);
@@ -735,10 +748,12 @@ async function cveLoad(cveId) {
         try{
             var res = await cveClient.getCve(cveId);
             if (res.cveMetadata) {
-                cveApi.state[cveId] = res.cveMetadata.state;
-                if(res.cveMetadata.containers) {
+                //cveApi.state[cveId] = res.cveMetadata.state;
+                if(res.containers) {
                     res = addRichTextCVE(res);
                     res = cvssv3_0_to_cvss3_1(res);
+                } else {
+                    console.log('no containers');
                 }
                 loadJSON(res, cveId, "Loaded " + cveId + " from CVE.org!");
                 mainTabGroup.change(0);
@@ -798,8 +813,8 @@ async function cveReject(elem, event) {
     }
 }
 async function cvePost() {
-    alert('CVE Services Test API is currently not functional: Issue #551')
-    return;
+    //alert('CVE Services Test API is currently not functional: Issue #551')
+    //return;
     if(docEditor.validation_results && docEditor.validation_results.length == 0){
         /*if (save != undefined) {
             await save();
@@ -811,34 +826,42 @@ async function cvePost() {
             var j = await mainTabGroup.getValue();
             var j = textUtil.reduceJSON(j);
             var ret = null;
-            var latestId = await cveClient.getCveId(j.cveMetadata.cveId);
-            if(latestId.state == 'RESERVED') {
-                //console.log('Creating');
-                ret = await cveClient.createCve(j.cveMetadata.cveId, {cnaContainer:j.containers.cna});
-            } else {
-                //console.log('uploading');
-                ret = await cveClient.updateCve(j.cveMetadata.cveId, {cnaContainer:j.containers.cna});
-            }
-            if (ret.ok) {
-                ret = await ret.json();
-                //if(ret && ret.cveMetadata && ret.cveMetadata.state)
-                //    cveApi.state[j.cveMetadata.cveId] = ret.cveMetadata.state;
-                infoMsg.innerText = ret.message;
-                hideJSONerrors();
-            } else {
-                var ret = await ret.json();
-                if (ret.details && ret.details.errors) {
-                    alert(ret.error + ': ' + ret.message);
-                    showJSONerrors(ret.details.errors.map(
-                    a => { return({
-                            path: a.instancePath,
-                            message: a.message
-                        });}
-                        ));
+            try{
+                var latestId = await cveClient.getCveId(j.cveMetadata.cveId);
+                if (latestId.state == 'RESERVED') {
+                    console.log('Creating');
+                    ret = await cveClient.createCve(j.cveMetadata.cveId, {cnaContainer:j.containers.cna});
                 } else {
-                   //console.log(ret);
-                    alert(ret.error + ': ' + ret.message);
+                    console.log('uploading');
+                    ret = await cveClient.updateCve(j.cveMetadata.cveId, {cnaContainer:j.containers.cna});
                 }
+            } catch(e) {
+                alert('Error publishing! Got error ' + e)
+            }
+            console.log(ret);
+            if (ret != null) {
+                if(ret.error) {
+                    if (ret.details && ret.details.errors) {
+                        alert(ret.error + ': ' + ret.message);
+                        showJSONerrors(ret.details.errors.map(
+                        a => { return({
+                                path: a.instancePath,
+                                message: a.message
+                            });}
+                            ));
+                    } else {
+                    console.log(ret);
+                        alert(ret.error + ': ' + ret.message);
+                    }
+                } else {
+                    //if(ret && ret.cveMetadata && ret.cveMetadata.state)
+                    //    cveApi.state[j.cveMetadata.cveId] = ret.cveMetadata.state;
+                    infoMsg.innerText = ret.message;
+                    hideJSONerrors();
+                }
+            } else {
+                infoMsg.innerText = "";
+                errMsg.innerText = "Error publishing CVE";
             }
         } else {
             alert('CVE posting is not currently supported by production CVE services! Try Logging to Test Portal instance');

@@ -19,7 +19,9 @@ body {
     color: var(--txt);
     font-size: 14px;
 }
-
+a {
+    cursor: pointer;
+}
 .wlp {
     background-image: url('back.png');
 }
