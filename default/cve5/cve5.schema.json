@@ -946,7 +946,9 @@
           "description": "If known, the date/time the vulnerability was disclosed publicly.",
           "options": {
             "grid_columns": 4,
-            "formClass": "lni"
+            "formClass": "lni",
+            "hidden": "true"
+
           }
         },
         "problemTypes": {
