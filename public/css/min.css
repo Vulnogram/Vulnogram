@@ -32,9 +32,15 @@ a {
 .ins {
     box-shadow: inset 0px 1px 4px rgba(0,0,0,0.2);   
 }
+hr.bort {
+    border-bottom: 0px;
+    border-left: 0px;
+    border-right: 0px;
+}
 .bort {
     border-top:1px solid var(--bor2); 
 }
+
 .bor {
     border:1px solid var(--bor2);
 }

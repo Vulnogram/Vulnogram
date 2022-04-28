@@ -33,19 +33,24 @@ mixin portal
                 =portalType
             span.btg
                         button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve One CVE
-                        //details.popup
+                        details.popup
                             summary.btn ▼ 
                             dl.pop.wht.bor.rnd.shd.pad.rows
-                                dt 
-                                    button.btn.vgi-magic(onclick='cveReserveAndRender(1)') Reserve one for year 
-                                        = y + 1
                                 dt
                                     button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve 5
                                 dt
                                     button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve 10
+                                dt 
+                                    button.btn.vgi-magic(onclick='cveReserveAndRender(1)') Reserve one for year 
+                                        = y + 1
             .lbl#cveStatusMessage
-        label.right#cveUser
-            +userstats
+        .flx
+            label#cveUser
+                +userstats
+            if userInfo && userInfo.authority && userInfo.authority.active_roles && userInfo.authority.active_roles.includes("ADMIN")
+                label#userMgmt
+                    +usermgmt
+
     form#cvePortalFilter.gap
         .lbl Show
         .rdg
@@ -54,12 +59,12 @@ mixin portal
                 label.lbl.vgi-misc(for="chkall") All
             .form-control
                 input.hid(id="chkres" type="radio" name="fstate" value="RESERVED" checked=true)
-                label.lbl.vgi-edit(for="chkres") Reserved
+                label.lbl.vgi-tag(for="chkres") Reserved
             .form-control
                 input.hid(id="chkpub" type="radio" name="fstate" value=(portalType == 'test' ? "PUBLISHED" : "PUBLIC"))
                 label.lbl.vgi-globe(for="chkpub") Published
             .form-control
-                input.hid(id="chkrej" type="radio" name="fstate" value=(portalType == 'test' ? "REJECTED" : "REJECTED"))
+                input.hid(id="chkrej" type="radio" name="fstate" value=(portalType == 'test' ? "REJECTED" : "REJECT"))
                 label.lbl.vgi-no(for="chkrej") Rejected
         .lbl Year
         select.lbl.txt(name="y")
@@ -78,15 +83,67 @@ mixin userstats
             b.vgi-user= userInfo ? userInfo.username : 'undefined!'
             dt Roles:  
                 b.vgi-cap=userInfo && userInfo.authority ? userInfo.authority.active_roles : 'undefined!'
-            hr
+            span.vgi-edit.fbn(onclick="cveUserUpdate()") Update my details
+            hr.bort
             dt Org:  
                 b=org ? org.name : 'undefined'
             dt ShortName:  
                 b= org ? org.short_name : 'undefined'
             dt Role:  
                 b= org && org.authority ? org.authority.active_roles : 'undefined'
-            hr
+            span.vgi-edit.fbn(onclick="cveOrgUpdate()") Update org details
+            hr.bort
             span.vgi-exit.fbn(onclick="cveLogout()") Logout!
+
+mixin listUsers
+    if users
+        each u, i in users
+            tr
+                td=u.username
+                td=u.name.first
+                td=u.name.last
+                td=u.authority ? u.authority.active_roles : ''
+                td=u.active
+                td
+                    button.btn.vgi-reuse(onclick="cveUserKeyReset(this)",u=u.username) Reset API Key
+
+
+mixin usermgmt
+    details.popup(ontoggle="userlistUpdate(this, event)")
+        summary.fbn.vgi-user Manage Users
+            |  ▼ 
+        div.pop.wht.bor.rnd.shd.pad.usermgmt
+            table.tbl
+                thead
+                    tr
+                        th Username
+                        th Firstname
+                        th Lastname
+                        th Roles
+                        th active
+                        th
+                tbody#userlist
+                    tr
+                        td(colspan=6)
+                            center
+                                .spinner
+                tbody
+                    tr
+                        th
+                            input.txt(name="new_username" placeholder="username/email")
+                        th
+                            input.txt(name="first" placeholder="First name")
+                        th
+                            input.txt(name="last" placeholder="Last name")
+                        th
+                            input.txt(type="checkbox", name="admin")
+                            lable.lbl(for="admin") Admin
+                        th
+                            input.txt(type="checkbox", name="active")
+                            lable.lbl(for="active") Active
+                        th
+                            button.sfe.btn.vgi-magic(onclick="addUser()") Add a new user
+
 
 mixin htext
     if t
@@ -123,7 +180,7 @@ mixin date(value)
 mixin editables
     each c in cveIds
         //-if c.state == 'RESERVED'
-            option(value=c.cve_id)='📝 ' + c.cve_id
+            option(value=c.cve_id)='🏷️ ' + c.cve_id
         if c.state == 'PUBLISHED'
             option(value=c.cve_id)='🌐 Published on '
                 +date(c.time.modified)
@@ -135,7 +192,7 @@ mixin reserveds
     each c in cveIds
         if c.state == 'RESERVED'
             option(value=c.cve_id)
-                i='📝 Reserved by ' + c.requested_by.user
+                i='🏷️ Reserved by ' + c.requested_by.user
         //-if c.state == 'PUBLISHED'
             option(value=c.cve_id)='🌐 Published by ' + c.requested_by.user
         //-if c.state == 'REJECTED'
@@ -143,7 +200,7 @@ mixin reserveds
 
 mixin listIds
     if cveIds && cveIds.length > 0
-        - var stateIcons = {'RESERVED':'vgi-edit', 'PUBLISHED':'vgi-globe', 'REJECTED':'vgi-no'}
+        - var stateIcons = {'RESERVED':'vgi-tag', 'PUBLISHED':'vgi-globe', 'REJECTED':'vgi-no', 'PUBLIC':'vgi-globe'}
         table#cveListTable.tbl.sortable
             thead
                 tr

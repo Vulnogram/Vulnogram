@@ -431,9 +431,7 @@ function resetClient() {
 }
 
 /*
-
 checks if an existing CVE Services session is active 
-
 returns orgInfo if true
 */ 
 async function checkSession() {
@@ -455,63 +453,6 @@ async function checkSession() {
     return false;
 }
 
-/*
-async function updateLogin(event, uInput) {
-    var u = uInput.value;
-    if(u && u.includes('|')) {
-        var [user, org] = u.split('|');
-        uInput.form.x.value = user;
-        uInput.form.y.value = org;
-    }
-}*/
-/*
-async function newCVESession(URL, type, creds) {
-    if(!URL && cveApi) {
-        URL = cveApi.URL;
-    }
-    if(!type && cveApi) {
-        type = cveApi.apiType;
-    }
-    if(!creds && cveApi) {
-        creds = cveApi.creds;
-    }
-
-    cveClient = new CveServices(URL, creds);
-    if(!cveApi || !cveApi.org || !cveApi.creds) { 
-        cveApi.URL = URL; 
-        cveApi.apiType = type;
-        cveApi.user = creds.user;
-        cveApi.short_name = creds.org;
-        cveApi.creds = creds;
-        cveApi.org = await cveClient.getOrgInfo();
-        if(cveApi.org.error) {
-            alert('Error logging in: '+cveApi.org.error + " : "+ cveApi.org.message);
-            resetClient()
-            return false;
-        }
-        cveApi.userInfo = await cveClient.getOrgUser(cveApi.user);
-        if(cveApi.userInfo.error) {
-            alert('Error logging in: '+cveApi.org.error + " : "+ cveApi.org.message);
-            resetClient();
-            return false;
-        }
-        //window.sessionStorage.cveApi = JSON.stringify(cveCache);
-    }
-    if(cveApi.org && cveApi.org.UUID) {
-        var pid = docEditor.getEditor('root.containers.cna.providerMetadata.id');
-        if (pid && pid.getValue() == '00000000-0000-4000-9000-000000000000') {
-            pid.setValue(cveApi.org.UUID);
-        }
-        var aid = docEditor.getEditor('root.cveMetadata.assigner');
-        if (aid && aid.getValue() == '00000000-0000-4000-9000-000000000000') {
-            aid.setValue(cveApi.org.UUID);
-        }
-        return true;
-    }
-    return false;
-}
-*/
-
 async function cveLogin(elem, credForm) {
     if(document.getElementById("loginErr")) {
         document.getElementById("loginErr").innerText = '';
@@ -528,7 +469,7 @@ async function cveLogin(elem, credForm) {
         var type = credForm.portal.options[credForm.portal.selectedIndex].text;
 
         try {
-            if(!cveClient) {
+            if (!cveClient) {
                 cveClient = new CveServices(URL, "/js/cve5sw.js");
             }
             var ret = await cveClient.login(
@@ -569,6 +510,35 @@ async function cveLogout(URL) {
     })
 }
 
+async function userlistUpdate(elem, event){
+    console.log(elem.open);
+    if (elem.open) {
+        var org = await checkSession();
+        if(cveClient) {
+            try {
+                var ret = await cveClient.getOrgUsers();
+                var userlist = document.getElementById('userlist');
+                if(userlist) {
+                    userlist.innerHTML = cveRender({
+                        ctemplate: 'listUsers',
+                        users: ret.users
+                    })
+                }
+            } catch (e) {
+                console.log(e);
+            }
+        }
+    }
+}
+
+async function cveUserKeyReset(elem) {
+    alert('To be done');
+}
+
+async function cveUserUpdate(elem) {
+    alert('To be done');
+}
+
 async function cveRenderList(l, refreshEditor) {
     if (l && document.getElementById('cveList')) {
         document.getElementById('cveList').innerHTML = cveRender({
@@ -589,7 +559,7 @@ async function cveRenderList(l, refreshEditor) {
                 ctemplate: 'editables',
                 cveIds: l
             })
-        }        
+        }
     }
 }
 async function editorSetCveDatalist(l) {
