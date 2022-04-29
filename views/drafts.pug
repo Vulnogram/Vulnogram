@@ -7,8 +7,8 @@ mixin pageHolder(id)
     a(name=id,id=id)
     .wht.bor.shd.gap.pad2.brk
         div(style='float:right')
-            a.btn.vgi-mail.right(type="button",oncontextmenu='draftEmail(event, this, "r'+id+'");',onclick='draftEmail(event, this, "r'+id+'");',value="Email") Email
-            a.btn.vgi-link(href="#"+id) Link
+            a.icn.btn.email.right(type="button",oncontextmenu='draftEmail(event, this, "r'+id+'");',onclick='draftEmail(event, this, "r'+id+'");',value="Email") Email
+            a.icn.btn.link(href="#"+id) Link
         .render(id='r' + id)
             .tred
                 if(ext)

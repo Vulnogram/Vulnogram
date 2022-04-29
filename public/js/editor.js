@@ -20,17 +20,14 @@
 /* globals postURL */
 /* globals idpath */
 
-
 var infoMsg = document.getElementById('infoMsg');
 var errMsg = document.getElementById('errMsg');
 var save1 = document.getElementById('save1');
 var save2 = document.getElementById('save2');
 var editorLabel = document.getElementById('editorLabel');
-var iconTheme = 'vgi-';
+
 var starting_value = {};
 var sourceEditor;
-
-JSONEditor.defaults.languages.en.error_oneOf = "Please fill in the required fields *";
 
 JSONEditor.defaults.resolvers.unshift(function (schema) {
     if (schema.type === "string" && schema.format === "radio") {
@@ -42,114 +39,21 @@ JSONEditor.defaults.templates.custom = function () {
     return {
         compile: function (template) {
             return function (context) {
-                // context contains values of watched fields.
-                // XXX: careful with remote JSON schemas.
-                var ret = eval(template);
-                return ret;
+                return eval(template);
             };
         }
     };
 };
 
-JSONEditor.defaults.editors.array = class mystring extends JSONEditor.defaults.editors.array {
-    build() {
-        super.build();
-        if (this.header) {
-            if(this.options.class) {
-                this.header.className = 'lbl ' + this.options.class;
-            }
-            if(this.isRequired()){
-                this.header.className = this.header.className + ' req'; 
-            }
-        }
-    }
-    /* move the delete button next to object title */
-    _createDeleteButton (i, holder) {
-        var r = super._createDeleteButton(i, holder);
-        holder.parentNode.firstElementChild.appendChild(r);
-        return r;
-    }
-}
-JSONEditor.defaults.editors.table = class mystring extends JSONEditor.defaults.editors.table {
-    build() {
-        super.build();
-        if (this.header) {
-            if(this.options.class) {
-                this.header.className = 'lbl ' + this.options.class;
-            }
-            if(this.isRequired()){
-                this.header.className = this.header.className + ' req'; 
-            } 
-        }
-    }
-}
-
-JSONEditor.defaults.editors.object = class mystring extends JSONEditor.defaults.editors.object {
-    build() {
-        super.build();
-        if (this.title) {
-            if(this.options.class) {
-                this.title.className = this.title.className + ' ' + this.options.class;
-            }
-            if(this.isRequired()){
-                this.title.className = this.title.className + ' req'; 
-            }    
-        }
-    }
-    getValue () {
-        if (!this.dependenciesFulfilled) {
-          return undefined
-        }
-        const result = this.value;
-        const isEmpty = obj => typeof obj === 'undefined' || obj === '' ||
-        (
-          obj === Object(obj) &&
-          Object.keys(obj).length === 0 &&
-          obj.constructor === Object
-        ) || (Array.isArray(obj) && obj.length === 0)
-        if (result && (this.jsoneditor.options.remove_empty_properties || this.options.remove_empty_properties)) {
-          Object.keys(result).forEach(key => {
-            var req = (Array.isArray(this.schema.required)) && this.schema.required.includes(key);
-            if (isEmpty(result[key]) && !req) {
-              delete result[key]
-            }
-          })
-        }
-        return result
-    }
-}
-
-JSONEditor.defaults.editors.string = class mystring extends JSONEditor.defaults.editors.string {
-    addLink (link) {
-        if(this.header) this.header.appendChild(link);
-    }
-    getLink(data) {
-        var style = null;
-        if(data.class) {
-            style=data.class;
-            delete data.class;
-        }
-        var h = super.getLink(data);
-        if(style) {
-            h.setAttribute('class', style);
-        }
-        if(data.target){
-            h.setAttribute('target', data.target)
-        }
-        return h;
-    }
-    build() {
-        super.build();
+JSONEditor.defaults.editors.string = JSONEditor.defaults.editors.string.extend({
+    addLink: function(link) {
+        if(this.control) this.control.appendChild(link);
+    },
+    build: function() {
+        this._super();
         if(this.label && this.options.class) {
             this.label.className = this.label.className + ' ' + this.options.class;
-            if(this.isRequired()){
-                this.label.className = this.label.className + ' req'; 
-            }
         }
-        if(this.options.formClass) {
-            this.control.className = this.control.className + ' ' + this.options.formClass;
-        }
-        //Use html5 datalist to show examples 
         if(this.schema.examples && this.schema.examples.length > 0){
             var dlist = document.createElement('datalist');
             dlist.setAttribute('id', this.path + '-datalist');
@@ -160,14 +64,70 @@ JSONEditor.defaults.editors.string = class mystring extends JSONEditor.defaults.
                 dlist.appendChild(v);
             }
             this.input.setAttribute('list', this.path + '-datalist');
-            this.input.type='search';
             this.container.appendChild(dlist);
         }
     }
+});
+     
+// allow file uploads
+JSONEditor.defaults.options.upload = function (type, file, cbs) {
+
+    //var reader = new FileReader();
+    var xhr = new XMLHttpRequest();
+    var fd = new FormData();
+    fd.append('file1', file);
+    this.xhr = xhr;
+    var self = this;
+    this.xhr.upload.addEventListener("loadstart", function (e) {
+        cbs.updateProgress(0); //
+    }, false);
+
+    this.xhr.upload.addEventListener("progress", function (e) {
+        if (e.lengthComputable) {
+            var percentage = Math.round((e.loaded * 100) / e.total);
+            cbs.updateProgress(percentage);
+            //self.ctrl.update(percentage);
+        }
+    }, false);
+
+    xhr.upload.addEventListener("load", function (e) {
+        //self.ctrl.update(100);
+        cbs.updateProgress(100);
+        //var canvas = self.ctrl.ctx.canvas;
+        //canvas.parentNode.removeChild(canvas);
+    }, false);
+    var uf = function (e) {
+        cbs.failure('Upload failed:');
+    };
+    xhr.addEventListener("error", uf, false);
+    xhr.addEventListener("abort", uf, false);
+
+    xhr.upload.addEventListener("error", uf, false);
+    xhr.upload.addEventListener("abort", uf, false);
+
+    xhr.onreadystatechange = function (oEvent) {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                if (xhr.response == '{"ok":"1"}') {
+                    //console.log(xhr.responseText);
+                    cbs.success(file.name);
+                } else {
+                    cbs.failure('Upload failed: ' + xhr.statusText);
+                }
+            } else if (xhr.status === 404) {
+                cbs.failure('Upload failed: ID Not found. Try saving document first!');
+            }
+        }
+    };
+
+    xhr.open("POST", window.location + '/file');
+    xhr.setRequestHeader('X-CSRF-Token', csrfToken);
+    xhr.overrideMimeType('text/plain; charset=x-user-defined-binary');
+    xhr.send(fd);
 };
 
-JSONEditor.defaults.editors.radio = class radio extends JSONEditor.AbstractEditor {
-    setValue(value, initial) {
+JSONEditor.defaults.editors.radio = JSONEditor.AbstractEditor.extend({
+    setValue: function (value, initial) {
         value = this.typecast(value || '');
 
         // Sanitize value before setting it
@@ -190,29 +150,29 @@ JSONEditor.defaults.editors.radio = class radio extends JSONEditor.AbstractEdito
                 return false;
             }
         }
-    }
-    register() {
-        super.register();
+    },
+    register: function () {
+        this._super();
         if (!this.inputs) return;
         for (var i = 0; i < this.inputs.length; i++) {
             this.inputs[i].setAttribute('name', this.formname);
         }
-    }
-    unregister(){
-        super.unregister();
+    },
+    unregister: function () {
+        this._super();
         if (!this.inputs) return;
         for (var i = 0; i < this.inputs.length; i++) {
             this.inputs[i].removeAttribute('name');
         }
-    }
-    getNumColumns() {
+    },
+    getNumColumns: function () {
         var longest_text = this.getTitle().length;
         for (var i = 0; i < this.schema.enum.length; i++) {
             longest_text = Math.max(longest_text, this.schema.enum[i].length + 4);
         }
         return Math.min(12, Math.max(longest_text / 7, 2));
-    }
-    typecast(value) {
+    },
+    typecast: function (value) {
         if (this.schema.type === "boolean") {
             return !!value;
         } else if (this.schema.type === "number") {
@@ -222,27 +182,27 @@ JSONEditor.defaults.editors.radio = class radio extends JSONEditor.AbstractEdito
         } else {
             return "" + value;
         }
-    }
-    getValue() {
+    },
+    getValue: function () {
         return this.value;
-    }
-    removeProperty() {
-        super.removeProperty();
+    },
+    removeProperty: function () {
+        this._super();
         for (var i = 0; i < this.inputs.length; i++) {
             this.inputs[i].style.display = 'none';
         }
         if (this.description) this.description.style.display = 'none';
         this.theme.disableLabel(this.label);
-    }
-    addProperty() {
-        super.addProperty();
+    },
+    addProperty: function () {
+        this._super();
         for (var i = 0; i < this.inputs.length; i++) {
             this.inputs[i].style.display = '';
         }
         if (this.description) this.description.style.display = '';
         this.theme.enableLabel(this.label);
-    }
-    sanitize(value) {
+    },
+    sanitize: function (value) {
         if (this.schema.type === "number") {
             return 1 * value;
         } else if (this.schema.type === "integer") {
@@ -250,18 +210,12 @@ JSONEditor.defaults.editors.radio = class radio extends JSONEditor.AbstractEdito
         } else {
             return "" + value;
         }
-    }
-    build() {
+    },
+    build: function () {
         var self = this,
             i;
         if (!this.options.compact) {
             this.header = this.label = this.theme.getFormInputLabel(this.getTitle());
-        }
-        if(this.label && this.options.class) {
-            this.label.className = this.label.className + ' ' + this.options.class;
-            if(this.isRequired()){
-                this.label.className = this.label.className + ' req'; 
-            }
         }
         if (this.schema.description) this.description = this.theme.getFormInputDescription(this.schema.description);
 
@@ -290,13 +244,7 @@ JSONEditor.defaults.editors.radio = class radio extends JSONEditor.AbstractEdito
                 this.schema.options.enum_titles[i] :
                 options[i]);
             label.setAttribute('for', this.formname + options[i]);
-            var rdicon = null;
-            if(this.options.icons && this.options.icons[options[i]]) {
-                rdicon = this.options.icons[options[i]];
-            } else if (iconMap[options[i]]) {
-                rdicon = iconMap[options[i]];
-            }
-            label.setAttribute('class', 'lbl' + (rdicon ? ' ' + iconTheme + rdicon  : ''));
+            label.setAttribute('class', 'icn lbl ' + options[i]);
             this.controls[options[i]] = this.theme.getFormControl(this.inputs[options[i]], label);
         }
 
@@ -319,33 +267,33 @@ JSONEditor.defaults.editors.radio = class radio extends JSONEditor.AbstractEdito
             else self.jsoneditor.onChange();
             self.jsoneditor.notifyWatchers(self.path);
         });
-    }
-    enable() {
+    },
+    enable: function () {
         if (!this.always_disabled) {
             var opts = Object.keys(this.inputs);
             for (var i = 0; i < opts.length; i++) {
                 this.inputs[opts[i]].disabled = false;
             }
         }
-        super.enable();
-    }
-    disable() {
+        this._super();
+    },
+    disable: function () {
         //console.log(this.inputs);
         var opts = Object.keys(this.inputs);
         for (var i = 0; i < opts.length; i++) {
             this.inputs[opts[i]].disabled = true;
         }
-        super.disable();
-    }
-    destroy() {
+        this._super();
+    },
+    destroy: function () {
         if (this.label) this.label.parentNode.removeChild(this.label);
         if (this.description) this.description.parentNode.removeChild(this.description);
         for (var i = 0; i < this.inputs.length; i++) {
             this.inputs[i].parentNode.removeChild(this.inputs[i]);
         }
-        super.destroy();
+        this._super();
     }
-};
+});
 
 function tzOffset(x) {
     var offset = new Date(x).getTimezoneOffset(),
@@ -355,9 +303,8 @@ function tzOffset(x) {
 
 // The time is displayed/set in local times in the input,
 //  but setValue, getValue use UTC. JSON output will be in UTC.
-const localTZ = (new Date).toLocaleString("en", {timeZoneName: "short"}).split(" ").pop();
-JSONEditor.defaults.editors.dateTime = class dateTime extends JSONEditor.defaults.editors.string{
-    getValue() {
+JSONEditor.defaults.editors.dateTime = JSONEditor.defaults.editors.string.extend({
+    getValue: function () {
         if (this.value && this.value.length > 0) {
             if (this.value.match(/^\d{4}-\d{2}-\d{2}T[\d\:\.]+$/)) {
                 this.value = this.value + tzOffset(this.value);
@@ -371,8 +318,9 @@ JSONEditor.defaults.editors.dateTime = class dateTime extends JSONEditor.default
         } else {
             return "";
         }
-    }
-    setValue(val) {
+    },
+
+    setValue: function (val) {
         if (val && this.value.match(/^\d{4}-\d{2}-\d{2}T[\d\:\.]+$/)) {
             val = val + tzOffset();
         }
@@ -385,99 +333,86 @@ JSONEditor.defaults.editors.dateTime = class dateTime extends JSONEditor.default
             this.value = this.input.value = "";
         }
         this.jsoneditor.notifyWatchers(this.path);
-    }
-    build() {
+    },
+
+    build: function () {
         this.schema.format = "datetime-local";
-        super.build();
+        this._super();
         this.input.className = "txt";
-        this.input.setAttribute("tz", localTZ);
+        var tzInfo = document.createElement('span');
+        tzInfo.className = "lbl tgrey";
+        tzInfo.textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        this.input.parentNode.appendChild(tzInfo);
     }
-};
+});
 
-
-JSONEditor.defaults.editors.taglist = class taglist extends JSONEditor.defaults.editors.string {
-    getValue() {
-        if(this.tagify && this.tagify.value) {
-            return this.tagify.value.map(item => item.value);
+JSONEditor.defaults.editors.taglist = JSONEditor.defaults.editors.string.extend({
+    getValue: function () {
+        if (this.input && this.input.value) {
+            return this.input.value.split(/[\s,]+/);
         } else {
             return [];
         }
-    }
-    setValue(val) {
+    },
+    setValue: function (val) {
         if (val instanceof Array) {
-            this.tagify.removeAllTags();
-            this.tagify.addTags(val);
+            //this.value = val.split();
+            this.input.value = val.join(' ');
         } else {
-            this.tagify.addTags(val.split(','));
+            this.input.value = val;
         }
         this.onChange(true);
-    }
-    build() {
-        this.schema.format = "taglist";
-        super.build();
-        //console.log('list'+ this.schema.items.examples);
-        this.tagify = new Tagify(this.input, {
-            whitelist: this.schema.items.enum ? this.schema.items.enum : (this.schema.items.examples ? this.schema.items.examples : []),
-            enforceWhitelist: this.schema.items.enum ? true : false,
-            maxTags: this.schema.maxItems ? this.schema.maxItems : 512,
-            dropdown: {
-              maxItems: 40,           // <- mixumum allowed rendered suggestions
-              classname: "tags-look", // <- custom classname for this dropdown, so it could be targeted
-              enabled: 0,             // <- show suggestions on focus
-              closeOnSelect: false    // <- do not hide the suggestions dropdown once an item has been selected
-            }
-          })
-        if(this.options && this.options.inputAttributes && this.options.inputAttributes.placeholder) {
-            this.input.setAttribute('placeholder', this.options.inputAttributes.placeholder)
-        }
-    }
-};
+    },
 
-JSONEditor.defaults.editors.simplehtml = class simplehtml extends JSONEditor.defaults.editors.string {
-    getValue() {
-        var ret = super.getValue();
+    build: function () {
+        this.schema.format = "taglist";
+        this._super();
+    }
+});
+
+JSONEditor.defaults.editors.simplehtml = JSONEditor.defaults.editors.string.extend({
+    getValue: function () {
+        var ret = this._super();
         if(this.wysLoaded) {
             ret = this.wys.getValue();
+        // } else if(this.input) {
+        //    ret = this.input.value;
         }
+        //console.log('GET: ' + this.wys + ' RE= ' + ret);
         return ret;
-    }
+    },
 
-    setValue (value,initial,from_template) {
-        super.setValue(value,initial,from_template);
+    setValue: function(value,initial,from_template) {
+        this._super(value,initial,from_template);
         if (this.wysLoaded) {
             this.wys.setValue(this.input.value);
             
             var sa = this.wys.getValue();
             if(sa != this.input.value) {
                 this.input.value = sa;
+                //console.log('Changed on setting value'+value);
                 this.onChange(true);
             }
+        //} else if(this.input) {
+        //    this.input.value = value;
         } else {
+            //console.log('Set before ready'+value)
+        //    this.contentDiv.innerHTML = this.input.value;
         }
-   }
-    build() {
+   },
+    build: function () {
         this.schema.format = this.format = 'hidden';
 //        this.schema.format = "simplehtml";
-        super.build();
-        if(this.label && this.options.class) {
-            this.label.className = this.label.className + ' ' + this.options.class;
-            if(this.isRequired()){
-                this.label.className = this.label.className + ' req'; 
-            }
-        }
-        this.control.className = 'simplehtml form-control bor';
-        this.toolbar = document.createElement('div');
-        this.toolbar.innerHTML = '<div class="toolbar"><div><span class="btg indent"><a class="sbn vgi-bold" data-wysihtml5-command="bold" title="Bold CTRL+B" href="javascript:;" unselectable="on"></a><a class="sbn vgi-italic" data-wysihtml5-command="italic" title="Italic CTRL+I" href="javascript:;" unselectable="on"></a><a class="sbn vgi-underline" data-wysihtml5-command="underline" title="Underline CTRL+U" href="javascript:;" unselectable="on"></a><a class="sbn vgi-highlight" data-wysihtml5-command="bgColorStyle" title="highlight" color="#666699" data-wysihtml5-command-value="#effa66" href="javascript:;" unselectable="on"></a><!-- <a class="fbn icn strikethrough" data-wysihtml5-command="strike" title="Strike"></a>--></span><span class="btg indent"><a class="sbn vgi-p" data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="p" title="paragraph style" href="javascript:;" unselectable="on"></a><a class="sbn vgi-h1" data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="h1" title="Heading 1" href="javascript:;" unselectable="on"></a><a class="sbn vgi-h2" data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="h2" title="Heading 2" href="javascript:;" unselectable="on"></a><a class="sbn vgi-h3" data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="h3" title="Heading 3" href="javascript:;" unselectable="on"></a><a class="sbn vgi-noformat" data-wysihtml5-command="formatBlock" data-wysihtml5-command-blank-value="true" unselectable="on" title="Clear styles" href="javascript:;"></a></span><span class="btg indent"><a class="sbn vgi-link" data-wysihtml5-command="createLink" title="Hyperlink" href="javascript:;" unselectable="on"></a><a class="sbn vgi-unlink" data-wysihtml5-command="removeLink" title="Unlink" href="javascript:;" unselectable="on"></a><a class="sbn vgi-pic" data-wysihtml5-command="insertImage" title="Insert image" href="javascript:;" unselectable="on"></a><a class="sbn vgi-console" data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="tt" title="Code text" href="javascript:;" unselectable="on"></a><a class="sbn vgi-quote" data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="blockquote" title="Block quote" href="javascript:;" unselectable="on"></a><a class="sbn vgi-table" data-wysihtml5-command="createTable" title="Insert Table" href="javascript:;" unselectable="on"></a></span><span class="btg indent"><a class="sbn vgi-bullet" data-wysihtml5-command="insertUnorderedList" title="Bulletted list" href="javascript:;" unselectable="on"></a><a class="sbn vgi-numbered" data-wysihtml5-command="insertOrderedList" title="Numbered list" href="javascript:;" unselectable="on"></a></span><span class="btg indent"><a class="sbn vgi-undo" data-wysihtml5-command="undo" title="Undo" href="javascript:;" unselectable="on"></a><a class="sbn vgi-redo" data-wysihtml5-command="redo" title="Redo" href="javascript:;" unselectable="on"></a><a class="sbn vgi-markup" data-wysihtml5-action="change_view" title="HTML source view" href="javascript:;" unselectable="on"></a></span><span class="btg indent" data-wysihtml5-hiddentools="table" style="display: none;"><a class="sbn vgi-add-row-top" data-wysihtml5-command="addTableCells" data-wysihtml5-command-value="above" title="Insert row above" href="javascript:;" unselectable="on"></a><a class="sbn vgi-add-row-down" data-wysihtml5-command="addTableCells" data-wysihtml5-command-value="below" title="Insert row below" href="javascript:;" unselectable="on"></a><a class="sbn vgi-add-col-left" data-wysihtml5-command="addTableCells" data-wysihtml5-command-value="before" title="Insert column before" href="javascript:;" unselectable="on"></a><a class="sbn vgi-add-col-right" data-wysihtml5-command="addTableCells" data-wysihtml5-command-value="after" title="Insert column after" href="javascript:;" unselectable="on"></a><a class="sbn vgi-row-red" data-wysihtml5-command="deleteTableCells" data-wysihtml5-command-value="row" title="Delete row" href="javascript:;" unselectable="on"></a><a class="sbn vgi-col-red" data-wysihtml5-command="deleteTableCells" data-wysihtml5-command-value="column" title="Delete column" href="javascript:;" unselectable="on"></a></span></div><div data-wysihtml5-dialog="createLink" style="display: none;"><label class="lbl sml vgi-link">Link: </label><input class="vgi-text" size="90" data-wysihtml5-dialog-field="href" value="https://" title="URL"><a class="btn vgi-ext" onclick="window.open(this.previousElementSibling.value)">Open</a><a class="btn indent vgi-ok" data-wysihtml5-dialog-action="save">OK</a><a class="btn vgi-cancel" data-wysihtml5-dialog-action="cancel">Cancel</a></div><div data-wysihtml5-dialog="insertImage" style="display: none;"><label class="lbl vgi-link">URL</label><input class="vgi-txt" data-wysihtml5-dialog-field="src" size="50" value="https://"><label class="lbl">or</label><label class="btn vgi-folder" title="Browse for local images to insert">Insert Image ..<input class="hid" type="file" onchange="loadimg.call(this, event)" accept="image/*"></label><a class="btn indent vgi-ok" data-wysihtml5-dialog-action="save">OK</a><a class="btn vgi-cancel" data-wysihtml5-dialog-action="cancel">Cancel</a></div><div data-wysihtml5-dialog="createTable" style="display: none;"><label class="vgi-table lbl">Rows: </label><input class="txt" type="text" data-wysihtml5-dialog-field="rows"><label class="lbl">Cols: </label><input class="txt" type="text" data-wysihtml5-dialog-field="cols"><a class="btn vgi-ok indent" data-wysihtml5-dialog-action="save">OK</a><a class="btn vgi-cancel" data-wysihtml5-dialog-action="cancel">Cancel</a></div></div>'
-        //document.getElementById('commentTemplate')?.getElementsByClassName('toolbar')[0].cloneNode(true);
+        this._super();
+        this.toolbar = 
+            document.getElementById('commentTemplate').getElementsByClassName('toolbar')[0].cloneNode(true);
         this.contentDiv = document.createElement('div');
         this.contentDiv.className = 'pur ht4 fil';
-        if (this.toolbar) {
-            this.toolbar.className = 'fil shd wht stk toolbar';
-            this.input.parentNode.insertBefore(this.toolbar, this.input);
-        }
+        this.toolbar.className = 'fil shd wht stk toolbar';
+        this.input.parentNode.insertBefore(this.toolbar, this.input);
         this.input.parentNode.appendChild(this.contentDiv);
-    }
-    afterInputReady () {
+    },
+        afterInputReady: function() {
         var self = this, options;
         //console.log('called after input ready' +  this.input.value); 
         var WYS = this.wys = new wysihtml5.Editor(this.contentDiv, {
@@ -485,6 +420,7 @@ JSONEditor.defaults.editors.simplehtml = class simplehtml extends JSONEditor.def
             parserRules: wysihtml5ParserRules,
             showToolbarAfterInit: false,
         });
+            
             
         this.wys.on('load', function() {
             self.wys.setValue(self.input.value);
@@ -499,6 +435,11 @@ JSONEditor.defaults.editors.simplehtml = class simplehtml extends JSONEditor.def
             self.wysLoaded = true;            
         });
             
+       /* this.wys.composer.doc.onkeyup = function () {
+            self.value = self.input.value = self.wys.getValue();
+            self.is_dirty = true;
+            self.onChange(true);
+        };*/
         this.wys.on('change', function() {
             self.value = self.input.value = self.wys.getValue();
             self.is_dirty = true;
@@ -534,35 +475,15 @@ JSONEditor.defaults.editors.simplehtml = class simplehtml extends JSONEditor.def
                   event.stopPropagation();
                   this.addClass('dragging');
         });
-    }
-    showValidationErrors(errs) {
-        var self = this;
-
-        if(this.jsoneditor.options.show_errors === "always") {}
-        else if(!this.is_dirty && this.previous_error_setting===this.jsoneditor.options.show_errors) return;
-        
-        this.previous_error_setting = this.jsoneditor.options.show_errors;
-    
-        var messages = [];
-        errs.forEach(i => {
-            if(i.path === self.path) {
-                messages.push(i.message);
-            }
-        });    
-        if(messages.length) {
-          this.theme.addInputError(this.control, messages.join('. ')+'.');
-        }
-        else {
-          this.theme.removeInputError(this.control);
-        }
-    }
-};
+    },
+});
 
 // Instruct the json-editor to use the custom datetime-editor.
 JSONEditor.defaults.resolvers.unshift(function (schema) {
     if (schema.type === "string" && schema.format === "datetime") {
         return "dateTime";
     }
+
 });
 
 JSONEditor.defaults.resolvers.unshift(function (schema) {
@@ -577,7 +498,7 @@ JSONEditor.defaults.resolvers.unshift(function (schema) {
         return "simplehtml";
     }
 });
-/*
+
 JSONEditor.defaults.editors.upload =
     JSONEditor.defaults.editors.upload.extend({
         build: function () {
@@ -657,140 +578,125 @@ JSONEditor.defaults.editors.upload =
             });
         }
     });
-*/
 
-var iconMapping = {
-    collapse: 'down',
-      expand: 'add',
-      delete: 'cancel',
-      edit: 'edit',
-      add: 'add',
-      cancel: 'cancel',
-      save: 'save',
-      moveup: 'up',
-      movedown: 'down'
-};
-
-JSONEditor.defaults.iconlibs.vgi = class CustomIconLib extends JSONEditor.AbstractIconLib {
-    constructor () {
-      super();
-      this.mapping = iconMapping;
-      this.icon_prefix = 'vgi-';
-    }
-  }
-
-JSONEditor.defaults.options.iconlib = 'vgi';
-
-JSONEditor.defaults.themes.customTheme = class customTheme extends JSONEditor.AbstractTheme{
-    getBlockLink() {
+JSONEditor.defaults.themes.custom = JSONEditor.AbstractTheme.extend({
+    getBlockLink: function() {
         var link = document.createElement('a');
         return link;
-    }
-    getLinksHolder() {
+    },
+    getLinksHolder: function() {
             var el = document.createElement('span');
             return el;
-      }
-    getDescription (text) {
+      },
+    getDescription: function (text) {
         var el = document.createElement('summary');
+        el.innerHTML = text;
         return el;
+    },
+  getFormControl: function(label, input, description) {
+    var el = document.createElement('div');
+    el.className = 'form-control';
+    //console.log(input.editor);
+    if(label) {
+        if(description)
+            label.setAttribute('title', description.textContent);
+        el.appendChild(label);
     }
-  getFormControl(label, input, description, infoText) {
-      var el = super.getFormControl(label, input, description, infoText);
-      if(input.type =='text')
-        input.className = 'txt';
-      return el;
-  }
-    getFormInputLabel(text) {
-        var el = super.getFormInputLabel(text);
-        el.className = 'lbl' + (iconMap[text]? ' ' + iconTheme + iconMap[text] : '');
-        return el;
+    if(input.type === 'checkbox') {
+      label.insertBefore(input,label.firstChild);
+      if(description) el.appendChild(description);
     }
-  /*  getIndentedPanel() {
-        var el = super.getIndentedPanel();
-    //    el.classList.add("indent");
+    else {
+      if(input.type =='text'){
+          input.className = 'icn txt';
+          if(description)
+              input.setAttribute('title', description.textContent);
+      }
+      input.setAttribute('placeholder', description ? description.textContent : '');
+      input.setAttribute('autocomplete', 'on');
+      el.appendChild(input);
+    }
+    return el;
+  },
+    getFormInputLabel: function (text) {
+        var el = this._super(text);
+        el.className = 'lbl icn ' + text;
         return el;
-    }*/
-    getHeader(text) {
-        var el = document.createElement('span');
+    },
+    getFormInputDescription: function (text) {
+        var el = this._super(text);
+        return el;
+    },
+    getIndentedPanel: function () {
+        var el = this._super();
+        el.style = "indent";
+        return el;
+    },
+    getChildEditorHolder: function () {
+        var el = this._super();
+        return el;
+    },
+    getHeaderButtonHolder: function () {
+        var el = this.getButtonHolder();
+        return el;
+    },
+    getHeader: function (text) {
+        var el = document.createElement('b');
         if (typeof text === "string") {
             el.textContent = text;
-            if(iconMap[text])
-                el.className =  iconTheme + iconMap[text];
+            el.className = 'icn ' + text;
+            //el.setAttribute('name',text);
         } else {
-            if(iconMap[text.textContent])
-                text.className = iconTheme + iconMap[text.textContent];
+            text.className = 'icn ' + text.textContent;
+            //el.setAttribute('name',text.textContent);
             el.appendChild(text);
         }
         return el;
-    }
-    getTable() {
-        var el = super.getTable();
+    },
+    getTable: function () {
+        var el = this._super();
         el.className = 'tbl';
         return el;
-    }
-    getTableHeaderCell (text) {
-            const el = document.createElement('b')
-            if(this.options && this.options.class) {
-                el.className = this.options.class
-            } else if(iconMap[text]) {
-                el.className = iconTheme + iconMap[text];
-            }
-            el.textContent = text == ' ' ? '': text;
-            const t = document.createElement('th');
-            t.appendChild(el);
-            return t
-    }
-    getButton(text, icon, title) {
+    },
+    getButton: function(text, icon, title) {
         var el = document.createElement('button');
         el.type = 'button';
-        el.className = 'btn';
+        el.className = 'btn icn sml ' + icon;
         this.setButtonText(el,text,icon,title);
         return el;
-    }
-    addInputError(input, text) {
-        try {
-            input.setCustomValidity(text);
-            input.onfocus = function(){ this.reportValidity(); }
-            input.oninput = function(){ this.setAttribute("novalidate", true); this.setCustomValidity('')}
-        } catch(e) {}
-        input.style.boxShadow = "0px 0px 0px 2px rgba(252, 114, 114, 0.33)";        
+    },
+    addInputError: function (input, text) {
+        input.style.boxShadow = "0px 0px 0px 3px rgba(252, 114, 114, 0.33)";        
         input.style.border = "1px solid coral";
-        if(text && text != 'Value required.') {
-            if (!input.errmsg) {
-                var group = this.closest(input, '.form-control');
-               /* var label = group.getElementsByClassName('lbl');
-                if(label && label[0]){
-                    group = label[0];
-                }*/
-                input.errmsg = document.createElement('div');
-                input.errmsg.setAttribute('class', 'lbl tred indent');
-                input.errmsg.style = input.errmsg.style || {};
-                group.appendChild(input.errmsg);
-            } else {
-                input.errmsg.style.display = 'block';
-            }
-            input.errmsg.textContent = '';
-            input.errmsg.appendChild(document.createTextNode(' ' + text));
+        if (!input.errmsg) {
+            var group = this.closest(input, '.form-control');
+            input.errmsg = document.createElement('div');
+            input.errmsg.setAttribute('class', 'pad tred');
+            input.errmsg.style = input.errmsg.style || {};
+            group.appendChild(input.errmsg);
+        } else {
+            input.errmsg.style.display = 'block';
         }
-    }
-    removeInputError(input) {
-        try{
-        input.setCustomValidity('');
-        } catch(e) {}
+
+        input.errmsg.textContent = '';
+        input.errmsg.appendChild(document.createTextNode(text));
+    },
+    removeInputError: function (input) {
         input.style.border = '';
         input.style.boxShadow = '';
         if (input.errmsg) input.errmsg.style.display = 'none';
-    }
-    getRadio() {
+    },
+    getRadio: function () {
         var el = this.getFormInputField('radio');
         return el;
-    }
-    getRadioGroupHolder(controls, label, description) {
+    },
+    getRadioGroupHolder: function (controls, label, description) {
         var el = document.createElement('div');
         var radioGroup = document.createElement('div');
         radioGroup.className = 'rdg';
 
         if (label) {
+            //label.style.display = 'inline-block';
             el.appendChild(label);
         }
         el.appendChild(radioGroup);
@@ -801,12 +707,12 @@ JSONEditor.defaults.themes.customTheme = class customTheme extends JSONEditor.Ab
 
         if (description) el.appendChild(description);
         return el;
-    }
-    getRadioLabel(text) {
+    },
+    getRadioLabel: function (text) {
         var el = this.getFormInputLabel(text);
         return el;
-    }
-    getProgressBar() {
+    },
+    getProgressBar: function () {
         var max = 100,
             start = 0;
 
@@ -814,35 +720,25 @@ JSONEditor.defaults.themes.customTheme = class customTheme extends JSONEditor.Ab
         progressBar.setAttribute('max', max);
         progressBar.setAttribute('value', start);
         return progressBar;
-    }
-    updateProgressBar(progressBar, progress) {
+    },
+    updateProgressBar: function (progressBar, progress) {
         if (!progressBar) return;
         progressBar.setAttribute('value', progress);
-    }
-    updateProgressBarUnknown(progressBar) {
+    },
+    updateProgressBarUnknown: function (progressBar) {
         if (!progressBar) return;
         progressBar.removeAttribute('value');
-    }
-    /*getSelectInput(options) {
+    },
+    getSelectInput: function(options) {
         var select = document.createElement('select');
-        //select.className = 'txt';
+        select.className = 'btn';
         if(options)     this.setSelectOptions(select, options);
         return select;
-    }*/
-    setGridColumnSize(el, size) {
+    },
+    setGridColumnSize: function(el, size) {
       el.className = 'col s' + size;
     }
-    getSwitcher (options) {
-        const switcher = this.getSelectInput(options, false);
-        switcher.classList.add('je-switcher');
-        switcher.classList.add('rdg');
-        switcher.setAttribute('size',12);
-        return switcher
-    }
-};
-
-JSONEditor.defaults.themes.customTheme.rules = {};
-
+});
 if (typeof(custom_validators) !== 'undefined'){
     JSONEditor.defaults.custom_validators = custom_validators;
 }
@@ -850,20 +746,21 @@ if (typeof(custom_validators) !== 'undefined'){
 var docEditorOptions = {
     // Enable fetching schemas via ajax
     ajax: allowAjax,
-    theme: 'customTheme',
-    show_errors: 'always',
+    theme: 'custom',
     disable_collapse: true,
     disable_array_reorder: true,
     disable_properties: true,
     disable_edit_json: true,
     disable_array_delete_last_row: true,
     disable_array_delete_all_rows: true,
+    expand_height: true,
     input_width: '3em',
     input_height: '4em',
     template: 'custom',
     prompt_before_delete: false,
     ajaxBase: ajaxBase,
-    schema: docSchema,
+    // The schema for the editor
+    schema: docSchema
     // Seed the form with a starting value
     //starting_value: {},
 
@@ -872,8 +769,7 @@ var docEditorOptions = {
 
     // Require all properties by default
     //required_by_default: false,
-    remove_empty_properties: true
-    //display_required_only: true
+    //display_required_only: false
 };
 var docEditor;
 /*
@@ -900,6 +796,7 @@ if (typeof(defaultTab) !== 'undefined') {
         var hash = window.location.hash.substring(1);
         if((hash) && document.getElementById(hash+'Tab')){
             selected = hash+'Tab';
+            //console.log('DEFAULT ' + selected);
         }
     }
 }
@@ -995,9 +892,8 @@ function Tabs(tabGroupId, tabOpts, primary) {
         }
     }
     tg.setValue = function (index, val) {
-        //console.log('Seting tab '+index+ ' + ' + tg.tabId[index] + "="+JSON.stringify(tg.tabOpts));
+        //console.log('Seting tab '+index);
         if(tg.tabOpts[tg.tabId[index]] && tg.tabOpts[tg.tabId[index]].setValue) {
-            //console.log('tab INDEX',tg.tabId);
             return tg.tabOpts[tg.tabId[index]].setValue(val);
         }
     }
@@ -1011,7 +907,7 @@ function Tabs(tabGroupId, tabOpts, primary) {
             document.title = '• ' + (nid ? nid : 'Vulnogram');
             if (document.getElementById("save1")) {
                 save2.className = "btn sfe gap save";
-                save1.className = "fbn sfe save";
+                save1.className = "btn sfe save";
             }
             //console.log('Inc '+ tg.tabId[index] + ' is ' + tg.changeIndex[index]);
         }
@@ -1021,6 +917,39 @@ function Tabs(tabGroupId, tabOpts, primary) {
 
 var originalTitle = document.title;
 var changes = true;
+
+var autoButton = document.getElementById('auto');
+
+autoButton.addEventListener('click', function (event) {
+        event.preventDefault();
+        var d = docEditor.getEditor('root.description.description_data');
+        var docJSON = docEditor.getValue();
+        var desc = d.getValue();
+        if (d) {
+            var i = desc.length;
+            while (i--) {
+                if (desc[i].value.length === 0) {
+                    desc.splice(i, 1);
+                }
+            }
+            var ptstring = textUtil.getProblemTypeString(docJSON);
+            if (ptstring.length == 0) {
+                ptstring = "A"
+            }
+            desc.push({
+                lang: "eng",
+                value: ptstring + " vulnerability in ____COMPONENT____ of " + textUtil.getProductList(docJSON) +
+                    " allows ____ATTACKER/ATTACK____ to cause ____IMPACT____."
+            });
+            desc.push({
+                lang: "eng",
+                value: textUtil.getAffectedProductString(docJSON)
+            });
+            d.setValue(desc);
+        } else {
+
+        }
+    });
 
 if (document.getElementById('remove')) {
     document.getElementById('remove').addEventListener('click', function () {
@@ -1053,28 +982,6 @@ if (document.getElementById('save1') && document.getElementById('save2')) {
     document.getElementById('save2').removeAttribute("style");
 }
 
-
-function showJSONerrors(errors) {
-    var totalMessage = '';
-    for(e of errors) {
-        totalMessage += e.path + ": <i>" + e.message + '.</i></br>';
-    }
-    errCount.className = 'indent bdg';
-    errPop.className = 'popup';
-    errCount.innerText = errors.length;
-    errList.innerHTML = 
-        //(errors.length > 1 ? errors.length + " errors! " : "") + 
-        totalMessage;
-    editorLabel.className = "red lbl";
-}
-
-function hideJSONerrors() {
-    errCount.innerText = "";
-    errPop.className = 'hid';
-    errList.textContent = "";
-    editorLabel.className = "lbl";
-}
-
 var defaultTabs = {
     editorTab: {
         setValue: function (val) {
@@ -1092,15 +999,15 @@ var defaultTabs = {
             } else {
                 errors = docEditor.validate();
             }
-            if (typeof(errorFilter) !== 'undefined'){
-                errors = errorFilter(errors);
-            }
             if (errors.length > 0) {
                 docEditor.setOption('show_errors', 'always');
-                showJSONerrors(errors);
+                errMsg.textContent = (errors.length > 1 ? errors.length + " errors found" : errors[0].path + ": " + errors[0].message);
+                console.log(errors);
+                editorLabel.className = "red lbl";
                 return 0;
             } else {
-                hideJSONerrors();
+                errMsg.textContent = "";
+                editorLabel.className = "lbl";
                 return 1;
             }
         }
@@ -1180,30 +1087,13 @@ function loadJSON(res, id, message) {
             document.title = nid ? nid : 'Vulnogram';
         }
         if (document.getElementById("save1")) {
-            save2.className = "btn sfe gap";
-            save1.className = "fbn sfe";
+            save2.className = "btn save gap";
+            save1.className = "btn save";
         }
         if (message) {
             selected = "editorTab";
         }
-        docEditor.watch('root', function(){
-            mainTabGroup.change(0);
-        });
-        docEditor.on('change', async function(){
-            var errors = [];
-            if(docEditor.validation_results && docEditor.validation_results.length > 0) {
-                if (typeof(errorFilter) !== 'undefined'){
-                    errors = errorFilter(docEditor.validation_results);
-                } else {
-                    errors = docEditor.validation_results;
-                }
-            }
-            if(errors.length > 0) {
-                showJSONerrors(errors);
-            } else {
-                hideJSONerrors();
-            }
-        });
+        docEditor.watch('root', function(){mainTabGroup.change(0)});
         editorLabel.className = "lbl";
         postUrl = getDocID() ? './' + getDocID() : "./new";
 
@@ -1213,6 +1103,13 @@ function loadJSON(res, id, message) {
         setTimeout(function (){
             document.getElementById(selected).dispatchEvent(event);
         }, 50);
+
+        // hack to auto generate description/ needs improvement
+        var descDiv = document.querySelector('[data-schemapath="root.description"] b span');
+        if (descDiv) {
+            descDiv.appendChild(autoButton);
+            autoButton.removeAttribute("style");
+        }
     });
 }
 
@@ -1252,8 +1149,8 @@ function save() {
                 // turn button to normal, indicate nothing to save,
                 // but do not disable it.
                 if (document.getElementById("save1")) {
-                    save2.className = "btn sfe gap";
-                    save1.className = "fbn sfe";
+                    save2.className = "btn save gap";
+                    save1.className = "btn save";
                 }
                 getChanges(getDocID());
             }
@@ -1264,6 +1161,7 @@ function save() {
         });
     // This is a trick for brower auto completion to work
         document.getElementById('docEditor').submit();
+
 }
 
 function getDocID() {
@@ -1343,15 +1241,20 @@ function downloadText(element, link) {
     link.href = URL.createObjectURL(file);
     link.download = file.name;
 }
-function downloadHtml(title, element, link) {
-    var file = new File([
-            '<html><head><title>'
-            + title
-            + '</title><body>'
-            + element.innerHTML
-            + '</body></html>'
-        ], getDocID() + '.html', {
-        type: "text/html",
+function downloadElement(id, link) {
+    var svg = document.getElementById(id);
+    var serializer = new XMLSerializer();
+    var source = serializer.serializeToString(svg);
+    if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
+        source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+    }
+    if(!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
+        source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+    }
+    source.replace('</svg>', '</svg><style>{font-size:22px}</style>');
+    source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
+    var file = new File([source], id + '.svg', {
+        type: "text/svg",
         lastModified: new Date()
     });
     link.href = URL.createObjectURL(file);

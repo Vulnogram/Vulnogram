@@ -6,13 +6,10 @@ span.product_data, b.version_data, b.vendor_data, b.reference_data, b.problemtyp
     display: none;
 }
 
-.editor div[data-schemapath='root.affects'] div[data-schematype='array'] > div.je-indented-panel {
-    padding-left: 10px !important;
-    margin-left: 10px !important;
-    border-left: 1px solid rgb(204, 204, 204) !important;
-  }
-
 /* MITRE simulation styles */
+b span.product + div button.json-editor-btn-delete {
+    float: right;
+}
 
 #GeneratedTable { border:1px solid #000000; border-collapse: collapse;}
 #GeneratedTable th { font-weight: bold; padding: 2px 5px 2px 5px; text-align: left;  vertical-align:top; background-color: #999999; color:#ffffff; border-top:1px solid #000000; border-bottom:1px solid #000000 }

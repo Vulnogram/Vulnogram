@@ -9,7 +9,7 @@ conf: {
     title: 'CVE: Common Vulnerabilities and Exposures',
     name: 'CVE',
     uri: '/cve/?state=DRAFT,REVIEW,READY',
-    class: 'vgi-alert',
+    class: 'icn alert',
     order: 0.1, //Where to place the section on heading?
     shortcuts: [
     {
@@ -33,12 +33,7 @@ conf: {
     }
     ]
 },
-icons: {
-    'TYPE': 'bucket',
-    'CVE_data_meta': 'info',
-    'STATE': 'knob',
-    'new': 'new'
-},
+
 /*
 Configure important query and aggregation parameters for index page
 
@@ -148,14 +143,16 @@ schema: {
   "cve_id": {
    "type": "string",
    "pattern": "^CVE-[0-9]{4}-[0-9A-Za-z._-]{4,}$",
-   "options": {
-       "class": "vgi-tag",
-     "patternmessage": "Invalid CVE ID"
-   },
    "message": "Valid CVE ID is required!",
    "links": [
     {
-     "class": "sml vgi-ext",
+     "class": "btn sml lbl icn extlink",
+     "href": "'http://cve.mitre.org/cgi-bin/cvename.cgi?name=' + context.self",
+     "title": "'MITRE's CVE Entry",
+     "rel": "'MITRE'"
+    },
+    {
+     "class": "btn sml lbl icn extlink",
      "href": "'https://nvd.nist.gov/vuln/detail/' + context.self",
      "title": "'NVD's CVE Entry",
      "rel": "'NVD'"
@@ -165,15 +162,13 @@ schema: {
   "email_address": {
    "type": "string",
    "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$",
-   "message": "Valid email required",
-   "options": {
-    "class": "vgi-user",
-    "patternmessage": "Invalid email"
-    },   
+   "message": "Valid email required"
   },
   "product": {
    "type": "object",
-   "format": "grid",
+   "options": {
+        "layout": "grid"  
+   },
    "required": [
     "product_name",
     "version"
@@ -185,8 +180,7 @@ schema: {
      "description": "eg., Example Express",
      "message": "A product name is required!",
         "options": {
-        "grid_columns": 10,
-        "formClass": "lni"
+        "grid_columns": 10
         },
         //"$ref":"/product/examples/?field=body.product"
     },
@@ -197,17 +191,10 @@ schema: {
      ],
      "properties": {
       "version_data": {
-        "title": " ",
-        "options": {
-            "class": "hid"
-        },
        "type": "array",
        "minItems": 1,
        "items": {
-        "title": "Version",
-        "options": {
-            "class": "hid"
-        },
+        "title": "version",
         "type": "object",
         "required": [
          "version_value"
@@ -215,7 +202,7 @@ schema: {
         "id": "v",
         "properties": {
          "version_name": {
-          "title": "Version group name (X)",
+          "title": "Version name (X)",
           "type": "string",
           "description": "eg., 4.0"
          },
@@ -240,7 +227,6 @@ schema: {
            "?>="
           ],
           "options": {
-              "input_width": "5em",
            "enum_titles": [
             "Not Selected",
             "< (affects X versions prior to n)",
@@ -373,7 +359,7 @@ schema: {
      "message": "Valid URL is required!",
      "links": [
       {
-       "class": "fbn sml icn extlink",
+       "class": "btn sml icn extlink",
        "href": "context.self",
        "title": "context.self",
        "rel": "'Open link'"
@@ -381,9 +367,6 @@ schema: {
      ]
     },
     "name": {
-    "options": {
-        "hidden": true,
-    },
      "maxLength": 500,
      "type": "string"
     }
@@ -470,7 +453,6 @@ schema: {
   },
   "CVE_data_meta": {
    "type": "object",
-   "format": "grid",
    "required": [
     "ID",
     "ASSIGNER",
@@ -481,34 +463,36 @@ schema: {
      "$ref": "#/definitions/cve_id",
      "description": "CVE-yyyy-nnnn",
      "options": {
-        "grid_columns": 4
+         "class": "ID",
+      "input_width": "10em",
+    "grid_columns": 6
      }
     },
     "ASSIGNER": {
-     "title": "Assigning CNA",
      "$ref": "#/definitions/email_address",
      "description": "Email of CNA assigning this CVE ID",
      "default": (conf.contact ? conf.contact : ''),
      "options": {
-    "grid_columns": 3
+      "input_width": "12em",
+    "grid_columns": 6
      }
     },
     "DATE_PUBLIC": {
-     "title": "Date Public",
      "type": "string",
      "format": "datetime",
      "description": "YYYY-MM-DD",
      "options": {
-         "class": "date vgi-cal",
-         "grid_columns": 4
+         "class": "date",
+         "input_width": "18em",
+         "grid_columns": 6
      }
     },
     "TITLE": {
      "type": "string",
      "description": "Short summary",
       "options": {
-        "class": "vgi-title",
-         "grid_columns": 9
+          
+         "grid_columns": 12
      }
    },
     "AKA": {
@@ -516,7 +500,7 @@ schema: {
      "title": "Also known as",
      "description": "eg., HeartBleed, Shellshock",
        "options": {
-         "grid_columns": 3
+         "grid_columns": 6
      }
    },
     "STATE": {
@@ -544,9 +528,47 @@ schema: {
     "grid_columns": 12
    }
   },
+  "source": {
+   "type": "object",
+   "properties": {
+    "defect": {
+     "title": "Defect",
+     "type": "array",
+     "description": "CNA specific bug tracking IDs",
+     "format": "taglist",
+     "uniqueItems": true,
+     "items": {
+      "type": "string"
+     }
+    },
+    "advisory": {
+     "title": "Advisory-ID",
+     "type": "string",
+     "description": "CNA specific advisory IDs (Optional)"
+    },
+    "discovery": {
+     "type": "radio",
+     "title": "Found during",
+     "enum": [
+      "INTERNAL",
+      "EXTERNAL",
+      "USER",
+      "UNKNOWN"
+     ],
+     "options": {
+      "enum_titles": [
+       "internal research",
+       "external research",
+       "production use",
+       "unknown"
+      ]
+     },
+     "default": "UNKNOWN"
+    }
+   }
+  },
   "affects": {
    "type": "object",
-   "title": "Affected products",
    "required": [
     "vendor"
    ],
@@ -558,10 +580,6 @@ schema: {
      ],
      "properties": {
       "vendor_data": {
-          "title": " ",
-          "options": {
-            "class": "hid"
-       },
        "type": "array",
        "minItems": 1,
        "items": {
@@ -576,10 +594,7 @@ schema: {
           "type": "string",
           "description": "eg., Example Org",
              "default": conf.orgName ? conf.orgName: '',
-          "minLength": 1,
-          "options": {
-              "formClass": "lni"
-          }
+          "minLength": 1
          },
          "product": {
           "type": "object",
@@ -588,12 +603,7 @@ schema: {
           ],
           "properties": {
            "product_data": {
-               "title": " ",
-               "options": {
-                    "class": "hid"
-               },
             "type": "array",
-            "format": "grid",
             "minItems": 1,
             "items": {
              "title": "product",
@@ -604,6 +614,7 @@ schema: {
          }
         }
        },
+       "format": "table"
       }
      }
     }
@@ -617,10 +628,6 @@ schema: {
    ],
    "properties": {
     "problemtype_data": {
-        "title": " ",
-        "options": {
-             "class": "hid"
-        },
      "type": "array",
      "minItems": 1,
      "items": {
@@ -670,9 +677,6 @@ schema: {
    }
   },
   "description": {
-    "options": {
-        "class": "vgi-text tgap"
-   },
    "type": "object",
    "required": [
     "description_data"
@@ -680,10 +684,6 @@ schema: {
    "properties": {
     "description_data": {
      "type": "array",
-     "title": " ",
-     "options": {
-          "class": "hid"
-     },
      "minItems": 1,
      "items": {
       "title": "description",
@@ -787,71 +787,6 @@ schema: {
        }
    }
    },
-   "source": {
-    "type": "object",
-    "format": "grid",
-    "options": {
-     "class": "vgi-info tgap",
-     "grid_columns": 12
- 
-   },   
-    "properties": {
-     "defect": {
-      "title": "Defect",
-      "type": "array",
-      "description": "CNA specific bug tracking IDs",
-      "format": "taglist",
-      "uniqueItems": true,
-      "items": {
-       "type": "string"
-      },
-      "options": {
-         "class": "vgi-bug",
-         "gird_columns": 2,
-         "formClass": "lni"
-      }     
-     },
-     "advisory": {
-      "title": "Advisory-ID",
-      "type": "string",
-      "description": "CNA specific advisory IDs (Optional)",
-      "options": {
-         "class": "vgi-alert",
-         "gird_columns": 2,
-         "formClass": "lni"
-      }
-     },
-     "discovery": {
-         "type": "string",
-         "title": "Source of vulnerability discovery",
-         "format": "radio",
-      "enum": [
-       "INTERNAL",
-       "EXTERNAL",
-       "USER",
-       "UNKNOWN"
-      ],
-      "options": {
-         "class": "vgi-info",
-         "grid_columns": 6,
-         "enum_titles": [
-        "internal",
-        "external",
-        "during use",
-        "unknown"
-       ],
-       "icons": {
-        "INTERNAL":"hardhat",
-        "EXTERNAL": "hat",
-        "USER":"cap",
-        "UPSTREAM":"in",
-        "UNKNOWN":"what"
-      }
-      },
-      "default": "UNKNOWN"
-     }
-    }
-   },   
   "CNA_private": {
    "properties": {
     "owner": {
@@ -984,6 +919,90 @@ validators: [
         return errors;
     }
 ],
+script: {
+    tweetJSON: function(event, link) {
+        var j = mainTabGroup.getValue();
+        if (!j){
+            event.preventDefault();
+            return;
+        }
+        var id = textUtil.deep_value(j, 'CVE_data_meta.ID');
+        var cvelist = textUtil.deep_value(j, 'CNA_private.CVE_list');
+        if(cvelist && cvelist.length > 0) {
+            id = '';
+        }
+        var aka = textUtil.deep_value(j, 'CVE_data_meta.AKA')
+        var text = id + ' ' + textUtil.deep_value(j, 'source.advisory') + ' '
+            + textUtil.getBestTitle(j) + ' '
+            + (aka? ' aka ' + aka : '');
+        text = text.replace(/ +(?= )/g,'');
+        link.href = 'https://twitter.com/intent/tweet?&text=' 
+            + encodeURI(text)
+            + '&url=' + encodeURI(textUtil.deep_value(j, 'references.reference_data.0.url'));
+        //    + '&hashtags=' + encodeURI(id)
+        //via=vulnogram&hashtags=CVE
+    },
+    draftEmail: async function(event, link, renderId) {
+        var subject = ''
+        if(typeof(mainTabGroup) !== 'undefined') {
+            var j = mainTabGroup.getValue();
+            if (!j){
+                event.preventDefault();
+                return;
+            }
+            var id = textUtil.deep_value(j, 'CVE_data_meta.ID');
+            var cvelist = textUtil.deep_value(j, 'CNA_private.CVE_list');
+            if(cvelist && cvelist.length > 0) {
+                id = '';
+            }
+            subject = id +' ' + textUtil.getBestTitle(j);
+        } else {
+            var t = document.getElementById(renderId).getElementsByTagName('h2')[0];
+            if(t) {
+                subject = t.textContent;
+            }
+        }
+        var emailBody = document.getElementById(renderId).innerText;
+        link.href="mailto:?subject=" + encodeURI(subject) + '&body=' + encodeURI(emailBody);
+    },
+    loadCVE: function (value) {    var realId = value.match(/(CVE-(\d{4})-(\d{1,12})(\d{3}))/);
+    if (realId) {
+        var id = realId[1];
+        var year = realId[2];
+        var bucket = realId[3];
+        fetch('https://raw.githubusercontent.com/CVEProject/cvelist/master/' + year + '/' + bucket + 'xxx/' + id + '.json', {
+                method: 'GET',
+                credentials: 'omit',
+                headers: {
+                    'Accept': 'application/json, text/plain, */*'
+                },
+                redirect: 'error'
+            })
+            .then(function (response) {
+                if (!response.ok) {
+                    errMsg.textContent = "Failed to load valid CVE JSON";
+                    infoMsg.textContent = "";
+                    throw Error(id + ' ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(function (res) {
+                if (res.CVE_data_meta) {
+                    loadJSON(res, id, "Loaded "+id+" from GIT!");
+                } else {
+                    errMsg.textContent = "Failed to load valid CVE JSON";
+                    infoMsg.textContent = "";
+                }
+            })
+            .catch(function (error) {
+                errMsg.textContent = error;
+            })
+    } else {
+        errMsg.textContent = "CVE ID required";
+    }
+    return false;
+}
+},
 router: router.get('/pr:pr', csrfProtection, function (req, res) {
         var CVE_JSON_skeleton = {
             "data_type": "CVE",

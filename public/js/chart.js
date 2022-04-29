@@ -1,24 +1,5 @@
 var order = {};
 
-function downloadElement(id, link) {
-    var svg = document.getElementById(id);
-    var serializer = new XMLSerializer();
-    var source = serializer.serializeToString(svg);
-    if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
-        source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
-    }
-    if(!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
-        source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
-    }
-    source.replace('</svg>', '</svg><style>{font-size:22px}</style>');
-    source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
-    var file = new File([source], id + '.svg', {
-        type: "text/svg",
-        lastModified: new Date()
-    });
-    link.href = URL.createObjectURL(file);
-    link.download = file.name;
-}
 
 function plotCharts(container, charts) {
         d3.select(document.getElementById(container))
@@ -171,9 +152,9 @@ function barChart (a) {
         
          svg = d3.select(a.div).append("svg")
         .attr("id", a.ID)
-        //.attr("height", "90%")
+    //    .attr("height", "90%")
         .attr("viewBox","0 0 710 500")
-        //.attr("preserveAspectRatio","xMidYMid meet")
+       // .attr("preserveAspectRatio","xMidYMid meet")
         .attr("class", "chart")
         .append("g")
         .attr("transform", "translate(" + a.marginLeft + "," + a.marginTop + ")");

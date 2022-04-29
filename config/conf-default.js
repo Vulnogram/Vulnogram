@@ -6,7 +6,7 @@ module.exports = {
     // The Mongodb URL where CVE entries and users are stored.
     // WARNING: Configure MongoDB authentication and use a strong password
     // WARNING: Ensure MongoDB is not reachable from the network. 
-    database:'mongodb://vulnogram:StrongLongPass@127.0.0.1:27017/vulnogram',
+    database:'mongodb://vulnogram:StrongLongPass@127.0.0.1:27017/vulnogram'
 
     // Name of the organization that should be used in page titles etc.,
     //orgName: 'Example Org',
@@ -41,31 +41,25 @@ module.exports = {
     },
 */
     
-    mitreURL: 'https://www.cve.org/CVERecord?id=',
+    mitreURL: 'https://cve.mitre.org/cgi-bin/cvename.cgi?name=',
     defectURL: 'https://example.net/internal/bugs/',
     publicDefectURL: 'https://example.net/bugs/',
 
     // ACE editor
-    //ace: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.min.js',
-    //aceHash: "sha512-GZ1RIgZaSc8rnco/8CXfRdCpDxRCphenIiZ2ztLy3XQfCbQUSCuk8IudvNHxkRA3oUg6q0qejgN/qqyG1duv5Q==",
+    ace: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.3/ace.js',
+    aceHash: "sha384-rP/6HzF4Ap08EuRS9yaQsEPDqb8xS5WVTAzL7/LKTnUmJawbKoeSNyqHnNaiXY5X",
     // if you want this served locally, download ace editor to /public/js/ directory and point to that:
-    ace: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/ace.js',
-    aceHash: "sha512-OMjy8oWtPbx9rJmoprdaQdS2rRovgTetHjiBf7RL7LvRSouoMLks5aIcgqHb6vGEAduuPdBTDCoztxLR+nv45g==",
-
+    //ace: '/js/ace.js',
 
     // JSON Editor
-    jsoneditor: 'https://cdnjs.cloudflare.com/ajax/libs/json-editor/2.5.4/jsoneditor.min.js',
-    //jsoneditor: 'https://cdn.jsdelivr.net/npm/@json-editor/json-editor@latest/dist/jsoneditor.min.js',
-    jsoneditorHash: 'sha512-uWu+rXQQB3W440i9GCPMZZL2/tf58decmRv8uD5KWo0CQn5Qu8JVkK1EXBmJv9Gj1q7TZeRbbntnrz1hcFkdPQ==',
+    jsoneditor: 'https://cdn.jsdelivr.net/npm/@json-editor/json-editor@1.2.1/dist/jsoneditor.min.js',
+    jsoneditorHash: 'sha384-iSUg2WRV2cauD+nwMuv7ITxwSe+2heHjWFIOjiWk5/Yve5ovwg/t7qp3ht6VlQBL',
     // if you want this served locally, download above jsoneditor editor to /public/js/ directory and point to that:
-    //jsoneditor: '/js/jsoneditor.min.js', //version 2.5.4
-    //jsoneditorHash: 'sha512-uWu+rXQQB3W440i9GCPMZZL2/tf58decmRv8uD5KWo0CQn5Qu8JVkK1EXBmJv9Gj1q7TZeRbbntnrz1hcFkdPQ==',
-
+    //jsoneditor: '/js/jsoneditor.min.js',
 
     usernameRegex: '[a-zA-Z0-9]{3,}',
     sections: [
         'cve',
-        'cve5',
         'nvd'
     ],
     homepage: '/home',

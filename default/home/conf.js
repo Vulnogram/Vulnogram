@@ -1,17 +1,15 @@
-var appConf = require('../../config/conf');
-
 module.exports = {
 conf: {
     title: 'Dashboard',
     name: 'Vulnogram',
-    class: 'vgi-logo',
+    class: 'vulnogram',
     order: -10,
     uri: '/home/'
 },
 facet: {
     ID: {
         path: 'body.ID',
-        regex: 'PLOT-[A-Za-z0-9-_]+',
+        regex: 'PLOT-[A-Za-z0-9]+',
         chart: false,
         href: '/home/',
         hrefSuffix: '#chart'
@@ -108,11 +106,9 @@ schema: {
     },
     "section": {
         type: "string",
-        format: "radio",
-        enum: appConf.sections
+       examples: ["pr","cve","sir","jira","note","nvd","contact"]
     },
     "query": {
-      "title": "Query (eg., severity=CRITICAL,HIGH&product=Example) - Copy it from a filtered section view.",
         type: "string",
         "$ref": "/home/examples?field=body.query",
         "description": "URI query string For eg., field1=value&field2=value1,value2"
@@ -122,7 +118,6 @@ schema: {
       "type": "array",
       "format": "taglist",
       "title": "Group by field names (Max 2 for bar charts, Max 1 for pie charts)",
-      "$ref": "/home/examples?field=body.key",
       "items": {
             "type": "string",   
         },

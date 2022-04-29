@@ -266,7 +266,7 @@ public.get('/logout', function (req, res) {
     res.redirect('/users/login');
 });
 
-/*protected.get('/style.css', function (req, res) {
+protected.get('/style.css', function (req, res) {
     if (req.isAuthenticated()) {
         User.find({}, ['username', 'emoji', '-_id'], {}, function (err, users) {
             if (err) {
@@ -279,7 +279,7 @@ public.get('/logout', function (req, res) {
             }
         });
     }
-});*/
+});
 
 //List users
 protected.get('/list', function (req, res) {
@@ -336,7 +336,7 @@ protected.get('/list/css', function (req, res) {
             } else {
                 res.setHeader('Content-Type', 'text/css');
                 for(u of users) {
-                    res.write('.lbl[for$="]' + u.username + '"]:before {content: "' + u.emoji + '";}\n');
+                    res.write('.' + u.username + ':before {content: "' + u.emoji + '";}\n');
                 }
                 res.end();
             }

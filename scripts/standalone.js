@@ -14,37 +14,43 @@ const conf = require('../config/conf-standalone');
 const optSet = require('../models/set');
 // Compile the template to a function string
 
-var editTemplate = fs.existsSync('custom/cve5/edit.pug') ? 'custom/cve5/edit.pug' : 'default/cve5/edit.pug';
-/*var renderTemplate = fs.existsSync('custom/cve/render.pug') ? 'custom/cve/render.pug' : 'default/cve/render.pug';*/
+var editTemplate = fs.existsSync('custom/cve/edit.pug') ? 'custom/cve/edit.pug' : 'default/cve/edit.pug';
+var renderTemplate = fs.existsSync('custom/cve/render.pug') ? 'custom/cve/render.pug' : 'default/cve/render.pug';
 
 var cveEdit = pug.compileFile(editTemplate, {compileDebug: false});
 confOpts = {
-    cve: optSet('cve5', ['default'].concat(process.argv.slice(2))),
-    cve4: optSet('cve', ['default'].concat(process.argv.slice(2)))
+    cve: optSet('cve', ['default'].concat(process.argv.slice(2)))
 }
-confOpts.cve4.conf.name = 'CVE 4.0';
-confOpts.cve4.conf.uri = '../';
-
-//console.log(confOpts.cve.render);
+console.log(confOpts.cve.render);
 confOpts.cve.conf.uri = '.';
-var cd = confOpts.cve.schema?.definitions;
-if (cd && cd.CNA_private) {
-    delete cd.CNA_private;
-}
-cd = confOpts.cve.schema.oneOf[0]?.properties;
-if (cd && cd.CNA_private) {
-    delete cd.CNA_private;
-}
+var cveProps = confOpts.cve.schema.properties;
+delete cveProps.CNA_private;
+cveProps.CVE_data_meta.properties.STATE.enum = 
+ cveProps.CVE_data_meta.properties.STATE.enum.filter(x => !['DRAFT','REVIEW', 'READY'].includes(x));
 
 fs.writeFileSync("standalone/index.html", cveEdit({
     title: 'Vulnogram CVE Editor',
-    idpath: 'cveMetadata.cveId',
+    idpath: 'CVE_data_meta.ID',
     min: true,
     doc: null,
-    pugLib: pug,
     conf: conf,
     confOpts: confOpts,
     opts: confOpts.cve,
     schemaName: 'cve',
     allowAjax: false,
 }));
+
+var pugRender = pug.compileFileClient(renderTemplate, {
+        basedir: 'views',
+        name: 'pugRender',
+        compileDebug: false,
+        inlineRuntimeFunctions: true,
+});
+
+for (jsDir of ['standalone', 'standalone/js', 'standalone/js/cve']) {
+    if (!fs.existsSync(jsDir)) {
+        fs.mkdirSync(jsDir); 
+    }
+}
+
+fs.writeFileSync("standalone/js/cve/render.js", pugRender);

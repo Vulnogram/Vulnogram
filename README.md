@@ -46,14 +46,18 @@ Vulnogram can be deployed in two modes:
 
 #### Step 4 (Optional). Copy the "default" directory as "custom" and modify relevant pug templates, schemas or routes. Files or fields from "custom" override "default".
 
-#### Step 5. Configure a user on the CLI for logging in
+#### Step 5. If any pug templates were modified, regenerate client side javascript.
+
+	$ node scripts/pug2js.js
+
+#### Step 6. Configure a user on the CLI for logging in
 
 	$ node useradd.js tester tester@example.com Tester sirt@example.com 1
 	Enter Password: ********************************************
 	Enter Password again: ********************************************
 	Success New user is now registered and can log in: tester
 
-#### Step 5. Start the node application.
+#### Step 7. Start the node application.
 
     $ npm start
 

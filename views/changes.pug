@@ -6,10 +6,10 @@ block content
     if docs && docs.length == 0
         .pad.wht No items were changed.
             br
-            button.btn.vgi-undo(onclick="history.back()") Return to previous page
+            button.btn.icn.undo(onclick="history.back()") Return to previous page
     else
         .pad.wht
-            button.btn.vgi-undo(onclick="history.back()") Return to previous page
+            button.btn.icn.undo(onclick="history.back()") Return to previous page
             br
             include subcontent
             +changes
