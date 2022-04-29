@@ -134,6 +134,7 @@ table.striped td {
 .usermgmt {
   right: 2em;
 }
-#cvePage {
+
+#cvePage, #showpass {
     display: none;
 }

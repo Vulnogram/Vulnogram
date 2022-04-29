@@ -51,6 +51,7 @@ mixin portal
                 label#userMgmt
                     +usermgmt
     .pad#cveStatusMessage
+    +showSecret
     form#cvePortalFilter.gap
         .lbl Show
         .rdg
@@ -108,52 +109,63 @@ mixin userstats
 mixin listUsers
     if users
         each u, i in users
-            tr
-                td=u.username
-                td=u.name.first
-                td=u.name.last
-                td=u.authority ? u.authority.active_roles : ''
-                td=u.active
-                td
+            .tr
+                .td=u.username
+                .td=u.name.first
+                .td=u.name.last
+                .td=u.authority ? u.authority.active_roles : ''
+                .td=u.active
+                .td
                     button.btn.vgi-reuse(onclick="cveUserKeyReset(this)",u=u.username) Reset API Key
 
+mixin showSecret
+    dialog.bor.rnd.shd.pad2#secretDialog
+      center
+        form#secretDialogForm(onsubmit="event.preventDefault();this.reset();document.getElementById('secretDialog').close();return false")
+            h3.vgi-alert#userMessage
+            .gap Please securely store this API key.
+                br
+                |  This key will not be shown again!
+            label.lbl API Secret Key
+            input.txt.bor(type="password" size=39 name="pass" readonly)
+            input#showpass(name="showpass" type="checkbox" onclick="this.form.pass.type = (this.form.pass.type === 'password'? 'text' : 'password')")
+            label.vgi-eye.lbl(for="showpass")
+            center.gap
+                input.btn.sfe(type="reset" onclick="document.getElementById('secretDialog').close()" value="OK")
 
 mixin usermgmt
     details.popup(ontoggle="userlistUpdate(this, event)")
         summary.fbn.vgi-user Manage Users
             |  ▼ 
-        div.pop.wht.bor.rnd.shd.pad.usermgmt
-            table.tbl
-                thead
-                    tr
-                        th Username
-                        th Firstname
-                        th Lastname
-                        th Roles
-                        th active
-                        th
-                tbody#userlist
-                    tr
-                        td(colspan=6)
+        div.pop.wht.bor.rnd.shd.usermgmt
+            .tbl.gap
+                thead.thead
+                    .tr
+                        .th Username
+                        .th Firstname
+                        .th Lastname
+                        .th Roles
+                        .th active
+                        .th
+                .tbody#userlist
+                    .tr
+                        .td(colspan=6)
                             center
                                 .spinner
-                tbody
-                    tr
-                        th
+                .tfoot
+                    form.tr(onsubmit="event.preventDefault();cveAddUser(this)")
+                        .td
                             input.txt(name="new_username" placeholder="username/email")
-                        th
+                        .td
                             input.txt(name="first" placeholder="First name")
-                        th
+                        .td
                             input.txt(name="last" placeholder="Last name")
-                        th
+                        .td
                             input.txt(type="checkbox", name="admin")
                             lable.lbl(for="admin") Admin
-                        th
-                            input.txt(type="checkbox", name="active")
-                            lable.lbl(for="active") Active
-                        th
-                            button.sfe.btn.vgi-magic(onclick="addUser()") Add a new user
-
+                        .td
+                        .td
+                            input.sfe.btn.vgi-magic(type="submit" value="Add user")
 
 mixin htext
     if t

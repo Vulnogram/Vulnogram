@@ -511,7 +511,6 @@ async function cveLogout(URL) {
 }
 
 async function userlistUpdate(elem, event){
-    console.log(elem.open);
     if (elem.open) {
         var org = await checkSession();
         if(cveClient) {
@@ -532,11 +531,54 @@ async function userlistUpdate(elem, event){
 }
 
 async function cveUserKeyReset(elem) {
-    alert('To be done');
+    var u = elem.getAttribute('u');
+    var org = await checkSession();
+    if (cveClient) {
+        try {
+            var ret = await cveClient.resetOrgUserApiKey(u);
+            if(ret["API-secret"]) {
+                document.getElementById("userMessage").innerText = "API secret was reset for "+u+"!";
+                document.getElementById("secretDialogForm").pass.value = ret["API-secret"];
+                document.getElementById("secretDialogForm").pass.type = "password";
+                document.getElementById("secretDialog").showModal();
+            }
+        } catch(e) {
+            console.log(e);
+        }
+    }
 }
 
 async function cveUserUpdate(elem) {
     alert('To be done');
+}
+async function cveAddUser(f) {
+    var org = await checkSession();
+    if (cveClient) {
+        try {
+            var ret = await cveClient.createOrgUser({
+                "username": f.new_username.value,
+                "name": {
+                    "first": f.first.value,
+                    "last":  f.last.value
+                },
+                "authority": {
+                    "active_roles": [
+                        "ADMIN"
+                    ]
+                }
+            });
+            if(ret.created && ret.created.secret) {
+                document.getElementById("secretDialogForm").pass.value = ret.created.secret;
+                document.getElementById("secretDialogForm").pass.type = "password";
+                document.getElementById("secretDialog").showModal();
+                document.getElementById("userMessage").innerText = ret.message;
+                f.reset()
+                userlistUpdate({open:true});
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    }
 }
 
 async function cveRenderList(l, refreshEditor) {

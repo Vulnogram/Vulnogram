@@ -106,21 +106,30 @@ hr.bort {
 .ht4 {
     min-height: 4em;
 }
-
-.tbl th {
+.thead, .tbody, .tfoot {
+    display: table-row-group;
+}
+.tbl th, .tbl .th {
     position: sticky;
     top: 45px;
     background-color: var(--hig);
     font-size: x-small;
 }
 .tbl {
+    display: table;
    border-collapse:collapse;
     border: 1px solid var(--bor);
     table-layout: auto;
     background-color: var(--wht);
 }
 
-.tbl td, .tbl th {
+.tr {
+    display: table-row;
+}
+.th, .td {
+    display: table-cell;
+}
+.tbl td, .tbl th, .tbl .td, .tbl .th {
     padding: 0.2em 0.3em;
     border-left: solid var(--bor) 1px;
     border-top: solid var(--bor) 1px;
