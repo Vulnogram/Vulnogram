@@ -511,6 +511,7 @@ async function cveLogout(URL) {
 }
 
 async function userlistUpdate(elem, event){
+    // todo: refactor checking for session, and redirecting to login window.
     if (elem.open) {
         var org = await checkSession();
         if(cveClient) {
@@ -526,6 +527,8 @@ async function userlistUpdate(elem, event){
             } catch (e) {
                 console.log(e);
             }
+        } else {
+            alert('Please login to CVE Portal');
         }
     }
 }
@@ -545,6 +548,8 @@ async function cveUserKeyReset(elem) {
         } catch(e) {
             console.log(e);
         }
+    } else {
+        alert('Please login to CVE Portal');
     }
 }
 
@@ -578,6 +583,8 @@ async function cveAddUser(f) {
         } catch (e) {
             console.log(e);
         }
+    } else {
+        alert('Please login to CVE Portal');
     }
 }
 
