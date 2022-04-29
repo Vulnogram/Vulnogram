@@ -588,6 +588,9 @@ async function cveAddUser(f) {
     }
 }
 
+async function cveOrgUpdate() {
+    alert('To be done');
+}
 async function cveRenderList(l, refreshEditor) {
     if (l && document.getElementById('cveList')) {
         document.getElementById('cveList').innerHTML = cveRender({
