@@ -3,6 +3,10 @@ body{
  --hig: #e5ebec;
 }   
 
+#cveUser .pop {
+  right: 2em !important;
+}
+
 .CVSS.NONE {
   background-color: rgb(162, 213, 114);
 }
@@ -119,4 +123,18 @@ table.striped td {
   padding:5px;
   border-width: 0px 1px 0px 1px;
   border : #c1c1c1 1px solid;
+}
+
+#loginErr {
+  font-weight: bold;
+  color: #880000;
+  margin: 1em;
+}
+
+.usermgmt {
+  right: 2em;
+}
+
+#cvePage, #showpass {
+    display: none;
 }

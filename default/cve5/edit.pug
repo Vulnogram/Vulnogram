@@ -25,18 +25,6 @@ block append loadEditor
     script 
         include postload.js
 
-
-mixin cveLoginButton(style)
-    details.lbl.popup
-        summary.btn.vgi-export CVE Login
-        dl.pop.wht.bor.rnd.shd.pad(style=style)
-            dt
-                btn.fbn.vgi-king(onclick='cveLogin("https://cveawg.mitre.org/api", "production")') CVE Production
-            dt
-                btn.fbn.vgi-hardhat(onclick='cveLogin("https://cveawg-test.mitre.org/api", "test")') CVE AWG Test
-            //dt
-            //    btn.fbn.vgi-hardhat(onclick='cveLogin("https://cveawg-dev.mitre.org/api")') CVE AWG Development
-
 block prepend topHeaderRight
 
 block prepend bannerItemsRight
@@ -60,17 +48,4 @@ block customtabs
         input.tab(name='tabs', type='radio', id='cveApiTab', value="6")
         label.lbl(for='cveApiTab') CVE Portal
         .wht.fil.bor.pad
-            div.pad.bor.rnd.sec
-                label.vgi-globe.lbl Portal
-                label.lbl#portalName disconnected  
-                label#cveUser
-                    +cveLoginButton
-            div.pad.hid#cveToolbar
-                button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve a CVE ID
-                //button.btn.vgi-magic(onclick='cveReserveAndRender(1)') Reserve one for next year
-                button.btn.vgi-reuse(onclick='cveGetList()') Refresh
-            div.gap
-                b.lbl.vgi-inbox My CVE IDs
-            div#cveList
-                table#cveListTable.tbl.sortable
-            script(src="/js/tablesort.min.js")
+            #cvePortal

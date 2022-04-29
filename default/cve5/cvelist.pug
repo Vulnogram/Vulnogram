@@ -1,20 +1,171 @@
+mixin cveLoginBox
+    center.sec.shd.rnd.gap2.pad
+        include CVE.svg
+        br
+        i CVE Services Portal 
+        br
+        i Instantly providing you CVE IDs since 2022
+        #loginErr
+        form#cveLoginForm(method='POST', onsubmit='cveLogin(event, this); return false;')
+            .pad
+                label.lbl(style="width:10em;") Portal
+                select.bor.txt(name='portal' style="width:11em;")
+                    option(value="https://cveawg.mitre.org/api" selected) production
+                    option(value="https://cveawg-test.mitre.org/api") test
+                    option(value="http://127.0.0.1:3000/api") local
+            .pad
+                label.lbl(style="width:10em;") CNA Short Name
+                input.bor.txt(name='org', type='text', autocomplete='on', "pattern"=".{2,64}" required=true)
+            .pad
+                label.lbl(style="width:10em;") CVE User
+                input.bor.txt(name='user', type='text', autocomplete="on", "pattern"=".+@.+" required=true)
+            .pad
+                label.lbl(style="width:10em;") CNA API Key
+                input.bor.txt(name='key', type='password', autocomplete='off' required=true)
+            .pad.center
+                input.bor.fbn.sfe(type='submit', value='Login')
+
+
+mixin portal
+    - var y = new Date().getFullYear()
+    header.pad.ban.sec.rnd
+        .left
+            label.vgi-globe.lbl Portal: 
+                =portalType
+            span.btg
+                        button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve One CVE
+                        details.popup
+                            summary.btn ▼ 
+                            dl.pop.wht.bor.rnd.shd.pad.rows
+                                dt
+                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0, 5)') Reserve 5
+                                dt
+                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0, 10)') Reserve 10
+                                dt 
+                                    button.btn.vgi-magic(onclick='cveReserveAndRender(1)') Reserve one for the year 
+                                        = y + 1
+        .flx
+            label#cveUser
+                +userstats
+            if userInfo && userInfo.authority && userInfo.authority.active_roles && userInfo.authority.active_roles.includes("ADMIN")
+                label#userMgmt
+                    +usermgmt
+    .pad#cveStatusMessage
+    +showSecret
+    form#cvePortalFilter.gap
+        .lbl Show
+        .rdg
+            .form-control
+                input.hid(id="chkall" type="radio" name="fstate" value="")
+                label.lbl.vgi-misc(for="chkall") All
+            .form-control
+                input.hid(id="chkres" type="radio" name="fstate" value="RESERVED" checked=true)
+                label.lbl.vgi-tag(for="chkres") Reserved
+            .form-control
+                input.hid(id="chkpub" type="radio" name="fstate" value=(portalType == 'test' ? "PUBLISHED" : "PUBLIC"))
+                label.lbl.vgi-globe(for="chkpub") Published
+            .form-control
+                input.hid(id="chkrej" type="radio" name="fstate" value=(portalType == 'test' ? "REJECTED" : "REJECT"))
+                label.lbl.vgi-no(for="chkrej") Rejected
+        .lbl Year
+        select.lbl.txt(name="y")
+            while y > 1998
+                option(value=y)=y
+                - y--;
+        |  
+        button.btn.vgi-reuse(onclick='event.preventDefault();cveGetList();return false;') Go
+    div#cvePage.gap
+        .rdg
+            div.lbl#cvePageInfo
+            .form-control
+                button.lbl#prevPage(onclick='paginate(-1)') &#8249;
+            .form-control
+                div.lbl#currentPage 1
+            .form-control
+                button.lbl#nextPage(onclick='paginate(1)') &#8250;
+		
+    div#cveList
+
 mixin userstats
-    details.lbl.popup
-        summary.fbn.vgi-user= userInfo.name ? userInfo.name.first : userInfo.username
+    details.popup
+        summary.fbn.vgi-user= userInfo && userInfo.name ? userInfo.name.first : userInfo.username ? userInfo.username : 'undef'
             |  ▼ 
         dl.pop.wht.bor.rnd.shd.pad
-            b.vgi-user= userInfo.username
+            b.vgi-user= userInfo ? userInfo.username : 'undefined!'
             dt Roles:  
-                b.vgi-cap=userInfo.authority.active_roles
-            hr
+                b.vgi-cap=userInfo && userInfo.authority ? userInfo.authority.active_roles : 'undefined!'
+            span.vgi-edit.fbn(onclick="cveUserUpdate()") Update my details
+            hr.bort
             dt Org:  
-                b=org.name
+                b=org ? org.name : 'undefined'
             dt ShortName:  
-                b= org.short_name
+                b= org ? org.short_name : 'undefined'
             dt Role:  
-                b= org.authority.active_roles
-            hr
+                b= org && org.authority ? org.authority.active_roles : 'undefined'
+            span.vgi-edit.fbn(onclick="cveOrgUpdate()") Update org details
+            hr.bort
             span.vgi-exit.fbn(onclick="cveLogout()") Logout!
+
+mixin listUsers
+    if users
+        each u, i in users
+            .tr
+                .td=u.username
+                .td=u.name.first
+                .td=u.name.last
+                .td=u.authority ? u.authority.active_roles : ''
+                .td=u.active
+                .td
+                    button.btn.vgi-reuse(onclick="cveUserKeyReset(this)",u=u.username) Reset API Key
+
+mixin showSecret
+    dialog.bor.rnd.shd.pad2#secretDialog
+      center
+        form#secretDialogForm(onsubmit="event.preventDefault();this.reset();document.getElementById('secretDialog').close();return false")
+            h3.vgi-alert#userMessage
+            .gap Please securely store this API key.
+                br
+                |  This key will not be shown again!
+            label.lbl API Secret Key
+            input.txt.bor(type="password" size=39 name="pass" readonly)
+            input#showpass(name="showpass" type="checkbox" onclick="this.form.pass.type = (this.form.pass.type === 'password'? 'text' : 'password')")
+            label.vgi-eye.lbl(for="showpass")
+            center.gap
+                input.btn.sfe(type="reset" onclick="document.getElementById('secretDialog').close()" value="OK")
+
+mixin usermgmt
+    details.popup(ontoggle="userlistUpdate(this, event)")
+        summary.fbn.vgi-user Manage Users
+            |  ▼ 
+        div.pop.wht.bor.rnd.shd.usermgmt
+            .tbl.gap
+                thead.thead
+                    .tr
+                        .th Username
+                        .th Firstname
+                        .th Lastname
+                        .th Roles
+                        .th active
+                        .th
+                .tbody#userlist
+                    .tr
+                        .td(colspan=6)
+                            center
+                                .spinner
+                .tfoot
+                    form.tr(onsubmit="event.preventDefault();cveAddUser(this)")
+                        .td
+                            input.txt(name="new_username" placeholder="username/email")
+                        .td
+                            input.txt(name="first" placeholder="First name")
+                        .td
+                            input.txt(name="last" placeholder="Last name")
+                        .td
+                            input.txt(type="checkbox", name="admin")
+                            lable.lbl(for="admin") Admin
+                        .td
+                        .td
+                            input.sfe.btn.vgi-magic(type="submit" value="Add user")
 
 mixin htext
     if t
@@ -51,7 +202,7 @@ mixin date(value)
 mixin editables
     each c in cveIds
         //-if c.state == 'RESERVED'
-            option(value=c.cve_id)='📝 ' + c.cve_id
+            option(value=c.cve_id)='🏷️ ' + c.cve_id
         if c.state == 'PUBLISHED'
             option(value=c.cve_id)='🌐 Published on '
                 +date(c.time.modified)
@@ -63,41 +214,46 @@ mixin reserveds
     each c in cveIds
         if c.state == 'RESERVED'
             option(value=c.cve_id)
-                i='📝 Reserved by ' + c.requested_by.user
+                i='🏷️ Reserved by ' + c.requested_by.user
         //-if c.state == 'PUBLISHED'
             option(value=c.cve_id)='🌐 Published by ' + c.requested_by.user
         //-if c.state == 'REJECTED'
             option(value=c.cve_id)='⛔ Rejected by ' + c.requested_by.user
 
 mixin listIds
-    - var stateIcons = {'RESERVED':'vgi-edit', 'PUBLISHED':'vgi-globe', 'REJECTED':'vgi-no'}
-    table.tbl.sortable
-        thead
-            tr
-                th ID
-                th State
-                th Requester
-                th(aria-sort="ascending") Created
-                th Modified
-        tbody
-          each c in cveIds
-            tr(data=c.state)
-                td
-                    if editable
-                        a(href="javascript:cveLoad('"+c.cve_id+"')")=c.cve_id
-                    else
-                        =c.cve_id
-                td
-                    if c.state == 'RESERVED'
-                        i(class=stateIcons[c.state]?stateIcons[c.state]:'')=c.state
-                    else
-                        a.vgi-ext(class=stateIcons[c.state]?stateIcons[c.state]:'', href="https://www.cve.org/CVERecord?id="+c.cve_id)
-                            =c.state
-                td=c.requested_by.user
-                td
-                    +date(c.time.created)
-                td
-                    +date(c.time.modified)
+    if cveIds && cveIds.length > 0
+        - var stateIcons = {'RESERVED':'vgi-tag', 'PUBLISHED':'vgi-globe', 'REJECTED':'vgi-no', 'PUBLIC':'vgi-globe'}
+        table#cveListTable.tbl.sortable
+            thead
+                tr
+                    th ID
+                    th Requester
+                    th(aria-sort="ascending") Created
+                    th Modified
+                    th
+            tbody
+                each c in cveIds
+                    tr(data=c.state)
+                        td
+                            if editable
+                                a(class=stateIcons[c.state]?stateIcons[c.state]:'',href="javascript:cveLoad('"+c.cve_id+"')", title='Load ' + c.state + ' ' + c.cve_id + ' to edit')
+                                    =c.cve_id
+                            else
+                                span(class=stateIcons[c.state]?stateIcons[c.state]:'', title=c.state)
+                                    =c.cve_id
+                            if c.state != 'RESERVED'
+                                a.vgi-ext(href="https://www.cve.org/CVERecord?id="+c.cve_id)
+                        td=c.requested_by.user
+                        td
+                            +date(c.time.created)
+                        td
+                            if c.time.modified != c.time.created
+                                +date(c.time.modified)
+                        td
+                            if editable && c.state == 'RESERVED'
+                                a.vgi-cancel(data=c.cve_id, onclick="cveReject(this, event)", title="Reject this CVE ID",)
+    else
+        i No CVE IDs found!
 
 block red
     if ctemplate != undefined

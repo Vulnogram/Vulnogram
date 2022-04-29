@@ -169,7 +169,7 @@ mixin table(docs, columns, showCheckboxes, id)
 
 
 mixin tablesort
-    script(src="/js/tablesort.min.js")
+    script(src=conf.basedir + 'js/tablesort.min.js')
     script.
         var tables = document.getElementsByClassName('sortable')
         for (var i = 0; i < tables.length; i++) {

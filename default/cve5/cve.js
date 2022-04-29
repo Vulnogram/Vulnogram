@@ -1,12 +1,15 @@
-/*
-  * CVE Services REST API - ECMAScript 6 Client v1.0.0
-  *
-  * Copyright 2021, Ben N (pajexali@gmail.com)
-  * See LICENSE for a full copy of the license.
-  *
-  * Provides simple JS interface to perform common actions in the CVE API for an
-  * authenticated user, whilst storing API credentials locally in the browser.
-*/
+//
+// CVE.js
+// Filename: cve.js
+//
+// Author: Ben Nott <pajexali@gmail.com>
+//
+// Description: Exposes MITRE CVE API through CveServices using Service Worker
+// middleware for credential storage and request handling.
+//
+// Copyright 2022, Ben Nott <pajexali@gmail.com>.
+// See LICENSE for a full copy of the license.
+//
 
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
@@ -25,40 +28,52 @@
 
     class NoCredentialsError extends Error {};
 
-    class CveServices {
-        constructor(serviceUri) {
-            if (serviceUri == null) {
-                serviceUri = 'https://cweawg.mitre.org/api';
-            }
+    class CredentialError extends Error {};
 
-            this._request = new CveServicesRequest(serviceUri);
+    class MiddlewareError extends Error {};
+
+    class CveServices {
+        constructor(serviceUri = 'https://cveawg.mitre.org/api', swPath = 'sw.js') {
+            this._middleware = new CveServicesMiddleware(serviceUri, swPath);
+            this._request = null;
         }
 
-        getCveIds() {
-            return this._request.get('cve-id')
-                .then(data => data.cve_ids);
+        // Session mgmt
+
+        login(user, org, key) {
+            return this._middleware.setCredentials({ user, org, key });
+        }
+
+        logout() {
+            return this._middleware.destroy();
+        }
+
+        // API methods
+
+        getCveIds(args) {
+            return this._middleware.get('cve-id', args);
         };
 
         reserveCveIds(args) {
-            return this._request.post('cve-id', args)
-                .then(data => data.cve_ids);
+            return this._middleware.post('cve-id', args)
+                       .then(data => data.cve_ids);
         }
 
         reserveCveId(year = new Date().getFullYear()) {
-            return this._request.orgName
-                .then(orgName => {
-                    let args = {
-                        amount: 1,
-                        cve_year: year,
-                        short_name: orgName,
-                    };
+            return this._middleware.orgName
+                       .then(orgName => {
+                           let args = {
+                               amount: 1,
+                               cve_year: year,
+                               short_name: orgName,
+                           };
 
-                    return this.reserveCveIds(args);
-                });
+                           return this.reserveCveIds(args);
+                       });
         }
 
         reserveSeqCveIds(n = 1, year = new Date().getFullYear()) {
-            return this._request.orgName
+            return this._middleware.orgName
                 .then(orgName => {
                     let args = {
                         amount: n,
@@ -72,7 +87,7 @@
         }
 
         reserveNonSeqCveIds(n = 1, year = new Date().getFullYear()) {
-            return this._request.orgName
+            return this._middleware.orgName
                 .then(orgName => {
                     let args = {
                         amount: n,
@@ -86,324 +101,224 @@
         }
 
         getCveId(id) {
-            return this._request.get(['cve-id', id].join('/'));
+            return this._middleware.get('cve-id/'.concat(id));
         }
 
-        updateCveId(id, record) {
-            return this._request.put(`cve-id/${id}`, record);
+        updateCveId(id, state, org) {
+            let record = { state, org };
+            return this._middleware.put('cve-id/'.concat(id), record);
         }
 
         getCves() {
-            return this._request.get('cve');
+            return this._middleware.get('cve');
         }
 
         getCve(id) {
-            return this._request.get(`cve/${id}`);
+            return this._middleware.get('cve/'.concat(id));
         }
 
         createCve(id, schema) {
-            return this._request.post(`cve/${id}`, undefined, schema);
+            return this._middleware.post(`cve/${id}/cna`, undefined, schema);
         }
 
         updateCve(id, schema) {
-            return this._request.put(`cve/${id}`, undefined, schema);
+            return this._middleware.put(`cve/${id}/cna`, undefined, schema);
         }
 
         getOrgInfo() {
-            return this._request.orgName
-                .then(org =>
-                    this._request.get(['org', org].join('/')));
+            return this._middleware.orgName
+                .then(orgName =>
+                    this._middleware.get('org/'.concat(orgName)));
+        }
+
+        updateOrgInfo(orgInfo) {
+            return this._middleware.orgName
+                .then(orgName =>
+                    this._middleware.get('org/'.concat(orgName), orgInfo));
+        }
+
+        createOrgUser(userInfo) {
+            return this._middleware.orgName
+                .then(orgName =>
+                    this._middleware.post(`org/${orgName}/user`, undefined, userInfo));
+        }
+
+        updateOrgUser(username, userInfo) {
+            return this._middleware.orgName
+                .then(orgName =>
+                    this._middleware.put(`org/${orgName}/user/${username}`, undefined, userInfo));
+        }
+
+        resetOrgUserApiKey(username) {
+            return this._middleware.orgName
+                .then(orgName =>
+                    this._middleware.put(`org/${orgName}/user/${username}/reset_secret`));
         }
 
         getOrgUsers() {
-            return this._request.orgName
-                .then(org =>
-                        this._request.get(['org', org, 'users'].join('/')));
+            return this._middleware.orgName
+                .then(orgName =>
+                    this._middleware.get(`org/${orgName}/users`));
         }
 
         getOrgIdQuota() {
-            return this._request.orgName
-                .then(org =>
-                      this._request.get(['org', org, 'id_quota'].join('/')));
+            return this._middleware.orgName
+                .then(orgName =>
+                    this._middleware.get(`org/${orgName}/id_quota`));
         }
 
         getOrgUser(username) {
-            return this._request.orgName
-                .then(org =>
-                      this._request.get(['org', org, 'user', username].join('/')));
+            return this._middleware.orgName
+                .then(orgName =>
+                    this._middleware.get(`org/${orgName}/user/${username}`));
         }
     };
 
-    class CveServicesRequest {
-        constructor(serviceUri) {
-            this._clientAuth = null;
-            this._serviceUri = serviceUri;
-        }
+    class CveServicesMiddleware {
+        constructor(serviceUri = 'https://cveawg.mitre.org/api', swPath = 'sw.js') {
+            this.serviceUri = serviceUri;
+            this.registration;
+            this.swPath = swPath;
 
-        middleware() {
-            return this.clientLogin()
-                .then((cred) => {
-                    return {
-                        headers: {
-                            'CVE-API-KEY': cred.key,
-                            'CVE-API-ORG': cred.org,
-                            'CVE-API-USER': cred.user,
-                        }
-                    };
-            });
-        }
-
-        get orgName() {
-            let obj = this;
-
-            return new Promise(resolve => {
-                if (obj._clientAuth != null) {
-                    resolve(obj._clientAuth.org);
-                } else {
-                    obj.clientLogin()
-                        .then(cred => resolve(cred.org));
-                }
-            });
-        }
-
-        get userName() {
-            let obj = this;
-
-            return new Promise(resolve => {
-                if (obj._clientAuth != null) {
-                    resolve(obj._clientAuth.user);
-                } else {
-                    obj.clientLogin()
-                        .then(cred => resolve(cred.user));
-                }
-            });
-        }
-
-        clientLogin() {
-            if (this._clientAuth == null) {
-
-                // Look in session storage as first cache
-                let creds = window.sessionStorage.getItem('cve-services-creds');
-
-                if (creds != undefined) {
-                    let parsed_creds = JSON.parse(creds);
-
-                    this.cacheLogin(parsed_creds);
-                    return Promise.resolve(this._clientAuth);
-                }
-
-                let getFunc;
-                let setFunc;
-
-                if (window.PasswordCredential) {
-                    return this.clientLoginBrowserCred();
-                } else {
-                    return this.clientLoginLocalStorage();
-                }
-            } else {
-                return Promise.resolve(this._clientAuth);
+            if (!('serviceWorker' in navigator)) {
+                throw MiddlewareError("Service Workers are not available in your browser.");
             }
         }
 
-        cacheLogin(creds) {
-            if (this._clientAuth == null) {
-                this._clientAuth = creds;
+        get worker() {
+            if (this.registration) {
+                return Promise.resolve(this.registration.active);
             }
 
-            if (window.sessionStorage.getItem('cve-services-creds') == null) {
-                sessionStorage.setItem('cve-services-creds', JSON.stringify(creds));
-            }
-        }
+            let serviceUri = this.serviceUri;
 
-        clientLoginLocalStorage() {
-            let object = this;
+            let initWorker = (worker) => {
+                let init_msg = { type: 'init',
+                                serviceUri };
 
-            const returnCreds = function(masterKey, clientAuth) {
-
-                const iv = localStorage.getItem('cve-api-key-iv')
-                    .split(",").map(x => { return parseInt(x); });
-
-                let apiKeyEnc = localStorage.getItem('cve-api-key')
-                    .split(",").map(x => { return parseInt(x); });
-
-                let apiKeyBuf = new Uint8Array(apiKeyEnc.length);
-
-                for (let i = 0; i < apiKeyEnc.length; i++) {
-                    apiKeyBuf[i] = apiKeyEnc[i];
-                }
-
-                apiKeyBuf = apiKeyBuf.buffer;
-
-                let ivBuf = new Uint8Array(iv.length);
-
-                for (let i = 0; i < iv.length; i++) {
-                    ivBuf[i] = iv[i];
-                }
-
-                return crypto.subtle
-                    .decrypt({name: "AES-GCM", iv: ivBuf}, masterKey, apiKeyBuf)
-                    .then(keyBuf => {
-                        let keyStr = new TextDecoder().decode(keyBuf);
-                        let [user, org, key] = keyStr.split('|');
-                        let creds = { key, org, user };
-
-                        object.cacheLogin(creds);
-
-                        return object._clientAuth;
-                    });
+                this.simpleMessage(worker, init_msg);
             };
 
-            if (!localStorage.hasOwnProperty('cve-api-key')) {
-                return this.clientStoreLocalStorageCred()
-                    .then((masterKey, clientAuth) => returnCreds(masterKey));
+            return navigator.serviceWorker.register(this.swPath)
+                .then(reg => {
+                    this.registration = reg;
 
-            } else {
-                return this.clientLocalStoragePassToKey()
-                    .then((masterKey, clientAuth) => returnCreds(masterKey));
-            }
-        }
+                    if (reg.installing != undefined) {
+                        return new Promise(resolve => {
+                            let worker = reg.installing;
 
-        clientLoginBrowserCred() {
-            let storeCred = this.clientStoreBrowserCred;
-
-            return navigator.credentials.get({password: true})
-                .then(cred => {
-                    if (cred == null) {
-                        return storeCred();
-                    } else {
-                        return cred;
-                    }
-                })
-                .then(cred => {
-                    let [user, org] = cred.id.split("|");
-                    let key = cred.password;
-                    let creds = { key, org, user };
-
-                    this.cacheLogin(creds);
-
-                    return this._clientAuth;
-                });
-        }
-
-        clientLocalStoragePassToKey() {
-            const passphrase = prompt("Enter your passphrase to secure your CVE credentials:");
-
-            let encoder = new TextEncoder();
-            let passphraseEnc = encoder.encode(passphrase);
-
-            return crypto.subtle.digest("SHA-256", passphraseEnc)
-                .then(digest => crypto.subtle.importKey("raw",
-                                                        digest,
-                                                        {name: "AES-GCM"},
-                                                        false,
-                                                        ["encrypt", "decrypt"]));
-        }
-
-        clientStoreLocalStorageCred() {
-            return this.clientLocalStoragePassToKey()
-                .then(masterKey => {
-                    const apiKey = prompt("Provide CVE API key:");
-                    const user = prompt("Provide CVE API username:");
-                    const org = prompt("Provide CVE API organisation name:");
-
-                    const keyStr = [user, org, apiKey].join('|');
-
-                    let enc = new TextEncoder();
-                    let apiKeyEnc = enc.encode(keyStr);
-
-                    let iv = crypto.getRandomValues(new Uint8Array(12));
-
-                    return crypto.subtle.encrypt({name: "AES-GCM", iv}, masterKey, apiKeyEnc)
-                        .then(key => {
-                            var keyArray = new Uint8Array(key);
-
-                            localStorage.setItem('cve-api-key', keyArray);
-                            localStorage.setItem('cve-api-key-iv', iv);
-
-                            return masterKey;
+                            worker.addEventListener('statechange', (e) => {
+                                if (e.target.state == 'activated') {
+                                    initWorker(e.target);
+                                    resolve(e.target);
+                                }
+                            });
                         });
+                    } else {
+                        initWorker(reg.active);
+                        return reg.active;
+                    }
                 });
         }
 
-        clientStoreBrowserCred() {
+        simpleMessage(worker, msg) {
             return new Promise(resolve => {
-                let doc = window.document;
+                let channel = new MessageChannel();
 
-                alert("You have not yet stored your credentials.\n" +
-                    "You will be prompted for your CVE API account details now.");
+                channel.port1.onmessage = (msg) => {
+                    resolve(msg.data);
+                };
 
-                let org = prompt('CNA organisation short name: ');
-                let user = prompt('CVE API account username: ');
-                let key = prompt('CVE API KEY: ');
-
-                let cred = new PasswordCredential({ id: 'cve-services',
-                                                    name: `${user}|${org}`,
-                                                    password: key });
-
-                navigator.credentials.store(cred)
-                    .then(result => console.log(result));
-
-                resolve(cred);
+                worker.postMessage(msg, [channel.port2]);
+            }, reject => {
+                worker.onmessageerror = reject;
             });
+        }
+
+        send(msg) {
+            return this.worker.then(worker => {
+                return this.simpleMessage(worker, msg).then(res => {
+                    if ('error' in res) {
+                        return Promise.reject(res.error);
+                    } else {
+                        return res.data;
+                    }
+                });
+            });
+        }
+
+        serviceRequest(request) {
+            let msg = {
+                type: 'request',
+                ...request,
+            };
+
+            return this.send(msg);
+        }
+
+        echo() {
+            return this.send({type: 'echo'});
+        }
+
+        setCredentials(creds) {
+            let msg = {
+                type: 'login',
+                creds,
+            };
+
+            return this.send(msg);
         }
 
         get(path, query) {
-            return this.middleware()
-                .then(opts => {
-                    let queryPath = '';
+            let req = {
+                method: 'GET',
+                path, query
+            };
 
-                    if (query) {
-                        queryPath = new URLSearchParams(query).toString();
-                    }
-
-                    return fetch(`${this._serviceUri}/${path}?${queryPath}`, opts)
-                        .then(res => res.json());
-                });
+            return this.serviceRequest(req);
         }
 
         post(path, query, body) {
-            return this.middleware()
-                .then(opts => {
-                    opts.method = 'POST';
+            let req = {
+                method: 'POST',
+                path, query, body
+            };
 
-                    let queryPath = '';
-
-                    if (query) {
-                        queryPath = '?' + new URLSearchParams(query).toString();
-                    }
-
-                    if (body) {
-                        opts.headers['Content-Type'] = 'application/json';
-                        opts.body = JSON.stringify(body);
-                    }
-
-                    return fetch(`${this._serviceUri}/${path}${queryPath}`, opts);
-                });
+            return this.serviceRequest(req);
         }
 
         put(path, query, body) {
-            return this.middleware()
-                .then(opts => {
-                    opts.method = 'PUT';
+            let req = {
+                method: 'PUT',
+                path, query, body
+            };
 
-                    let queryPath = '';
-
-                    if (query) {
-                        queryPath = '?' + new URLSearchParams(query).toString();
-                    }
-
-                    if (body) {
-                        opts.headers['Content-Type'] = 'application/json';
-                        opts.body = JSON.stringify(body);
-                    }
-
-                    return fetch(`${this._serviceUri}/${path}?${queryPath}`, opts);
-                });
+            return this.serviceRequest(req);
         }
-    };
+
+        get orgName() {
+            let msg = {
+                type: 'getOrg',
+            };
+
+            return this.send(msg);
+        }
+
+        destroy() {
+            if (this.registration) {
+                this.registration.unregister();
+                this.registration = undefined;
+
+                return Promise.resolve(true);
+            }
+
+            return Promise.resolve(false);
+        }
+    }
 
     if (window != undefined) {
         window.CveServices = CveServices;
+        window.CveServicesMiddleware = CveServicesMiddleware;
     }
 
     return CveServices;

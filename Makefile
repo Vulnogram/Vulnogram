@@ -1,11 +1,11 @@
 OUT = ./standalone
 CSS = $(OUT)/css
 JS = $(OUT)/js
-CVE = $(OUT)/cve5
+
 CSSO = ./node_modules/.bin/csso
 UJS = ./node_modules/.bin/uglifyjs
 
-TARGETS := $(OUT) $(OUT)/index.html $(CSS)/min.css $(CSS)/vg-icons.css $(CSS)/tagify.css $(CSS)/logo.png $(CSS)/logo.gif $(JS)/util.js $(JS)/editor.js $(JS)/mode-json.js $(JS)/cvss.json $(JS)/cwe-frequent.json $(JS)/capec.json $(JS)/wy/ $(JS)/wy/ $(JS)/tablesort.min.js $(JS)/tagify.min.js
+TARGETS := $(OUT) $(OUT)/static $(OUT)/index.html $(CSS)/min.css $(CSS)/vg-icons.css $(CSS)/tagify.css $(CSS)/logo.png $(CSS)/logo.gif $(JS)/util.js $(JS)/editor.js $(JS)/mode-json.js $(JS)/cvss.json $(JS)/cwe-frequent.json $(JS)/capec.json $(JS)/wy/ $(JS)/wy/ $(JS)/tablesort.min.js $(JS)/tagify.min.js
 
 $(OUT):
 	mkdir $(OUT)
@@ -21,9 +21,6 @@ $(OUT)/js/wy:
 
 $(OUT)/css:
 	mkdir -p $(OUT)/css
-
-$(CVE):
-	mkdir -p $(CVE)
 
 $(CSS)/%.css: ./public/css/%.css
 	$(CSSO) $< -o $@
@@ -46,7 +43,9 @@ $(JS)/%.js: ./public/js/%.js
 $(JS)/%.json: ./public/js/%.json
 	node -e 'console.log(JSON.stringify(require("./" + process.argv[1])))' $< > $@
 
-$(CVE)/%: ./public/js/cve/%
-	$(UJS) $< -o $@
+#$(OUT)/%: ./public/js/cve/%
+#	$(UJS) $< -o $@
 
-min: $(CVE) $(CSS) $(JS) $(TARGETS)
+$(OUT)/static/: ./default/cve5/static/
+	cp -pr $< $@
+min: $(OUT) $(CSS) $(JS) $(TARGETS)

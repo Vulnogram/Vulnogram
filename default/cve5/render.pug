@@ -63,8 +63,8 @@ mixin cvssList(cvssList)
                     | CVSS · 
                     = cvss.baseSeverity
                     |  · 
-                    sup=cvss.baseScore
-                    | ⁄10
+                    =cvss.baseScore
+                    sub ⁄10
                 div.pop.wht.rnd.shd.pad.bor
                     if cvss.scenarios
                         each s, i in cvss.scenarios

@@ -9,7 +9,7 @@ block info
 block append head
     if !min
         link(rel='stylesheet', href= '/users/list/css')
-    link(href="/css/tagify.css",rel="stylesheet",type="text/css")
+    link(href=conf.basedir + "css/tagify.css",rel="stylesheet",type="text/css")
 
 block prepend bannerItemsLeft
     if !min
@@ -109,14 +109,15 @@ block content
 
 
     script(src=conf.basedir + 'js/util.js')
-    script(src="/js/wy/simple.js")
-    script(src="/js/wy/wysihtml-toolbar.min.js")
+    script(src=conf.basedir + "js/wy/simple.js")
+    script(src=conf.basedir + "js/wy/wysihtml-toolbar.min.js")
     if !min && opts && opts.schema
         script(src=conf.basedir + schemaName + '/schema.js')
     script(src=conf.jsoneditor,integrity=conf.jsoneditorHash,crossorigin="anonymous")
-    script(src="/js/tagify.min.js")
+    script(src=conf.basedir + "js/tagify.min.js")
     script(src=conf.ace,integrity=conf.aceHash,crossorigin="anonymous")
     script(src=conf.basedir + 'js/editor.js')
+    script(src=conf.basedir + 'js/tablesort.min.js')
 
     block loadEditor
         script loadJSON(initJSON);
