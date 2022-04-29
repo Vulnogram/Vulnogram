@@ -12,6 +12,7 @@ mixin cveLoginBox
                 select.bor.txt(name='portal' style="width:11em;")
                     option(value="https://cveawg.mitre.org/api" selected) production
                     option(value="https://cveawg-test.mitre.org/api") test
+                    option(value="http://127.0.0.1:3000/api") local
             .pad
                 label.lbl(style="width:10em;") CNA Short Name
                 input.bor.txt(name='org', type='text', autocomplete='on', "pattern"=".{2,64}" required=true)
@@ -37,20 +38,19 @@ mixin portal
                             summary.btn ▼ 
                             dl.pop.wht.bor.rnd.shd.pad.rows
                                 dt
-                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve 5
+                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0, 5)') Reserve 5
                                 dt
-                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve 10
+                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0, 10)') Reserve 10
                                 dt 
-                                    button.btn.vgi-magic(onclick='cveReserveAndRender(1)') Reserve one for year 
+                                    button.btn.vgi-magic(onclick='cveReserveAndRender(1)') Reserve one for the year 
                                         = y + 1
-            .lbl#cveStatusMessage
         .flx
             label#cveUser
                 +userstats
             if userInfo && userInfo.authority && userInfo.authority.active_roles && userInfo.authority.active_roles.includes("ADMIN")
                 label#userMgmt
                     +usermgmt
-
+    .pad#cveStatusMessage
     form#cvePortalFilter.gap
         .lbl Show
         .rdg
@@ -73,6 +73,16 @@ mixin portal
                 - y--;
         |  
         button.btn.vgi-reuse(onclick='event.preventDefault();cveGetList();return false;') Go
+    div#cvePage.gap
+        .rdg
+            div.lbl#cvePageInfo
+            .form-control
+                button.lbl#prevPage(onclick='paginate(-1)') &#8249;
+            .form-control
+                div.lbl#currentPage 1
+            .form-control
+                button.lbl#nextPage(onclick='paginate(1)') &#8250;
+		
     div#cveList
 
 mixin userstats

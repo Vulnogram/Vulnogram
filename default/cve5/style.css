@@ -134,3 +134,6 @@ table.striped td {
 .usermgmt {
   right: 2em;
 }
+#cvePage {
+    display: none;
+}

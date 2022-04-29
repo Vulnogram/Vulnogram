@@ -10,6 +10,7 @@ var csrfProtection = csurf();
 var querymen = require('querymen');
 var qs = require('querystring');
 const _ = require('lodash');
+const path = require('path');
 
 var queryMW;
 /*
@@ -604,10 +605,10 @@ module.exports = function (name, opts) {
         res.compile(opts.render, { cache: true });
     });
 
-    /*    if (opts.style) {
-        //console.log('PATH: ' + path.join(__dirname, '/../', opts.schema));
-        router.use('/style.css', express.static(path.join(__dirname, '/../', opts.style)));
-    }*/
+    if (opts.static) {
+        console.log('PATH: ' + path.join(__dirname, '/../', opts.static));
+        router.use('/static', express.static(path.join(__dirname, '/../', opts.static)));
+    }
     // ToDo eliminate, as it can be embedded
     if (opts.schema) {
         //console.log('PATH: ' + path.join(__dirname, '/../', opts.schema));
