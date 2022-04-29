@@ -3,7 +3,6 @@
 extends ../splash
 
 block content
-  
   form(method='POST', action='/users/login')
     input(type='hidden', name='_csrf', value=csrfToken)
     .pad
@@ -15,4 +14,4 @@ block content
       label.lbl(style="width:6em;") Password:
       input.bor.txt(name='password', type='password', autocomplete='current-password')
     .pad.center 
-      input.bor.fbn.wht(type='submit', value='Login')
+      input.bor.fbn.sfe(type='submit', value='Login')

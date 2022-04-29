@@ -3,7 +3,7 @@ conf:{
     title: 'National Vulnerability Database',
     readonly: true,
     name: 'NVD',
-    class: 'icn NVD'
+    class: 'vgi-data'
 },
 facet: {
     ID: {

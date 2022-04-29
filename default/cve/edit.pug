@@ -4,28 +4,23 @@
 
 extends ../../views/edit
 block append bannerItemsLeft
-    if doc && doc.body && doc.body.CVE_data_meta && doc.body.CVE_data_meta.STATE == "PUBLIC"
-        a.icn.fbn.twitter(type="button",oncontextmenu='tweetJSON(event, this);',onclick='tweetJSON(event, this);',value="Download",target="_blank",title="Share a tweet about this CVE") Tweet
-
-block append scripts
-    script
-        include script.js
+    a.vgi-tweet.fbn(type="button",oncontextmenu='tweetJSON(event, this);',onclick='tweetJSON(event, this);',value="Download",target="_blank",title="Share a tweet about this CVE") Tweet
 
 block prepend bannerItemsRight
     form.indent.out.nobr(onsubmit="event.preventDefault();loadCVE(this.git.value);return false;")
-        input.icn.txt.Import(type="text",name="git",placeholder="CVE-YYYY-NNNN",pattern=".*CVE-[0-9]{4}-[0-9]{4,12}.*",size=17,title="CVE ID CVE-yyyy-nnnn+",required)
-        button.btn.icn.Import(type="submit") GIT
+        input.txt(type="text",name="git",placeholder="CVE-YYYY-NNNN",pattern=".*CVE-[0-9]{4}-[0-9]{4,12}.*",size=17,title="CVE ID CVE-yyyy-nnnn+",required)
+        button.btn.vgi-in(type="submit") GIT
     form.indent.out.nobr(action="https://github.com/CVEProject/cvelist/search",method="GET")
         input(type="hidden",name="type",value="Code")
-        input.icn.txt.Import(type="text",name="q",placeholder="Search CVElist",title="Search CVElist git repo",required)
-        button.btn.icn.Search(type="submit") GIT
+        input.txt(type="text",name="q",placeholder="Search CVElist",title="Search CVElist git repo",required)
+        button.btn.vgi-search(type="submit") GIT
 
 block customtabs
         input.tab(name='tabs', type='radio', id='advisoryTab', value="4")
         label.lbl(for='advisoryTab') Advisory
         .wht.fil.bor.pad
             div(style='float:right')
-                a.icn.btn.email.right(type="button",oncontextmenu='draftEmail(event, this, "render");',onclick='draftEmail(event, this,"render");',value="Email") Email
+                a.vgi-mail.btn.right(type="button",oncontextmenu='draftEmail(event, this, "render");',onclick='draftEmail(event, this,"render");',value="Email") Email
             div.render(id="render")
         input.tab(name='tabs', type='radio', id='mitreTab', value="5")
         label.lbl(for='mitreTab') MITRE-Preview
@@ -35,7 +30,7 @@ block customtabs
         label.lbl(for='jsonTab') CVE-JSON            
         .wht.fil.bor.pad
             div(style='float:right')
-                a.icn.right.copy.btn(onmouseover='this.textContent="Copy"',onclick='copyText(outjson);this.textContent="Copied"') Copy
+                a.right.copy-clipboard.btn(onmouseover='this.textContent="Copy"',onclick='copyText(outjson);this.textContent="Copied"') Copy
                 | 
-                a.icn.right.download.btn(onclick='downloadText(outjson, this);') Download
+                a.right.vgi-download.btn(onclick='downloadText(outjson, this);') Download
             .pre#outjson

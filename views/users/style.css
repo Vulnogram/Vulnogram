@@ -1,0 +1,75 @@
+
+@keyframes tri1 {
+    10% {
+        transform: rotate(0deg);
+        transform-origin: 200px 0px;
+    }
+    25% {
+        transform: translate(20.7px, 50px) rotate(-45deg);
+        transform-origin: 150px 50px;
+    }
+    65% {
+        transform: translate(20.7px, 50px) rotate(-45deg);
+        transform-origin: 150px 50px;
+    }
+    70% {
+        transform: rotate(0deg);
+        transform-origin: 200px 0px;
+    }
+}
+
+@keyframes tri2 {
+    15% {
+        transform: rotate(0deg);
+    }
+    30% {
+        transform: translate(29.3px, 29.29px) rotate(-45deg);
+    }
+    60% {
+        transform: translate(29.3px, 29.29px) rotate(-45deg);
+    }
+    65% {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes whl {
+    30% {
+        transform: translate(0px, 0px);
+    }
+    35% {
+        transform: translate(-10px, 10px);
+    }
+    38% {
+        transform: translate(200px, -200px);
+    }
+    42% {
+        transform: translate(-200px, -200px);
+    }
+    44% {
+        transform: translate(-200px, 300px);
+    }
+    50% {
+        transform: translate(0px, 0px);
+    }
+}
+
+#tri1 {
+    animation: tri1 10s ease infinite;
+    animation-delay: 0.3s;
+}
+
+#tri2 {
+    animation: tri2 10s ease infinite;
+    animation-delay: 0.6s;
+}
+
+#tri3 {
+    animation: whl 10s ease infinite;
+    animation-delay: 0s;
+}
+
+#two {
+    animation: whl 10s ease infinite;
+    animation-delay: .5s;
+}

@@ -19,7 +19,7 @@ block prepend content
                     span.text= cve.source.defect
                 li
                     b.term Affects: 
-                    span.text= textUtil.getProductAffected(cve) 
+                    span.text= getProductAffected(cve) 
                 li
                     b.term Problem: 
                     span.text
@@ -50,7 +50,7 @@ block pageDef
 
         h4 PRODUCT AFFECTED:
 
-        p= textUtil.getProductAffected(cve)
+        p= getProductAffected(cve)
 
         h4 PROBLEM:
         +mpara(cve.description.description_data)
@@ -82,21 +82,19 @@ block pageDef
 
         else
             p This issue has been assigned 
-                a(href="http://cve.mitre.org/cgi-bin/cvename.cgi?name="+cveid)=cveid
+                a(href="https://www.cve.org/CVERecord?id="+cveid)=cveid
                 |.
 
-        if cve.solution && cve.solution.length > 0
-            h4 SOLUTION:
+        h4 SOLUTION:
 
-            +mpara(cve.solution)
+        +mpara(cve.solution)
 
         if cve.source.defect && cve.source.defect.length > 0
             p This issue is being tracked as 
                 +linklist(cve.source.defect, defectURL)
                 |.
-        if cve.work_around && cve.work_around.length > 0
-            h4 WORKAROUND:
-            +mpara(cve.work_around)
+        h4 WORKAROUND:
+        +mpara(cve.work_around)
 
         h4 MODIFICATION HISTORY:
 
@@ -111,13 +109,13 @@ block pageDef
         ul
             if CDM.ID
                 li
-                    a(href="http://cve.mitre.org/cgi-bin/cvename.cgi?name="+cveid)=cveid + " at cve.mitre.org"
+                    a(href="https://www.cve.org/CVERecord?id="+cveid)=cveid + " at cve.org"
             each r in cve.references.reference_data
                 li
                     a(href=r.url)=r.url
 
+        h4 CVSS SCORE:
         if cve.impact && cve.impact.cvss
-            h4 CVSS SCORE:
             p
                 +CVSS(cve.impact.cvss)
             if cve.impact.cvss.baseSeverity

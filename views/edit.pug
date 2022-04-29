@@ -1,7 +1,7 @@
-//- Copyright (c) 2017 Chandan B N. All rights reserved.
+//- Copyright (c) 2020 Chandan B N. All rights reserved.
 
 extends layout
-    
+  
 block info
     if doc && doc.updatedAt
         ='Last updated ' + textUtil.timeSince(doc.updatedAt) + ' ago by ' + doc.author + ' (v' + doc.__v + ')'
@@ -9,6 +9,7 @@ block info
 block append head
     if !min
         link(rel='stylesheet', href= '/users/list/css')
+    link(href=conf.basedir + "css/tagify.css",rel="stylesheet",type="text/css")
 
 block prepend bannerItemsLeft
     if !min
@@ -17,39 +18,58 @@ block prepend bannerItemsLeft
 block append bannerItemsLeft
     if !confOpts[schemaName].conf.readonly
         input#importJSON.hid(type="file",accept="application/json",onchange="loadFile(event,this);")
-        a.icn.fbn.folder(type="file",onclick='importFile(event, this);') Open
+        a.fbn.vgi-folder(type="file",onclick='importFile(event, this);') Open
         if !min
-            button.icn.fbn.save(id="save1") SAVE    
-        a.icn.fbn.download(type="button",oncontextmenu='downloadFile(event, this);',onclick='downloadFile(event, this);',value="Download") Download
+            button.fbn.sfe.vgi-put(id="save1") SAVE    
+        a.fbn.vgi-download(type="button",oncontextmenu='downloadFile(event, this);',onclick='downloadFile(event, this);',value="Download") Download
 
 block scripts
-    if opts && opts.script
+    if opts
         script
-            each i,v in opts.script
-                | #{v} = !{opts.script[v].toString()};
-    if opts && opts.validators
-        script
-            | var custom_validators = [!{opts.validators.toString()}];
+            | var iconMap = 
+            if opts.icons
+                | !{JSON.stringify(opts.icons)}
+            else
+                | {};
+        if opts.script
+            script !{opts.script}
+        if opts.render
+            - var compileScript = pugLib.compileFileClient('views/'+opts.render +'.pug', {name: "pugRender",basedir: 'views',compileDebug: false,inlineRuntimeFunctions: true})
+            script !{compileScript}
+        if opts.script && typeof opts.script === 'array'
+            script
+                each i,v in opts.script
+                    | #{v} = !{opts.script[v].toString()};
+        if opts.validators
+            script
+                | var custom_validators = [!{opts.validators.toString()}];
+        if opts.errorFilter
+            script
+                | var errorFilter = !{opts.errorFilter.toString()};
     if !min
-        script(src="/js/wy/simple.js")
-        script(src="/js/wy/wysihtml-toolbar.min.js")
-        script(src=conf.basedir + 'js/subcontent.js')
-        script(src=conf.basedir + 'js/comment.js')
         script var csrfToken = "#{csrfToken}";
+        if opts && opts.conf && !opts.conf.readonly
+            - var compileScript = pugLib.compileFileClient('views/subcontent.pug', {name: "subdocRender",basedir: 'views',compileDebug: false,inlineRuntimeFunctions: true})
+            script !{compileScript}
+            script(src=conf.basedir + 'js/comment.js')
 
 block content
     div#mainTabGroup
         span.lbl &nbsp;
         input.tab(name='tabs', type='radio', id='editorTab', value="1",checked)
-        label.lbl#editorLabel(for='editorTab') Editor
+        label.lbl#editorLabel(for='editorTab')
+            span.flx Editor
+                details.popup#errPop
+                    summary.sml.hid#errCount
+                    div.wht.pop.pad.bor.shd#errList
         .wht.fil.bor.pad
             div.hid
-                button.lbl.sml.indent.btn.icn.auto.sfe(id="auto",style="visibility:hidden") Auto-Text
+                button.lbl.sml.indent.btn.vgi-magic.sfe(id="auto",style="visibility:hidden") Auto-Text
             iframe(name="x",style="display:none",src="about:blank")
             form.editor(target="x",action="",id="docEditor")
             if !min
                 
-                a.gap.flr.icn.tred.rejected(id="remove") Delete this entry from database
+                a#remove.gap.flr.fbn.vgi-del.tred Delete this entry from database
         input.tab(name='tabs', type='radio', id='sourceTab', value="2")
         label.lbl(for='sourceTab') Source
         .wht.fil.bor.pad
@@ -89,12 +109,15 @@ block content
 
 
     script(src=conf.basedir + 'js/util.js')
+    script(src=conf.basedir + "js/wy/simple.js")
+    script(src=conf.basedir + "js/wy/wysihtml-toolbar.min.js")
     if !min && opts && opts.schema
         script(src=conf.basedir + schemaName + '/schema.js')
     script(src=conf.jsoneditor,integrity=conf.jsoneditorHash,crossorigin="anonymous")
+    script(src=conf.basedir + "js/tagify.min.js")
     script(src=conf.ace,integrity=conf.aceHash,crossorigin="anonymous")
-    script(src=conf.basedir + 'js/' + schemaName + '/render.js')
     script(src=conf.basedir + 'js/editor.js')
+    script(src=conf.basedir + 'js/tablesort.min.js')
 
     block loadEditor
         script loadJSON(initJSON);

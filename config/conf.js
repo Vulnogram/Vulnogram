@@ -42,21 +42,24 @@ module.exports = {
     },
 */
     
-    mitreURL: 'https://cve.mitre.org/cgi-bin/cvename.cgi?name=',
+    mitreURL: 'https://www.cve.org/CVERecord?id=',
     defectURL: 'https://example.net/internal/bugs/',
     publicDefectURL: 'https://example.net/bugs/',
 
     // ACE editor
-    ace: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.3/ace.js',
-    aceHash: "sha384-rP/6HzF4Ap08EuRS9yaQsEPDqb8xS5WVTAzL7/LKTnUmJawbKoeSNyqHnNaiXY5X",
+    ace: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/ace.js',
+    aceHash: "sha512-OMjy8oWtPbx9rJmoprdaQdS2rRovgTetHjiBf7RL7LvRSouoMLks5aIcgqHb6vGEAduuPdBTDCoztxLR+nv45g==",
     // if you want this served locally, download ace editor to /public/js/ directory and point to that:
-    //ace: '/js/ace.js',
+    //ace: '/js/ace.min.js',
+    //aceHash: "sha512-GoORoNnxst42zE3rYPj4bNBm0Q6ZRXKNH2D9nEmNvVF/z24ywVnijAWVi/09iBiVDQVf3UlZHpzhAJIdd9BXqw=="
+
 
     // JSON Editor
-    jsoneditor: 'https://cdn.jsdelivr.net/npm/@json-editor/json-editor@1.2.1/dist/jsoneditor.min.js',
-    jsoneditorHash: 'sha384-iSUg2WRV2cauD+nwMuv7ITxwSe+2heHjWFIOjiWk5/Yve5ovwg/t7qp3ht6VlQBL',
+    jsoneditor: 'https://cdnjs.cloudflare.com/ajax/libs/json-editor/2.6.1/jsoneditor.min.js',
+    //jsoneditor: 'https://cdn.jsdelivr.net/npm/@json-editor/json-editor@latest/dist/jsoneditor.min.js',
+    jsoneditorHash: 'sha512-wKxQaNjG9D/GAVUp3sWH/OnnYDQ6NO3rcNGmmZ+YBjSqh7vwKvkBhNvSg91qmz2QSq/rsrrJjOmhdbd/LkbxGw==',
     // if you want this served locally, download above jsoneditor editor to /public/js/ directory and point to that:
-    //jsoneditor: '/js/jsoneditor.min.js',
+    //jsoneditor: '/js/jsoneditor.js',
 
     usernameRegex: '[a-zA-Z0-9]{3,}',
     sections: [
@@ -67,12 +70,11 @@ module.exports = {
     homepage: '/home',
 
     // Configure addional custom ExpressJS routes.
-    /*
+/*
     customRoutes: [
         {
             path:"/info",
             route: "./customRoutes/info"
         }
-    ]
-    */
+    ]*/
 };

@@ -13,21 +13,21 @@ html
                 .left
                     block topHeaderLeft
                         if min
-                            a.logo.big(title="Making the world safer one CVE at a time, since 2017", href=conf.homepage)="Vulnogram"
+                            a.fbn.vgi-logo(title="Making the world safer one CVE at a time, since 2017", href=conf.homepage)="Vulnogram"
                             | 
                         - var vs = Object.keys(confOpts).sort((a,b)=>(confOpts[a].conf.order-confOpts[b].conf.order));
                         //- console.log('JIRA order ' + confOpts['jira'].conf.order + '= '+ vs.map((a)=>(confOpts[a].conf.order)));
                         each section in vs
                             if confOpts && confOpts[section]
                                 - var cf = confOpts[section].conf ? confOpts[section].conf : {};
-                                a.icn.fbn(class=cf.class + (page && page.startsWith('/' + section + '/') ? " hig ins " : ""), title=cf.title, href = (cf.uri? cf.uri : '/' + section + '/' ))=cf.name
+                                a.fbn(class=cf.class + (page && page.startsWith('/' + section + '/') ? " hig ins " : ""), title=cf.title, href = (cf.uri? cf.uri : '/' + section + '/' ))=cf.name
                 .right
                     block topHeaderRight
                         if user
-                            a.icn.fbn.user(class= (page == 'users' ? " active" : ""), href="/users/profile/" + user.username)= user.name
+                            a.vgi-user(class= (page == 'users' ? " active" : ""), href="/users/profile/" + user.username)= user.name
                             //if opts && opts.conf && opts.conf.userpage
                             //    a.icn.fbn.folder(href='/' + schemaName+'/' +opts.conf.userpage + user.username) Mine
-                            a.icn.fbn.exit(href="/users/logout")=" Logout "
+                            a.vgi-exit(href="/users/logout")=" Logout "
         block banner
             header.ban.pad.shd.hig
                 block bannerItems
@@ -45,10 +45,10 @@ html
                                 if opts && opts.conf && opts.conf.shortcuts
                                     each shortcut in opts.conf.shortcuts
                                         - var href=(shortcut.href instanceof Function ? shortcut.href(locals) : shortcut.href)
-                                        a.fbn.icn(class=shortcut.class,href=href,target=shortcut.target)=(shortcut.label instanceof Function ? shortcut.label(locals) : shortcut.label)
+                                        a.fbn(class=shortcut.class,href=href,target=shortcut.target)=(shortcut.label instanceof Function ? shortcut.label(locals) : shortcut.label)
                                 form.indent.out.nobr(action='/' + schemaName,method="GET",style="flex-grow:1")
-                                    input.icn.txt(size=20,style="flex-grow:1",type="text",name="q",placeholder=" Search all "+schemaName,value=query ? (Array.isArray(query.q) ? query.q.join(' ') : query.q) :'',results="10",required)
-                                    button.icn.btn.Search(type="submit")
+                                    input.txt(size=20,style="flex-grow:1",type="text",name="q",placeholder=" Search all "+schemaName,value=query ? (Array.isArray(query.q) ? query.q.join(' ') : query.q) :'',results="10",required)
+                                    button.vgi-search.sbn(type="submit")
     block facetBanner
     if user && !min
         script.

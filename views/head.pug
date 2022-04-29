@@ -15,6 +15,7 @@ if (opts && opts.conf.favicon)
 else
     link(rel='icon' type='image/png', href= conf.basedir + 'css/logo.png', sizes='256x256')
 link(rel='stylesheet', href= conf.basedir + 'css/min.css')
-link(rel='stylesheet', href= conf.basedir + 'css/icns.css')
+//-link(rel='stylesheet', href= conf.basedir + 'css/icns.css')
+link(rel='stylesheet', href= conf.basedir + 'css/vg-icons.css')
 if (opts && opts.style)
-    style=opts.style
+    style !{opts.style}
