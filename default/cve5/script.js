@@ -440,7 +440,7 @@ async function checkSession() {
     if('serviceWorker' in navigator) {
         if('cveApi' in window.sessionStorage) {
             cveApi = JSON.parse(window.sessionStorage.cveApi);
-            cveClient = new CveServices(cveApi.url, "/js/cve5sw.js");
+            cveClient = new CveServices(cveApi.url, "./static/cve5sw.js");
             var o = false;
             try{
                 o = await cveClient.getOrgInfo();
@@ -529,7 +529,7 @@ async function cveLogin(elem, credForm) {
 
         try {
             if(!cveClient) {
-                cveClient = new CveServices(URL, "/js/cve5sw.js");
+                cveClient = new CveServices(URL, "./static/cve5sw.js");
             }
             var ret = await cveClient.login(
                 credForm.user.value,
@@ -598,8 +598,53 @@ async function editorSetCveDatalist(l) {
         cveIds: l
     })
 }
+function paginate(a) {
+    let el = document.getElementById('cvePage');
+    if(!el) {
+	console.log("Error cannot find template ");
+	console.log(a);
+	return false;
+    }
+    let cp = parseInt(el.getAttribute('data-page'));
+    if(isNaN(cp)) {
+	console.log("The data-page element is not pareable ");
+	console.log(cp);
+	return galse;
+    }
+    let np = cp + parseInt(a);
+    var cveForm = document.getElementById("cvePortalFilter");
+    cveForm.page = np;
+    cveGetList();
+    return false;
+}
 //var collator = new Intl.Collator(undefined, {numeric: true});
-
+async function pageShow(ret) {
+    let el = document.getElementById('cvePage');
+    if(!el) {
+	console.log("Error cannot find template ");
+	console.log(ret);
+	return;
+    }
+    el.style.display = 'block';
+    el.setAttribute('data-page', ret.currentPage);
+    let start = (ret.currentPage - 1) * ret.itemsPerPage + 1;
+    let end = start + ret.itemsPerPage - 1;
+    let total = ret.totalCount;
+    if(end > total)
+	end = total;
+    document.getElementById('cvePageInfo').innerHTML = "Showing " +
+	String(start) + " to " + String(end) + " of " +
+	String(total) + " records "
+    document.getElementById('currentPage').innerHTML = ret.currentPage
+    if(ret.prevPage)
+	document.getElementById('prevPage').style.display = 'block';
+    else
+	document.getElementById('prevPage').style.display = 'none';	
+    if(ret.nextPage)
+	document.getElementById('nextPage').style.display = 'block';
+    else
+	document.getElementById('nextPage').style.display = 'none'; 
+}
 async function cveGetList() {
     var org = await checkSession();
     if(cveClient) {
@@ -626,6 +671,9 @@ async function cveGetList() {
                     currentReserved = false;
                 }
             }
+            if(cveForm.page) {
+                filter.page = cveForm.page;
+            }
         }
         if (document.getElementById('cveList')) {
             document.getElementById('cveList').innerHTML = '<center><div class="spinner"></div></center>';
@@ -642,6 +690,17 @@ async function cveGetList() {
                 }
             }
             cveRenderList(idList, currentReserved);
+	    if(ret && (ret.nextPage || ret.prevPage)) {
+		pageShow(ret);
+	    } else {
+		let el = document.getElementById('cvePage');
+		if(el) {
+		    el.removeAttribute('data-page');
+		    el.style.display = 'none';
+		}
+		if(cveForm)
+		    cveForm.page = 0;	
+	    }	    
             return idList;
         } catch(e) {
             alert(e);
@@ -652,13 +711,17 @@ async function cveGetList() {
         alert('Login to CVE.org first!');
     }
 }
-async function cveReserve(yearOffset) {
+
+async function cveReserve(yearOffset, number) {
     var org = await checkSession();
     if (cveClient) {
         var year = currentYear + (yearOffset ? yearOffset : 0);
         try {
             var json = await cveClient.reserveCveIds({
                 amount: 1,
+                // Request only one at this time to get four digits! Requesting more at time gives the 5 digit ids.
+                // amount: number > 0 && number <= 50 ? number : 1,
+                // batch_type: 'nonsequential',
                 cve_year: year,
                 short_name: org.short_name
             });
@@ -875,10 +938,10 @@ async function cvePost() {
     }
 }
 
-async function cveReserveAndRender(yearOffset) {
+async function cveReserveAndRender(yearOffset, number) {
     var org = await checkSession();
     if (cveClient) {
-        var r = await cveReserve(yearOffset);
+        var r = await cveReserve(yearOffset, number);
         var m = document.getElementById("cveStatusMessage");
         if(m && r.length > 0) {
             m.innerText = "Got " + r.map(x=>x.cve_id).join(', ');
