@@ -19,6 +19,9 @@ module.exports = function (setName, paths) {
             var temp = require('../' + path + '/' + setName + '/conf.js');
             conf = extend(true, conf, temp);
         }
+        if(fs.existsSync(path + '/' + setName + '/static')) {
+            result.static = path + '/' + setName + '/static';
+        }
         if(!conf.style && fs.existsSync(path + '/' + setName + '/style.css')) {
             result.style = fs.readFileSync(path + '/' + setName + '/style.css', 'utf8');
         }

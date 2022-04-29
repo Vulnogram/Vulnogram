@@ -440,7 +440,7 @@ async function checkSession() {
     if('serviceWorker' in navigator) {
         if('cveApi' in window.sessionStorage) {
             cveApi = JSON.parse(window.sessionStorage.cveApi);
-            cveClient = new CveServices(cveApi.url, "./js/cve5sw.js");
+            cveClient = new CveServices(cveApi.url, "./static/cve5sw.js");
             var o = false;
             try{
                 o = await cveClient.getOrgInfo();
@@ -529,7 +529,7 @@ async function cveLogin(elem, credForm) {
 
         try {
             if(!cveClient) {
-                cveClient = new CveServices(URL, "./js/cve5sw.js");
+                cveClient = new CveServices(URL, "./static/cve5sw.js");
             }
             var ret = await cveClient.login(
                 credForm.user.value,
@@ -671,9 +671,9 @@ async function cveGetList() {
                     currentReserved = false;
                 }
             }
-	    if(cveForm.page) {
-		filter.page = cveForm.page;
-	    }
+            if(cveForm.page) {
+                filter.page = cveForm.page;
+            }
         }
         if (document.getElementById('cveList')) {
             document.getElementById('cveList').innerHTML = '<center><div class="spinner"></div></center>';
@@ -711,13 +711,17 @@ async function cveGetList() {
         alert('Login to CVE.org first!');
     }
 }
-async function cveReserve(yearOffset) {
+
+async function cveReserve(yearOffset, number) {
     var org = await checkSession();
     if (cveClient) {
         var year = currentYear + (yearOffset ? yearOffset : 0);
         try {
             var json = await cveClient.reserveCveIds({
                 amount: 1,
+                // Request only one at this time to get four digits! Requesting more at time gives the 5 digit ids.
+                // amount: number > 0 && number <= 50 ? number : 1,
+                // batch_type: 'nonsequential',
                 cve_year: year,
                 short_name: org.short_name
             });
@@ -934,10 +938,10 @@ async function cvePost() {
     }
 }
 
-async function cveReserveAndRender(yearOffset) {
+async function cveReserveAndRender(yearOffset, number) {
     var org = await checkSession();
     if (cveClient) {
-        var r = await cveReserve(yearOffset);
+        var r = await cveReserve(yearOffset, number);
         var m = document.getElementById("cveStatusMessage");
         if(m && r.length > 0) {
             m.innerText = "Got " + r.map(x=>x.cve_id).join(', ');
