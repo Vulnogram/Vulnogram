@@ -34,19 +34,19 @@ mixin portal
                 =portalType
             span.btg
                         button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve One CVE
-                        //details.popup
+                        details.popup
                             summary.btn ▼ 
                             dl.pop.wht.bor.rnd.shd.pad.rows
+                                dt
+                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0, 5)') Reserve 5
+                                dt
+                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0, 10)') Reserve 10
                                 dt 
-                                    button.btn.vgi-magic(onclick='cveReserveAndRender(1)') Reserve one for year 
+                                    button.btn.vgi-magic(onclick='cveReserveAndRender(1)') Reserve one for the year 
                                         = y + 1
-                                dt
-                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve 5
-                                dt
-                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve 10
-            .lbl#cveStatusMessage
         label.right#cveUser
             +userstats
+    .pad#cveStatusMessage
     form#cvePortalFilter.gap
         .lbl Show
         .rdg
