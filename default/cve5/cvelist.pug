@@ -12,7 +12,7 @@ mixin cveLoginBox
                 select.bor.txt(name='portal' style="width:11em;")
                     option(value="https://cveawg.mitre.org/api" selected=(prevPortal == 'production')) production
                     option(value="https://cveawg-test.mitre.org/api" selected=(prevPortal == 'test')) test
-                    option(value="http://127.0.0.1:3000/api" selected=(prevPortal == 'production')) local
+                    option(value="http://127.0.0.1:3000/api" selected=(prevPortal == 'local')) local
             .pad
                 label.lbl(style="width:10em;") CNA Short Name
                 input.bor.txt(name='org', type='text', autocomplete='on', "pattern"=".{2,64}" required=true value=prevOrg?prevOrg:'')
@@ -106,12 +106,12 @@ mixin portal
 
 mixin userstats
     details.popup
-        summary.fbn.vgi-user= userInfo && (userInfo.name && userInfo.name.first ? userInfo.name.first : userInfo.username)
+        summary.fbn.vgi-user=((userInfo && userInfo.name && userInfo.name.first) ? userInfo.name.first : userInfo.username)
             |  ▼ 
         dl.pop.wht.bor.rnd.shd.pad
             +userDetail(userInfo)
             hr.bort
-            span.vgi-edit.fbn(onclick="cveUserEdit(this)" u=userInfo.username, f=userInfo.name.first, l=userInfo.name.last, ac=userInfo.active ad=userInfo.authority.active_roles.includes('ADMIN') title="Edit Info")
+            span.vgi-edit.fbn(onclick="cveUserEdit(this)" u=userInfo.username, f=userInfo.name?userInfo.name.first:'', l=userInfo.name?userInfo.name.last:'', ac=userInfo.active ad=userInfo.authority.active_roles.includes('ADMIN') title="Edit Info")
                 | Update my details
             hr.bort
             dt Org:  
@@ -124,10 +124,10 @@ mixin userstats
             span.vgi-exit.fbn(onclick="cveLogout()") Logout!
 
 mixin userDetail(u)
-    a.td(onclick="cveUserEdit(this)",u=u.username, f=u.name.first, l=u.name.last ac=u.active ad=u.authority.active_roles.includes('ADMIN') title="Edit Info")
-        b=u.name.first
+    a.td(onclick="cveUserEdit(this)",u=u.username, f=u.name?u.name.first:'', l=u.name?u.name.last:'' ac=u.active ad=u.authority.active_roles.includes('ADMIN') title="Edit Info")
+        b=u.name?u.name.first:''
             | 
-            =u.name.last
+            =u.name?u.name.last:''
         i.sicn(class=u.active?'vgi-ok':'vgi-no' title=u.active? 'active': 'inactive')
         i.sicn(class=u.authority.active_roles.includes('ADMIN')? 'vgi-king' : 'vgi-cap' title=u.authority.active_roles.includes('ADMIN')?'Admin':'Regular User')
         br
