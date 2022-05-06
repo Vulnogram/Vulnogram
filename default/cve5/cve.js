@@ -124,6 +124,18 @@
             return this._middleware.put('cve/'.concat(id,'/cna'), undefined, schema);
         }
 
+        createRejectedCve(id, schema) {
+            return this._middleware.post('cve/'.concat(id,'/reject'), undefined, schema);
+        }
+
+        updateRejectedCve(id, schema) {
+            return this._middleware.put('cve/'.concat(id,'/reject'), undefined, schema);
+        }
+
+        getOrg() {
+            return this._middleware.orgName.then(orgName => orgName);
+        }
+
         getOrgInfo() {
             return this._middleware.orgName
                 .then(orgName =>
@@ -145,7 +157,7 @@
         updateOrgUser(username, userInfo) {
             return this._middleware.orgName
                 .then(orgName =>
-                    this._middleware.put(`org/${orgName}/user/${username}`, undefined, userInfo));
+                    this._middleware.put(`org/${orgName}/user/${username}`, userInfo, undefined));
         }
 
         resetOrgUserApiKey(username) {
@@ -237,7 +249,7 @@
         send(msg) {
             return this.worker.then(worker => {
                 return this.simpleMessage(worker, msg).then(res => {
-                    if ('error' in res) {
+                    if(typeof res === 'object' && 'error' in res) {
                         return Promise.reject(res);
                     } else {
                         return res;
@@ -299,8 +311,8 @@
             let msg = {
                 type: 'getOrg',
             };
-
-            return this.send(msg);
+            var o = this.send(msg);
+            return o;
         }
 
         destroy() {

@@ -72,7 +72,7 @@ doFetch = (event, url, opts) => {
     return fetch(url, opts)
         .then(res => {
             if (res.ok) {
-                res.json().then(data => clientReply(event, { data }));
+                res.json().then(data => clientReply(event, data));
             } else {
                 res.json().then(msg => {
                     clientReply(event, msg);
@@ -106,15 +106,15 @@ self.onmessage = e => {
         case 'init':
             if ('serviceUri' in e.data) {
                 storage.serviceUri = e.data.serviceUri;
-                clientReply(e, {data: 'ok'});
+                clientReply(e, 'ok');
             }
             break;
         case 'echo':
-            clientReply(e, {data: 'echo'});
+            clientReply(e, 'echo');
             break;
         case 'login':
             setCredentials(e.data.creds);
-            clientReply(e, {data: 'ok'});
+            clientReply(e, 'ok');
             break;
         case 'request':
             if (checkSession(e)) {
@@ -123,7 +123,7 @@ self.onmessage = e => {
             break;
         case 'getOrg':
             if (checkSession(e)) {
-                clientReply(e, {data: storage.creds.org });
+                clientReply(e, storage.creds.org);
             }
             break;
         default:

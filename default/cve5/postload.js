@@ -1,5 +1,6 @@
 docEditor.on('ready', async ()=> {
     var org = await checkSession();
+    //console.log('Org ' + org);
     if(org) {
         document.getElementById('cvePortal').innerHTML = cveRender({
                 portalType: cveApi.apiType,
@@ -12,7 +13,9 @@ docEditor.on('ready', async ()=> {
         cveGetList();
     } else {
         document.getElementById('cvePortal').innerHTML = cveRender({
-            ctemplate: 'cveLoginBox'
+            ctemplate: 'cveLoginBox',
+            prevPortal: window.localStorage.getItem('portalType'),
+            prevOrg: window.localStorage.getItem('shortName')
         })
     }
 });

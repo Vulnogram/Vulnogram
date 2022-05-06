@@ -204,12 +204,6 @@ module.exports = {
             path: 'body.containers.cna.affected.product',
             chart: true
         },
-        todo: {
-               path: {
-                   $size: "$body.CNA_private.todo"
-               },
-               class: 'bdg'
-        },
         ym: {
             path: 'body.CNA_private.publish.ym',
             chart: true,

@@ -272,6 +272,9 @@ a:hover, a:active, a:focus {
 .btg .out:hover, .btg .out:active {
     z-index: 2;
 }
+.btg .fbn {
+    margin-left: 0px;
+}
 
 select.btn {
   /*      -webkit-appearance: none;
@@ -302,35 +305,6 @@ select.btn {
     background-color: transparent;
 }
 
-/*
-.sgl {
-    position: relative;
-    max-width: 100%;
-    padding: 0 !important;
-    display: -webkit-flex;
-    display: -moz-flex;
-    display: flex;
-    vertical-align: text-bottom !important;
-}
-*/
-/*
-.sgl, .one {
-    display: inline-block;
-    max-height: 1.1em;
-    overflow:hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 70em;
-    transition: all 0.5s;
-    transition-delay: 0.5s;
-}
-.sgl:hover, .one:active, .one:hover {
-    max-height: 40em;
-    overflow: hidden;
-    white-space: normal;
-    transition: all 0.5s;
-    transition-delay: 0.5s;
-}*/
 .sbn, .pad3 {
     padding: 3px !important;
 }
@@ -527,6 +501,10 @@ box-shadow: 0 0 0 0.2em rgba(3,102,214,0.3);
     background: #f04507;
     color: var(--wht);
     text-align: center;    
+}
+
+.dlg {
+    padding: 0px;
 }
 
 .bdg[title="0"] {

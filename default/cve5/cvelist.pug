@@ -10,33 +10,51 @@ mixin cveLoginBox
             .pad
                 label.lbl(style="width:10em;") Portal
                 select.bor.txt(name='portal' style="width:11em;")
-                    option(value="https://cveawg.mitre.org/api" selected) production
-                    option(value="https://cveawg-test.mitre.org/api") test
-                    option(value="http://127.0.0.1:3000/api") local
+                    option(value="https://cveawg.mitre.org/api" selected=(prevPortal == 'production')) production
+                    option(value="https://cveawg-test.mitre.org/api" selected=(prevPortal == 'test')) test
+                    option(value="http://127.0.0.1:3000/api" selected=(prevPortal == 'production')) local
             .pad
                 label.lbl(style="width:10em;") CNA Short Name
-                input.bor.txt(name='org', type='text', autocomplete='on', "pattern"=".{2,64}" required=true)
+                input.bor.txt(name='org', type='text', autocomplete='on', "pattern"=".{2,64}" required=true value=prevOrg?prevOrg:'')
             .pad
                 label.lbl(style="width:10em;") CVE User
-                input.bor.txt(name='user', type='text', autocomplete="on", "pattern"=".+@.+" required=true)
+                input.bor.txt(name='user', type='text', autocomplete="on", "pattern"=".+" required=true)
             .pad
                 label.lbl(style="width:10em;") CNA API Key
                 input.bor.txt(name='key', type='password', autocomplete='off' required=true)
             .pad.center
                 input.bor.fbn.sfe(type='submit', value='Login')
 
+mixin dlgHeader(icon, msg)
+    header.ban.sec.pad
+        b.lbl(class=icon)=msg
+        | 
+        a.sbn.right.vgi-fail(onclick="this.closest('dialog').close()")
 
+mixin cveErrors
+    +dlgHeader('vgi-alert', 'Error '+ err.error)
+    center.pad2
+        h3=err.message
+        if err.details
+            ol.gap
+                each d, i in err.details
+                    li= d.location
+                        | /   
+                        =d.param
+                        | :  
+                        =d.msg
 mixin portal
     - var y = new Date().getFullYear()
-    header.pad.ban.sec.rnd
+    header.pad.ban.sec
         .left
             label.vgi-globe.lbl Portal: 
                 =portalType
-            span.btg
+            span.btg.rnd
                         button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve One CVE
                         details.popup
-                            summary.btn ▼ 
-                            dl.pop.wht.bor.rnd.shd.pad.rows
+                            summary.btn.t9 ▼
+                            dl.pop.wht.bor.rnd.shd.rows
+                              .gap
                                 dt
                                     button.btn.vgi-magic(onclick='cveReserveAndRender(0, 5)') Reserve 5
                                 dt
@@ -51,7 +69,7 @@ mixin portal
                 label#userMgmt
                     +usermgmt
     .pad#cveStatusMessage
-    +showSecret
+
     form#cvePortalFilter.gap
         .lbl Show
         .rdg
@@ -84,17 +102,17 @@ mixin portal
             .form-control
                 button.lbl#nextPage(onclick='paginate(1)') &#8250;
 		
-    div#cveList
+    div#cveList.gap
 
 mixin userstats
     details.popup
-        summary.fbn.vgi-user= userInfo && userInfo.name ? userInfo.name.first : userInfo.username ? userInfo.username : 'undef'
+        summary.fbn.vgi-user= userInfo && (userInfo.name && userInfo.name.first ? userInfo.name.first : userInfo.username)
             |  ▼ 
         dl.pop.wht.bor.rnd.shd.pad
-            b.vgi-user= userInfo ? userInfo.username : 'undefined!'
-            dt Roles:  
-                b.vgi-cap=userInfo && userInfo.authority ? userInfo.authority.active_roles : 'undefined!'
-            span.vgi-edit.fbn(onclick="cveUserUpdate()") Update my details
+            +userDetail(userInfo)
+            hr.bort
+            span.vgi-edit.fbn(onclick="cveUserEdit(this)" u=userInfo.username, f=userInfo.name.first, l=userInfo.name.last, ac=userInfo.active ad=userInfo.authority.active_roles.includes('ADMIN') title="Edit Info")
+                | Update my details
             hr.bort
             dt Org:  
                 b=org ? org.name : 'undefined'
@@ -102,70 +120,43 @@ mixin userstats
                 b= org ? org.short_name : 'undefined'
             dt Role:  
                 b= org && org.authority ? org.authority.active_roles : 'undefined'
-            span.vgi-edit.fbn(onclick="cveOrgUpdate()") Update org details
             hr.bort
             span.vgi-exit.fbn(onclick="cveLogout()") Logout!
+
+mixin userDetail(u)
+    a.td(onclick="cveUserEdit(this)",u=u.username, f=u.name.first, l=u.name.last ac=u.active ad=u.authority.active_roles.includes('ADMIN') title="Edit Info")
+        b=u.name.first
+            | 
+            =u.name.last
+        i.sicn(class=u.active?'vgi-ok':'vgi-no' title=u.active? 'active': 'inactive')
+        i.sicn(class=u.authority.active_roles.includes('ADMIN')? 'vgi-king' : 'vgi-cap' title=u.authority.active_roles.includes('ADMIN')?'Admin':'Regular User')
+        br
+        small=u.username
 
 mixin listUsers
     if users
         each u, i in users
             .tr
-                .td=u.username
-                .td=u.name.first
-                .td=u.name.last
-                .td=u.authority ? u.authority.active_roles : ''
-                .td=u.active
-                .td
-                    button.btn.vgi-reuse(onclick="cveUserKeyReset(this)",u=u.username) Reset API Key
-
-mixin showSecret
-    dialog.bor.rnd.shd.pad2#secretDialog
-      center
-        form#secretDialogForm(onsubmit="event.preventDefault();this.reset();document.getElementById('secretDialog').close();return false")
-            h3.vgi-alert#userMessage
-            .gap Please securely store this API key.
-                br
-                |  This key will not be shown again!
-            label.lbl API Secret Key
-            input.txt.bor(type="password" size=39 name="pass" readonly)
-            input#showpass(name="showpass" type="checkbox" onclick="this.form.pass.type = (this.form.pass.type === 'password'? 'text' : 'password')")
-            label.vgi-eye.lbl(for="showpass")
-            center.gap
-                input.btn.sfe(type="reset" onclick="document.getElementById('secretDialog').close()" value="OK")
+                +userDetail(u)
 
 mixin usermgmt
-    details.popup(ontoggle="userlistUpdate(this, event)")
-        summary.fbn.vgi-user Manage Users
+    details#userListPopup.popup(ontoggle="userlistUpdate(this, event)")
+        summary.fbn.vgi-cog Users
             |  ▼ 
         div.pop.wht.bor.rnd.shd.usermgmt
+            .gap.row
+                button.sfe.btn.vgi-magic(onclick="document.getElementById('userAddDialog').showModal()") Add a user  
+                button.right.sbn.vgi-fail(onclick="this.closest('details').removeAttribute('open')")     
             .tbl.gap
-                thead.thead
-                    .tr
-                        .th Username
-                        .th Firstname
-                        .th Lastname
-                        .th Roles
-                        .th active
-                        .th
                 .tbody#userlist
                     .tr
                         .td(colspan=6)
                             center
                                 .spinner
-                .tfoot
-                    form.tr(onsubmit="event.preventDefault();cveAddUser(this)")
-                        .td
-                            input.txt(name="new_username" placeholder="username/email")
-                        .td
-                            input.txt(name="first" placeholder="First name")
-                        .td
-                            input.txt(name="last" placeholder="Last name")
-                        .td
-                            input.txt(type="checkbox", name="admin")
-                            lable.lbl(for="admin") Admin
-                        .td
-                        .td
-                            input.sfe.btn.vgi-magic(type="submit" value="Add user")
+            
+
+
+
 
 mixin htext
     if t

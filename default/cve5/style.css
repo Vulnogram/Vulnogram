@@ -138,3 +138,18 @@ table.striped td {
 #cvePage, #showpass {
     display: none;
 }
+
+.sicn {
+  padding: 0.1em 0.4em;
+}
+
+.tr:hover, .tr.active {
+  box-shadow: #e5ebec;
+  background-color:var(--hig);
+}
+
+.t9 {
+  color: gray;
+  padding: 8px;
+  font-size: small;
+}
