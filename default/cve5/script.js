@@ -427,18 +427,23 @@ returns orgInfo if true
 */ 
 async function checkSession() {
     if('serviceWorker' in navigator) {
-        if('cveApi' in window.sessionStorage) {
-            cveApi = JSON.parse(window.sessionStorage.cveApi);
+        if(cveApi = JSON.parse(window.localStorage.getItem('cveApi'))) {
             cveClient = new CveServices(cveApi.url, "./static/cve5sw.js");
             var o = false;
             try{
-                o = await cveClient.getOrgInfo();
-                //console.log('tried to get org info');
-                //console.log(o);
+                cveApi.org = o = await cveClient.getOrgInfo();
+                console.log('tried to get org info');
+                console.log(o);
             } catch(e) {
                 console.log(e);
             }
             return o;
+        } else {
+            cveApi = {
+                user: null,
+                org: null,
+            }
+            console.log('API not in cache');
         }
     } else {
         alert('Browser not supported for CVE Portal!');
@@ -488,7 +493,7 @@ async function cveLogin(elem, credForm) {
             cveApi.user = credForm.user.value;
             cveApi.url = URL;
             cveApi.apiType = type;
-            window.sessionStorage.cveApi = JSON.stringify(cveApi);
+            window.localStorage.setItem('cveApi', JSON.stringify(cveApi));
             window.localStorage.setItem('portalType', type);
             window.localStorage.setItem('shortName', credForm.org.value);
             await cveGetList();
@@ -505,13 +510,15 @@ async function cveLogin(elem, credForm) {
 }
 
 async function cveLogout(URL) {
-    cveClient.logout();
+    if(cveClient) {
+        cveClient.logout();
+    }
     cveClient = null;
     cveApi = {
         user: null,
         org: null
     } 
-    window.sessionStorage.removeItem('cveApi');
+    window.localStorage.removeItem('cveApi');
     document.getElementById('cvePortal').innerHTML = cveRender({
         ctemplate: 'cveLoginBox',
         prevPortal: window.localStorage.getItem('portalType'),
@@ -739,7 +746,7 @@ async function pageShow(ret) {
 }
 
 async function cveShowError(err) {
-    if(err.error == 'NO_SESSION') {
+    if(err.error == 'NO_SESSION' || cveClient == null || await cveClient._middleware.worker == null) {
         cveLogout();
     } else {
         document.getElementById('cveErrors').innerHTML = cveRender({
