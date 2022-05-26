@@ -1,4 +1,12 @@
 docEditor.on('ready', async ()=> {
+
+    defaultTabs.sourceTab.getValue = function () {
+        var res = JSON.parse(sourceEditor.getSession().getValue());
+        res = addRichTextCVE(res);
+        res = cvssv3_0_to_cvss3_1(res);
+        return res;
+    };
+
     var org = await checkSession();
     //console.log('Org ' + org);
     if(org) {
