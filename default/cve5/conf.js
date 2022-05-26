@@ -289,11 +289,11 @@ module.exports = {
             }
             if(schema.id == "vE") {
                 if(value.lessThan != undefined && value.lessThanOrEqual != undefined) {
-                    errors.push({
+                    /*errors.push({
                         path: path+'.lessThan',
                         property: 'format',
                         message: 'Enter either lessThan or lessThanOrEqual, but not both'
-                    });
+                    });*/
                     errors.push({
                         path: path+'.lessThanOrEqual',
                         property: 'format',
@@ -312,6 +312,27 @@ module.exports = {
                         path: path+'.lessThanOrEqual',
                         property: 'format',
                         message: 'End of the version range is same as the start (lessThanOrEqual)'
+                    });
+                }
+                if((value.lessThan != undefined || value.lessThanOrEqual != undefined) && value.versionType == undefined) {
+                    errors.push({
+                        path: path,
+                        property: 'format',
+                        message: 'versionType is required for ranges'
+                    });
+                }
+                if(value.lessThan == undefined && value.lessThanOrEqual == undefined && value.version != undefined && value.versionType != undefined) {
+                    errors.push({
+                        path: path+'.versionType',
+                        property: 'format',
+                        message: 'versionType is used only for ranges. Clear versionType or define a range.'
+                    });
+                }
+                if(value.lessThan == undefined && value.lessThanOrEqual == undefined && value.version != undefined && value.changes != undefined) {
+                    errors.push({
+                        path: path+'.changes',
+                        property: 'format',
+                        message: 'changes are is used only for ranges. Clear changes or define a range.'
                     });
                 }
             }
