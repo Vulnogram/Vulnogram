@@ -33,13 +33,20 @@ body{
 
 .editor div[data-schemapath *='metrics.'] div.je-indented-panel,
   .editor div[data-schemapath *='affected.'] div.je-indented-panel {
-    padding-left: 10px !important;
-    margin-left: 10px !important;
-    border-left: 1px dashed #669 !important;
+    padding: 1em !important;
+/*    margin-left: 10px !important;
+    border-left: 1px dashed #669 !important;*/
     border-bottom: 1px solid transparent;
     border-bottom-left-radius: 1em;
+    background-color: #f4f9fa;
   }
 
+div[data-schemapath="root.containers.adp"] > .je-indented-panel > div > div.je-object__container {
+  background-color: #f5f3e8;
+  padding: 1em;
+  margin-top: 1em;
+}
+  
 
 button.json-editor-btn-delete {
   margin-left: 1em;

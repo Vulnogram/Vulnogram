@@ -2,6 +2,7 @@ body {
     /*font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;*/
     font-family: "Montserrat","-apple-system", "system-ui", "Arial", "sans-serif";
     --wht: #fff;
+    --pur: #fff;
     --bck: #f6f6f7;
     --hig: #f0f0f0;
     --bor: #dadce0;
@@ -403,6 +404,7 @@ box-shadow: 0 0 0 0.2em rgba(147, 147, 147, 0.3);
     font-weight: normal;
     white-space: normal;
     margin-bottom: 1px;
+    background-color: var(--wht);
 }
 ::placeholder {
     color: var(--bor2);
@@ -453,6 +455,7 @@ box-shadow: 0 0 0 0.2em rgba(147, 147, 147, 0.3);
     margin: 0px;
     margin-left: -1px;
     border-radius: 0px;
+    background-color: var(--wht);
 }
 
 .rdg input[type="checkbox"], .rdg input[type="radio"] {
@@ -896,19 +899,6 @@ label[for="compactTable"][val="false"]:after {
 } 
 .editor .lni > input {
     flex-grow: 1;
-}
-/*
-.editor input[type="file"],
-.editor input[type="text"],
-.editor input[type="url"],
-.editor input[type="taglist"],
-.editor input[type="email"] {
-    flex-grow: 1;
-}
-*/
-.editor input,
-.editor textarea {
-    background-color: transparent;
 }
 
 div[data-schemaid="root"]>b {
