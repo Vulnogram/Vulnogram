@@ -91,7 +91,7 @@ async function draftEmail(event, link, renderId) {
     link.href = "mailto:?subject=" + encodeURI(subject) + '&body=' + encodeURI(emailBody);
 };
 
-var additionalTabs = {    
+var additionalTabs = {
     advisoryTab: {
         title: 'Advisory',
         setValue: async function (j) {
@@ -921,6 +921,33 @@ function cvssv3_0_to_cvss3_1(j) {
         });
     }
     return j
+}
+
+async function loadCVEFile(event, elem) {
+    var file = elem.files[0];
+    if (file) {
+        try{
+            var reader = new FileReader();
+            reader.readAsText(file, "UTF-8");
+            reader.onload = function (evt) {
+                try{
+                    res = JSON.parse(evt.target.result);
+                    res = addRichTextCVE(res);
+                    res = cvssv3_0_to_cvss3_1(res);
+                    //docEditor.setValue(res);
+                    loadJSON(res, null, "Imported file");
+                } catch (e) {
+                    cveShowError(e);
+                }
+            };
+            reader.onerror = function (evt) {
+                errMsg.textContent = "Error reading file";
+                cveShowError('Error reading file!');
+            };
+        } catch (e) {
+            cveShowError(e);
+        }
+    }
 }
 
 async function cveLoad(cveId) {

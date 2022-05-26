@@ -27,6 +27,10 @@ block append loadEditor
 
 block prepend topHeaderRight
 
+block openButton
+    input#importJSON.hid(type="file",accept="application/json",onchange="loadCVEFile(event,this);")
+    a.fbn.vgi-folder(type="file",onclick='importFile(event, this);') Open
+
 block prepend bannerItemsRight
     form.indent.out.nobr(onsubmit="cveSelectLoad(event);return false;")
         input.txt.lbl#cveEditable(type="search",name="id",list="editablelist",placeholder="CVE-yyyy-nnnn..",title="Load CVE for editing",required)

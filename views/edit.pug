@@ -17,8 +17,9 @@ block prepend bannerItemsLeft
     
 block append bannerItemsLeft
     if !confOpts[schemaName].conf.readonly
-        input#importJSON.hid(type="file",accept="application/json",onchange="loadFile(event,this);")
-        a.fbn.vgi-folder(type="file",onclick='importFile(event, this);') Open
+        block openButton
+            input#importJSON.hid(type="file",accept="application/json",onchange="loadFile(event,this);")
+            a.fbn.vgi-folder(type="file",onclick='importFile(event, this);') Open
         if !min
             button.fbn.sfe.vgi-put(id="save1") SAVE    
         a.fbn.vgi-download(type="button",oncontextmenu='downloadFile(event, this);',onclick='downloadFile(event, this);',value="Download") Download
