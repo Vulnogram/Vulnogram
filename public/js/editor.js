@@ -166,6 +166,9 @@ JSONEditor.defaults.editors.string = class mystring extends JSONEditor.defaults.
     }
 };
 
+//use for unique Idenifiers for an element's id attributes
+var uid = 1;
+
 JSONEditor.defaults.editors.radio = class radio extends JSONEditor.AbstractEditor {
     setValue(value, initial) {
         value = this.typecast(value || '');
@@ -285,11 +288,12 @@ JSONEditor.defaults.editors.radio = class radio extends JSONEditor.AbstractEdito
             this.inputs[options[i]] = this.theme.getRadio();
             this.inputs[options[i]].setAttribute('value', options[i]);
             this.inputs[options[i]].setAttribute('name', this.formname);
-            this.inputs[options[i]].setAttribute('id', this.formname + options[i]);
+            var xid = uid++;
+            this.inputs[options[i]].setAttribute('id', xid);
             var label = this.theme.getRadioLabel((this.schema.options && this.schema.options.enum_titles && this.schema.options.enum_titles[i]) ?
                 this.schema.options.enum_titles[i] :
                 options[i]);
-            label.setAttribute('for', this.formname + options[i]);
+            label.setAttribute('for', xid);
             var rdicon = null;
             if(this.options.icons && this.options.icons[options[i]]) {
                 rdicon = this.options.icons[options[i]];
