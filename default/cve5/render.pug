@@ -192,7 +192,7 @@ mixin container(con)
             if con.source && con.source.advisory
                 = con.source.advisory
                 |  
-            = cveShowId + ' ' + con.title 
+            = cveShowId + ' ' + (con.title ?  con.title : '')
         p
             if con.shortName
                 span Published by 
@@ -207,7 +207,7 @@ mixin container(con)
             +cvssList(con.cvssList)
     .desc.pad
         if con.state == 'REJECTED'
-            b.tag.CRITICAL REJECTED
+            b.tag.red REJECTED
             |  ·  
         +tagList(con.tags)
         | 
