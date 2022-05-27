@@ -228,34 +228,33 @@ function versionStatusTable5(affected) {
                 var major = undefined;//major ? major[1] : '';
                 var pFullName = [(p.vendor ? p.vendor + ' ' : '') + pname + (major ? ' ' + major : ''), platforms, modules, others];
                 nameAndPlatforms[pFullName] = pFullName;
-                if (!v.version) {
-                    v.version = 'unspecified';
-                }
-                showCols[v.status] = true;
-                if(!v.changes) {
-                    if(v.lessThan) {
-                        rows[v.status].push('>= ' + v.version + ' to < ' + v.lessThan);
-                    } else if(v.lessThanOrEqual) {
-                        rows[v.status].push('>= ' + v.version + ' to <= ' + v.lessThanOrEqual);
+                if (v.version) {
+                    showCols[v.status] = true;
+                    if(!v.changes) {
+                        if(v.lessThan) {
+                            rows[v.status].push('>= ' + v.version + ' to < ' + v.lessThan);
+                        } else if(v.lessThanOrEqual) {
+                            rows[v.status].push('>= ' + v.version + ' to <= ' + v.lessThanOrEqual);
+                        } else {
+                            rows[v.status].push('= ' + v.version);
+                        }
                     } else {
-                        rows[v.status].push('= ' + v.version);
+                        var prevStatus = v.status;
+                        var prevVersion = v.version;
+                        for(c of v.changes) {
+                            showCols[c.status] = true;
+                            rows[prevStatus].push('>= ' + prevVersion + ' to < ' + c.at);
+                            prevStatus = c.status;
+                            prevVersion = c.at;
+                        }
+                        if(v.lessThan) {
+                            rows[prevStatus].push('>= ' + prevVersion + (v.lessThan != prevVersion ? ' to < ' + v.lessThan : ''));
+                        } else if(v.lessThanOrEqual) {
+                            rows[prevStatus].push('>= ' + prevVersion + (v.lessThanOrEqual != prevVersion ? ' to < ' + v.lessThanOrEqual : ''));
+                        } else {
+                            rows[prevStatus].push(">=" + prevVersion);
+                        }                  
                     }
-                } else {
-                    var prevStatus = v.status;
-                    var prevVersion = v.version;
-                    for(c of v.changes) {
-                        showCols[c.status] = true;
-                        rows[prevStatus].push('>= ' + prevVersion + ' to < ' + c.at);
-                        prevStatus = c.status;
-                        prevVersion = c.at;
-                    }
-                    if(v.lessThan) {
-                        rows[prevStatus].push('>= ' + prevVersion + (v.lessThan != prevVersion ? ' to < ' + v.lessThan : ''));
-                    } else if(v.lessThanOrEqual) {
-                        rows[prevStatus].push('>= ' + prevVersion + (v.lessThanOrEqual != prevVersion ? ' to < ' + v.lessThanOrEqual : ''));
-                    } else {
-                        rows[prevStatus].push(">=" + prevVersion);
-                    }                  
                 }
                 if(!t[pFullName]) t[pFullName] = [];
                 //if(!t[pFullName][v.version]) t[pFullName][v.version] = [];
@@ -265,7 +264,7 @@ function versionStatusTable5(affected) {
         var pFullName = [(p.vendor ? p.vendor + ' ' : '') + pname + (major ? ' ' + major : ''), platforms, modules, others];
         nameAndPlatforms[pFullName] = pFullName;
         var rows = {};
-        if (p.defaultStatus) {
+        /*if (p.defaultStatus) {
             rows[p.defaultStatus] = ["everything else"];
             showCols[p.defaultStatus] = true;
             if(!t[pFullName]) {
@@ -273,7 +272,7 @@ function versionStatusTable5(affected) {
             } else {
                 t[pFullName].push(rows);
             }
-        }
+        }*/
     }
     //console.log(nameAndPlatforms);
     //console.log(t);
