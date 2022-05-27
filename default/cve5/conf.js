@@ -297,42 +297,42 @@ module.exports = {
                     errors.push({
                         path: path+'.lessThanOrEqual',
                         property: 'format',
-                        message: 'Enter either lessThan or lessThanOrEqual, but not both'
+                        message: 'Enter either < v or <= v, but not both'
                     });
                 }
                 if(value.version != undefined && (value.version == value.lessThan)) {
                     errors.push({
                         path: path+'.lessThan',
                         property: 'format',
-                        message: 'End of the version range is same as the start (lessThan)'
+                        message: 'End is same as the start'
                     });
                 }
                 if(value.version != undefined && (value.version == value.lessThanOrEqual)) {
                     errors.push({
                         path: path+'.lessThanOrEqual',
                         property: 'format',
-                        message: 'End of the version range is same as the start (lessThanOrEqual)'
+                        message: 'End is same as the start'
                     });
                 }
                 if((value.lessThan != undefined || value.lessThanOrEqual != undefined) && value.versionType == undefined) {
                     errors.push({
                         path: path,
                         property: 'format',
-                        message: 'versionType is required for ranges'
+                        message: 'Version type is required for ranges'
                     });
                 }
                 if(value.lessThan == undefined && value.lessThanOrEqual == undefined && value.version != undefined && value.versionType != undefined) {
                     errors.push({
                         path: path+'.versionType',
                         property: 'format',
-                        message: 'versionType is used only for ranges. Clear versionType or define a range.'
+                        message: 'Version type is used only for ranges. Clear this or define a range'
                     });
                 }
                 if(value.lessThan == undefined && value.lessThanOrEqual == undefined && value.version != undefined && value.changes != undefined) {
                     errors.push({
                         path: path+'.changes',
                         property: 'format',
-                        message: 'changes are is used only for ranges. Clear changes or define a range.'
+                        message: 'Changes are used only for ranges. Clear this or define a range'
                     });
                 }
             }
