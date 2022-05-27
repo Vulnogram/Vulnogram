@@ -591,7 +591,7 @@
                 "$ref": "#/definitions/version",
                 "options": {
                   "inputAttributes": {
-                    "placeholder": "eg., 1.2.0"
+                    "placeholder": "eg., 1.2.0; 0 means no lower limits"
                   }
                 }
               },
@@ -600,9 +600,9 @@
                 "description": "The non-inclusive upper limit of the range. This is the least version NOT in the range. The usual version syntax is expanded to allow a pattern to end in an asterisk `(*)`, indicating an arbitrarily large number in the version ordering. For example, `{version: 1.0 lessThan: 1.*}` would describe the entire 1.X branch for most range kinds, and `{version: 2.0, lessThan: *}` describes all versions starting at 2.0, including 3.0, 5.1, and so on. Only one of lessThan and lessThanOrEqual should be specified.",
                 "$ref": "#/definitions/version",
                 "options": {
-                  "infoText":"Usually fixed version.",
+                  "infoText":"Usually fixed version. Use * to indicate no upper bounds, or 1.2.* to indicate rest of 1.2 branch.",
                   "inputAttributes": {
-                    "placeholder": "eg., 1.2.8",
+                    "placeholder": "eg., 1.2.8, 1.2.*",
                     "size": 4
                   }
                 }
@@ -613,7 +613,7 @@
                 "$ref": "#/definitions/version",
                 "options": {
                   "inputAttributes": {
-                    "placeholder": "eg., 1.2.7",
+                    "placeholder": "eg., 1.2.7, 1.2.*",
                     "size": 4
                   }
                 }
