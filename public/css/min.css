@@ -304,6 +304,7 @@ select.btn {
     width: 30px; height: 30px;
     border: 0;
     background-color: transparent;
+    background-position: 50% 50% !important;
 }
 
 .sbn, .pad3 {
@@ -1067,6 +1068,20 @@ div[data-schematype="object"]>h3>span:before {
     color: gray;
     padding: 0px 3px!important;
 }
+
+.je-infobutton-tooltip {
+    z-index: 10 !important;
+    background-color: rgba(255, 248, 211, 0.95) !important;
+    color: rgb(0, 0, 0) !important;
+    position: absolute;
+    left: -6rem;
+    bottom: 1rem;
+    width: auto !important;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(161, 158, 138);
+}
+
 .expand {
     display: none;
 }
@@ -1088,6 +1103,24 @@ td > span:first-child > .json-editor-btn-delete{
 .json-editor-btn-add {
     margin-left: 2em;
 }
+
+.editor span[vg="obj-del"] {
+    position: absolute;
+    top: 1em;
+    right:1em;
+    display: block;
+}
+ 
+.editor div[vg="array-obj"] {
+    position: relative;
+    border:1px solid var(--bor);
+    border-radius: 5px;
+    background-color: #f4f9fa;
+    padding: 1em;
+    margin-top: .5em;
+    margin-bottom: .5em;
+}
+
 /* materilaize*/
 
 .row {
@@ -1219,19 +1252,22 @@ td.compact .form-control {
     padding: .5em 0em;
 }*/
 
+
 .je-switcher {
-   display: inline-block !important;
    height: 28px!important;
    appearance: none;
    -webkit-appearance: none;
    -moz-appearance: none;
    padding:0px!important;
-   margin: 0px;
    outline: 0px;
    border: 1px solid var(--bor2);
    border-radius: 5px;
    overflow: hidden;
- }
+}
+.je-switcher option:checked {
+    background-color: Highlight;
+    color: HighlightText;
+}
 
 .je-switcher option{
    display: inline-block !important;
@@ -1240,8 +1276,15 @@ td.compact .form-control {
    appearance: none;
    float:left;
    padding: 5px 1em;
-   font-style: normal;
- }
+   font-style: normal !important;
+   background-color: var(--wht); 
+}
+
+ @media not all and (min-resolution:.001dpcm) { @supports (-webkit-appearance:none) and (display:flow-root) {
+    .je-switcher { 
+        appearance:auto !important; 
+   } 
+} }
 
  .je-switcher option::selection, .je-switcher option:active,  .je-switcher option:hover {
     background-color: var(--sec);

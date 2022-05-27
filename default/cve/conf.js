@@ -557,14 +557,15 @@ schema: {
      ],
      "properties": {
       "vendor_data": {
-          "title": " ",
-          "options": {
+       "title": " ",
+       "options": {
             "class": "hid"
        },
        "type": "array",
        "minItems": 1,
        "items": {
         "title": "vendor",
+        "headerTemplate": "' '",
         "type": "object",
         "required": [
          "vendor_name",
@@ -595,6 +596,7 @@ schema: {
             "format": "grid",
             "minItems": 1,
             "items": {
+                "headerTemplate": "' '",
              "title": "product",
              "$ref": "#/definitions/product"
             }

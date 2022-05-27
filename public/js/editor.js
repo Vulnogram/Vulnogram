@@ -66,7 +66,12 @@ JSONEditor.defaults.editors.array = class mystring extends JSONEditor.defaults.e
     /* move the delete button next to object title */
     _createDeleteButton (i, holder) {
         var r = super._createDeleteButton(i, holder);
-        holder.parentNode.firstElementChild.appendChild(r);
+        r.setAttribute('class', 'sbn vgi-cancel');
+        r.innerHTML = '';
+        r.parentNode.setAttribute("vg","obj-del");
+        if(!this.options.disable_array_add) {
+            r.parentNode.parentNode.setAttribute("vg","array-obj");
+        }
         return r;
     }
 }
@@ -119,6 +124,34 @@ JSONEditor.defaults.editors.object = class mystring extends JSONEditor.defaults.
     }
 }
 
+JSONEditor.defaults.editors.number = class mystring extends JSONEditor.defaults.editors.number {
+    build() {
+        super.build();
+        if(this.label && this.options.class) {
+            this.label.className = this.label.className + ' ' + this.options.class;
+            if(this.isRequired()){
+                this.label.className = this.label.className + ' req'; 
+            }
+        }
+        if(this.options.formClass) {
+            this.control.className = this.control.className + ' ' + this.options.formClass;
+        }
+        //Use html5 datalist to show examples 
+        if(this.schema.examples && this.schema.examples.length > 0){
+            var dlist = document.createElement('datalist');
+            dlist.setAttribute('id', this.path + '-datalist');
+            var eg = this.schema.examples;
+            for(var i = 0; i< eg.length; i++) {
+                var v = document.createElement('option');
+                v.setAttribute('value', eg[i]);
+                dlist.appendChild(v);
+            }
+            this.input.setAttribute('list', this.path + '-datalist');
+            this.input.type='search';
+            this.container.appendChild(dlist);
+        }
+    }
+}
 JSONEditor.defaults.editors.string = class mystring extends JSONEditor.defaults.editors.string {
     addLink (link) {
         if(this.header) this.header.appendChild(link);
@@ -839,8 +872,10 @@ JSONEditor.defaults.themes.customTheme = class customTheme extends JSONEditor.Ab
     getSwitcher (options) {
         const switcher = this.getSelectInput(options, false);
         switcher.classList.add('je-switcher');
-        switcher.classList.add('rdg');
-        switcher.setAttribute('size',12);
+        if(! /^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
+            switcher.classList.add('rdg');
+            switcher.setAttribute('size',2);
+        }
         return switcher
     }
 };

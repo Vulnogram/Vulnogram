@@ -285,9 +285,9 @@
       "id": "pE",
       "format": "grid",
       "title": "Product",
-      "headerTemplate": "'Product '+ context.i1 + ' · ' + [context.self.vendor,context.self.product,context.self.packageName].join(' ')",
+      "headerTemplate": "' '",
       "options": {
-        "class": "vgi-package tgap"
+        "class": "hid"
       },
       "description": "Provides information about the set of products and services affected by this vulnerability.",
 
@@ -1814,7 +1814,7 @@
                   "availabilityImpact": "cvss.availabilityImpact"
                 },
                 "options": {
-                  "grid_columns": 1.5,
+                  "grid_columns": 1,
                   "input_width": "3em"
                 }
               },
