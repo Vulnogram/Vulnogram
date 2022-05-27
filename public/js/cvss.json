@@ -189,7 +189,6 @@
             },
             "links": [
               {
-                "class": "sml icn extlink",
                 "href": "'http://cvssjs.github.io/#' + context.self",
                 "title": "'CVSS Calculator'",
                 "rel": "'Open in CVSS Calculator'"
