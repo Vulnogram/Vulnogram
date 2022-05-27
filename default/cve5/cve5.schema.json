@@ -285,6 +285,7 @@
       "id": "pE",
       "format": "grid",
       "title": "Product",
+      "headerTemplate": "'Product '+ context.i1 + ' · ' + [context.self.vendor,context.self.product,context.self.packageName].join(' ')",
       "options": {
         "class": "vgi-package tgap"
       },
@@ -332,6 +333,7 @@
           "options": {
             "grid_columns": 4,
             "class": "vgi-stack",
+            "infoText": "List of specific platforms if the vulnerability is only relevant in the context of these platforms (optional). Platforms may include execution environments, operating systems, virtualization technolgies, hardware models, or computing architectures. Lack of this field or an empty array implies that the other fields are applicable for all relevant platforms.",
             "inputAttributes": {
               "placeholder": "eg., x86, Android, Windows, MacOS, .."
             }
@@ -430,6 +432,7 @@
             "show_errors": "always",
             "grid_columns": 4,
             "class": "vgi-ext",
+            "infoText": "URL identifying a package collection (determines meaning of packageName).",
             "patternmessage": "Enter a valid URL",
             "inputAttributes": {
               "placeholder": "eg., https://wordpress.org/plugins"
@@ -443,6 +446,7 @@
           "minLength": 1,
           "maxLength": 2048,
           "options": {
+            "infoText": "Name or identifier of the affected software package as used in the package collection.",
             "show_errors": "always",
             "grid_columns": 4,
             "class": "vgi-package",
@@ -456,6 +460,7 @@
           "description": "The URL of the source code repository, for informational purposes and/or to resolve git hash version ranges.",
           "$ref": "#/definitions/uriType",
           "options": {
+            "infoText": "The URL of the source code repository, for informational purposes and/or to resolve git hash version ranges.",
             "grid_columns": 4,
             "class": "vgi-ext",
             "inputAttributes": {
@@ -486,7 +491,7 @@
         },
         "modules": {
           "type": "array",
-          "title": "Modules",
+          "title": "Modules, components, or features",
           "format": "taglist",
           "description": "A list of the affected components, features, modules, sub-components, sub-products, APIs, commands, utilities, programs, or functionalities (optional)",
           "uniqueItems": true,
@@ -497,8 +502,9 @@
             "maxLength": 4096
           },
           "options": {
+            "infoText": "Name of the affected component, feature, module, sub-component, sub-product, API, command, utility, program, or functionality (optional).",
             "grid_columns": 4,
-            "class": "vgi-square",
+            "class": "vgi-table",
             "inputAttributes": {
               "placeholder": "eg., filesystem"
             }
@@ -517,6 +523,7 @@
             "maxLength": 1024
           },
           "options": {
+            "infoText": "Name or path or location of the affected source code file.",
             "grid_columns": 4,
             "class": "vgi-text",
             "inputAttributes": {
@@ -531,10 +538,12 @@
           "description": "A list of the affected source code functions, methods, subroutines, or procedures (optional).",
           "uniqueItems": true,
           "options": {
+            "infoText": "A list of the affected source code functions, methods, subroutines, or procedures (optional).",
             "grid_columns": 4,
             "class": "vgi-edit"
           },
           "items": {
+            "title": "Program routine",
             "type": "object",
             "description": "Object describing program routine.",
             "required": [
@@ -577,7 +586,7 @@
                 "$ref": "#/definitions/status"
               },
               "version": {
-                "title": "Version (or start of range)",
+                "title": "Version (or start of a range)",
                 "description": "The single version being described, or the version at the start of the range. By convention, typically 0 denotes the earliest possible version.",
                 "$ref": "#/definitions/version",
                 "options": {
@@ -591,6 +600,7 @@
                 "description": "The non-inclusive upper limit of the range. This is the least version NOT in the range. The usual version syntax is expanded to allow a pattern to end in an asterisk `(*)`, indicating an arbitrarily large number in the version ordering. For example, `{version: 1.0 lessThan: 1.*}` would describe the entire 1.X branch for most range kinds, and `{version: 2.0, lessThan: *}` describes all versions starting at 2.0, including 3.0, 5.1, and so on. Only one of lessThan and lessThanOrEqual should be specified.",
                 "$ref": "#/definitions/version",
                 "options": {
+                  "infoText":"Usually fixed version.",
                   "inputAttributes": {
                     "placeholder": "eg., 1.2.8",
                     "size": 4
@@ -615,6 +625,7 @@
                 "description": "A list of status changes that take place during the range. The array should be sorted in increasing order by the 'at' field, according to the versionType, but clients must re-sort the list themselves rather than assume it is sorted.",
                 "uniqueItems": true,
                 "items": {
+                  "title": "Change",
                   "type": "object",
                   "description": "The start of a single status change during the range.",
                   "required": [
@@ -952,18 +963,9 @@
           }
         },
         "problemTypes": {
-          "options": {
-            "grid_columns": 6,
-            "formClass": "lni"
-            
-          },
           "$ref": "#/definitions/problemTypes"
         },
         "impacts": {
-          "options": {
-            "grid_columns": 6,
-            "formClass": "lni"
-          },
           "$ref": "#/definitions/impacts"
         },
         "affected": {
@@ -1093,6 +1095,7 @@
     "adpContainer": {
       "description": "An object containing the vulnerability information provided by an Authorized Data Publisher (ADP). Since multiple ADPs can provide information for a CVE ID, an ADP container must indicate which ADP is the source of the information in the object.",
       "type": "object",
+      "format": "grid",
       "properties": {
         "providerMetadata": {
           "$ref": "#/definitions/providerMetadata"
@@ -1317,7 +1320,9 @@
         }
       ],
       "options": {
-        "class": "vgi-bug"
+        "class": "vgi-bug",
+        "grid_columns": 6,
+        "formClass": "lni"
       },
       "format": "table",
       "description": "This is problem type information (e.g. CWE identifier). Must contain: At least one entry, can be text, OWASP, CWE, please note that while only one is required you can use more than one (or indeed all three) as long as they are correct). (CNA requirement: [PROBLEMTYPE])",
@@ -1440,7 +1445,9 @@
       ],
       "uniqueItems": true,
       "options": {
-        "class": "vgi-impact"
+        "class": "vgi-impact",
+        "grid_columns": 6,
+        "formClass": "lni"
       },
       "items": {
         "type": "object",
@@ -1518,15 +1525,16 @@
       },
       "items": {
         "type": "object",
-        "title": "Scoring Metric",
+        "title": "Rating Metric",
+        "headerTemplate": "'Rating Metric ' + context.i1 + ' · ' + (context.self.format ? context.self.format: 'Other')",
         "options": {
-          "remove_empty_properties": true,
+          "remove_empty_properties": false,
           "display_required_only": true,
           "keep_oneof_values": false
         },
         "oneOf": [
-          { "required": ["cvssV3_1"], "title": "CVSS 3.1" },
-          { "required": ["cvssV2_0"], "title": "CVSS 2 (TBD)"},
+          { "required": ["format", "scenarios", "cvssV3_1"], "title": "CVSS 3.1" },
+          { "required": ["format", "scenarios", "cvssV2_0"], "title": "CVSS 2 (TBD)"},
           { "required": ["other"], "title": "Other" }
         ],
         "description": "This is impact type information (e.g. a text description, CVSSv2, CVSSv3, etc.). Must contain: At least one entry, can be text, CVSSv2, CVSSv3, others may be added.",
@@ -1776,8 +1784,21 @@
                   }
                 }
               },
+              "baseSeverity": {
+                "title": "Base Severity",
+                "type": "string",
+                "format": "string",
+                "template": "cvssjs.severity(context.sc).name",
+                "watch": {
+                  "sc": "cvss.baseScore"
+                },
+                "options": {
+                  "grid_columns": 2,
+                  "class": "vgi-dial"
+                }
+              },
               "baseScore": {
-                "title": "Base Score",
+                "title": "Score",
                 "type": "number",
                 "minimum": 0,
                 "maximum": 10,
@@ -1793,25 +1814,12 @@
                   "availabilityImpact": "cvss.availabilityImpact"
                 },
                 "options": {
-                  "grid_columns": 2,
-                  "class": "vgi-dial"
-                }
-              },
-              "baseSeverity": {
-                "title": "Base Severity",
-                "type": "string",
-                "format": "string",
-                "template": "cvssjs.severity(context.sc).name",
-                "watch": {
-                  "sc": "cvss.baseScore"
-                },
-                "options": {
-                  "grid_columns": 3,
-                  "class": "vgi-dial"
+                  "grid_columns": 1.5,
+                  "input_width": "3em"
                 }
               },
               "vectorString": {
-                "title": "Vector",
+                "title": "Vector · ",
                 "type": "string",
                 "options": {
                   "grid_columns": 7,
@@ -1831,10 +1839,9 @@
                 },
                 "links": [
                   {
-                    "class": "sml icn extlink",
                     "href": "'http://cvssjs.github.io/#' + context.self",
                     "title": "'CVSS Calculator'",
-                    "rel": "'Open in CVSS Calculator'"
+                    "rel": "' Open in CVSS Calculator'"
                   }
                 ]
               }
@@ -2330,12 +2337,13 @@
               "$ref": "#/definitions/cnaPublishedContainer"
             },
             "adp": {
-              "title": "Information from ADP (experimental)",
+              "title": "Information from Authorized Data Providers (ADP) - experimental!",
               "options": {
                 "class":"vgi-alert"
               },
               "type": "array",
               "items": {
+                "title": "Information from ADP",
                 "$ref": "#/definitions/adpContainer"
               },
               "uniqueItems": true

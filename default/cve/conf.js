@@ -373,7 +373,6 @@ schema: {
      "message": "Valid URL is required!",
      "links": [
       {
-       "class": "fbn sml icn extlink",
        "href": "context.self",
        "title": "context.self",
        "rel": "'Open link'"
