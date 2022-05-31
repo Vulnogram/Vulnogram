@@ -32,6 +32,11 @@ var sourceEditor;
 
 JSONEditor.defaults.languages.en.error_oneOf = "Please fill in the required fields *";
 
+JSONEditor.AbstractEditor.prototype.showStar = function () {
+    return this.isRequired() && !(this.schema.readOnly || this.schema.readonly || this.schema.template)
+}
+
+
 JSONEditor.defaults.resolvers.unshift(function (schema) {
     if (schema.type === "string" && schema.format === "radio") {
         return "radio";
@@ -58,7 +63,7 @@ JSONEditor.defaults.editors.array = class mystring extends JSONEditor.defaults.e
             if(this.options.class) {
                 this.header.className = 'lbl ' + this.options.class;
             }
-            if(this.isRequired()){
+            if(this.showStar()){
                 this.header.className = this.header.className + ' req'; 
             }
         }
@@ -75,6 +80,7 @@ JSONEditor.defaults.editors.array = class mystring extends JSONEditor.defaults.e
         return r;
     }
 }
+
 JSONEditor.defaults.editors.table = class mystring extends JSONEditor.defaults.editors.table {
     build() {
         super.build();
@@ -82,7 +88,7 @@ JSONEditor.defaults.editors.table = class mystring extends JSONEditor.defaults.e
             if(this.options.class) {
                 this.header.className = 'lbl ' + this.options.class;
             }
-            if(this.isRequired()){
+            if(this.showStar()){
                 this.header.className = this.header.className + ' req'; 
             } 
         }
@@ -96,7 +102,7 @@ JSONEditor.defaults.editors.object = class mystring extends JSONEditor.defaults.
             if(this.options.class) {
                 this.title.className = this.title.className + ' ' + this.options.class;
             }
-            if(this.isRequired()){
+            if(this.showStar()){
                 this.title.className = this.title.className + ' req'; 
             }    
         }
@@ -129,7 +135,7 @@ JSONEditor.defaults.editors.number = class mystring extends JSONEditor.defaults.
         super.build();
         if(this.label && this.options.class) {
             this.label.className = this.label.className + ' ' + this.options.class;
-            if(this.isRequired()){
+            if(this.showStar()){
                 this.label.className = this.label.className + ' req'; 
             }
         }
@@ -175,7 +181,7 @@ JSONEditor.defaults.editors.string = class mystring extends JSONEditor.defaults.
         super.build();
         if(this.label && this.options.class) {
             this.label.className = this.label.className + ' ' + this.options.class;
-            if(this.isRequired()){
+            if(this.showStar()){
                 this.label.className = this.label.className + ' req'; 
             }
         }
@@ -295,7 +301,7 @@ JSONEditor.defaults.editors.radio = class radio extends JSONEditor.AbstractEdito
         }
         if(this.label && this.options.class) {
             this.label.className = this.label.className + ' ' + this.options.class;
-            if(this.isRequired()){
+            if(this.showStar()){
                 this.label.className = this.label.className + ' req'; 
             }
         }
@@ -498,7 +504,7 @@ JSONEditor.defaults.editors.simplehtml = class simplehtml extends JSONEditor.def
         super.build();
         if(this.label && this.options.class) {
             this.label.className = this.label.className + ' ' + this.options.class;
-            if(this.isRequired()){
+            if(this.showStar()){
                 this.label.className = this.label.className + ' req'; 
             }
         }
