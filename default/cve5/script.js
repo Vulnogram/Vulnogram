@@ -476,7 +476,7 @@ async function cveLogin(elem, credForm) {
                 credForm.user.value,
                 credForm.org.value,
                 credForm.key.value);
-            console.log('Login result ' + ret);
+            console.log('Login result ',ret);
             //todo show error if not logged in
             document.getElementById('cvePortal').innerHTML = cveRender({
                 portalType: type,
@@ -488,8 +488,14 @@ async function cveLogin(elem, credForm) {
             cveApi.user = credForm.user.value;
             cveApi.url = URL;
             cveApi.apiType = type;
-            window.sessionStorage.cveApi = JSON.stringify(cveApi);
-            await cveGetList();
+	    if('login' in ret  && ret.login == 'ok') {
+		cveApi.keyUrl = ret.keyUrl;
+		window.sessionStorage.cveApi = JSON.stringify(cveApi);
+		await cveGetList();
+	    } else {
+                document.getElementById("loginErr").innerText = 'Failed to login: Possibly invalid credentials!';
+		console.log(ret);
+	    }
         } catch(e) {
             if(e == '401') {
                 if(document.getElementById("loginErr")) {

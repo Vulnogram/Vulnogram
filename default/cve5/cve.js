@@ -306,6 +306,7 @@
 
         destroy() {
             if (this.registration) {
+		this.send({type: 'destroy'});
                 this.registration.unregister();
                 this.registration = undefined;
 

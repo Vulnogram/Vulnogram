@@ -11,15 +11,19 @@
 //
 
 const storage = {};
-const keyname = "cve-services.apikeyStore";
+const keyname = "cve-services.vulnogramkeyStore";
 /* Encryption API using JavaScript native crypto.js and indexeDB for storing private keys */
 const encrypt_storage_version = "1.1.14";
+const cacheName = 'private';
+const cacheURL = '/creds';
 
 destroySession = () => {
     if ('creds' in storage) {
         delete storage['creds'];
     }
-    sessionStorage.removeItem(keyname);
+    caches.open(cacheName).then(cache => {
+	cache.delete(cacheURL);
+    });
 };
 
 setSessionTimer = () => {
@@ -31,17 +35,21 @@ setSessionTimer = () => {
     );
 };
 
-setCredentials = (creds) => {
-    storage.creds = creds;
-    check_create_key(creds.user).then(function(newkey) {
-	encryptMessage(creds.key,newkey.publicKey)
+setCredentials = (e) => {
+    storage.creds = e.data.creds;
+    check_create_key(e.data.creds.user).then(function(newkey) {
+	encryptMessage(e.data.creds.key,newkey.publicKey)
 	    .then(function(encBuffer) {
 		arrayBuffertoURI(encBuffer)
 		    .then(function(encURL) {
-			let f = JSON.parse(JSON.stringify(creds));
-			delete f["key"];
-			f["keyUrl"] = encURL;
-			sessionStorage.setItem(keyname,JSON.stringify(f));
+			let f = JSON.parse(JSON.stringify(e.data.creds));
+			delete f['key'];
+			f['keyURL'] = encURL;
+			clientReply(e,{data: "Login success", debug: encURL});
+			caches.open(cacheName).then(function(cache) {
+			    let cachecreds = new Response(JSON.stringify(f));
+			    cache.put(cacheURL,cachecreds);
+			});
 			setSessionTimer();
 		    });
 	    });
@@ -52,31 +60,29 @@ clientReply = (e, msg) => {
     e.ports[0].postMessage(msg);
 };
 
-checkSession = (e) => {
+deadSession = (e, debugString) => {
+    clientReply(e, { error: "No Login Session found",
+		     debug: debugString });
+    return false;
+}
+
+checkSession = async (e) => {
     if (!('creds' in storage)) {
-	if(!sessionStorage.getItem(keyname)) {
-            clientReply(e, { error: "Not logged in." });
-	    return false;
-	};
 	try {
-	    let client = JSON.parse(sessionStorage.getItem(keyname));
-	    storage.creds = JSON.parse(sessionStorage.getItem(keyname));
-	    return check_create_key(client.keyUrl).then(function(ekey) {
-		let encBuffer = URItoarrayBuffer(client.keyUrl);
-		return decryptMessage(encBuffer,ekey.privateKey)
-		    .then(function(rawKey) {
-			delete storage.creds["keyUrl"];
-			storage.creds["key"] = rawKey;
-			return true;
-		    });
-	    });
+	    let cache = await caches.open(cacheName);
+	    let cachecreds = await cache.match(cacheURL);
+	    let result = await cachecreds.json();
+	    let ekey = await check_create_key(result.user);
+	    let encBuffer = URItoarrayBuffer(result.keyURL);
+	    let rawKey = await decryptMessage(encBuffer,ekey.privateKey);
+	    result.key = rawKey;
+	    delete result.keyURL;
+	    storage.creds = JSON.parse(JSON.stringify(result));
+	    return true;
 	} catch(err) {
-	    console.log(err);
-	    clientReply(e, { error: "Failed to decrypt session. "+
-			     "See console!" });
-	    return false;
+	    return deadSession(e,String(err));
 	}
-    }
+    };
     return true;
 };
 
@@ -146,19 +152,24 @@ self.onmessage = e => {
             clientReply(e, {data: 'echo'});
             break;
         case 'login':
-            setCredentials(e.data.creds);
-            clientReply(e, {data: 'ok'});
+            setCredentials(e);
             break;
         case 'request':
-            if (checkSession(e)) {
-                requestService(e);
-            }
+            checkSession(e).then(function(success) {
+		if(success)
+		    requestService(e);
+	    });
             break;
         case 'getOrg':
-            if (checkSession(e)) {
-                clientReply(e, {data: storage.creds.org });
-            }
+            checkSession(e).then(function(success) {
+		if(success)
+                    clientReply(e, {data: storage.creds.org });
+	    });	    
             break;
+        case 'destroy':
+	    destroySession();
+            clientReply(e,{data: "Cleaning up session"});
+	    break;
         default:
             clientReply(e, {error: 'Not supported'});
             break;
@@ -167,7 +178,7 @@ self.onmessage = e => {
 
 async function encryptMessage(message,publicKey) {
     let encoded = new TextEncoder().encode(message);
-    let ciphertext = await window.crypto.subtle.encrypt(
+    let ciphertext = await crypto.subtle.encrypt(
 	{
 	    name: "RSA-OAEP"
 	},
@@ -177,7 +188,7 @@ async function encryptMessage(message,publicKey) {
     return ciphertext;
 }
 async function decryptMessage(ciphertext,privateKey) {
-    let decrypted = await window.crypto.subtle.decrypt(
+    let decrypted = await crypto.subtle.decrypt(
 	{
 	    name: "RSA-OAEP"
 	},
@@ -220,9 +231,6 @@ async function sha256sum(msg) {
 };
 function dbManager(user,key,sum) {
     return new Promise(function(resolve, reject) { 
-	var indexedDB = window.indexedDB || window.mozIndexedDB
-	    || window.webkitIndexedDB || window.msIndexedDB
-	    || window.shimIndexedDB;
 	var open = indexedDB.open(keyname, 1);
 	open.onupgradeneeded = function() {
 	    var db = open.result;
@@ -261,33 +269,26 @@ function dbManager(user,key,sum) {
     });
 }
 async function save_key(user,key) {
-    let fpb = await window.crypto.subtle.exportKey("jwk", key.publicKey);
-    let fpr = await window.crypto.subtle.exportKey("jwk", key.privateKey);
-    let exportKey = {epr: fpr, epb: fpb};
+    let fpb = await crypto.subtle.exportKey("jwk", key.publicKey);
     let sum = {sha256: await sha256sum(fpb.n)};
-    dbManager(user,exportKey,sum);
-    return exportKey;
-}
-async function import_key({epr,epb}) {
-    let prkey = await window.crypto.subtle.importKey("jwk",epr,{name:"RSA-OAEP", hash: {name: "SHA-256"}},false,['decrypt']);
-    let pbkey = await window.crypto.subtle.importKey("jwk",epb,{name:"RSA-OAEP", hash: {name: "SHA-256"}},false,['encrypt']);
-    return { privateKey: prkey, publicKey: pbkey  };
+    dbManager(user,key,sum);
+    return key;
 }
 
 async function check_create_key(user) {
     let dbKey = await dbManager(user);
     if(('target' in dbKey) && (dbKey.target.result) &&
        (dbKey.target.result.user == user)) {
-	return import_key(dbKey.target.result.key);
+	return dbKey.target.result.key;
     }
-    return window.crypto.subtle.generateKey(
+    return crypto.subtle.generateKey(
 	{
 	    name: "RSA-OAEP",
 	    modulusLength: 4096,
 	    publicExponent: new Uint8Array([1, 0, 1]),
 	    hash: "SHA-256",
 	},
-	true,
+	false,
 	["encrypt", "decrypt"]
     ).then(function(key) {
 	save_key(user,key);
