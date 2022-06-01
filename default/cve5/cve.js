@@ -226,6 +226,8 @@
                 let channel = new MessageChannel();
 
                 channel.port1.onmessage = (msg) => {
+		    if('debug' in msg)
+                        console.log(msg);
                     resolve(msg.data);
                 };
 
