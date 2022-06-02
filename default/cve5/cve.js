@@ -146,7 +146,7 @@
         updateOrgUser(username, userInfo) {
             return this._middleware.orgName
                 .then(orgName =>
-                    this._middleware.put(`org/${orgName}/user/${username}`, undefined, userInfo));
+                    this._middleware.put(`org/${orgName}/user/${username}`, userInfo, undefined));
         }
 
         resetOrgUserApiKey(username) {

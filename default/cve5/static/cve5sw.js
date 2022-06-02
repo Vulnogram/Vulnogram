@@ -45,7 +45,7 @@ setCredentials = (e) => {
 			let f = JSON.parse(JSON.stringify(e.data.creds));
 			delete f['key'];
 			f['keyURL'] = encURL;
-			clientReply(e,{data: "Login success", debug: encURL});
+			clientReply(e,{data: "ok", debug: encURL});
 			caches.open(cacheName).then(function(cache) {
 			    let cachecreds = new Response(JSON.stringify(f));
 			    cache.put(cacheURL,cachecreds);
@@ -158,12 +158,16 @@ self.onmessage = e => {
             checkSession(e).then(function(success) {
 		if(success)
 		    requestService(e);
+		else
+		    clientReply(e,{error: "No session"});
 	    });
             break;
         case 'getOrg':
             checkSession(e).then(function(success) {
 		if(success)
                     clientReply(e, {data: storage.creds.org });
+		else
+		    clientReply(e,{error: "No session"})		
 	    });	    
             break;
         case 'destroy':
