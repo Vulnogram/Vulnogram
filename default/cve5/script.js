@@ -66,7 +66,19 @@ function loadCVE(value) {
     }
     return false;
 }
-
+function showAlert(msg,smallmsg,timer) {
+    document.getElementById("alertMessage").innerText = msg;
+    if(smallmsg)
+	document.getElementById("smallAlert").innerText = smallmsg;
+    else
+	document.getElementById("smallAlert").innerText = " ";
+    if(!document.getElementById("alertDialog").hasAttribute("open"))
+	document.getElementById("alertDialog").showModal();
+    if(timer)
+	setTimeout(function() {
+	    document.getElementById("alertDialog").close();
+	},timer);
+}
 async function draftEmail(event, link, renderId) {
     var subject = ''
     if (typeof (mainTabGroup) !== 'undefined') {
@@ -444,12 +456,12 @@ async function checkSession() {
                 o = await cveClient.getOrgInfo();
             } catch(e) {
                 console.log(e);
-		alert('Error generated! Please see console log for details.');
+		showAlert('Error generated! Please see console log for details.');
             }
             return o;
         }
     } else {
-        alert('Browser not supported!');
+        showAlert('Browser not supported!');
     }
     return false;
 }
@@ -505,7 +517,7 @@ async function cveLogin(elem, credForm) {
                 }
             } else {
                 console.log(e);
-		alert('Error generated! Please see console log for details.');
+		showAlert('Error generated! Please see console log for details.');
             }
         }
     }
@@ -522,6 +534,7 @@ async function cveLogout(URL) {
 async function userlistUpdate(elem, event){
     // todo: refactor checking for session, and redirecting to login window.
     if (elem.open) {
+	document.getElementById("userStatsPopup").open = false;
         var org = await checkSession();
         if(org && cveClient) {
             try {
@@ -535,10 +548,10 @@ async function userlistUpdate(elem, event){
                 }
             } catch (e) {
                 console.log(e);
-		alert('Error generated! Please see console log for details.');
+		showAlert('Error generated! Please see console log for details.');
             }
         } else {
-            alert('Please login to CVE Portal. Your session may have expired!');
+            showAlert('Please login to CVE Portal. Your session may have expired!');
         }
     }
 }
@@ -557,10 +570,10 @@ async function cveUserKeyReset(elem) {
             }
         } catch(e) {
             console.log(e);
-	    alert('Error generated! Please see console log for details.');
+	    showAlert('Error generated! Please see console log for details.');
         }
     } else {
-        alert('Please login to CVE Portal. Your session may have expired!');
+        showAlert('Please login to CVE Portal. Your session may have expired!');
     }
 }
 
@@ -582,29 +595,31 @@ async function cveUpdateUser(elem) {
 		if (userObj.active != elem.form.active.checked)
 		    nuserObj['active'] = elem.form.active.checked;
 	    if('authority' in userObj) {
-		if ((userObj.authority.active_roles.findIndex(x => x == 'ADMIN') > -1) != elem.form.active.checked) {
-		    if(elem.form.active.checked)
+		if ((userObj.authority.active_roles.findIndex(x => x == 'ADMIN') > -1) != elem.form.admin.checked) {
+		    if(elem.form.admin.checked)
 			nuserObj['active_roles.add'] = 'ADMIN';
 		    else
 			nuserObj['active_roles.remove'] = 'ADMIN';
 		}
 	    }
 	    if(Object.keys(nuserObj).length == 0) {
-		alert("Nothing has changed to be updated for this user!");
+		showAlert("Nothing has changed to be updated for this user!");
 		return;
 	    }
 	    
 	    let m = await cveClient.updateOrgUser(userObj.username,nuserObj)
             userlistUpdate({open:true});
 	    if('message' in m) 
-		alert(m.message);
+		showAlert(m.message);
+	    console.log(m);
+	    console.log(nuserObj);
 	    
 	} catch(e) {
 	    console.log(e);
-	    alert('Error generated! Please see console log for details.');
+	    showAlert('Error generated! Please see console log for details.');
 	}
     } else {
-        alert('Please login to CVE Portal. Your session may have expired!');
+        showAlert('Please login to CVE Portal. Your session may have expired!');
     }
 }
 function removeErrors() {
@@ -663,16 +678,16 @@ async function cveAddUser(f) {
 	    }
         } catch (e) {
 	    console.log(e);
-	    alert('Error generated! Please see console log for details.');
+	    showAlert('Error generated! Please see console log for details.');
         }
 
     } else {
-        alert('Please login to CVE Portal. Your session may have expired!');
+        showAlert('Please login to CVE Portal. Your session may have expired!');
     }
 }
 
 async function cveOrgUpdate() {
-    alert('To be done');
+    showAlert('To be done');
 }
 async function cveRenderList(l, refreshEditor) {
     if (l && document.getElementById('cveList')) {
@@ -808,12 +823,12 @@ async function cveGetList() {
 	    }	    
             return idList;
         } catch(e) {
-            alert(e);
+            showAlert(e);
             cveRenderList([]);
             return([]);
         }
     } else {
-        alert('Login to CVE.org first!');
+        showAlert('Login to CVE.org first!');
     }
 }
 
@@ -832,10 +847,10 @@ async function cveReserve(yearOffset, number) {
             });
             return json;
         } catch (e) {
-            alert('Error reserving ID: ' + e.message);
+            showAlert('Error reserving ID: ' + e.message);
         }
     } else {
-        alert('Please login to CVE Portal. Your session may have expired!');
+        showAlert('Please login to CVE Portal. Your session may have expired!');
     }
 }
 
@@ -845,7 +860,7 @@ async function cveSelectLoad(event) {
     if(org && cveClient){
         cveLoad(event.target.elements.id.value)
     } else {
-        alert('Please login to CVE Portal. Your session may have expired!');
+        showAlert('Please login to CVE Portal. Your session may have expired!');
     }
     return false;
 }
@@ -953,16 +968,16 @@ async function cveLoad(cveId) {
                     return skeleton;
                 } catch(e2) {
                     if(e2 == '404') {
-                        alert('CVE Not found!');
+                        showAlert('CVE Not found!');
                     }
                 }
             } else {
                 console.log(e);
-		alert('Error generated! Please see console log for details.');
+		showAlert('Error generated! Please see console log for details.');
             }
         }
     } else {
-        alert('Please login to CVE portal');
+        showAlert('Please login to CVE portal');
     }
 }
 
@@ -982,7 +997,7 @@ async function cveReject(elem, event) {
     }
 }
 async function cvePost() {
-    //alert('CVE Services Test API is currently not functional: Issue #551')
+    //showAlert('CVE Services Test API is currently not functional: Issue #551')
     //return;
     if(docEditor.validation_results && docEditor.validation_results.length == 0){
         /*if (save != undefined) {
@@ -1005,13 +1020,13 @@ async function cvePost() {
                     ret = await cveClient.updateCve(j.cveMetadata.cveId, {cnaContainer:j.containers.cna});
                 }
             } catch(e) {
-                alert('Error publishing! Got error ' + e)
+                showAlert('Error publishing! Got error ' + e)
             }
             console.log(ret);
             if (ret != null) {
                 if(ret.error) {
                     if (ret.details && ret.details.errors) {
-                        alert(ret.error + ': ' + ret.message);
+                        showAlert(ret.error + ': ' + ret.message);
                         showJSONerrors(ret.details.errors.map(
                         a => { return({
                                 path: a.instancePath,
@@ -1020,7 +1035,7 @@ async function cvePost() {
                             ));
                     } else {
                     console.log(ret);
-                        alert(ret.error + ': ' + ret.message);
+                        showAlert(ret.error + ': ' + ret.message);
                     }
                 } else {
                     //if(ret && ret.cveMetadata && ret.cveMetadata.state)
@@ -1033,14 +1048,14 @@ async function cvePost() {
                 errMsg.innerText = "Error publishing CVE";
             }
         } else {
-            alert('CVE posting is not currently supported by production CVE services! Try Logging to Test Portal instance');
+            showAlert('CVE posting is not currently supported by production CVE services! Try Logging to Test Portal instance');
         }
         } else {
             //todo enable/disable post button
-            alert('Please login to CVE Test Portal');
+            showAlert('Please login to CVE Test Portal');
         }
     } else {
-        alert('Please fix errors before posting');
+        showAlert('Please fix errors before posting');
     }
 }
 
@@ -1057,6 +1072,6 @@ async function cveReserveAndRender(yearOffset, number) {
         await cveGetList();
         return r;
     } else {
-        alert('Please login to CVE Portal. Your session may have expired!');
+        showAlert('Please login to CVE Portal. Your session may have expired!');
     }
 } 

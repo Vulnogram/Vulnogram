@@ -52,6 +52,7 @@ mixin portal
                     +usermgmt
     .pad#cveStatusMessage
     +showSecret
+    +alertDialog
     form#cvePortalFilter.gap
         .lbl Show
         .rdg
@@ -87,7 +88,7 @@ mixin portal
     div#cveList
 
 mixin userstats
-    details.popup
+    details#userStatsPopup.popup(ontoggle="if(this.open) document.getElementById('userListPopup').open = false;")
         summary.fbn.vgi-user= userInfo && userInfo.name ? userInfo.name.first : userInfo.username ? userInfo.username : 'undef'
             |  ▼ 
         dl.pop.wht.bor.rnd.shd.pad
@@ -111,7 +112,7 @@ mixin listUsers
         each u, i in users
             form.tr(onsubmit="event.preventDefault();return false;")
                 .td
-                    input.txt(name="username" placeholder="username/email"  value=u.username needed="1")
+                    input.txt.formReadOnly(name="username" placeholder="username/email"  value=u.username needed="1" readonly="readonly")
                 .td
                     input.txt(name="first" placeholder="First name"  value=u.name.first needed="1")
                 .td
@@ -141,8 +142,17 @@ mixin showSecret
             center.gap
                 input.btn.sfe(type="reset" onclick="document.getElementById('secretDialog').close()" value="OK")
 
+mixin alertDialog
+    dialog.bor.rnd.shd.pad2#alertDialog
+      center
+        form(onsubmit="event.preventDefault();return false;")
+            h3.vgi-alert#alertMessage
+            .gap#smallAlert  
+            center.gap
+                input.btn.sfe(type="reset" onclick="document.getElementById('alertDialog').close()" value="OK")
+
 mixin usermgmt
-    details.popup(ontoggle="userlistUpdate(this, event)")
+    details#userListPopup.popup(ontoggle="userlistUpdate(this, event)")
         summary.fbn.vgi-user Manage Users
             |  ▼ 
         div.pop.wht.bor.rnd.shd.usermgmt

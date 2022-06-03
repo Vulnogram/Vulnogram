@@ -142,3 +142,7 @@ table.striped td {
   color: #880000;
   font-size: smaller;
 }
+.formReadOnly {
+    background-color: #eee;
+    pointer-events: none;
+}
