@@ -587,6 +587,16 @@ async function cveUserEdit(elem) {
     f.last.value = elem.getAttribute('l');
     f.admin.checked = elem.getAttribute('ad') ? true : false;
     f.active.checked = elem.getAttribute('ac') ? true : false;
+    console.log('User=' + cveApi.user + 'form user=' + f.u.value);
+    if(cveApi.user == f.u.value) {
+        f.admin.parentElement.setAttribute('class', 'hid');
+        f.admin.setAttribute('disabled', true);
+        f.active.setAttribute('disabled', true);
+    } else {
+        f.admin.parentElement.removeAttribute('class');
+        f.admin.removeAttribute('disabled');
+        f.active.removeAttribute('disabled');
+    }
     document.getElementById('userEditDialog').showModal();
 }
 
@@ -627,17 +637,20 @@ async function cveUpdateUser(f) {
     try {
         params = {
             "name.first": f.first.value,
-            "name.last":  f.last.value,
-            "active": f.active.checked
+            "name.last":  f.last.value
         };
         if(f.u.value != f.new_username.value) {
             params.new_username = f.new_username.value
         }
-        if(f.admin.checked) {
-            params["active_roles.add"]= 'ADMIN'
-        } else {
-            params["active_roles.remove"]= 'ADMIN'
+        if (cveApi.user != f.u.value) {
+            params.active = f.active.checked;
+            if(f.admin.checked) {
+                params["active_roles.add"]= 'ADMIN'
+            } else {
+                params["active_roles.remove"]= 'ADMIN'
+            }
         }
+    
         var ret = await cveClient.updateOrgUser(f.u.value, params);
         if(ret.updated) {
             document.getElementById("userEditDialog").close();
@@ -755,6 +768,7 @@ async function cveShowError(err) {
         document.getElementById('cveErrorsModal').showModal();
     }
 }
+
 async function cveGetList() {
     var org = await checkSession();
     if (cveClient) {
@@ -880,7 +894,7 @@ function addRichText(d) {
         ]
     }
     return d;
-};
+}
 
 function addRichTextArray(j) {
     if(j && j.length> 0){

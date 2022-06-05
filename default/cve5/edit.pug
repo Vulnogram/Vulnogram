@@ -77,16 +77,17 @@ mixin userEditDialog
 
 mixin userEdit(label)
     input.txt(type="hidden" name="u")
-    input.txt(name="new_username" "pattern"=".{2,64}" required=true placeholder="username/email" size="43")
+    input.txt(name="new_username" "pattern"=".{2,64}" required=true placeholder="username/email" size="43" title="username")
     br
-    input.txt(name="first" "pattern"=".{2,64}" required=true placeholder="First name")
-    input.txt(name="last" "pattern"=".{2,64}" required=true placeholder="Last name")
-    br
-    input#cveUserAdmin(type="checkbox" name="admin" checked)
-    label.vgi-king.lbl(for="cveUserAdmin") Admin
-    if label
-        input#cveUserActive.lbl(type="checkbox" name="active" checked)
-        label.lbl(for="cveUserActive") Active
+    input.txt(name="first" "pattern"=".{2,64}" required=true placeholder="First name" title="First Name")
+    input.txt(name="last" "pattern"=".{2,64}" required=true placeholder="Last name" title="Last Name")
+    div
+        br
+        input#cveUserAdmin(type="checkbox" name="admin")
+        label.vgi-king.lbl(for="cveUserAdmin" title="Is this an admin?") Admin
+        if label
+            input#cveUserActive.lbl(type="checkbox" name="active" checked)
+            label.lbl(for="cveUserActive" title="Is the account active?") Active
     br
     input.gap.sfe.btn.vgi-magic(type="submit" value=label?label:"Add user")
     if label
