@@ -447,6 +447,10 @@ box-shadow: 0 0 0 0.2em rgba(147, 147, 147, 0.3);
     border: none;
     outline: none;
 }
+.txt:disabled:hover, .txt:disabled:focus, .txt:disabled:active {
+    outline: 1px solid var(--bor);
+    box-shadow: none;
+}
 
 .sbn:hover, .fbn:hover,.btn:hover {
     box-shadow: 0px 2px 4px rgba(0,0,0,0.2);
