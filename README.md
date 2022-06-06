@@ -65,7 +65,7 @@ Use a process monitor like [pm2](https://www.npmjs.com/package/pm2) (preferred) 
 
 First install pm2 using instruction [at pm2 documentation](https://www.npmjs.com/package/pm2)
 
-    $ *pm2 start app.js*
+    $ pm2 start app.js
     [PM2] Spawning PM2 daemon with pm2_home=/home/vulnogram/.pm2
     [PM2] PM2 Successfully daemonized
     [PM2] Starting /home/vulnogram/app.js in fork_mode (1 instance)
@@ -73,7 +73,7 @@ First install pm2 using instruction [at pm2 documentation](https://www.npmjs.com
 
 ##### 7.b Example using [forever](https://www.npmjs.com/package/forever)
 
-    $ *npm start*
+    $ npm start
     > Vulnogram@0.0.6 start /home/vulnogram/
     > forever start --id 'vulnogram' --spinSleepTime 5000 --minUptime 2000 app.js
 
