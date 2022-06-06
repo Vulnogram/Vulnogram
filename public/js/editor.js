@@ -488,11 +488,18 @@ JSONEditor.defaults.editors.simplehtml = class simplehtml extends JSONEditor.def
     setValue (value,initial,from_template) {
         super.setValue(value,initial,from_template);
         if (this.wysLoaded) {
-            this.wys.setValue(this.input.value);
-            
-            var sa = this.wys.getValue();
-            if(sa != this.input.value) {
-                this.input.value = sa;
+            // get current value from HTML editor
+            var priorVal = this.wys.getValue();
+
+            // set the new value (and let HTML editor perform DOM sanitization)
+            this.wys.setValue(value);
+
+            // get the new value from the HTML editor
+            var currentVal = this.wys.getValue();
+
+            // if they are different trigger a change event.
+            if(priorVal != currentVal) {
+                this.input.value = currentVal;
                 this.onChange(true);
             }
         } else {

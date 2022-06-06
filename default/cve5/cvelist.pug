@@ -246,6 +246,77 @@ mixin listIds
     else
         i No CVE IDs found!
 
+mixin autoText
+  if con
+    if con.problemTypes
+        - var pts = [];
+        for t in con.problemTypes
+            if t.descriptions
+                - var prob = t.descriptions.map(x=>x.description).join(', ').replaceAll(/CWE-\d+/g,"").trim().replaceAll(/\s+/g, ' ');
+                if prob
+                    - pts.push(prob);
+        if pts.length > 0
+            = pts.join(', ')
+        else
+            | A
+    |  vulnerability
+    - var codelist = [];
+    if con.affected
+        - var plist = [];
+        for p in con.affected
+            - var pd = [p.vendor, p.vendor != p.product ? p.product : '', p.packageName != p.product ? p.packageName : '', (p.platforms ? 'on ' + p.platforms.join(', ') : ''), p.modules ? '(' + p.modules.join(', ') + ' modules)':''].join(' ').trim().replaceAll(/\s+/g, ' ')
+            if pd
+                - plist.push(pd);
+        - var ptext = plist.join(', ');
+        if ptext
+            |  in 
+            = ptext
+    if con.impacts
+        - var ips = [];
+        for t in con.impacts
+            if t.descriptions
+                - var impact = t.descriptions.map(x=>x.value).join(', ').replaceAll(/CAPEC-\d+/g, "").trim().replaceAll(/\s+/g, ' ')
+                if impact
+                    - ips.push(impact);
+        if ips.length > 0
+            |  allows 
+            = ips.join(', ')
+    |.
+    if con.affected
+        - var fileSet = {};
+        - var funcSet = {};
+        for p in con.affected
+            if p.programFiles
+                for pf in p.programFiles
+                    - fileSet[pf] = 1
+            if p.programRoutines
+                for fn in p.programRoutines
+                    - funcSet[fn.name] = 1
+        - var files = Object.keys(fileSet);
+        - var funcs = Object.keys(funcSet);
+
+        if files.length > 0 || funcs.length > 0
+          p  This vulnerability is associated with
+            if files.length > 0
+                |  program files 
+                - var counter = 0
+                for fn in files
+                    - counter ++
+                    tt=fn
+                    if counter < files.length
+                        | , 
+            if funcs.length > 0
+                if files.length > 0
+                    |  and
+                |  program routines 
+                - var counter = 0
+                for fn in funcs
+                    - counter ++
+                    tt=fn
+                    if counter < funcs.length
+                        | , 
+            |.
+
 block red
     if ctemplate != undefined
         +#{ctemplate}

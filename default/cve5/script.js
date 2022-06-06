@@ -52,6 +52,7 @@ function loadCVE(value) {
                         res = cvssv3_0_to_cvss3_1(res);
                     }
                     loadJSON(res, id, "Loaded "+id+" from GIT!");
+                    addAutoButton();
                     mainTabGroup.change(0);
                 } else {
                     errMsg.textContent = "Failed to load valid CVE JSON v 5.0 record";
@@ -379,40 +380,38 @@ document.addEventListener("click", function (e) {
     }
 });
 
-/*
-var autoButton = document.getElementById('auto');
 
-autoButton.addEventListener('click', function (event) {
-        event.preventDefault();
-        var d = docEditor.getEditor('root.description.description_data');
-        var docJSON = docEditor.getValue();
-        var desc = d.getValue();
-        if (d) {
-            var i = desc.length;
-            while (i--) {
-                if (desc[i].value.length === 0) {
-                    desc.splice(i, 1);
-                }
-            }
-            var ptstring = textUtil.getProblemTypeString(docJSON);
-            if (ptstring.length == 0) {
-                ptstring = "A"
-            }
-            desc.push({
-                lang: "eng",
-                value: ptstring + " vulnerability in ____COMPONENT____ of " + textUtil.getProductList(docJSON) +
-                    " allows ____ATTACKER/ATTACK____ to cause ____IMPACT____."
-            });
-            desc.push({
-                lang: "eng",
-                value: textUtil.getAffectedProductString(docJSON)
-            });
-            d.setValue(desc);
-        } else {
-
-        }
+function addAutoButton() {
+    docEditor.on('ready', function(){
+            var autoButton = document.createElement('button');
+            autoButton.className = 'btn sfe indent vgi-magic';
+            autoButton.innerText = 'Auto Generate';
+            autoButton.addEventListener('click', autoText);
+            docEditor.getEditor("root.containers.cna.descriptions").header.appendChild(autoButton)
     });
-*/
+}
+
+async function autoText(event) {
+    if(event) {
+        event.preventDefault();
+    }
+    var doc = docEditor.getValue();
+    var text = cveRender({
+        ctemplate: 'autoText',
+        con: doc.containers.cna
+    });
+    // remove extra spaces
+    text = text.trim().replaceAll(/\s+/g, ' ');
+    hE = await docEditor.getEditor('root.containers.cna.descriptions.0.supportingMedia.0.value');
+    
+    // Capitolize sentances.
+    var rg = /(^\w{1}|\.\s*\w{1})/gi;
+    text = text.replace(rg, function(toReplace) {
+        return toReplace.toUpperCase();
+    });
+    hE.setValue(text, '', false);
+}
+
 var cveClient;
 var cveApi = {
     user: null,
@@ -432,7 +431,6 @@ async function checkSession() {
             try{
                 cveApi.org = o = await cveClient.getOrgInfo();
                 console.log('tried to get org info');
-                console.log(o);
             } catch(e) {
                 console.log(e);
             }
@@ -587,7 +585,6 @@ async function cveUserEdit(elem) {
     f.last.value = elem.getAttribute('l');
     f.admin.checked = elem.getAttribute('ad') ? true : false;
     f.active.checked = elem.getAttribute('ac') ? true : false;
-    console.log('User=' + cveApi.user + 'form user=' + f.u.value);
     if(cveApi.user == f.u.value) {
         f.admin.parentElement.setAttribute('class', 'hid');
         f.admin.setAttribute('disabled', true);
@@ -949,6 +946,7 @@ async function loadCVEFile(event, elem) {
                     res = cvssv3_0_to_cvss3_1(res);
                     //docEditor.setValue(res);
                     loadJSON(res, null, "Imported file");
+                    addAutoButton();
                 } catch (e) {
                     cveShowError(e);
                 }
@@ -977,6 +975,7 @@ async function cveLoad(cveId) {
                     console.log('no containers');
                 }
                 loadJSON(res, cveId, "Loaded " + cveId + " from CVE.org!");
+                addAutoButton();
                 mainTabGroup.change(0);
                 return res;
             } else {
@@ -1001,6 +1000,7 @@ async function cveLoad(cveId) {
                         return {};
                     }
                     loadJSON(skeleton, cveId, "Loaded " + cveId);
+                    addAutoButton();
                     mainTabGroup.change(0);
                     return skeleton;
                 } catch(e2) {
