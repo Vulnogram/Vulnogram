@@ -95,7 +95,6 @@ mixin userstats
             b.vgi-user= userInfo ? userInfo.username : 'undefined!'
             dt Roles:  
                 b.vgi-cap=userInfo && userInfo.authority ? userInfo.authority.active_roles : 'undefined!'
-            span.vgi-edit.fbn(onclick="cveUserUpdate()") Update my details
             hr.bort
             dt Org:  
                 b=org ? org.name : 'undefined'
@@ -103,7 +102,6 @@ mixin userstats
                 b= org ? org.short_name : 'undefined'
             dt Role:  
                 b= org && org.authority ? org.authority.active_roles : 'undefined'
-            span.vgi-edit.fbn(onclick="cveOrgUpdate()") Update org details
             hr.bort
             span.vgi-exit.fbn(onclick="cveLogout()") Logout!
 
@@ -149,7 +147,8 @@ mixin alertDialog
             h3.vgi-alert#alertMessage
             .gap#smallAlert  
             center.gap
-                input.btn.sfe(type="reset" onclick="document.getElementById('alertDialog').close()" value="OK")
+                input#alertOk.btn.sfe(type="reset" onclick="document.getElementById('alertDialog').close();" value="OK")
+                input#alertCancel.btn.red(type="reset" onclick="document.getElementById('alertDialog').close();" value="Cancel" style="display:none")
 
 mixin usermgmt
     details#userListPopup.popup(ontoggle="userlistUpdate(this, event)")

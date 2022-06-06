@@ -1,5 +1,11 @@
 var currentYear = new Date().getFullYear();
+const defaultTimeout = 1000 * 60 * 60;
 
+function hidepopups() {
+    document.getElementById("userListPopup").open = false;
+    document.getElementById("userStatsPopup").open = false;
+}
+    
 function tweetJSON(event, link) {
     var j = mainTabGroup.getValue();
     if (!j) {
@@ -66,7 +72,14 @@ function loadCVE(value) {
     }
     return false;
 }
-function showAlert(msg,smallmsg,timer) {
+function showAlert(msg,smallmsg,timer,showCancel) {
+    if(showCancel) {
+	document.getElementById("alertCancel").style.display = "inline-block";
+    } else {
+	var temp1 = document.getElementById("alertOk");
+	temp1.setAttribute("onclick","document.getElementById('alertDialog').close();");
+	document.getElementById("alertCancel").style.display = "none";	
+    }
     document.getElementById("alertMessage").innerText = msg;
     if(smallmsg)
 	document.getElementById("smallAlert").innerText = smallmsg;
@@ -506,6 +519,9 @@ async function cveLogin(elem, credForm) {
 		cveApi.keyUrl = ret.keyUrl;
 		window.sessionStorage.cveApi = JSON.stringify(cveApi);
 		await cveGetList();
+		/* Moved one hour session timeout to here as serviceWorker not reliable in
+		   serviceWorker */
+		setTimeout(cveLogout,defaultTimeout);
 	    } else {
                 document.getElementById("loginErr").innerText = 'Failed to login: Possibly invalid credentials!';
 		console.log(ret);
@@ -523,7 +539,7 @@ async function cveLogin(elem, credForm) {
     }
 }
 
-async function cveLogout(URL) {
+async function cveLogout() {
     resetClient();
     window.sessionStorage.removeItem('cveApi');
     document.getElementById('cvePortal').innerHTML = cveRender({
@@ -556,9 +572,22 @@ async function userlistUpdate(elem, event){
     }
 }
 
-async function cveUserKeyReset(elem) {
+async function cveUserKeyReset(elem,confirm) {
     var u = elem.getAttribute('u');
     var org = await checkSession();
+    var temp1 = document.getElementById("alertOk");
+    if(confirm) {
+	temp1.setAttribute("onclick","document.getElementById('alertDialog').close();");	
+	elem.removeAttribute('id');
+	document.getElementById('alertDialog').close();
+    } else {
+	showAlert("Are you sure?","User "+u+" cannot use the old API key",undefined,true);
+	let randid = Math.random().toString(32).substr(2);
+	elem.setAttribute('id',randid);
+	temp1.setAttribute('onclick','cveUserKeyReset(document.getElementById("'+randid+'"),true)');
+	return ;
+    }
+	
     if (cveClient) {
         try {
             var ret = await cveClient.resetOrgUserApiKey(u);
@@ -575,6 +604,7 @@ async function cveUserKeyReset(elem) {
     } else {
         showAlert('Please login to CVE Portal. Your session may have expired!');
     }
+    
 }
 
 async function cveUpdateUser(elem) {
