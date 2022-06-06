@@ -32,7 +32,7 @@ Vulnogram can be deployed in two modes:
 
 	$ cd vulnogram
 	$ npm install
- 	... this should install required dependencies ...
+ 	... this should install required dependencies, (except process monitors) ...
 
 
 #### Step 2. Setup monogodb to be used for persistent storage of CVE JSON and users.
@@ -53,10 +53,27 @@ Vulnogram can be deployed in two modes:
 	Enter Password again: ********************************************
 	Success New user is now registered and can log in: tester
 
-#### Step 5. Start the node application.
+#### Step 6. Start the node application.
 
-    $ npm start
+    $ node app.js
 
+#### Step 7. Run the application as a daemon server
+
+Use a process monitor like [pm2](https://www.npmjs.com/package/pm2) (preferred) or [forever] to run vulnogram as a service:
+
+##### 7.a Example using [pm2](https://www.npmjs.com/package/pm2):
+
+First install pm2 using instruction [at pm2 documentation](https://www.npmjs.com/package/pm2)
+
+    $ *pm2 start app.js*
+    [PM2] Spawning PM2 daemon with pm2_home=/home/vulnogram/.pm2
+    [PM2] PM2 Successfully daemonized
+    [PM2] Starting /home/vulnogram/app.js in fork_mode (1 instance)
+    [PM2] Done.
+
+##### 7.b Example using [forever](https://www.npmjs.com/package/forever)
+
+    $ *npm start*
     > Vulnogram@0.0.6 start /home/vulnogram/
     > forever start --id 'vulnogram' --spinSleepTime 5000 --minUptime 2000 app.js
 
