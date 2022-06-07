@@ -146,7 +146,7 @@
         updateOrgUser(username, userInfo) {
             return this._middleware.orgName
                 .then(orgName =>
-                    this._middleware.put(`org/${orgName}/user/${username}`, undefined, userInfo));
+                    this._middleware.put(`org/${orgName}/user/${username}`, userInfo, undefined));
         }
 
         resetOrgUserApiKey(username) {
@@ -226,6 +226,8 @@
                 let channel = new MessageChannel();
 
                 channel.port1.onmessage = (msg) => {
+		    if('debug' in msg)
+                        console.log(msg);
                     resolve(msg.data);
                 };
 
@@ -306,6 +308,7 @@
 
         destroy() {
             if (this.registration) {
+		this.send({type: 'destroy'});
                 this.registration.unregister();
                 this.registration = undefined;
 

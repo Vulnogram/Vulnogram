@@ -12,7 +12,6 @@ block append bannerItemsLeft
 
 block append scripts
     script
-        include script.js
         include cve.js
     - var compileScript = pugLib.compileFileClient('default/cve5/cvelist.pug', {name: "cveRender", basedir: '', compileDebug: false,inlineRuntimeFunctions: true})
             script !{compileScript}

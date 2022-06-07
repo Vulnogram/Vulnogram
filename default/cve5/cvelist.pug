@@ -52,6 +52,7 @@ mixin portal
                     +usermgmt
     .pad#cveStatusMessage
     +showSecret
+    +alertDialog
     form#cvePortalFilter.gap
         .lbl Show
         .rdg
@@ -87,14 +88,13 @@ mixin portal
     div#cveList
 
 mixin userstats
-    details.popup
+    details#userStatsPopup.popup(ontoggle="if(this.open) document.getElementById('userListPopup').open = false;")
         summary.fbn.vgi-user= userInfo && userInfo.name ? userInfo.name.first : userInfo.username ? userInfo.username : 'undef'
             |  ▼ 
         dl.pop.wht.bor.rnd.shd.pad
             b.vgi-user= userInfo ? userInfo.username : 'undefined!'
             dt Roles:  
                 b.vgi-cap=userInfo && userInfo.authority ? userInfo.authority.active_roles : 'undefined!'
-            span.vgi-edit.fbn(onclick="cveUserUpdate()") Update my details
             hr.bort
             dt Org:  
                 b=org ? org.name : 'undefined'
@@ -102,21 +102,28 @@ mixin userstats
                 b= org ? org.short_name : 'undefined'
             dt Role:  
                 b= org && org.authority ? org.authority.active_roles : 'undefined'
-            span.vgi-edit.fbn(onclick="cveOrgUpdate()") Update org details
             hr.bort
             span.vgi-exit.fbn(onclick="cveLogout()") Logout!
 
 mixin listUsers
     if users
         each u, i in users
-            .tr
-                .td=u.username
-                .td=u.name.first
-                .td=u.name.last
-                .td=u.authority ? u.authority.active_roles : ''
-                .td=u.active
+            form.tr(onsubmit="event.preventDefault();return false;")
                 .td
-                    button.btn.vgi-reuse(onclick="cveUserKeyReset(this)",u=u.username) Reset API Key
+                    input.txt.formReadOnly(name="username" placeholder="username/email"  value=u.username needed="1" readonly="readonly")
+                .td
+                    input.txt(name="first" placeholder="First name"  value=u.name.first needed="1")
+                .td
+                    input.txt(name="last" placeholder="Last name" , value=u.name.last needed="1")
+                .td
+                    input.txt(type="checkbox", name="admin", checked = u.authority && u.authority.active_roles && u.authority.active_roles.findIndex(x => x == "ADMIN") > -1 )
+                    lable.lbl(for="admin") Admin
+                .td
+                    input.txt(type="checkbox", name="active", checked = u.active)
+                    lable.lbl(for="active") Active
+                .td
+                    button.btn.pri.vgi-reuse(onclick="cveUserKeyReset(this)",u=u.username) Reset API Key
+                    button.btn.vgi-edit(onclick="cveUpdateUser(this)",data-userObj=u) Update User		    
 
 mixin showSecret
     dialog.bor.rnd.shd.pad2#secretDialog
@@ -133,8 +140,18 @@ mixin showSecret
             center.gap
                 input.btn.sfe(type="reset" onclick="document.getElementById('secretDialog').close()" value="OK")
 
+mixin alertDialog
+    dialog.bor.rnd.shd.pad2#alertDialog
+      center
+        form(onsubmit="event.preventDefault();return false;")
+            h3.vgi-alert#alertMessage
+            .gap#smallAlert  
+            center.gap
+                input#alertOk.btn.sfe(type="reset" onclick="document.getElementById('alertDialog').close();" value="OK")
+                input#alertCancel.btn.red(type="reset" onclick="document.getElementById('alertDialog').close();" value="Cancel" style="display:none")
+
 mixin usermgmt
-    details.popup(ontoggle="userlistUpdate(this, event)")
+    details#userListPopup.popup(ontoggle="userlistUpdate(this, event)")
         summary.fbn.vgi-user Manage Users
             |  ▼ 
         div.pop.wht.bor.rnd.shd.usermgmt
@@ -155,11 +172,11 @@ mixin usermgmt
                 .tfoot
                     form.tr(onsubmit="event.preventDefault();cveAddUser(this)")
                         .td
-                            input.txt(name="new_username" placeholder="username/email")
+                            input.txt(name="new_username" placeholder="username/email" needed="1")
                         .td
-                            input.txt(name="first" placeholder="First name")
+                            input.txt(name="first" placeholder="First name" needed="1")
                         .td
-                            input.txt(name="last" placeholder="Last name")
+                            input.txt(name="last" placeholder="Last name" needed="1")
                         .td
                             input.txt(type="checkbox", name="admin")
                             lable.lbl(for="admin") Admin

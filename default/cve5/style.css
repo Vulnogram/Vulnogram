@@ -138,3 +138,11 @@ table.striped td {
 #cvePage, #showpass {
     display: none;
 }
+.formError {
+  color: #880000;
+  font-size: smaller;
+}
+.formReadOnly {
+    background-color: #eee;
+    pointer-events: none;
+}
