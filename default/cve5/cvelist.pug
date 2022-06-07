@@ -128,8 +128,8 @@ mixin userDetail(u)
         b=u.name?u.name.first:''
             | 
             =u.name?u.name.last:''
-        i.sicn(class=u.active?'vgi-ok':'vgi-no' title=u.active? 'active': 'inactive')
         i.sicn(class=u.authority.active_roles.includes('ADMIN')? 'vgi-king' : 'vgi-cap' title=u.authority.active_roles.includes('ADMIN')?'Admin':'Regular User')
+        i.sicn(class=u.active?'vgi-ok':'vgi-no' title=u.active? 'active': 'inactive')
         br
         small=u.username
 

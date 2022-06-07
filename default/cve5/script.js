@@ -584,20 +584,21 @@ async function userlistUpdate(elem, event){
     }
 }
 
-async function cveUserKeyReset(elem,confirm) {
-    var u = elem.getAttribute('u');
+async function cveUserKeyReset(elem, confirm) {
+    var u = elem.form.u.value;
     var org = await checkSession();
     var temp1 = document.getElementById("alertOk");
-    if(confirm) {
-	temp1.setAttribute("onclick","document.getElementById('alertDialog').close();");	
-	elem.removeAttribute('id');
-	document.getElementById('alertDialog').close();
+    if (confirm) {
+        temp1.setAttribute("onclick", "document.getElementById('alertDialog').close();");
+        elem.removeAttribute('id');
+        document.getElementById('alertDialog').close();
     } else {
-	showAlert("Are you sure?","User "+u+" cannot use the old API key",undefined,true);
-	let randid = Math.random().toString(32).substr(2);
-	elem.setAttribute('id',randid);
-	temp1.setAttribute('onclick','cveUserKeyReset(document.getElementById("'+randid+'"),true)');
-	return ;
+        showAlert("Are you sure?", "User " + u + " cannot use the old API key!", undefined, true);
+        let randid = Math.random().toString(32).substring(2);
+        elem.setAttribute('id', randid);
+        temp1.setAttribute('u', u);
+        temp1.setAttribute('onclick', 'cveUserKeyReset(document.getElementById("' + randid + '"),true)');
+        return;
     }
 	
     if (cveClient) {
@@ -1099,7 +1100,7 @@ async function cveLoad(cveId) {
 
 async function cveReject(elem, event) {
     var id = elem.getAttribute('data');
-    if(window.confirm('Do you want to reject ' + id + '? It can not be undone!')) {
+    if(window.confirm('Do you want to reject ' + id + '? It cannot be undone!')) {
         var org = await checkSession();
         console.log('org:' + org);
         if(cveClient) {
