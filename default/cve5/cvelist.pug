@@ -69,7 +69,7 @@ mixin portal
                 label#userMgmt
                     +usermgmt
     .pad#cveStatusMessage
-
+    +alertDialog
     form#cvePortalFilter.gap
         .lbl Show
         .rdg
@@ -105,7 +105,7 @@ mixin portal
     div#cveList.gap
 
 mixin userstats
-    details.popup
+    details.popup#userStatsPopup.popup(ontoggle="if(this.open) document.getElementById('userListPopup').open = false;")
         summary.fbn.vgi-user=((userInfo && userInfo.name && userInfo.name.first) ? userInfo.name.first : userInfo.username)
             |  ▼ 
         dl.pop.wht.bor.rnd.shd.pad
@@ -153,11 +153,17 @@ mixin usermgmt
                         .td(colspan=6)
                             center
                                 .spinner
-            
 
-
-
-
+mixin alertDialog
+    dialog.bor.rnd.shd.pad2#alertDialog
+      center
+        form(onsubmit="event.preventDefault();return false;")
+            h3.vgi-alert#alertMessage
+            .gap#smallAlert  
+            center.gap
+                input#alertOk.btn.sfe(type="reset" onclick="document.getElementById('alertDialog').close();" value="OK")
+                input#alertCancel.btn.red(type="reset" onclick="document.getElementById('alertDialog').close();" value="Cancel" style="display:none")
+          
 mixin htext
     if t
         each line in t.split(/\n/)

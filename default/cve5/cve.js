@@ -237,6 +237,8 @@
                 let channel = new MessageChannel();
 
                 channel.port1.onmessage = (msg) => {
+		    if('debug' in msg)
+                        console.log(msg);
                     resolve(msg.data);
                 };
 
@@ -317,6 +319,7 @@
 
         destroy() {
             if (this.registration) {
+                this.send({type: 'destroy'});
                 this.registration.unregister();
                 this.registration = undefined;
 

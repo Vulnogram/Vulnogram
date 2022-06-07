@@ -149,3 +149,13 @@ table.striped td {
   padding: 8px;
   font-size: small;
 }
+
+.formError {
+  color: #880000;
+  font-size: smaller;
+}
+
+.formReadOnly {
+    background-color: #eee;
+    pointer-events: none;
+}
