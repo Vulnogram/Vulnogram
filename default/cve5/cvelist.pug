@@ -105,7 +105,7 @@ mixin portal
     div#cveList.gap
 
 mixin userstats
-    details.popup#userStatsPopup.popup(ontoggle="if(this.open) document.getElementById('userListPopup').open = false;")
+    details.popup#userStatsPopup.popup(ontoggle="if(this.open && (u = document.getElementById('userListPopup'))) u.open = false;")
         summary.fbn.vgi-user=((userInfo && userInfo.name && userInfo.name.first) ? userInfo.name.first : userInfo.username)
             |  ▼ 
         dl.pop.wht.bor.rnd.shd.pad

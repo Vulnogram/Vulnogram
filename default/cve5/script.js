@@ -468,15 +468,15 @@ returns orgInfo if true
 */ 
 async function checkSession() {
     if('serviceWorker' in navigator) {
-        if('cveApi' in window.sessionStorage) {
-            cveApi = JSON.parse(window.sessionStorage.cveApi);
+        if(window.localStorage.getItem('cveApi')) {
+            cveApi = JSON.parse(window.localStorage.getItem('cveApi'));
             cveClient = new CveServices(cveApi.url, "./static/cve5sw.js");
             var o = false;
             try{
                 o = await cveClient.getOrgInfo();
             } catch(e) {
                 console.log(e);
-		showAlert('Error generated! Please see console log for details.');
+		        showAlert('Error generated! Please see console log for details.');
             }
             return o;
         }
@@ -531,16 +531,16 @@ async function cveLogin(elem, credForm) {
             window.localStorage.setItem('cveApi', JSON.stringify(cveApi));
             window.localStorage.setItem('portalType', type);
             window.localStorage.setItem('shortName', credForm.org.value);
-	    if(ret == 'ok') {
-		cveApi.keyUrl = ret.keyUrl;
-		window.sessionStorage.cveApi = JSON.stringify(cveApi);
+	    if(ret == 'ok' || ret.data == "ok") {
+		    cveApi.keyUrl = ret.keyUrl;
+		    //window.localStorage.setItem('cveApi', JSON.stringify(cveApi));
 		await cveGetList();
 		/* Moved one hour session timeout to here as serviceWorker not reliable in
 		   serviceWorker */
 		setTimeout(cveLogout,defaultTimeout);
 	    } else {
                 document.getElementById("loginErr").innerText = 'Failed to login: Possibly invalid credentials!';
-		console.log(ret);
+		        console.log(ret);
 	    }
         } catch(e) {
             if(e == '401') {
@@ -549,7 +549,7 @@ async function cveLogin(elem, credForm) {
                 }
             } else {
                 console.log(e);
-		showAlert('Error generated! Please see console log for details.');
+		        showAlert('Error generated! Please see console log for details.');
             }
         }
     }
@@ -697,6 +697,27 @@ function validateForm(f) {
     });
     return isvalid;
 }
+
+async function cveUserEdit(elem) {
+    f = document.getElementById('userEditForm');
+    f.u.value = elem.getAttribute('u');
+    f.new_username.value = elem.getAttribute('u');
+    f.first.value = elem.getAttribute('f');
+    f.last.value = elem.getAttribute('l');
+    f.admin.checked = elem.getAttribute('ad') ? true : false;
+    f.active.checked = elem.getAttribute('ac') ? true : false;
+    if(cveApi.user == f.u.value) {
+        f.admin.parentElement.setAttribute('class', 'hid');
+        f.admin.setAttribute('disabled', true);
+        f.active.setAttribute('disabled', true);
+    } else {
+        f.admin.parentElement.removeAttribute('class');
+        f.admin.removeAttribute('disabled');
+        f.active.removeAttribute('disabled');
+    }
+    document.getElementById('userEditDialog').showModal();
+}
+
 async function cveAddUser(f) {
     var org = await checkSession();
     if (org && cveClient && validateForm(f)) {
@@ -1080,6 +1101,7 @@ async function cveReject(elem, event) {
     var id = elem.getAttribute('data');
     if(window.confirm('Do you want to reject ' + id + '? It can not be undone!')) {
         var org = await checkSession();
+        console.log('org:' + org);
         if(cveClient) {
             var ret = await cveClient.updateCveId(id, 'REJECTED', org.short_name);
             if(ret.updated && ret.updated.state == 'REJECTED') {
