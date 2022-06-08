@@ -159,3 +159,7 @@ table.striped td {
     background-color: #eee;
     pointer-events: none;
 }
+
+label[for="cveApiTab"] {
+  background-color: var(--sec) !important;
+}
