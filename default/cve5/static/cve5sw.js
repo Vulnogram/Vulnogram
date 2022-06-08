@@ -61,8 +61,10 @@ clientReply = (e, msg) => {
 };
 
 deadSession = (e, debugString) => {
-    clientReply(e, { error: "No Login Session found",
-		     debug: debugString });
+    clientReply(e, { error: "Not logged in",
+            message: "Please login."
+		     //debug: debugString
+             });
     return false;
 }
 

@@ -1,5 +1,5 @@
 mixin cveLoginBox
-    center.sec.shd.rnd.gap2.pad
+    center.sec.shd.rnd.pad
         include CVE.svg
         br
         i CVE Services Portal 
@@ -26,23 +26,26 @@ mixin cveLoginBox
                 input.bor.fbn.sfe(type='submit', value='Login')
 
 mixin dlgHeader(icon, msg)
-    header.ban.sec.pad
+    header.ban.sec.pad(style="min-width:20em;")
         b.lbl(class=icon)=msg
         | 
         a.sbn.right.vgi-fail(onclick="this.closest('dialog').close()")
 
 mixin cveErrors
-    +dlgHeader('vgi-alert', 'Error '+ err.error)
+    +dlgHeader('vgi-alert', typeof err == 'string' ? 'Error' : err.error)
     center.pad2
-        h3=err.message
-        if err.details
-            ol.gap
-                each d, i in err.details
-                    li= d.location
-                        | /   
-                        =d.param
-                        | :  
-                        =d.msg
+        if typeof err == 'string'
+            b.gap=err
+        else
+            h3=err.message
+            if err.details
+                ol.gap
+                    each d, i in err.details
+                        li= d.location
+                            | /   
+                            =d.param
+                            | :  
+                            =d.msg
 mixin portal
     - var y = new Date().getFullYear()
     header.pad.ban.sec
@@ -69,7 +72,6 @@ mixin portal
                 label#userMgmt
                     +usermgmt
     .pad#cveStatusMessage
-    +alertDialog
     form#cvePortalFilter.gap
         .lbl Show
         .rdg
@@ -153,16 +155,6 @@ mixin usermgmt
                         .td(colspan=6)
                             center
                                 .spinner
-
-mixin alertDialog
-    dialog.bor.rnd.shd.pad2#alertDialog
-      center
-        form(onsubmit="event.preventDefault();return false;")
-            h3.vgi-alert#alertMessage
-            .gap#smallAlert  
-            center.gap
-                input#alertOk.btn.sfe(type="reset" onclick="document.getElementById('alertDialog').close();" value="OK")
-                input#alertCancel.btn.red(type="reset" onclick="document.getElementById('alertDialog').close();" value="Cancel" style="display:none")
           
 mixin htext
     if t

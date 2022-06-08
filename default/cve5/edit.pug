@@ -61,6 +61,7 @@ block append content
     +showSecret
     +userAddDialog
     +userEditDialog
+    +alertDialog
 
 mixin userAddDialog
     dialog.dlg.bor.rnd.shd#userAddDialog
@@ -117,3 +118,13 @@ mixin dlgHeader(icon, msg)
         b.lbl(class=icon)=msg
         | 
         a.sbn.right.vgi-fail(onclick="this.closest('dialog').close()")
+
+mixin alertDialog
+    dialog.bor.rnd.shd.pad2#alertDialog
+      center
+        form(onsubmit="event.preventDefault();return false;")
+            h3.vgi-alert#alertMessage
+            .gap#smallAlert  
+            center.gap
+                input#alertOk.btn.sfe(type="reset" onclick="document.getElementById('alertDialog').close();" value="OK")
+                input#alertCancel.btn.red(type="reset" onclick="document.getElementById('alertDialog').close();" value="Cancel" style="display:none")

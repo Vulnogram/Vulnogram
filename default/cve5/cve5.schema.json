@@ -5,7 +5,7 @@
   "title": "CVE JSON record format",
   "description": "cve-schema specifies the CVE JSON record format. This is the blueprint for a rich set of JSON data that can be submitted by CVE Numbering Authorities (CNAs) and Authorized Data Publishers (ADPs) to describe a CVE Record. Some examples of CVE record data include CVE ID number, affected product(s), affected version(s), and public references. While those specific items are required when assigning a CVE, there are many other optional data in the schema that can be used to enrich CVE Records for community benefit. Learn more about the CVE program at [the official website](https://cve.mitre.org). This CVE JSON record format is defined using JSON Schema. Learn more about JSON Schema [here](https://json-schema.org/).",
   "options": {
-    "keep_oneof_values": false,
+    "keep_oneof_values": true,
     "patternmessage": "Enter a valid UUID"
   },
   "definitions": {
@@ -344,13 +344,13 @@
             "examples": [
               "Windows",
               "MacOS",
-              "Liniux",
+              "Linux",
+              "iOS",
+              "Android",
               "x86",
               "ARM",
               "64 bit",
-              "iOS",
-              "Android",
-              "Big Endian"
+              "32 bit"
             ],
             "maxLength": 1024
           }
@@ -957,9 +957,7 @@
           "description": "If known, the date/time the vulnerability was disclosed publicly.",
           "options": {
             "grid_columns": 4,
-            "formClass": "lni",
-            "hidden": "true"
-
+            "formClass": "lni"
           }
         },
         "problemTypes": {
@@ -1080,6 +1078,18 @@
           "uniqueItems": true,
           "items": {
             "$ref": "#/definitions/cveId"
+          }
+        },
+        "x_generator": {
+          "type": "object",
+          "properties": {
+            "engine": {
+              "type": "string",
+              "default": "Vulnogram 0.1.0-dev"
+            }
+          },
+          "options": {
+            "hidden": "true"
           }
         }
       },
