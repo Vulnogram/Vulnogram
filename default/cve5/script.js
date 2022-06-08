@@ -265,24 +265,22 @@ function versionStatusTable5(affected) {
                             rows[v.status].push('= ' + v.version);
                         }
                     } else {
-                        rows[v.status].push('= ' + v.version);
+                        var prevStatus = v.status;
+                        var prevVersion = v.version;
+                        for(c of v.changes) {
+                            showCols[c.status] = true;
+                            rows[prevStatus].push('>= ' + prevVersion + ' to < ' + c.at);
+                            prevStatus = c.status;
+                            prevVersion = c.at;
+                        }
+                        if(v.lessThan) {
+                            rows[prevStatus].push('>= ' + prevVersion + (v.lessThan != prevVersion ? ' to < ' + v.lessThan : ''));
+                        } else if(v.lessThanOrEqual) {
+                            rows[prevStatus].push('>= ' + prevVersion + (v.lessThanOrEqual != prevVersion ? ' to < ' + v.lessThanOrEqual : ''));
+                        } else {
+                            rows[prevStatus].push(">=" + prevVersion);
+                        }                  
                     }
-                } else {
-                    var prevStatus = v.status;
-                    var prevVersion = v.version;
-                    for(c of v.changes) {
-                        showCols[c.status] = true;
-                        rows[prevStatus].push('>= ' + prevVersion + ' to < ' + c.at);
-                        prevStatus = c.status;
-                        prevVersion = c.at;
-                    }
-                    if(v.lessThan) {
-                        rows[prevStatus].push('>= ' + prevVersion + (v.lessThan != prevVersion ? ' to < ' + v.lessThan : ''));
-                    } else if(v.lessThanOrEqual) {
-                        rows[prevStatus].push('>= ' + prevVersion + (v.lessThanOrEqual != prevVersion ? ' to < ' + v.lessThanOrEqual : ''));
-                    } else {
-                        rows[prevStatus].push(">=" + prevVersion);
-                    }                  
                 }
                 if(!t[pFullName]) t[pFullName] = [];
                 //if(!t[pFullName][v.version]) t[pFullName][v.version] = [];
@@ -292,20 +290,10 @@ function versionStatusTable5(affected) {
         var pFullName = [(p.vendor ? p.vendor + ' ' : '') + pname + (major ? ' ' + major : ''), platforms, modules, others];
         nameAndPlatforms[pFullName] = pFullName;
         var rows = {};
-        /*if (p.defaultStatus) {
-            rows[p.defaultStatus] = ["everything else"];
-            showCols[p.defaultStatus] = true;
-            if(!t[pFullName]) {
-                t[pFullName] = [rows];
-            } else {
-                t[pFullName].push(rows);
-            }
-        }*/
     }
-    //console.log(nameAndPlatforms);
-    //console.log(t);
     return({groups:nameAndPlatforms, vals:t, show: showCols});
 }
+
 
 function getProductAffected(cve) {
     var lines = [];
