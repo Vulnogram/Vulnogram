@@ -1209,6 +1209,7 @@ async function cveReserveAndRender(yearOffset, number) {
         } else {
             m.innerText = "Failed to get a CVE ID";
         }
+        cvePortalFilter.reset();
         await cveGetList();
         return r;
     } else {

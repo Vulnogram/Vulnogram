@@ -58,10 +58,11 @@ mixin portal
                             summary.btn.t9 ▼
                             dl.pop.wht.bor.rnd.shd.rows
                               .gap
+                                dt.flx
+                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0, 5)' style="min-width:6em") Reserve  5
+                                    button.right.sbn.vgi-fail(onclick="this.closest('details').removeAttribute('open')")     
                                 dt
-                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0, 5)') Reserve 5
-                                dt
-                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0, 10)') Reserve 10
+                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0, 10)'  style="min-width:6em") Reserve 10
                                 dt 
                                     button.btn.vgi-magic(onclick='cveReserveAndRender(1)') Reserve one for the year 
                                         = y + 1
@@ -72,7 +73,7 @@ mixin portal
                 label#userMgmt
                     +usermgmt
     .pad#cveStatusMessage
-    form#cvePortalFilter.gap
+    form#cvePortalFilter.gap(onchange='cveGetList();')
         .lbl Show
         .rdg
             .form-control
