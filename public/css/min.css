@@ -23,6 +23,11 @@ body {
 a {
     cursor: pointer;
 }
+
+dialog::backdrop {
+    backdrop-filter: blur(1px);
+}
+
 .wlp {
     background-image: url('back.png');
 }
@@ -603,7 +608,7 @@ input.tab[type="radio"]:checked + .lbl + div {
 
 input.tab[type="radio"]:checked + .lbl {
     background-color: var(--wht);
-    border-bottom: 1px solid var(--wht);
+    border-bottom: 1px solid transparent;
     margin-bottom: -1px;
     border-bottom-left-radius: 1px;
     border-bottom-right-radius: 1px;
