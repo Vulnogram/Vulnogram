@@ -71,14 +71,18 @@ checkSession = async (e) => {
 	try {
 	    let cache = await caches.open(cacheName);
 	    let cachecreds = await cache.match(cacheURL);
-	    let result = await cachecreds.json();
-	    let ekey = await check_create_key(result.user);
-	    let encBuffer = URItoarrayBuffer(result.keyURL);
-	    let rawKey = await decryptMessage(encBuffer,ekey.privateKey);
-	    result.key = rawKey;
-	    delete result.keyURL;
-	    storage.creds = JSON.parse(JSON.stringify(result));
-	    return true;
+        if(cachecreds) {
+            let result = await cachecreds.json();
+            let ekey = await check_create_key(result.user);
+            let encBuffer = URItoarrayBuffer(result.keyURL);
+            let rawKey = await decryptMessage(encBuffer,ekey.privateKey);
+            result.key = rawKey;
+            delete result.keyURL;
+            storage.creds = JSON.parse(JSON.stringify(result));
+            return true;
+        } else {
+            return deadSession(e, 'Not session');
+        }
 	} catch(err) {
 	    return deadSession(e,String(err));
 	}
