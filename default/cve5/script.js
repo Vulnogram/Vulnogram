@@ -742,6 +742,7 @@ async function cveAddUser(f) {
                 }
 	    });
 	    if(ret.created && ret.created.secret) {
+                document.getElementById('userAddDialog').close();
                 document.getElementById("secretDialogForm").pass.value = ret.created.secret;
                 document.getElementById("secretDialogForm").pass.type = "password";
                 document.getElementById("secretDialog").showModal();
