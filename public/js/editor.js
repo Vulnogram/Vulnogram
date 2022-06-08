@@ -1053,6 +1053,16 @@ function Tabs(tabGroupId, tabOpts, primary) {
             return tg.tabOpts[tg.tabId[index]].setValue(val);
         }
     }
+    tg.focus = function(index) {
+        if (!insync) {
+            if(tg.tabs[index]) {
+                tg.tabs[index].checked = true;
+                tg.tabs[index].dispatchEvent(new Event('change'));
+            } else {
+                console.log('no tab');
+            }
+        }
+    }
     tg.change = function(index) {
         if (!insync) {
             tg.changeIndex[index]++;
