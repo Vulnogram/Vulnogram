@@ -142,7 +142,7 @@ mixin creditList(credits)
 mixin tagList(tags)
     if tags
         for t in tags
-            b.tag.rnd.CRITICAL=t
+            b.tag.rnd.CVSS.MEDIUM=t
             |   
 
 mixin timeList(c)
