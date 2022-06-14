@@ -77,10 +77,10 @@ mixin userEditDialog
 
 mixin userEdit(label)
     input.txt(type="hidden" name="u")
-    input.txt(name="new_username" "pattern"=".{2,64}" required=true placeholder="username/email" size="43" title="username")
+    input.txt(name="new_username" "pattern"="[a-zA-Z-_@.]{3,50}" required=true placeholder="username/email" size="43" title="username - only alpha-numeric and . _ - @ are allowed (min 3 characters)")
     br
-    input.txt(name="first" "pattern"=".{2,64}" required=true placeholder="First name" title="First Name")
-    input.txt(name="last" "pattern"=".{2,64}" required=true placeholder="Last name" title="Last Name")
+    input.txt(name="first" "pattern"=".{1,64}" required=true placeholder="First name" title="First Name")
+    input.txt(name="last" "pattern"=".{1,64}" required=true placeholder="Last name" title="Last Name")
     div
         br
         input#cveUserAdmin(type="checkbox" name="admin")

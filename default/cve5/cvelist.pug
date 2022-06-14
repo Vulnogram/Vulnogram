@@ -8,19 +8,19 @@ mixin cveLoginBox
         #loginErr
         form#cveLoginForm(method='POST', onsubmit='cveLogin(event, this); return false;')
             .pad
-                label.lbl(style="width:10em;") Portal
+                label.lbl.right(style="width:10em;") Portal
                 select.bor.txt(name='portal' style="width:11em;")
                     option(value="https://cveawg.mitre.org/api" selected=(prevPortal == 'production')) production
                     option(value="https://cveawg-test.mitre.org/api" selected=(prevPortal == 'test')) test
                     option(value="http://127.0.0.1:3000/api" selected=(prevPortal == 'local')) local
             .pad
-                label.lbl(style="width:10em;") CNA Short Name
+                label.lbl.right(style="width:10em;") CNA Short Name
                 input.bor.txt(name='org', type='text', autocomplete='on', "pattern"=".{2,64}" required=true value=prevOrg?prevOrg:'')
             .pad
-                label.lbl(style="width:10em;") CVE User
+                label.lbl.right(style="width:10em;") CVE User
                 input.bor.txt(name='user', type='text', autocomplete="on", "pattern"=".+" required=true)
             .pad
-                label.lbl(style="width:10em;") CNA API Key
+                label.lbl.right(style="width:10em;") CNA API Key
                 input.bor.txt(name='key', type='password', autocomplete='off' required=true)
             .pad.center
                 input.bor.fbn.sfe(type='submit', value='Login')
@@ -243,7 +243,7 @@ mixin listIds
                             if editable && c.state == 'RESERVED'
                                 a.vgi-cancel(data=c.cve_id, onclick="cveReject(this, event)", title="Reject this CVE ID",)
     else
-        i No CVE IDs found!
+        i.gap2 No CVE IDs found! 
 
 mixin autoText
   if con

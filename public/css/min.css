@@ -170,6 +170,10 @@ hr.bort {
     border-left: solid var(--bor) 1px;
     border-top: solid var(--bor) 1px;
 }
+
+.tbl a {
+    text-decoration: none;
+}
 .stp tr:hover {
     background-color: var(--hig);
 }
@@ -603,7 +607,6 @@ input.tab[type="radio"]:checked + .lbl + div {
     min-height: 20em;
     min-width: 30em;
     margin-top:-1px;
-    z-index: -1;
 }
 
 input.tab[type="radio"]:checked + .lbl {
@@ -612,6 +615,7 @@ input.tab[type="radio"]:checked + .lbl {
     margin-bottom: -1px;
     border-bottom-left-radius: 1px;
     border-bottom-right-radius: 1px;
+    z-index: 3;
 }
 
 input.tab[type="radio"] + .lbl:hover,

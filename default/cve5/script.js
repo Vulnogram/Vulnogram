@@ -583,7 +583,7 @@ async function cveUserKeyReset(elem, confirm) {
         elem.removeAttribute('id');
         document.getElementById('alertDialog').close();
     } else {
-        showAlert("Are you sure?", "User " + u + " cannot use the old API key!", undefined, true);
+        showAlert("Are you sure?", "A new API key will be generated for user " + u + "! The old API key will no longer work!", undefined, true);
         let randid = Math.random().toString(32).substring(2);
         elem.setAttribute('id', randid);
         temp1.setAttribute('u', u);
@@ -1192,7 +1192,7 @@ async function cveReserveAndRender(yearOffset, number) {
     if (cveClient) {
         var r = await cveReserve(yearOffset, number);
         var m = document.getElementById("cveStatusMessage");
-        if(m && r.length > 0) {
+        if(m && r && r.length > 0) {
             m.innerText = "Got " + r.map(x=>x.cve_id).join(', ');
         } else {
             m.innerText = "Failed to get a CVE ID";
