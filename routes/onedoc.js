@@ -79,7 +79,7 @@ module.exports = function (Document, opts) {
                 for (a in req.querymen.query) {
                     _.set(doc, a, req.querymen.query[a]);
                 };
-                console.log(JSON.stringify(req.querymen.query));
+                //console.log(JSON.stringify(req.querymen.query));
                 res.render(opts.edit, {
                     title: 'New',
                     doc: doc,

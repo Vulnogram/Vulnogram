@@ -17,8 +17,9 @@ block prepend bannerItemsLeft
     
 block append bannerItemsLeft
     if !confOpts[schemaName].conf.readonly
-        input#importJSON.hid(type="file",accept="application/json",onchange="loadFile(event,this);")
-        a.fbn.vgi-folder(type="file",onclick='importFile(event, this);') Open
+        block openButton
+            input#importJSON.hid(type="file",accept="application/json",onchange="loadFile(event,this);")
+            a.fbn.vgi-folder(type="file",onclick='importFile(event, this);') Open
         if !min
             button.fbn.sfe.vgi-put(id="save1") SAVE    
         a.fbn.vgi-download(type="button",oncontextmenu='downloadFile(event, this);',onclick='downloadFile(event, this);',value="Download") Download
@@ -63,12 +64,12 @@ block content
                     summary.sml.hid#errCount
                     div.wht.pop.pad.bor.shd#errList
         .wht.fil.bor.pad
-            div.hid
-                button.lbl.sml.indent.btn.vgi-magic.sfe(id="auto",style="visibility:hidden") Auto-Text
             iframe(name="x",style="display:none",src="about:blank")
+            div(style="padding-bottom: 4px")    
+                i#limitText [Showing only required fields]
+                button.gap.btn.btn.json-editor-btn-add.json-editor-btntype-add(id="showMoreButton",onclick="showMore(this)") &#43; Show All Fields	    
             form.editor(target="x",action="",id="docEditor")
             if !min
-                
                 a#remove.gap.flr.fbn.vgi-del.tred Delete this entry from database
         input.tab(name='tabs', type='radio', id='sourceTab', value="2")
         label.lbl(for='sourceTab') Source

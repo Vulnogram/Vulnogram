@@ -61,8 +61,10 @@ clientReply = (e, msg) => {
 };
 
 deadSession = (e, debugString) => {
-    clientReply(e, { error: "No Login Session found",
-		     debug: debugString });
+    clientReply(e, { error: "Not logged in",
+            message: "Please login."
+		     //debug: debugString
+             });
     return false;
 }
 
@@ -71,14 +73,18 @@ checkSession = async (e) => {
 	try {
 	    let cache = await caches.open(cacheName);
 	    let cachecreds = await cache.match(cacheURL);
-	    let result = await cachecreds.json();
-	    let ekey = await check_create_key(result.user);
-	    let encBuffer = URItoarrayBuffer(result.keyURL);
-	    let rawKey = await decryptMessage(encBuffer,ekey.privateKey);
-	    result.key = rawKey;
-	    delete result.keyURL;
-	    storage.creds = JSON.parse(JSON.stringify(result));
-	    return true;
+        if(cachecreds) {
+            let result = await cachecreds.json();
+            let ekey = await check_create_key(result.user);
+            let encBuffer = URItoarrayBuffer(result.keyURL);
+            let rawKey = await decryptMessage(encBuffer,ekey.privateKey);
+            result.key = rawKey;
+            delete result.keyURL;
+            storage.creds = JSON.parse(JSON.stringify(result));
+            return true;
+        } else {
+            return deadSession(e, 'Not session');
+        }
 	} catch(err) {
 	    return deadSession(e,String(err));
 	}
@@ -113,9 +119,11 @@ doFetch = (event, url, opts) => {
     return fetch(url, opts)
         .then(res => {
             if (res.ok) {
-                res.json().then(data => clientReply(event, { data }));
+                res.json().then(data => clientReply(event, data));
             } else {
-                clientReply(event, { error: res.status });
+                res.json().then(msg => {
+                    clientReply(event, msg);
+                });
             }
         })
         .catch(err => {
@@ -145,11 +153,11 @@ self.onmessage = e => {
         case 'init':
             if ('serviceUri' in e.data) {
                 storage.serviceUri = e.data.serviceUri;
-                clientReply(e, {data: 'ok'});
+                clientReply(e, 'ok');
             }
             break;
         case 'echo':
-            clientReply(e, {data: 'echo'});
+            clientReply(e, 'echo');
             break;
         case 'login':
             setCredentials(e);
@@ -165,14 +173,14 @@ self.onmessage = e => {
         case 'getOrg':
             checkSession(e).then(function(success) {
 		if(success)
-                    clientReply(e, {data: storage.creds.org });
+                    clientReply(e, storage.creds.org);
 		else
 		    clientReply(e,{error: "No session"})		
 	    });	    
             break;
         case 'destroy':
 	    destroySession();
-            clientReply(e,{data: "Cleaning up session"});
+            clientReply(e, "Cleaning up session");
 	    break;
         default:
             clientReply(e, {error: 'Not supported'});

@@ -1,0 +1,15 @@
+/* Hide all optional fields for Minimal (1st occurance) that are 7th row and higher */
+#docEditor .je-object__container:nth-of-type(1) .je-indented-panel div.row:nth-child(n+7) { 
+    display: none;
+}
+/* hide ADP container also for Minimal view */
+#docEditor .je-object__container:nth-of-type(1) > .je-indented-panel  div[data-schemapath="root.containers.adp"] {
+    display:none;
+}
+/* Hide complicated version numbering also for Minimal */
+#docEditor .je-object__container:nth-of-type(1) div[data-schemapath="root.containers.cna.affected"] .je-indented-panel > .tbl th:nth-child(n+5),
+#docEditor .je-object__container:nth-of-type(1) div[data-schemapath="root.containers.cna.affected"] .je-indented-panel > .tbl td:nth-child(n+5)
+{
+    display:none;
+}
+

@@ -55,8 +55,7 @@
         };
 
         reserveCveIds(args) {
-            return this._middleware.post('cve-id', args)
-                       .then(data => data.cve_ids);
+            return this._middleware.post('cve-id', args);
         }
 
         reserveCveId(year = new Date().getFullYear()) {
@@ -118,11 +117,23 @@
         }
 
         createCve(id, schema) {
-            return this._middleware.post(`cve/${id}/cna`, undefined, schema);
+            return this._middleware.post('cve/'.concat(id,'/cna'), undefined, schema);
         }
 
         updateCve(id, schema) {
-            return this._middleware.put(`cve/${id}/cna`, undefined, schema);
+            return this._middleware.put('cve/'.concat(id,'/cna'), undefined, schema);
+        }
+
+        createRejectedCve(id, schema) {
+            return this._middleware.post('cve/'.concat(id,'/reject'), undefined, schema);
+        }
+
+        updateRejectedCve(id, schema) {
+            return this._middleware.put('cve/'.concat(id,'/reject'), undefined, schema);
+        }
+
+        getOrg() {
+            return this._middleware.orgName.then(orgName => orgName);
         }
 
         getOrgInfo() {
@@ -240,10 +251,10 @@
         send(msg) {
             return this.worker.then(worker => {
                 return this.simpleMessage(worker, msg).then(res => {
-                    if ('error' in res) {
-                        return Promise.reject(res.error);
+                    if(typeof res === 'object' && 'error' in res) {
+                        return Promise.reject(res);
                     } else {
-                        return res.data;
+                        return res;
                     }
                 });
             });
@@ -302,13 +313,13 @@
             let msg = {
                 type: 'getOrg',
             };
-
-            return this.send(msg);
+            var o = this.send(msg);
+            return o;
         }
 
         destroy() {
             if (this.registration) {
-		this.send({type: 'destroy'});
+                this.send({type: 'destroy'});
                 this.registration.unregister();
                 this.registration = undefined;
 

@@ -32,6 +32,11 @@ var sourceEditor;
 
 JSONEditor.defaults.languages.en.error_oneOf = "Please fill in the required fields *";
 
+JSONEditor.AbstractEditor.prototype.showStar = function () {
+    return this.isRequired() && !(this.schema.readOnly || this.schema.readonly || this.schema.template)
+}
+
+
 JSONEditor.defaults.resolvers.unshift(function (schema) {
     if (schema.type === "string" && schema.format === "radio") {
         return "radio";
@@ -58,7 +63,7 @@ JSONEditor.defaults.editors.array = class mystring extends JSONEditor.defaults.e
             if(this.options.class) {
                 this.header.className = 'lbl ' + this.options.class;
             }
-            if(this.isRequired()){
+            if(this.showStar()){
                 this.header.className = this.header.className + ' req'; 
             }
         }
@@ -66,10 +71,16 @@ JSONEditor.defaults.editors.array = class mystring extends JSONEditor.defaults.e
     /* move the delete button next to object title */
     _createDeleteButton (i, holder) {
         var r = super._createDeleteButton(i, holder);
-        holder.parentNode.firstElementChild.appendChild(r);
+        r.setAttribute('class', 'sbn vgi-cancel');
+        r.innerHTML = '';
+        r.parentNode.setAttribute("vg","obj-del");
+        if(!this.options.disable_array_add) {
+            r.parentNode.parentNode.setAttribute("vg","array-obj");
+        }
         return r;
     }
 }
+
 JSONEditor.defaults.editors.table = class mystring extends JSONEditor.defaults.editors.table {
     build() {
         super.build();
@@ -77,7 +88,7 @@ JSONEditor.defaults.editors.table = class mystring extends JSONEditor.defaults.e
             if(this.options.class) {
                 this.header.className = 'lbl ' + this.options.class;
             }
-            if(this.isRequired()){
+            if(this.showStar()){
                 this.header.className = this.header.className + ' req'; 
             } 
         }
@@ -91,7 +102,7 @@ JSONEditor.defaults.editors.object = class mystring extends JSONEditor.defaults.
             if(this.options.class) {
                 this.title.className = this.title.className + ' ' + this.options.class;
             }
-            if(this.isRequired()){
+            if(this.showStar()){
                 this.title.className = this.title.className + ' req'; 
             }    
         }
@@ -119,6 +130,34 @@ JSONEditor.defaults.editors.object = class mystring extends JSONEditor.defaults.
     }
 }
 
+JSONEditor.defaults.editors.number = class mystring extends JSONEditor.defaults.editors.number {
+    build() {
+        super.build();
+        if(this.label && this.options.class) {
+            this.label.className = this.label.className + ' ' + this.options.class;
+            if(this.showStar()){
+                this.label.className = this.label.className + ' req'; 
+            }
+        }
+        if(this.options.formClass) {
+            this.control.className = this.control.className + ' ' + this.options.formClass;
+        }
+        //Use html5 datalist to show examples 
+        if(this.schema.examples && this.schema.examples.length > 0){
+            var dlist = document.createElement('datalist');
+            dlist.setAttribute('id', this.path + '-datalist');
+            var eg = this.schema.examples;
+            for(var i = 0; i< eg.length; i++) {
+                var v = document.createElement('option');
+                v.setAttribute('value', eg[i]);
+                dlist.appendChild(v);
+            }
+            this.input.setAttribute('list', this.path + '-datalist');
+            this.input.type='search';
+            this.container.appendChild(dlist);
+        }
+    }
+}
 JSONEditor.defaults.editors.string = class mystring extends JSONEditor.defaults.editors.string {
     addLink (link) {
         if(this.header) this.header.appendChild(link);
@@ -142,7 +181,7 @@ JSONEditor.defaults.editors.string = class mystring extends JSONEditor.defaults.
         super.build();
         if(this.label && this.options.class) {
             this.label.className = this.label.className + ' ' + this.options.class;
-            if(this.isRequired()){
+            if(this.showStar()){
                 this.label.className = this.label.className + ' req'; 
             }
         }
@@ -165,6 +204,9 @@ JSONEditor.defaults.editors.string = class mystring extends JSONEditor.defaults.
         }
     }
 };
+
+//use for unique Idenifiers for an element's id attributes
+var uid = 1;
 
 JSONEditor.defaults.editors.radio = class radio extends JSONEditor.AbstractEditor {
     setValue(value, initial) {
@@ -259,7 +301,7 @@ JSONEditor.defaults.editors.radio = class radio extends JSONEditor.AbstractEdito
         }
         if(this.label && this.options.class) {
             this.label.className = this.label.className + ' ' + this.options.class;
-            if(this.isRequired()){
+            if(this.showStar()){
                 this.label.className = this.label.className + ' req'; 
             }
         }
@@ -285,11 +327,12 @@ JSONEditor.defaults.editors.radio = class radio extends JSONEditor.AbstractEdito
             this.inputs[options[i]] = this.theme.getRadio();
             this.inputs[options[i]].setAttribute('value', options[i]);
             this.inputs[options[i]].setAttribute('name', this.formname);
-            this.inputs[options[i]].setAttribute('id', this.formname + options[i]);
+            var xid = uid++;
+            this.inputs[options[i]].setAttribute('id', xid);
             var label = this.theme.getRadioLabel((this.schema.options && this.schema.options.enum_titles && this.schema.options.enum_titles[i]) ?
                 this.schema.options.enum_titles[i] :
                 options[i]);
-            label.setAttribute('for', this.formname + options[i]);
+            label.setAttribute('for', xid);
             var rdicon = null;
             if(this.options.icons && this.options.icons[options[i]]) {
                 rdicon = this.options.icons[options[i]];
@@ -445,11 +488,18 @@ JSONEditor.defaults.editors.simplehtml = class simplehtml extends JSONEditor.def
     setValue (value,initial,from_template) {
         super.setValue(value,initial,from_template);
         if (this.wysLoaded) {
-            this.wys.setValue(this.input.value);
-            
-            var sa = this.wys.getValue();
-            if(sa != this.input.value) {
-                this.input.value = sa;
+            // get current value from HTML editor
+            var priorVal = this.wys.getValue();
+
+            // set the new value (and let HTML editor perform DOM sanitization)
+            this.wys.setValue(value);
+
+            // get the new value from the HTML editor
+            var currentVal = this.wys.getValue();
+
+            // if they are different trigger a change event.
+            if(priorVal != currentVal) {
+                this.input.value = currentVal;
                 this.onChange(true);
             }
         } else {
@@ -461,7 +511,7 @@ JSONEditor.defaults.editors.simplehtml = class simplehtml extends JSONEditor.def
         super.build();
         if(this.label && this.options.class) {
             this.label.className = this.label.className + ' ' + this.options.class;
-            if(this.isRequired()){
+            if(this.showStar()){
                 this.label.className = this.label.className + ' req'; 
             }
         }
@@ -835,8 +885,10 @@ JSONEditor.defaults.themes.customTheme = class customTheme extends JSONEditor.Ab
     getSwitcher (options) {
         const switcher = this.getSelectInput(options, false);
         switcher.classList.add('je-switcher');
-        switcher.classList.add('rdg');
-        switcher.setAttribute('size',12);
+        if(! /^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
+            switcher.classList.add('rdg');
+            switcher.setAttribute('size',2);
+        }
         return switcher
     }
 };
@@ -999,6 +1051,16 @@ function Tabs(tabGroupId, tabOpts, primary) {
         if(tg.tabOpts[tg.tabId[index]] && tg.tabOpts[tg.tabId[index]].setValue) {
             //console.log('tab INDEX',tg.tabId);
             return tg.tabOpts[tg.tabId[index]].setValue(val);
+        }
+    }
+    tg.focus = function(index) {
+        if (!insync) {
+            if(tg.tabs[index]) {
+                tg.tabs[index].checked = true;
+                tg.tabs[index].dispatchEvent(new Event('change'));
+            } else {
+                console.log('no tab');
+            }
         }
     }
     tg.change = function(index) {
@@ -1185,6 +1247,9 @@ function loadJSON(res, id, message) {
         }
         if (message) {
             selected = "editorTab";
+	    /* If message exists, this is either an import from CVE
+	       or import of a file. Assume the loaded JSON has extra fields */
+	    showMore(null,"block");
         }
         docEditor.watch('root', function(){
             mainTabGroup.change(0);
@@ -1213,6 +1278,11 @@ function loadJSON(res, id, message) {
         setTimeout(function (){
             document.getElementById(selected).dispatchEvent(event);
         }, 50);
+	/* 6 seconds aferwards clear all messages in errMsg and infoMsg divs*/
+	setTimeout(function(){
+	    infoMsg.textContent = "";
+	    errMsg.textContent = "";
+	},6000);
     });
 }
 
@@ -1357,3 +1427,39 @@ function downloadHtml(title, element, link) {
     link.href = URL.createObjectURL(file);
     link.download = file.name;
 }
+function showMore(btn,bdisplay) {
+    /* Elements hidden for minimal view by css in ./default/cve5/styles.css end */
+    if(!btn)
+	btn = document.querySelector('#showMoreButton');
+    /* '#docEditor .je-object__container:nth-of-type(1) .je-indented-panel div.row:nth-of-type(3)', */
+    var sel = [	'#docEditor .je-object__container:nth-of-type(1) div[data-schemapath="root.containers.cna.impacts"]',
+		'#docEditor .je-object__container:nth-of-type(1) div[data-schemapath="root.containers.cna.problemTypes"]',
+		'#docEditor .je-object__container:nth-of-type(1) .je-indented-panel div.row:nth-child(n+7)',
+	       '#docEditor .je-object__container:nth-of-type(1) > .je-indented-panel  div[data-schemapath="root.containers.adp"]',
+	       '#docEditor .je-object__container:nth-of-type(1) div[data-schemapath="root.containers.cna.affected"] .je-indented-panel > .tbl th:nth-child(n+5)',
+	       '#docEditor .je-object__container:nth-of-type(1) div[data-schemapath="root.containers.cna.affected"] .je-indented-panel > .tbl td:nth-child(n+5)'];
+    var el;
+    for(var i = 0; i < sel.length; i++) {
+	var els = Array.from(document.querySelectorAll(sel[i]));
+	for(var j = 0; j < els.length; j++) {
+	    el = els[j];
+	    if(el) {
+		if(bdisplay)
+		    el.style.display = bdisplay;
+		else if(el.offsetParent) 
+		    el.style.display = "none";
+		else 
+		    el.style.display = "block";
+	    }
+	}
+    }
+    /* limitText [Showing only required fields] */
+    if((el && el.offsetParent) || (bdisplay == "block")) {
+	btn.innerHTML = "&#8722 Show Only Required Fields";
+	document.getElementById("limitText").innerHTML = '[Showing all fields]'
+    } else {
+	btn.innerHTML = "&#43; Show All Fields";
+	document.getElementById("limitText").innerHTML = '[Showing only required fields]'
+    }
+}
+    

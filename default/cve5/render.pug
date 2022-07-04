@@ -142,7 +142,7 @@ mixin creditList(credits)
 mixin tagList(tags)
     if tags
         for t in tags
-            b.tag.rnd.CRITICAL=t
+            b.tag.rnd.CVSS.MEDIUM=t
             |   
 
 mixin timeList(c)
@@ -192,7 +192,7 @@ mixin container(con)
             if con.source && con.source.advisory
                 = con.source.advisory
                 |  
-            = cveShowId + ' ' + con.title 
+            = cveShowId + ' ' + (con.title ?  con.title : '')
         p
             if con.shortName
                 span Published by 
@@ -207,7 +207,7 @@ mixin container(con)
             +cvssList(con.cvssList)
     .desc.pad
         if con.state == 'REJECTED'
-            b.tag.CRITICAL REJECTED
+            b.tag.red REJECTED
             |  ·  
         +tagList(con.tags)
         | 

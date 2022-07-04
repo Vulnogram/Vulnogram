@@ -204,12 +204,6 @@ module.exports = {
             path: 'body.containers.cna.affected.product',
             chart: true
         },
-        todo: {
-               path: {
-                   $size: "$body.CNA_private.todo"
-               },
-               class: 'bdg'
-        },
         ym: {
             path: 'body.CNA_private.publish.ym',
             chart: true,
@@ -269,7 +263,7 @@ module.exports = {
                         errors.push({
                             path: path,
                             property: 'format',
-                            message: 'Enter a vendor and product OR a package and a collection'
+                            message: 'Enter affected products info'
                         });
                     }
                 }
@@ -295,29 +289,50 @@ module.exports = {
             }
             if(schema.id == "vE") {
                 if(value.lessThan != undefined && value.lessThanOrEqual != undefined) {
-                    errors.push({
+                    /*errors.push({
                         path: path+'.lessThan',
                         property: 'format',
                         message: 'Enter either lessThan or lessThanOrEqual, but not both'
-                    });
+                    });*/
                     errors.push({
                         path: path+'.lessThanOrEqual',
                         property: 'format',
-                        message: 'Enter either lessThan or lessThanOrEqual, but not both'
+                        message: 'Enter either < v or <= v, but not both'
                     });
                 }
                 if(value.version != undefined && (value.version == value.lessThan)) {
                     errors.push({
                         path: path+'.lessThan',
                         property: 'format',
-                        message: 'End of the version range is same as the start (lessThan)'
+                        message: 'End is same as the start'
                     });
                 }
                 if(value.version != undefined && (value.version == value.lessThanOrEqual)) {
                     errors.push({
                         path: path+'.lessThanOrEqual',
                         property: 'format',
-                        message: 'End of the version range is same as the start (lessThanOrEqual)'
+                        message: 'End is same as the start'
+                    });
+                }
+                if((value.lessThan != undefined || value.lessThanOrEqual != undefined) && value.versionType == undefined) {
+                    errors.push({
+                        path: path+'.versionType',
+                        property: 'format',
+                        message: 'Version type is required for ranges'
+                    });
+                }
+                if(value.lessThan == undefined && value.lessThanOrEqual == undefined && value.version != undefined && value.versionType != undefined) {
+                    errors.push({
+                        path: path+'.versionType',
+                        property: 'format',
+                        message: 'Version type is used only for ranges. Clear this or define a range'
+                    });
+                }
+                if(value.lessThan == undefined && value.lessThanOrEqual == undefined && value.version != undefined && value.changes != undefined) {
+                    errors.push({
+                        path: path+'.changes',
+                        property: 'format',
+                        message: 'Changes are used only for ranges. Clear this or define a range'
                     });
                 }
             }

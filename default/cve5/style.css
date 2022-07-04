@@ -31,14 +31,10 @@ body{
   content: '<';
 }
 
-.editor div[data-schemapath *='metrics.'] div.je-indented-panel,
-  .editor div[data-schemapath *='affected.'] div.je-indented-panel {
-    padding-left: 10px !important;
-    margin-left: 10px !important;
-    border-left: 1px dashed #669 !important;
-    border-bottom: 1px solid transparent;
-    border-bottom-left-radius: 1em;
-  }
+
+div[data-schemapath="root.containers.adp"] > div > div > [vg="array-obj"] {
+  background-color: #f5f3e8;
+}
 
 
 button.json-editor-btn-delete {
@@ -138,11 +134,54 @@ table.striped td {
 #cvePage, #showpass {
     display: none;
 }
+
+.sicn {
+  padding: 0.1em 0.4em;
+}
+
+.tr:hover, .tr.active {
+  box-shadow: #e5ebec;
+  background-color:var(--hig);
+}
+
+.t9 {
+  color: gray;
+  padding: 8px;
+  font-size: small;
+}
+
 .formError {
   color: #880000;
   font-size: smaller;
 }
+
 .formReadOnly {
     background-color: #eee;
     pointer-events: none;
 }
+
+label[for="cveApiTab"] {
+  background-color: var(--sec) !important;
+}
+/* Hide all optional fields, 3rd row is ProblemTypes and Impacts */
+#docEditor .je-object__container:nth-of-type(1) div[data-schemapath="root.containers.cna.impacts"] {
+    display: none;
+}
+#docEditor .je-object__container:nth-of-type(1) div[data-schemapath="root.containers.cna.problemTypes"] {
+    display: none;
+}
+/* Hide all optional fields starting from Metrics thhat are 7th row and higher */
+#docEditor .je-object__container:nth-of-type(1) .je-indented-panel div.row:nth-child(n+7) { 
+    display: none;
+}
+/* hide ADP container */
+#docEditor .je-object__container:nth-of-type(1) > .je-indented-panel  div[data-schemapath="root.containers.adp"] {
+    display:none;
+}
+/* Hide complicated version numbering also for Minimal */
+#docEditor .je-object__container:nth-of-type(1) div[data-schemapath="root.containers.cna.affected"] .je-indented-panel > .tbl th:nth-child(n+5),
+#docEditor .je-object__container:nth-of-type(1) div[data-schemapath="root.containers.cna.affected"] .je-indented-panel > .tbl td:nth-child(n+5)
+{
+    display:none;
+}
+

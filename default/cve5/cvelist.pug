@@ -1,5 +1,5 @@
 mixin cveLoginBox
-    center.sec.shd.rnd.gap2.pad
+    center.sec.shd.rnd.pad
         include CVE.svg
         br
         i CVE Services Portal 
@@ -8,39 +8,61 @@ mixin cveLoginBox
         #loginErr
         form#cveLoginForm(method='POST', onsubmit='cveLogin(event, this); return false;')
             .pad
-                label.lbl(style="width:10em;") Portal
+                label.lbl.right(style="width:10em;") Portal
                 select.bor.txt(name='portal' style="width:11em;")
-                    option(value="https://cveawg.mitre.org/api" selected) production
-                    option(value="https://cveawg-test.mitre.org/api") test
-                    option(value="http://127.0.0.1:3000/api") local
+                    option(value="https://cveawg.mitre.org/api" selected=(prevPortal == 'production')) production
+                    option(value="https://cveawg-test.mitre.org/api" selected=(prevPortal == 'test')) test
+                    option(value="http://127.0.0.1:3000/api" selected=(prevPortal == 'local')) local
             .pad
-                label.lbl(style="width:10em;") CNA Short Name
-                input.bor.txt(name='org', type='text', autocomplete='on', "pattern"=".{2,64}" required=true)
+                label.lbl.right(style="width:10em;") CNA Short Name
+                input.bor.txt(name='org', type='text', autocomplete='on', "pattern"=".{2,64}" required=true value=prevOrg?prevOrg:'')
             .pad
-                label.lbl(style="width:10em;") CVE User
-                input.bor.txt(name='user', type='text', autocomplete="on", "pattern"=".+@.+" required=true)
+                label.lbl.right(style="width:10em;") CVE User
+                input.bor.txt(name='user', type='text', autocomplete="on", "pattern"=".+" required=true)
             .pad
-                label.lbl(style="width:10em;") CNA API Key
+                label.lbl.right(style="width:10em;") CNA API Key
                 input.bor.txt(name='key', type='password', autocomplete='off' required=true)
             .pad.center
                 input.bor.fbn.sfe(type='submit', value='Login')
 
+mixin dlgHeader(icon, msg)
+    header.ban.sec.pad(style="min-width:20em;")
+        b.lbl(class=icon)=msg
+        | 
+        a.sbn.right.vgi-fail(onclick="this.closest('dialog').close()")
 
+mixin cveErrors
+    +dlgHeader('vgi-alert', typeof err == 'string' ? 'Error' : err.error)
+    center.pad2
+        if typeof err == 'string'
+            b.gap=err
+        else
+            h3=err.message
+            if err.details
+                ol.gap
+                    each d, i in err.details
+                        li= d.location
+                            | /   
+                            =d.param
+                            | :  
+                            =d.msg
 mixin portal
     - var y = new Date().getFullYear()
-    header.pad.ban.sec.rnd
+    header.pad.ban.sec
         .left
             label.vgi-globe.lbl Portal: 
                 =portalType
-            span.btg
+            span.btg.rnd
                         button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve One CVE
                         details.popup
-                            summary.btn ▼ 
-                            dl.pop.wht.bor.rnd.shd.pad.rows
+                            summary.btn.t9 ▼
+                            dl.pop.wht.bor.rnd.shd.rows
+                              .gap
+                                dt.flx
+                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0, 5)' style="min-width:6em") Reserve  5
+                                    button.right.sbn.vgi-fail(onclick="this.closest('details').removeAttribute('open')")     
                                 dt
-                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0, 5)') Reserve 5
-                                dt
-                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0, 10)') Reserve 10
+                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0, 10)'  style="min-width:6em") Reserve 10
                                 dt 
                                     button.btn.vgi-magic(onclick='cveReserveAndRender(1)') Reserve one for the year 
                                         = y + 1
@@ -51,9 +73,7 @@ mixin portal
                 label#userMgmt
                     +usermgmt
     .pad#cveStatusMessage
-    +showSecret
-    +alertDialog
-    form#cvePortalFilter.gap
+    form#cvePortalFilter.gap(onchange='cveGetList();')
         .lbl Show
         .rdg
             .form-control
@@ -85,16 +105,17 @@ mixin portal
             .form-control
                 button.lbl#nextPage(onclick='paginate(1)') &#8250;
 		
-    div#cveList
+    div#cveList.gap
 
 mixin userstats
-    details#userStatsPopup.popup(ontoggle="if(this.open) document.getElementById('userListPopup').open = false;")
-        summary.fbn.vgi-user= userInfo && userInfo.name ? userInfo.name.first : userInfo.username ? userInfo.username : 'undef'
+    details.popup#userStatsPopup.popup(ontoggle="if(this.open && (u = document.getElementById('userListPopup'))) u.open = false;")
+        summary.fbn.vgi-user=((userInfo && userInfo.name && userInfo.name.first) ? userInfo.name.first : userInfo.username)
             |  ▼ 
         dl.pop.wht.bor.rnd.shd.pad
-            b.vgi-user= userInfo ? userInfo.username : 'undefined!'
-            dt Roles:  
-                b.vgi-cap=userInfo && userInfo.authority ? userInfo.authority.active_roles : 'undefined!'
+            +userDetail(userInfo)
+            hr.bort
+            span.vgi-edit.fbn(onclick="cveUserEdit(this)" u=userInfo.username, f=userInfo.name?userInfo.name.first:'', l=userInfo.name?userInfo.name.last:'', ac=userInfo.active ad=userInfo.authority.active_roles.includes('ADMIN') title="Edit Info")
+                | Update my details
             hr.bort
             dt Org:  
                 b=org ? org.name : 'undefined'
@@ -105,85 +126,37 @@ mixin userstats
             hr.bort
             span.vgi-exit.fbn(onclick="cveLogout()") Logout!
 
+mixin userDetail(u)
+    a.td(onclick="cveUserEdit(this)",u=u.username, f=u.name?u.name.first:'', l=u.name?u.name.last:'' ac=u.active ad=u.authority.active_roles.includes('ADMIN') title="Edit Info")
+        b=u.name?u.name.first:''
+            | 
+            =u.name?u.name.last:''
+        i.sicn(class=u.authority.active_roles.includes('ADMIN')? 'vgi-king' : 'vgi-cap' title=u.authority.active_roles.includes('ADMIN')?'Admin':'Regular User')
+        i.sicn(class=u.active?'vgi-ok':'vgi-no' title=u.active? 'active': 'inactive')
+        br
+        small=u.username
+
 mixin listUsers
     if users
         each u, i in users
-            form.tr(onsubmit="event.preventDefault();return false;")
-                .td
-                    input.txt.formReadOnly(name="username" placeholder="username/email"  value=u.username needed="1" readonly="readonly")
-                .td
-                    input.txt(name="first" placeholder="First name"  value=u.name.first needed="1")
-                .td
-                    input.txt(name="last" placeholder="Last name" , value=u.name.last needed="1")
-                .td
-                    input.txt(type="checkbox", name="admin", checked = u.authority && u.authority.active_roles && u.authority.active_roles.findIndex(x => x == "ADMIN") > -1 )
-                    lable.lbl(for="admin") Admin
-                .td
-                    input.txt(type="checkbox", name="active", checked = u.active)
-                    lable.lbl(for="active") Active
-                .td
-                    button.btn.pri.vgi-reuse(onclick="cveUserKeyReset(this)",u=u.username) Reset API Key
-                    button.btn.vgi-edit(onclick="cveUpdateUser(this)",data-userObj=u) Update User		    
-
-mixin showSecret
-    dialog.bor.rnd.shd.pad2#secretDialog
-      center
-        form#secretDialogForm(onsubmit="event.preventDefault();this.reset();document.getElementById('secretDialog').close();return false")
-            h3.vgi-alert#userMessage
-            .gap Please securely store this API key.
-                br
-                |  This key will not be shown again!
-            label.lbl API Secret Key
-            input.txt.bor(type="password" size=39 name="pass" readonly)
-            input#showpass(name="showpass" type="checkbox" onclick="this.form.pass.type = (this.form.pass.type === 'password'? 'text' : 'password')")
-            label.vgi-eye.lbl(for="showpass")
-            center.gap
-                input.btn.sfe(type="reset" onclick="document.getElementById('secretDialog').close()" value="OK")
-
-mixin alertDialog
-    dialog.bor.rnd.shd.pad2#alertDialog
-      center
-        form(onsubmit="event.preventDefault();return false;")
-            h3.vgi-alert#alertMessage
-            .gap#smallAlert  
-            center.gap
-                input#alertOk.btn.sfe(type="reset" onclick="document.getElementById('alertDialog').close();" value="OK")
-                input#alertCancel.btn.red(type="reset" onclick="document.getElementById('alertDialog').close();" value="Cancel" style="display:none")
+            .tr
+                +userDetail(u)
 
 mixin usermgmt
     details#userListPopup.popup(ontoggle="userlistUpdate(this, event)")
-        summary.fbn.vgi-user Manage Users
+        summary.fbn.vgi-cog Users
             |  ▼ 
         div.pop.wht.bor.rnd.shd.usermgmt
+            .gap.row
+                button.sfe.btn.vgi-magic(onclick="document.getElementById('userAddDialog').showModal()") Add a user  
+                button.right.sbn.vgi-fail(onclick="this.closest('details').removeAttribute('open')")     
             .tbl.gap
-                thead.thead
-                    .tr
-                        .th Username
-                        .th Firstname
-                        .th Lastname
-                        .th Roles
-                        .th active
-                        .th
                 .tbody#userlist
                     .tr
                         .td(colspan=6)
                             center
                                 .spinner
-                .tfoot
-                    form.tr(onsubmit="event.preventDefault();cveAddUser(this)")
-                        .td
-                            input.txt(name="new_username" placeholder="username/email" needed="1")
-                        .td
-                            input.txt(name="first" placeholder="First name" needed="1")
-                        .td
-                            input.txt(name="last" placeholder="Last name" needed="1")
-                        .td
-                            input.txt(type="checkbox", name="admin")
-                            lable.lbl(for="admin") Admin
-                        .td
-                        .td
-                            input.sfe.btn.vgi-magic(type="submit" value="Add user")
-
+          
 mixin htext
     if t
         each line in t.split(/\n/)
@@ -270,7 +243,78 @@ mixin listIds
                             if editable && c.state == 'RESERVED'
                                 a.vgi-cancel(data=c.cve_id, onclick="cveReject(this, event)", title="Reject this CVE ID",)
     else
-        i No CVE IDs found!
+        i.gap2 No CVE IDs found! 
+
+mixin autoText
+  if con
+    if con.problemTypes
+        - var pts = [];
+        for t in con.problemTypes
+            if t.descriptions
+                - var prob = t.descriptions.map(x=>x.description).join(', ').replaceAll(/CWE-\d+/g,"").trim().replaceAll(/\s+/g, ' ');
+                if prob
+                    - pts.push(prob);
+        if pts.length > 0
+            = pts.join(', ')
+        else
+            | A
+    |  vulnerability
+    - var codelist = [];
+    if con.affected
+        - var plist = [];
+        for p in con.affected
+            - var pd = [p.vendor, p.vendor != p.product ? p.product : '', p.packageName != p.product ? p.packageName : '', (p.platforms ? 'on ' + p.platforms.join(', ') : ''), p.modules ? '(' + p.modules.join(', ') + ' modules)':''].join(' ').trim().replaceAll(/\s+/g, ' ')
+            if pd
+                - plist.push(pd);
+        - var ptext = plist.join(', ');
+        if ptext
+            |  in 
+            = ptext
+    if con.impacts
+        - var ips = [];
+        for t in con.impacts
+            if t.descriptions
+                - var impact = t.descriptions.map(x=>x.value).join(', ').replaceAll(/CAPEC-\d+/g, "").trim().replaceAll(/\s+/g, ' ')
+                if impact
+                    - ips.push(impact);
+        if ips.length > 0
+            |  allows 
+            = ips.join(', ')
+    |.
+    if con.affected
+        - var fileSet = {};
+        - var funcSet = {};
+        for p in con.affected
+            if p.programFiles
+                for pf in p.programFiles
+                    - fileSet[pf] = 1
+            if p.programRoutines
+                for fn in p.programRoutines
+                    - funcSet[fn.name] = 1
+        - var files = Object.keys(fileSet);
+        - var funcs = Object.keys(funcSet);
+
+        if files.length > 0 || funcs.length > 0
+          p  This vulnerability is associated with
+            if files.length > 0
+                |  program files 
+                - var counter = 0
+                for fn in files
+                    - counter ++
+                    tt=fn
+                    if counter < files.length
+                        | , 
+            if funcs.length > 0
+                if files.length > 0
+                    |  and
+                |  program routines 
+                - var counter = 0
+                for fn in funcs
+                    - counter ++
+                    tt=fn
+                    if counter < funcs.length
+                        | , 
+            |.
 
 block red
     if ctemplate != undefined

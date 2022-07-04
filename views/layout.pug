@@ -59,11 +59,11 @@ html
             var userUsername = ""
             
     .pad.ban.messagebar
-        .left.tred#errMsg
+        .left.tred#errMsg(onclick='this.innerHTML=""')
             if !min
                 !=messages()
             block error
-        .right#infoMsg
+        .right#infoMsg(onclick='this.innerHTML=""')
             block info
     .pad
         block scripts
