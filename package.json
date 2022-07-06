@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "test": "nodemon app",
-    "start": "forever start --id 'vulnogram' --spinSleepTime 5000 --minUptime 2000 app.js ;forever list",
+    "start": "./scripts/start.sh",
     "stop": "forever stop app.js",
     "restart": "forever restart app.js"
   },
