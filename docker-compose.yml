@@ -9,6 +9,14 @@ services:
       - vulnogram-mongo-data:/data/db
     env_file:
       - vulnogram-variables.env
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo localhost:27017/vulnogram --quiet
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    ports:
+      - 27017:27017
 
   vulnogram:
     build: .
@@ -23,7 +31,8 @@ services:
       - vulnogram-variables.env
 
     depends_on:
-      - vulnogram-mongo
+      vulnogram-mongo:
+        condition: service_healthy
 
 volumes:
   vulnogram-mongo-data:
