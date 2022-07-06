@@ -19,8 +19,6 @@ services:
     ports:
       - 3555:3555
 
-    command: npm start --prefix /home/vulnogram
-
     env_file:
       - vulnogram-variables.env
 

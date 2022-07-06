@@ -16,3 +16,5 @@ COPY . /home/vulnogram/
 
 RUN chown vulnogram:vulnogram --recursive .
 USER vulnogram
+
+CMD ["npm", "start", "--prefix", "/home/vulnogram"]
