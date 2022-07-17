@@ -50,6 +50,30 @@ function cloneJSON(obj) {
     return cloneO;
 };
 
+//for inserting images as data URLs in wysihytml5 widget
+function loadimg(e) {
+    var sibs = this.parentNode.parentNode.childNodes;
+    var f = sibs[1];
+    var ok = sibs[4];
+    e.preventDefault();
+    var file = this.files[0];
+    if(file.size > 528385) {
+        alert('Image size should less than 500k');
+        return false;
+    };
+    if(file.type.indexOf("image")==-1){
+        alert("Not an image!");
+        return false;
+    }
+    var reader = new FileReader();
+    reader.onload = function (event) {
+        f.value = event.target.result;
+        ok.click();
+    };
+    reader.readAsDataURL(file);
+    return false;
+};
+
 var textUtil = {
 jsonView: function(obj) {
     if (obj instanceof Array) {
