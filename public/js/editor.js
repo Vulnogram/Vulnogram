@@ -1115,11 +1115,18 @@ if (document.getElementById('save1') && document.getElementById('save2')) {
     document.getElementById('save2').removeAttribute("style");
 }
 
+function scroll2Err(x) {
+    var path = 'root.' + x.firstChild.textContent;
+    var ee = docEditor.getEditor(path);
+    var stkH = document.getElementById("vgHead").offsetHeight;
+    ee.container.style["scroll-margin-top"] = (stkH + 40) + "px";
+    ee.container.scrollIntoView({behavior:"smooth"});
+}
 
 function showJSONerrors(errors) {
     var totalMessage = '';
     for(e of errors) {
-        totalMessage += e.path + ": <i>" + e.message + '.</i></br>';
+        totalMessage += "<a onclick='scroll2Err(this)'><tt>" + e.path + "</tt>: <i>" + e.message + '.</i></a></br>';
     }
     errCount.className = 'indent bdg';
     errPop.className = 'popup';
