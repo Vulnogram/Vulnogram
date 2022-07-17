@@ -547,6 +547,14 @@ var cvssjs = {
         "integrityImpact": "I",
         "availabilityImpact": "A"
     },
+    vectorMap2: {
+        "accessVector": "AV",
+        "accessComplexity": "AC",
+        "authentication": "Au",
+        "confidentialityImpact": "C",
+        "integrityImpact": "I",
+        "availabilityImpact": "A"
+    },
     // Define associative arrays mapping each metric value to the constant used in the CVSS scoring formula.
     Weight: {
         attackVector: {
@@ -608,6 +616,16 @@ var cvssjs = {
         }
         return r;
 
+    },
+    vector2: function (cvss) {
+        var sep = "/";
+        var r = [];
+        for (var m in cvss) {
+            if (this.vectorMap2[m] && cvss[m]) {
+                r.push(this.vectorMap2[m] + ':' + cvss[m].charAt(0));
+            }
+        }
+        return r.join('/');
     },
     CVSSseveritys: [{
         name: "NONE",
@@ -709,5 +727,52 @@ var cvssjs = {
         } catch (err) {
             return err;
         }
+    },
+    w2: {
+        accessComplexity: {
+            HIGH: 0.35,
+            MEDIUM: 0.61,
+            LOW: 0.71
+        },
+        authentication: {
+            NONE: 0.704,
+            SINGLE: 0.56,
+            MULTIPLE: 0.45
+        },
+        accessVector: {
+            LOCAL: 0.395, ADJACENT_NETWORK: 0.646,
+            NETWORK: 1
+        },
+        confidentialityImpact: {
+            NONE: 0,
+            PARTIAL: 0.275,
+            COMPLETE: 0.660
+        },
+        integrityImpact: {
+            NONE: 0,
+            PARTIAL: 0.275,
+            COMPLETE: 0.660
+        },
+        availabilityImpact: {
+            NONE: 0,
+            PARTIAL: 0.275,
+            COMPLETE: 0.660
+        }
+    },
+    calculate2: function(cvss) {
+        var w2 = this.w2;
+        var impact = 10.41 * (1 -
+             (1-w2.confidentialityImpact[cvss.confidentialityImpact])
+             *(1-w2.integrityImpact[cvss.integrityImpact])
+             *(1-w2.availabilityImpact[cvss.availabilityImpact]));
+        if (impact == 0) {
+            return 0;
+        }
+        var exploitabality = 20.0 
+            * w2.accessComplexity[cvss.accessComplexity]
+            * w2.authentication[cvss.authentication]
+            * w2.accessVector[cvss.accessVector];
+
+        return ((0.6*impact + 0.4*exploitabality - 1.5)*1.176).toFixed(1);
     }
 }

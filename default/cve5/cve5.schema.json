@@ -1544,7 +1544,7 @@
         },
         "oneOf": [
           { "required": ["format", "scenarios", "cvssV3_1"], "title": "CVSS 3.1" },
-          { "required": ["format", "scenarios", "cvssV2_0"], "title": "CVSS 2 (TBD)"},
+          { "required": ["format", "scenarios", "cvssV2_0"], "title": "CVSS 2 (Obsolete)"},
           { "required": ["other"], "title": "Other" }
         ],
         "description": "This is impact type information (e.g. a text description, CVSSv2, CVSSv3, etc.). Must contain: At least one entry, can be text, CVSSv2, CVSSv3, others may be added.",
@@ -1870,10 +1870,209 @@
             }
           },
           "cvssV2_0": {
+            "title": "Common Vulnerability Scoring System (CVSS) 2.0 (Obsolete)",
+            "description": "Capture the principal characteristics of a vulnerability and produce a numerical score (zero to ten) reflecting its severity.",
+            "id": "cvss2",
             "type": "object",
-            "options": {
-              "hidden": false
-            }
+            "propertyOrder": 2,
+            "format": "grid",
+            "properties": {
+              "version": {
+                "type": "string",
+                "enum": [
+                  "2.0"
+                ],
+                "options": {
+                  "hidden": "true"
+                }
+              },
+              "accessVector": {
+                "title": "Access Vector",
+                "type": "string",
+                "format": "radio",
+                "default": "NETWORK",
+                "enum": [
+                  "LOCAL",
+                  "ADJACENT_NETWORK",
+                  "NETWORK"
+                ],
+                "options": {
+                  "grid_columns": 12,
+                  "enum_titles": [
+                    "Local",
+                    "Adjacent",
+                    "Network"
+                  ],
+                  "icons": {
+                    "LOCAL": "cvss-user",
+                    "ADJACENT_NETWORK": "cvss-adj",
+                    "NETWORK": "cvss-net"
+                  }
+                }
+              },
+              "accessComplexity": {
+                "title": "Access Complexity",
+                "type": "string",
+                "format": "radio",
+                "default": "LOW",
+                "enum": [
+                  "HIGH",
+                  "MEDIUM",
+                  "LOW"
+                ],
+                "options": {
+                  "grid_columns": 12,
+                  "enum_titles": [
+                    "High",
+                    "Medium",
+                    "Low"
+                  ],
+                  "icons": {
+                    "HIGH": "rocket",
+                    "MEDIUM": "walk",
+                    "LOW": "paper-plane"
+                  }
+                }
+              },
+              "authentication": {
+                "title": "Authentication",
+                "type": "string",
+                "format": "radio",
+                "default": "NONE",
+                "enum": [
+                  "MULTIPLE",
+                  "SINGLE",
+                  "NONE"
+                ],
+                "options": {
+                  "grid_columns": 12,
+                  "enum_titles": [
+                    "Multiple",
+                    "Single",
+                    "None"
+                  ],
+                  "icons": {
+                    "MULTIPLE": "king",
+                    "SINGLE": "pawn",
+                    "NONE": "thief"
+                  }
+                }
+              },
+              "confidentialityImpact": {
+                "title": "Confidentiality",
+                "type": "string",
+                "format": "radio",
+                "default": "COMPLETE",
+                "enum": [
+                  "NONE",
+                  "PARTIAL",
+                  "COMPLETE"
+                ],
+                "options": {
+                  "grid_columns": 12,
+                  "enum_titles": [
+                    "None",
+                    "Partial",
+                    "Complete"
+                  ],
+                  "icons": {
+                    "COMPLETE": "eye",
+                    "PARTIAL": "eye-half",
+                    "NONE": "eye-close"
+                  }
+                }
+              },
+              "integrityImpact": {
+                "title": "Integrity",
+                "type": "string",
+                "format": "radio",
+                "default": "COMPLETE",
+                "enum": [
+                  "NONE",
+                  "PARTIAL",
+                  "COMPLETE"
+                ],
+                "options": {
+                  "grid_columns": 12,
+                  "enum_titles": [
+                    "None",
+                    "Partial",
+                    "Complete"
+                  ],
+                  "icons": {
+                    "COMPLETE": "box-high",
+                    "PARTIAL": "box-low",
+                    "NONE": "box"
+                  }
+                }
+              },
+              "availabilityImpact": {
+                "title": "Availability",
+                "type": "string",
+                "format": "radio",
+                "default": "COMPLETE",
+                "enum": [
+                  "NONE",
+                  "PARTIAL",
+                  "COMPLETE"
+                ],
+                "options": {
+                  "grid_columns": 12,
+                  "enum_titles": [
+                    "None",
+                    "Partial",
+                    "Complete"
+                  ],
+                  "icons": {
+                    "COMPLETE": "signal-1",
+                    "PARTIAL": "signal-2",
+                    "NONE": "signal"
+                  }
+                }
+              },
+              "baseScore": {
+                "title": "Score",
+                "type": "number",
+                "minimum": 0,
+                "maximum": 10,
+                "template": "cvssjs.calculate2(context)",
+                "watch": {
+                  "accessVector": "cvss2.accessVector",
+                  "accessComplexity": "cvss2.accessComplexity",
+                  "authentication": "cvss2.authentication",
+                  "confidentialityImpact": "cvss2.confidentialityImpact",
+                  "integrityImpact": "cvss2.integrityImpact",
+                  "availabilityImpact": "cvss2.availabilityImpact"
+                },
+                "options": {
+                  "grid_columns": 1,
+                  "input_width": "3em"
+                }
+              },
+              "vectorString": {
+                "title": "Vector · ",
+                "type": "string",
+                "options": {
+                  "grid_columns": 7,
+                  "class": "vgi-title"
+                },
+                "pattern": "^((AV:[NAL]|AC:[LMH]|Au:[MSN]|[CIA]:[NPC]|E:(U|POC|F|H|ND)|RL:(OF|TF|W|U|ND)|RC:(UC|UR|C|ND)|CDP:(N|L|LM|MH|H|ND)|TD:(N|L|M|H|ND)|[CIA]R:(L|M|H|ND))/)*(AV:[NAL]|AC:[LMH]|Au:[MSN]|[CIA]:[NPC]|E:(U|POC|F|H|ND)|RL:(OF|TF|W|U|ND)|RC:(UC|UR|C|ND)|CDP:(N|L|LM|MH|H|ND)|TD:(N|L|M|H|ND)|[CIA]R:(L|M|H|ND))$",
+                "template": "cvssjs.vector2(context)",
+                "watch": {
+                  "accessVector": "cvss2.accessVector",
+                  "accessComplexity": "cvss2.accessComplexity",
+                  "authentication": "cvss2.authentication",
+                  "confidentialityImpact": "cvss2.confidentialityImpact",
+                  "integrityImpact": "cvss2.integrityImpact",
+                  "availabilityImpact": "cvss2.availabilityImpact"
+                }
+              }
+            },
+            "required": [
+              "version",
+              "vectorString",
+              "baseScore"
+            ]
           },
           "other": {
             "type": "object",
