@@ -38,7 +38,7 @@ clientReply = (e, msg) => {
 
 checkSession = (e) => {
     if (!('creds' in storage)) {
-        clientReply(e, { error: "Not logged in." });
+        clientReply(e, {error: "NO_SESSION", message: "You are not logged in." });
         return false;
     }
 
@@ -72,9 +72,11 @@ doFetch = (event, url, opts) => {
     return fetch(url, opts)
         .then(res => {
             if (res.ok) {
-                clientReply(event, { data: res.body });
+                res.json().then(data => clientReply(event, { data }));
             } else {
-                clientReply(event, { error: res.status });
+                res.json().then(msg => {
+                    clientReply(event, msg);
+                });
             }
         })
         .catch(err => {

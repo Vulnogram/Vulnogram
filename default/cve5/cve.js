@@ -36,6 +36,7 @@
         constructor(serviceUri = 'https://cveawg.mitre.org/api', swPath = 'sw.js') {
             this._middleware = new CveServicesMiddleware(serviceUri, swPath);
             this._request = null;
+            this._channels = [];
         }
 
         // Session mgmt
@@ -48,15 +49,25 @@
             return this._middleware.destroy();
         }
 
+        // Inter-instance communication.
+
+        on(chanName) {
+            return new Promise(resolve => {
+                let bc = new BroadcastChannel(chanName);
+                bc.onmessage = msg => {
+                    resolve(msg.data);
+                };
+            });
+        }
+
         // API methods
 
-        getCveIds() {
-            return this._middleware.get('cve-id');
+        getCveIds(args) {
+            return this._middleware.get('cve-id', args);
         };
 
         reserveCveIds(args) {
-            return this._middleware.post('cve-id', args)
-                       .then(data => data.cve_ids);
+            return this._middleware.post('cve-id', args);
         }
 
         reserveCveId(year = new Date().getFullYear()) {
@@ -104,12 +115,35 @@
             return this._middleware.get('cve-id/'.concat(id));
         }
 
-        updateCveId(id, record) {
+        updateCveId(id, state, org = undefined) {
+            let record = { state };
+
+            if (org)
+                record['org'] = org;
+
             return this._middleware.put('cve-id/'.concat(id), record);
         }
 
-        getCves() {
-            return this._middleware.get('cve');
+        getCves(opts) {
+            let query;
+
+            if (opts) {
+                query = {};
+                if (opts.hasOwnProperty('state'))
+                    query['cveState'] = opts.state;
+                if(opts.hasOwnProperty('modBefore'))
+                    query['cveRecordFilteredTimeModifiedLt'] = opts.modBefore;
+                if(opts.hasOwnProperty('modAfter'))
+                    query['cveRecordFilteredTimeModifiedGt'] = opts.modAfter;
+                if(opts.hasOwnProperty('count'))
+                    query['countOnly'] = 1;
+                if (opts.hasOwnProperty('assignerShort'))
+                    query['assignerShortName'] = opts.assignerShort;
+                if (opts.hasOwnProperty('assigner'))
+                    query['assigner'] = opts.assigner;
+            }
+
+            return this._middleware.get('cve', query);
         }
 
         getCve(id) {
@@ -117,11 +151,19 @@
         }
 
         createCve(id, schema) {
-            return this._middleware.post('cve/'.concat(id), undefined, schema);
+            return this._middleware.post('cve/'.concat(id, '/cna'), undefined, schema);
         }
 
         updateCve(id, schema) {
-            return this._middleware.put('cve/'.concat(id), undefined, schema);
+            return this._middleware.put('cve/'.concat(id, '/cna'), undefined, schema);
+        }
+
+        createRejectCve(id, schema) {
+            return this._middleware.post('cve/'.concat(id, '/reject'), undefined, schema);
+        }
+
+        updateRejectCve(id, schema) {
+            return this._middleware.put('cve/'.concat(id, '/reject'). undefined, schema);
         }
 
         getOrgInfo() {
@@ -145,7 +187,7 @@
         updateOrgUser(username, userInfo) {
             return this._middleware.orgName
                 .then(orgName =>
-                    this._middleware.put(`org/${orgName}/user/${username}`, userInfo));
+                    this._middleware.put(`org/${orgName}/user/${username}`, undefined, userInfo));
         }
 
         resetOrgUserApiKey(username) {
@@ -174,7 +216,7 @@
     };
 
     class CveServicesMiddleware {
-        constructor(serviceUri = 'https://cweawg.mitre.org/api', swPath = 'sw.js') {
+        constructor(serviceUri = 'https://cveawg.mitre.org/api', swPath = 'sw.js') {
             this.serviceUri = serviceUri;
             this.registration;
             this.swPath = swPath;
@@ -238,9 +280,9 @@
             return this.worker.then(worker => {
                 return this.simpleMessage(worker, msg).then(res => {
                     if ('error' in res) {
-                        return Promise.reject(res.error);
+                        return Promise.reject(res);
                     } else {
-                        return res.data;
+                        return res;
                     }
                 });
             });
@@ -300,12 +342,20 @@
                 type: 'getOrg',
             };
 
-            return this.send(msg);
+            return this.send(msg).then(reply => reply.data);
         }
 
         destroy() {
-            if (this.registration)
-                return this.registration.unregister();
+            // Broadcast logout event
+            let bc = new BroadcastChannel('logout');
+            bc.postMessage({'error': 'LOGOUT', message: 'The user has logged out'});
+
+            if (this.registration) {
+                this.registration.unregister();
+                this.registration = undefined;
+
+                return Promise.resolve(true);
+            }
 
             return Promise.resolve(false);
         }
