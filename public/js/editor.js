@@ -1116,24 +1116,35 @@ if (document.getElementById('save1') && document.getElementById('save2')) {
 }
 
 function scroll2Err(x) {
-    var path = 'root.' + x.firstChild.textContent;
+    var path = 'root.' + x.getAttribute('e_path');
     var ee = docEditor.getEditor(path);
-    var stkH = document.getElementById("vgHead").offsetHeight;
-    ee.container.style["scroll-margin-top"] = (stkH + 40) + "px";
-    ee.container.scrollIntoView({behavior:"smooth"});
+    if(ee && ee.container) {
+        var stkH = document.getElementById("vgHead").offsetHeight;
+        ee.container.style["scroll-margin-top"] = (stkH + 40) + "px";
+        ee.container.scrollIntoView({behavior:"smooth"});
+    }
 }
 
 function showJSONerrors(errors) {
-    var totalMessage = '';
-    for(e of errors) {
-        totalMessage += "<a onclick='scroll2Err(this)'><tt>" + e.path + "</tt>: <i>" + e.message + '.</i></a></br>';
+    errList.textContent="";
+    for (i = 0;i < errors.length; i++) {
+        var e = errors[i];
+        var showLabel = undefined;
+        var ee = docEditor.getEditor('root.'+e.path);
+        if (ee && ee.header && ee.header.innerText) {
+            showLabel = ee.header.innerText;
+        }
+        var a = document.createElement('a');
+        a.setAttribute('class', 'vgi-alert')
+        a.setAttribute('e_path', e.path);
+        a.setAttribute('onclick', 'scroll2Err(this)');
+        a.textContent = (showLabel && showLabel.trim() ? showLabel : e.path) + ": " + e.message;
+        errList.appendChild(a);
+        errList.appendChild(document.createElement('br'))
     }
     errCount.className = 'indent bdg';
     errPop.className = 'popup';
     errCount.innerText = errors.length;
-    errList.innerHTML = 
-        //(errors.length > 1 ? errors.length + " errors! " : "") + 
-        totalMessage;
     editorLabel.className = "red lbl";
 }
 
