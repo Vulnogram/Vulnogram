@@ -54,8 +54,7 @@ function loadCVE(value) {
                         delete res.containers.cna.x_legacyV4Record;
                     }
                     if(res.containers) {
-                        res = addRichTextCVE(res);
-                        res = cvssv3_0_to_cvss3_1(res);
+                        res = cveFixForVulnogram(res);
                     }
                     loadJSON(res, id, "Loaded "+id+" from GIT!");
                     addAutoButton();
@@ -74,6 +73,8 @@ function loadCVE(value) {
     return false;
 }
 function showAlert(msg, smallmsg, timer, showCancel) {
+    errMsg.textContent="";
+    infoMsg.textContent="";
     if (showCancel) {
         document.getElementById("alertCancel").style.display = "inline-block";
     } else {
@@ -982,7 +983,7 @@ function addRichTextCVE(j) {
         'configurations'
     ];
 
-    if(j && j.containers.cna) {
+    if(j && j.containers && j.containers.cna) {
         var cna = j.containers.cna
         htmlFields.forEach(element => {
             addRichTextArray(cna[element])
@@ -1016,11 +1017,14 @@ async function loadCVEFile(event, elem) {
             reader.onload = function (evt) {
                 try{
                     res = JSON.parse(evt.target.result);
-                    res = addRichTextCVE(res);
-                    res = cvssv3_0_to_cvss3_1(res);
-                    //docEditor.setValue(res);
-                    loadJSON(res, null, "Imported file");
-                    addAutoButton();
+                    if(res && res.dataVersion == "5.0") {
+                        res = cveFixForVulnogram(res);
+                        //docEditor.setValue(res);
+                        loadJSON(res, null, "Imported file");
+                        addAutoButton();
+                    } else {
+                        showAlert("Not a CVE JSON 5.0 file!");
+                    }
                 } catch (e) {
                     showAlert(e);
                 }
@@ -1035,6 +1039,18 @@ async function loadCVEFile(event, elem) {
     }
 }
 
+function cveFixForVulnogram(j) {
+    j = addRichTextCVE(j);
+    j = cvssv3_0_to_cvss3_1(j);
+    if(j.containers && j.containers.cna && j.containers.cna.problemTypes == undefined) {
+        j.containers.cna.problemTypes = [];
+    }
+    if(j.containers && j.containers.cna && j.containers.cna.impacts == undefined) {
+        j.containers.cna.impacts = [];
+    }
+    return j;
+}
+
 async function cveLoad(cveId) {
     var org = await checkSession();
     if (cveClient) {
@@ -1043,8 +1059,7 @@ async function cveLoad(cveId) {
             if (res.cveMetadata) {
                 //cveApi.state[cveId] = res.cveMetadata.state;
                 if(res.containers) {
-                    res = addRichTextCVE(res);
-                    res = cvssv3_0_to_cvss3_1(res);
+                    res = cveFixForVulnogram(res);
                 } else {
                     console.log('no containers');
                 }
