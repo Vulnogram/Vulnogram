@@ -121,6 +121,29 @@ This creates standalone /index.html with minimized javascript and stylesheets ca
 
 Note: Opening the index.html as a file URL may not work since some browsers (including Chrome) will not run async requests on file:// URLs. It is recommended to serve these files from a webserver. See <https://developer.mozilla.org/en-US/docs/Learn/Common_questions/set_up_a_local_testing_server> for examples on how to run a simple testing webserver.
 
+## Docker deployment
+
+To run Vulnogram in a container alongside MongoDB, run the following command:
+
+```plaintext
+$ docker compose up
+```
+
+To modify the configuration options available, make a copy of the example.env file and make relevant modifications. Then launch Vulnogram by using the `ENV_VAR_PATH` environment variable. Replace `example.env` with the path to your file:
+
+```plaintext
+$ ENV_VAR_PATH=example.env docker compose up
+```
+
+To change the ports that Vulnogram or MongoDB are running on, use the `MONGO_PORT` and `VULNOGRAM_PORT` environment variables. When doing this, make sure to make the appropriate modifications within the environment variables file as well, so that the ports used inside the container match those being passed to docker compose:
+
+```console
+$ cat my-env-vars.env | grep PORT
+MONGO_PORT=12345
+VULNOGRAM_PORT=54321
+$ MONGO_PORT=12345 VULNOGRAM_PORT=54321 ENV_VAR_PATH=my-env-vars.env docker compose up
+```
+
 ## Dependencies
 
 This project uses or depends on software from:
