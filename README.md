@@ -58,17 +58,21 @@ Enter Password again: ********************************************
 Success New user is now registered and can log in: tester
 ```
 
-#### Step 6. Start the node application
+### Step 6 (Optional). Configure the .env file
+
+Copy the `example.env` file to `.env` and configure the environment variables to values you prefer. The values in `.env` will automatically be loaded as environment variables when Vulnogram starts. See [dotenv](https://github.com/motdotla/dotenv) for more details.
+
+### Step 7. Start the node application
 
 ```plaintext
 $ node app.js
 ```
 
-### Step 7. Run the application as a daemon server
+### Step 8. Run the application as a daemon server
 
 Use a process monitor like [pm2](https://www.npmjs.com/package/pm2) (preferred) or [forever] to run vulnogram as a service:
 
-#### 7.a Example using [pm2](https://www.npmjs.com/package/pm2)
+#### 8.a Example using [pm2](https://www.npmjs.com/package/pm2)
 
 First install pm2 using instruction [at pm2 documentation](https://www.npmjs.com/package/pm2)
 
@@ -80,7 +84,7 @@ $ pm2 start app.js
 [PM2] Done.
 ```
 
-#### 7.b Example using [forever](https://www.npmjs.com/package/forever)
+#### 8.b Example using [forever](https://www.npmjs.com/package/forever)
 
 ```console
 $ npm start
@@ -93,7 +97,7 @@ data:        uid  command                      script forever pid   id        lo
 data:    [0] v3wE /usr/bin/node app.js 11208   11210 vulnogram /home/vulnogram/.forever/v3wE.log 0:0:0:0.23
 ```
 
-### Step 8. Finish
+### Step 9. Finish
 
 Web application should be now accessible at one of the following addresses, depending on configuration:
 
