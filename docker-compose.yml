@@ -4,11 +4,20 @@ services:
 
   vulnogram-mongo:
     image: mongo
+    command: mongod --port ${MONGO_PORT:-27017}
     restart: always
     volumes:
       - vulnogram-mongo-data:/data/db
     env_file:
-      - vulnogram-variables.env
+      - ${ENV_VAR_PATH:-example.env}
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo localhost:${MONGO_PORT:-27017}/vulnogram --quiet
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    ports:
+      - ${MONGO_PORT:-27017}:${MONGO_PORT:-27017}
 
   vulnogram:
     build: .
@@ -17,15 +26,14 @@ services:
     container_name: vulnogram
 
     ports:
-      - 3555:3555
-
-    command: npm start --prefix /home/vulnogram
+      - ${VULNOGRAM_PORT:-3555}:${VULNOGRAM_PORT:-3555}
 
     env_file:
-      - vulnogram-variables.env
+      - ${ENV_VAR_PATH:-example.env}
 
     depends_on:
-      - vulnogram-mongo
+      vulnogram-mongo:
+        condition: service_healthy
 
 volumes:
   vulnogram-mongo-data:

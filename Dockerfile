@@ -1,4 +1,4 @@
-FROM node:12
+FROM --platform=linux/amd64 node:12
 
 # Create unprivileged user
 
@@ -16,3 +16,5 @@ COPY . /home/vulnogram/
 
 RUN chown vulnogram:vulnogram --recursive .
 USER vulnogram
+
+CMD ["npm", "start", "--prefix", "/home/vulnogram"]

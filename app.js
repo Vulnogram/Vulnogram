@@ -13,6 +13,12 @@ const session = require('express-session');
 const passport = require('passport');
 const crypto = require('crypto');
 const compress = require('compression');
+
+const dotenv = require('dotenv').config()
+if (dotenv.error) {
+    console.log(".env was not loaded.");
+}
+
 const conf = require('./config/conf');
 const optSet = require('./models/set');
 
@@ -152,16 +158,16 @@ app.use('/home/stats', ensureAuthenticated, async function(req, res, next){
         try {
             var s = await db.collection(section+'s').stats();
         } catch (e){
-            
+
         };
         if (s === {}) {
         try {
             var s = await db.collection(section).stats();
         } catch (e){
-            
+
         };
         };
-        
+
         sections.push({
             name: section,
             items: s.count,
@@ -186,7 +192,7 @@ app.use(function (req, res, next) {
     next();
 });
 
-//Configuring a reviewToken in conf file allows sharing drafts with 'people who have a link containing the configurable token' 
+//Configuring a reviewToken in conf file allows sharing drafts with 'people who have a link containing the configurable token'
 let review = require('./routes/review');
 
 if (review.public) {

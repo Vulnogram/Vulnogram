@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "test": "nodemon app",
-    "start": "forever start --id 'vulnogram' --spinSleepTime 5000 --minUptime 2000 app.js ;forever list",
+    "start": "./scripts/start.sh",
     "stop": "forever stop app.js",
     "restart": "forever restart app.js"
   },
@@ -21,6 +21,7 @@
     "connect-flash": "^0.1.1",
     "csso-cli": "^3.0.0",
     "csurf": "^1.11.0",
+    "dotenv": "^16.0.1",
     "express": "^4.18.0",
     "express-messages": "^1.0.1",
     "express-rate-limit": "^5.5.1",

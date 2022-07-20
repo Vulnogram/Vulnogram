@@ -5,9 +5,8 @@ module.exports = {
 
     // The Mongodb URL where CVE entries and users are stored.
     // WARNING! Configure MongoDB authentication and use a strong password
-    // WARNING! Ensure MongoDB is not reachable from the network. 
-    // database:'mongodb://vulnogram:StringLongPass@127.0.0.1:27017/vulnogram'
-    database: 'mongodb://127.0.0.1:27017/vulnogram',
+    // WARNING! Ensure MongoDB is not reachable from the network.
+    database: `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME || "admin"}:${process.env.MONGO_INITDB_ROOT_PASSWORD || "admin"}@${process.env.MONGO_HOST || "127.0.0.1"}:${process.env.MONGO_PORT || "27017"}`,
 
     // Name of the organization that should be used in page titles etc.,
     //orgName: 'Example Org',
@@ -22,15 +21,15 @@ module.exports = {
     copyright: '© Example Org. Made with ' + package.name + ' ' + package.version,
 
     // Uncomment this line and set a random string to allow unauthenticated access to draft CVE entries that are in review-ready or publish-ready state via /review/<token>/ or /review/<token>/CVE-ID
-    // This may be useful to share a link to the draft for internal reviews and only those with the link have access to the drafts.    
+    // This may be useful to share a link to the draft for internal reviews and only those with the link have access to the drafts.
    //reviewToken: 'randomtoken',
 
     // port where this tool is running
-    serverHost: '127.0.0.1',
-    serverPort: 3555,
+    serverHost: process.env.VULNOGRAM_HOST || '127.0.0.1',
+    serverPort: process.env.VULNOGRAM_PORT || 3555,
     basedir: '/',
 
-    //Uncomment this block to enable HTTPs. Configure paths for valid SSL certificates. 
+    //Uncomment this block to enable HTTPs. Configure paths for valid SSL certificates.
     // Either get them from your favorite Certificate Authority or generate self signed:
     // Keep these safe and secured and readable only by account running vulnogram process!
     // $ openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out cert.pem
@@ -41,7 +40,7 @@ module.exports = {
         minVersion: 'TLSv1.2'
     },
 */
-    
+
     mitreURL: 'https://www.cve.org/CVERecord?id=',
     defectURL: 'https://example.net/internal/bugs/',
     publicDefectURL: 'https://example.net/bugs/',
