@@ -1116,12 +1116,17 @@ if (document.getElementById('save1') && document.getElementById('save2')) {
 }
 
 function scroll2Err(x) {
-    var path = 'root.' + x.getAttribute('e_path');
-    var ee = docEditor.getEditor(path);
-    if(ee && ee.container) {
-        var stkH = document.getElementById("vgHead").offsetHeight;
-        ee.container.style["scroll-margin-top"] = (stkH + 40) + "px";
-        ee.container.scrollIntoView({behavior:"smooth"});
+    var path = x.getAttribute('e_path');
+    if(path) {
+        if(!path.startsWith('root.')){
+            path = 'root.' + path;
+        }
+        var ee = docEditor.getEditor(path);
+        if(ee && ee.container) {
+            var stkH = document.getElementById("vgHead").offsetHeight;
+            ee.container.style["scroll-margin-top"] = (stkH + 40) + "px";
+            ee.container.scrollIntoView({behavior:"smooth"});
+        }
     }
 }
 
