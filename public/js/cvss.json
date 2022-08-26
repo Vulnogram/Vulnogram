@@ -1,6 +1,9 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "title": "Common Vulnerability Scoring System (CVSS) 3.1",
+    "options": {
+        "class": "vgi-dial tgap"
+    },
     "description": "Capture the principal characteristics of a vulnerability and produce a numerical score (zero to ten) reflecting its severity.",
     "id": "cvss",
     "type": "object",
