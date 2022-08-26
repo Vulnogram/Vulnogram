@@ -1545,6 +1545,111 @@
         "oneOf": [
           { "required": ["format", "scenarios", "cvssV3_1"], "title": "CVSS 3.1" },
           { "required": ["format", "scenarios", "cvssV2_0"], "title": "CVSS 2 (Obsolete)"},
+          { "required": ["other", "ssvc"], "title": "SSVC",
+            "default": {
+              "other": {
+                "type": "SSVC",
+                "version":"2.0",
+                "content": {
+                  "Exploitation": "Active",
+                  "Automatable": "Yes",
+                  "Value Density": "Concentrated",
+                  "Technical Impact": "Total"
+                }
+              }
+            },
+            "noAdditionalProperties":"true",
+            "properties": {
+              "other": {
+                "type": "object",
+                "required": ["type","content"],
+                "description": "A non-standard impact description, may be prose or JSON block.",
+                "properties": {
+                  "version":{
+                    "type":"string",
+                    "default":"2.0",
+                    "options":{
+                      "hidden":"true"
+                    }
+                  },
+                  "type": {
+                    "description": "Name of the non-standard impact metrics format used.",
+                    "type": "string",
+                    "enum": ["SSVC"],
+                    "default":"SSVC",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "options": {
+                      "hidden":"true"
+                    }
+                  },
+                  "content": {
+                    "format": "object",
+                    "type": "object",
+                    "required": ["Exploitation"],
+                    "description": "JSON object not covered by another metrics format.",
+                    "minProperties": 0,
+                    "properties": {
+                      "Exploitation": {
+                        "format": "radio",
+                        "type":"string",
+                        "enum":["None", "PoC", "Active"],
+                        "options": {
+                          "icons": {
+                            "None": "safe",
+                            "PoC": "text",
+                            "Active": "bomb"
+                          }
+                        }
+                      },
+                      "Automatable": {
+                        "format": "radio",
+                        "type":"string",
+                        "enum":["No","Yes"],
+                        "options": {
+                          "icons": {
+                            "Yes": "cog",
+                            "No": "no"
+                          }
+                        }
+                      },
+                      "Value Density": {
+                        "format": "radio",
+                        "type":"string",
+                        "enum":["Diffused","Concentrated"],
+                        "options": {
+                          "icons": {
+                            "Diffused": "globe",
+                            "Concentrated": "box"
+                          }
+                        }
+                      },
+                      "Technical Impact": {
+                        "format": "radio",
+                        "type":"string",
+                        "enum":["None", "Partial", "Total"],
+                        "options": {
+                          "icons": {
+                            "None": "signal",
+                            "Partial": "signal-2",
+                            "Total": "signal-1"
+                          }
+                        }
+                      },
+                      "text": {
+                        "options": {
+                          "hidden":"true"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "format": {
+                "type":"string"
+              }
+            }
+          },
           { "required": ["other"], "title": "Other" }
         ],
         "description": "This is impact type information (e.g. a text description, CVSSv2, CVSSv3, etc.). Must contain: At least one entry, can be text, CVSSv2, CVSSv3, others may be added.",
