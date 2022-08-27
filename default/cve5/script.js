@@ -72,28 +72,7 @@ function loadCVE(value) {
     }
     return false;
 }
-function showAlert(msg, smallmsg, timer, showCancel) {
-    errMsg.textContent="";
-    infoMsg.textContent="";
-    if (showCancel) {
-        document.getElementById("alertCancel").style.display = "inline-block";
-    } else {
-        var temp1 = document.getElementById("alertOk");
-        temp1.setAttribute("onclick", "document.getElementById('alertDialog').close();");
-        document.getElementById("alertCancel").style.display = "none";
-    }
-    document.getElementById("alertMessage").innerText = msg;
-    if (smallmsg)
-        document.getElementById("smallAlert").innerText = smallmsg;
-    else
-        document.getElementById("smallAlert").innerText = " ";
-    if (!document.getElementById("alertDialog").hasAttribute("open"))
-        document.getElementById("alertDialog").showModal();
-    if (timer)
-        setTimeout(function () {
-            document.getElementById("alertDialog").close();
-        }, timer);
-}
+
 async function draftEmail(event, link, renderId) {
     var subject = ''
     if (typeof (mainTabGroup) !== 'undefined') {
@@ -244,6 +223,14 @@ function versionStatusTable5(affected) {
         }
         //pname = pname + platforms;
         var modules = p.modules ? p.modules.join(', ') : '';
+        var pFullName = [
+            (p.vendor ? p.vendor + ' ' : '') + pname + (major ? ' ' + major : ''),
+            platforms,
+            modules,
+            others, 
+            p.defaultStatus
+        ];
+        nameAndPlatforms[pFullName] = pFullName;
         if(p.versions) {
             for(v of p.versions) {
                 var rows = {
@@ -251,36 +238,56 @@ function versionStatusTable5(affected) {
                     unaffected: [],
                     unknown: []
                 };
-                //var major = v.version != 'unspecified' ? v.version: undefined;//? v.version.match(/^(.*)\./): null;
                 var major = undefined;//major ? major[1] : '';
-                var pFullName = [(p.vendor ? p.vendor + ' ' : '') + pname + (major ? ' ' + major : ''), platforms, modules, others];
-                nameAndPlatforms[pFullName] = pFullName;
+                //var pFullName = [(p.vendor ? p.vendor + ' ' : '') + pname + (major ? ' ' + major : ''), platforms, modules, others];
+                //nameAndPlatforms[pFullName] = pFullName;
                 if (v.version) {
                     showCols[v.status] = true;
                     if(!v.changes) {
+                        var rangeStart = '';
+                        if (v.version != 'unspecified' && v.version !=  0)
+                            rangeStart = 'from ' + v.version;
                         if(v.lessThan) {
-                            rows[v.status].push('>= ' + v.version + ' to < ' + v.lessThan);
+                            var rangeEnd = ' before ' + v.lessThan;
+                            if(v.lessThan == 'unspecified' || v.lessThan == '*')
+                                rangeEnd = "";
+                            rows[v.status].push(rangeStart + rangeEnd);
                         } else if(v.lessThanOrEqual) {
-                            rows[v.status].push('>= ' + v.version + ' to <= ' + v.lessThanOrEqual);
+                            var rangeEnd = ' through ' + v.lessThanOrEqual;
+                            if (v.lessThanOrEqual == 'unspecified' || v.lessThanOrEqual == '*')
+                                rangeEnd = "";
+                            rows[v.status].push(rangeStart + rangeEnd);
                         } else {
-                            rows[v.status].push('= ' + v.version);
+                            rows[v.status].push(v.version);
                         }
                     } else {
                         var prevStatus = v.status;
                         var prevVersion = v.version;
-                        for(c of v.changes) {
-                            showCols[c.status] = true;
-                            rows[prevStatus].push('>= ' + prevVersion + ' to < ' + c.at);
-                            prevStatus = c.status;
-                            prevVersion = c.at;
-                        }
+			            showCols[prevStatus] = true;
+                        var range = '';
+                        if (prevVersion != 'unspecified' && prevVersion !=  0)
+                            range = 'from ' + prevVersion;
                         if(v.lessThan) {
-                            rows[prevStatus].push('>= ' + prevVersion + (v.lessThan != prevVersion ? ' to < ' + v.lessThan : ''));
+                            var rangeEnd = ' before ' + v.lessThan;
+                            if(v.lessThan == 'unspecified' || v.lessThan == '*')
+                                rangeEnd = "";
+                            range = range + (v.lessThan != prevVersion ? rangeEnd : '');
                         } else if(v.lessThanOrEqual) {
-                            rows[prevStatus].push('>= ' + prevVersion + (v.lessThanOrEqual != prevVersion ? ' to < ' + v.lessThanOrEqual : ''));
+                            var rangeEnd = ' through ' + v.lessThanOrEqual;
+                            if (v.lessThanOrEqual == 'unspecified' || v.lessThanOrEqual == '*')
+                                rangeEnd = "";                            
+                                range = range + (v.lessThanOrEqual != prevVersion ? rangeEnd : '');
                         } else {
-                            rows[prevStatus].push(">=" + prevVersion);
-                        }                  
+                            range = prevVersion;
+                        }
+                        var changes  = [];
+                        for(c of v.changes) {
+                            changes.push(c.status + ' from ' + c.at);
+                        }
+                        if(changes.length > 0) {
+                            range = range + ' (' + changes.join(', ') + ')';
+                        }
+                        rows[v.status].push(range);
                     }
                 }
                 if(!t[pFullName]) t[pFullName] = [];
@@ -288,13 +295,22 @@ function versionStatusTable5(affected) {
                 t[pFullName].push(rows);
             }
         }
-        var pFullName = [(p.vendor ? p.vendor + ' ' : '') + pname + (major ? ' ' + major : ''), platforms, modules, others];
-        nameAndPlatforms[pFullName] = pFullName;
-        var rows = {};
+        //nameAndPlatforms[pFullName] = pFullName;
+        /*var rows = {};
+        if (p.defaultStatus) {
+            //rows[p.defaultStatus] = ["everything else"];
+            //showCols[p.defaultStatus] = true;
+            if(!t[pFullName]) {
+                t[pFullName] = [rows];
+            } else {
+                t[pFullName].push(rows);
+            }
+        }*/
     }
+    //console.log(nameAndPlatforms);
+    //console.log(t);
     return({groups:nameAndPlatforms, vals:t, show: showCols});
 }
-
 
 function getProductAffected(cve) {
     var lines = [];

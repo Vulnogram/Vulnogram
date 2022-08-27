@@ -106,6 +106,9 @@ JSONEditor.defaults.editors.object = class mystring extends JSONEditor.defaults.
                 this.title.className = this.title.className + ' req'; 
             }    
         }
+        if(this.container && this.options.containerClass) {
+            this.container.className = this.container.className + ' ' + this.options.containerClass;
+        }
     }
     getValue () {
         if (!this.dependenciesFulfilled) {
@@ -880,8 +883,8 @@ JSONEditor.defaults.themes.customTheme = class customTheme extends JSONEditor.Ab
         return select;
     }*/
     setGridColumnSize(el, size) {
-      el.className = 'col s' + size;
-    }
+      el.className = el.className + ' col s' + size;
+    } 
     getSwitcher (options) {
         const switcher = this.getSelectInput(options, false);
         switcher.classList.add('je-switcher');
@@ -1101,6 +1104,7 @@ if (document.getElementById('remove')) {
                     errMsg.textContent = "";
                     window.location = "./";
                 } else {
+                    showAlert("Error " + response.statusText);
                     errMsg.textContent = "Error " + response.statusText;
                     infoMsg.textContent = "";
                 }
@@ -1228,11 +1232,13 @@ var defaultTabs = {
                 } else {
                     sourceEditor.moveCursorTo(firsterror.row, firsterror.column, false);
                     sourceEditor.clearSelection();
+                    showAlert('Please fix error: ' + firsterror.text);
                     errMsg.textContent = 'Please fix error: ' + firsterror.text;
                     document.getElementById("sourceTab").checked = true;
                     return -1;
                 }
             } catch (err) {
+                showAlert(err.message);
                 errMsg.textContent = err.message;
                 document.getElementById("sourceTab").checked = true;
                 return -1;
@@ -1328,6 +1334,7 @@ function save() {
             if (res.type == "go") {
                 window.location.href = res.to;
             } else if (res.type == "err") {
+                showAlert(res.msg);
                 errMsg.textContent = res.msg;
                 infoMsg.textContent = "";
             } else if (res.type == "saved") {
@@ -1345,6 +1352,7 @@ function save() {
             changes = 0;
         })
         .catch(function (error) {
+            showAlert(error + ' Try reloading the page.');
             errMsg.textContent = error + ' Try reloading the page.';
         });
     // This is a trick for brower auto completion to work
@@ -1393,6 +1401,7 @@ function loadFile(event, elem) {
             loadJSON(JSON.parse(evt.target.result), null, "Imported file");
         };
         reader.onerror = function (evt) {
+            showAlert("Error reading file");
             errMsg.textContent = "Error reading file";
         };
     }
@@ -1441,4 +1450,27 @@ function downloadHtml(title, element, link) {
     });
     link.href = URL.createObjectURL(file);
     link.download = file.name;
+}
+
+function showAlert(msg, smallmsg, timer, showCancel) {
+    errMsg.textContent="";
+    infoMsg.textContent="";
+    if (showCancel) {
+        document.getElementById("alertCancel").style.display = "inline-block";
+    } else {
+        var temp1 = document.getElementById("alertOk");
+        temp1.setAttribute("onclick", "document.getElementById('alertDialog').close();");
+        document.getElementById("alertCancel").style.display = "none";
+    }
+    document.getElementById("alertMessage").innerText = msg;
+    if (smallmsg)
+        document.getElementById("smallAlert").innerText = smallmsg;
+    else
+        document.getElementById("smallAlert").innerText = " ";
+    if (!document.getElementById("alertDialog").hasAttribute("open"))
+        document.getElementById("alertDialog").showModal();
+    if (timer)
+        setTimeout(function () {
+            document.getElementById("alertDialog").close();
+        }, timer);
 }

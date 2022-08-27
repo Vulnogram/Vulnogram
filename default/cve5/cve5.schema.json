@@ -5,6 +5,7 @@
   "title": "CVE JSON record format",
   "description": "cve-schema specifies the CVE JSON record format. This is the blueprint for a rich set of JSON data that can be submitted by CVE Numbering Authorities (CNAs) and Authorized Data Publishers (ADPs) to describe a CVE Record. Some examples of CVE record data include CVE ID number, affected product(s), affected version(s), and public references. While those specific items are required when assigning a CVE, there are many other optional data in the schema that can be used to enrich CVE Records for community benefit. Learn more about the CVE program at [the official website](https://cve.mitre.org). This CVE JSON record format is defined using JSON Schema. Learn more about JSON Schema [here](https://json-schema.org/).",
   "options": {
+    "class": "hid",
     "keep_oneof_values": true,
     "patternmessage": "Enter a valid UUID"
   },
@@ -12,6 +13,9 @@
     "CNA_private": {
       "title": "CNA Internal Workflow",
       "format": "grid",
+      "options": {
+        "containerClass": "bor pad rnd sec gap"
+      },
       "properties": {
         "owner": {
           "type": "string",
@@ -333,7 +337,7 @@
           "options": {
             "grid_columns": 4,
             "class": "vgi-stack",
-            "infoText": "List of specific platforms if the vulnerability is only relevant in the context of these platforms (optional). Platforms may include execution environments, operating systems, virtualization technolgies, hardware models, or computing architectures. Lack of this field or an empty array implies that the other fields are applicable for all relevant platforms.",
+            "infoText": "Vulnerability is specific to these platforms.",
             "inputAttributes": {
               "placeholder": "eg., x86, Android, Windows, MacOS, .."
             }
@@ -460,7 +464,6 @@
           "description": "The URL of the source code repository, for informational purposes and/or to resolve git hash version ranges.",
           "$ref": "#/definitions/uriType",
           "options": {
-            "infoText": "The URL of the source code repository, for informational purposes and/or to resolve git hash version ranges.",
             "grid_columns": 4,
             "class": "vgi-ext",
             "inputAttributes": {
@@ -502,7 +505,7 @@
             "maxLength": 4096
           },
           "options": {
-            "infoText": "Name of the affected component, feature, module, sub-component, sub-product, API, command, utility, program, or functionality (optional).",
+            "infoText": "affected component, feature, module, API, functionality etc.,",
             "grid_columns": 4,
             "class": "vgi-table",
             "inputAttributes": {
@@ -1031,6 +1034,12 @@
           "options": {
             "hidden": "true"
           }
+        },
+        "x_legacyV4Record": {
+          "type": "object",
+          "options": {
+            "hidden": true
+          }
         }
       },
       "required": [
@@ -1090,6 +1099,12 @@
           },
           "options": {
             "hidden": "true"
+          }
+        },
+        "x_legacyV4Record": {
+          "type": "object",
+          "options": {
+            "hidden": true
           }
         }
       },
@@ -1584,6 +1599,7 @@
                     }
                   },
                   "content": {
+                    "title": "Stakeholder Specific Vulnerability Categorization",
                     "format": "object",
                     "type": "object",
                     "required": ["Exploitation"],
@@ -1954,7 +1970,7 @@
                 },
                 "links": [
                   {
-                    "href": "'http://cvssjs.github.io/#' + context.self",
+                    "href": "'https://cvss.js.org/#' + context.self",
                     "title": "'CVSS Calculator'",
                     "rel": "' Open in CVSS Calculator'"
                   }

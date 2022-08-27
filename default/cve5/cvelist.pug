@@ -232,7 +232,7 @@ mixin listIds
                                 span(class=stateIcons[c.state]?stateIcons[c.state]:'', title=c.state)
                                     =c.cve_id
                             if c.state != 'RESERVED'
-                                a.vgi-ext(href="https://www.cve.org/CVERecord?id="+c.cve_id)
+                                a.vgi-ext(href="https://www.cve.org/CVERecord?id="+c.cve_id, target="_blank")
                         td=c.requested_by.user
                         td
                             +date(c.time.created)

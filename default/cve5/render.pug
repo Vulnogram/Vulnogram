@@ -78,9 +78,9 @@ mixin cvssList(cvssList)
                                 b=x
                     div
                         if cvss.version >= "3"
-                            a.vgi-dial(href="https://cvssjs.github.io/#" + cvss.vectorString) Open CVSS Calc
+                            a.vgi-dial(href="https://cvss.js.org/#" + cvss.vectorString target="_blank") Open CVSS Calc
                         else
-                            a.vgi-dial(href='https://nvd.nist.gov/vuln-metrics/cvss/v2-calculator?vector='+cvss.vectorString) Open CVSS Calc
+                            a.vgi-dial(href='https://nvd.nist.gov/vuln-metrics/cvss/v2-calculator?vector='+cvss.vectorString target="_blank") Open CVSS Calc
 
 mixin prodDetails(p)
     b.vgi-package=p[0]
@@ -103,6 +103,10 @@ mixin prodDetails(p)
         if p[3].programRoutines
             each f, i in p[3].programRoutines
                 span.vgi-edit= f.name
+    if p[4]
+        br
+        span.vgi-impact Default status is 
+            =p[4]
 
 mixin statusTable(st)
     table.tbl.gap
@@ -231,7 +235,7 @@ mixin container(con)
                         =d.description
                         |   
                         if d.cweId
-                            a(href="https://cwe.mitre.org/data/definitions/"+d.cweId)
+                            a(href="https://cwe.mitre.org/data/definitions/"+d.cweId target="_blank")
                                 small=d.cweId
                             br  
     if con.impacts
@@ -244,7 +248,7 @@ mixin container(con)
                         =d.value
                         |   
                 if t.capecId
-                    a(href="https://capec.mitre.org/data/definitions/"+t.capecId)
+                    a(href="https://capec.mitre.org/data/definitions/"+t.capecId target="_blank")
                         small=t.capecId
                     br  
     if con.exploits
@@ -345,7 +349,7 @@ mixin CVSS(value)
     |  
     if value.version >= "3"
         | (
-        a(href="https://cvssjs.github.io/#" + value.vectorString)=value.vectorString
+        a(target="_blank" href="https://cvss.js.org/#" + value.vectorString)=value.vectorString
         | )
     else
         a(href='https://nvd.nist.gov/vuln-metrics/cvss/v2-calculator?vector='+value.vectorString)=value.vectorString

@@ -144,8 +144,12 @@ module.exports = {
 
     schema: {
         "$schema": "http://json-schema.org/draft-04/schema#",
+        "options": {
+            "class":"hid"
+        },
         "definitions": {
             "cve_id": {
+                "title": "CVE ID",
                 "type": "string",
                 "pattern": "^CVE-[0-9]{4}-[0-9A-Za-z._-]{4,}$",
                 "options": {
@@ -948,7 +952,7 @@ module.exports = {
                 "title": "CNA Private Info (not exported)",
                 "options": {
                     "class": "vgi-lock tgap",
-                    "formClass": "bor pad"
+                    "containerClass": "bor pad rnd sec gap"
                 },
                 "properties": {
                     "owner": {

@@ -28,6 +28,11 @@ dialog::backdrop {
     backdrop-filter: blur(1px);
 }
 
+dialog {
+    min-width: 100px;
+    width: 70vw;
+    max-width: 80vw ;
+}
 .wlp {
     background-image: url('back.png');
 }

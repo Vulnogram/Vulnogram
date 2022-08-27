@@ -49,7 +49,7 @@ mixin CVSS(value)
     |  
     if value.version >= "3"
         | (
-        a(href="https://cvssjs.github.io/#" + value.vectorString)=value.vectorString
+        a(href="https://cvss.js.org/#" + value.vectorString)=value.vectorString
         | )
     else
         a(href='https://nvd.nist.gov/vuln-metrics/cvss/v2-calculator?vector='+value.vectorString)=value.vectorString

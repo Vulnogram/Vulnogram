@@ -82,7 +82,7 @@ block pageDef
 
         else
             p This issue has been assigned 
-                a(href="https://www.cve.org/CVERecord?id="+cveid)=cveid
+                a(href="https://www.cve.org/CVERecord?id="+cveid target="_blank")=cveid
                 |.
 
         h4 SOLUTION:
@@ -109,7 +109,7 @@ block pageDef
         ul
             if CDM.ID
                 li
-                    a(href="https://www.cve.org/CVERecord?id="+cveid)=cveid + " at cve.org"
+                    a(href="https://www.cve.org/CVERecord?id="+cveid target="_blank")=cveid + " at cve.org"
             each r in cve.references.reference_data
                 li
                     a(href=r.url)=r.url

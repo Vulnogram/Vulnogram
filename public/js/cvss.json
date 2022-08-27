@@ -192,7 +192,7 @@
             },
             "links": [
               {
-                "href": "'http://cvssjs.github.io/#' + context.self",
+                "href": "'https://cvss.js.org/#' + context.self",
                 "title": "'CVSS Calculator'",
                 "rel": "'Open in CVSS Calculator'"
               }

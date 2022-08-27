@@ -123,6 +123,7 @@ block content
 
     if doc && doc.body
         script getChanges("#{doc_id}");
+    +alertDialog
 
 block subcontent
     if !min
@@ -146,3 +147,13 @@ block subcontent
 block logolink
     br
     a.logo(href="https://github.com/Vulnogram/Vulnogram") Vulnogram Project
+
+mixin alertDialog
+    dialog.bor.rnd.shd.pad2#alertDialog
+      center
+        form(onsubmit="event.preventDefault();return false;")
+            h2.vgi-alert#alertMessage
+            .gap#smallAlert  
+            center.gap
+                input#alertOk.btn.sfe(type="reset" onclick="document.getElementById('alertDialog').close();" value="OK")
+                input#alertCancel.btn.red(type="reset" onclick="document.getElementById('alertDialog').close();" value="Cancel" dstyle="display:none")
