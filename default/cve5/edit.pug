@@ -62,6 +62,10 @@ block append content
     +userAddDialog
     +userEditDialog
 
+block append editorArea
+    a.gap.flr.fbn.vgi-no.tred(onclick="rejectRecord()")
+        | Reject this ID
+
 mixin userAddDialog
     dialog.dlg.bor.rnd.shd#userAddDialog
         +dlgHeader('vgi-user','Add a new user')

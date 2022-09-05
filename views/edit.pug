@@ -57,23 +57,25 @@ block scripts
 block content
     div#mainTabGroup
         span.lbl &nbsp;
-        input.tab(name='tabs', type='radio', id='editorTab', value="1",checked)
-        label.lbl#editorLabel(for='editorTab')
-            span.flx Editor
-                details.popup#errPop
-                    summary.sml.hid#errCount
-                    div.wht.pop.pad.bor.shd#errList
-        .wht.fil.bor.pad
-            iframe(name="x",style="display:none",src="about:blank")
-            form.editor(target="x",action="",id="docEditor")
-            if !min
-                
-                a#remove.gap.flr.fbn.vgi-del.tred Delete this entry from database
-        input.tab(name='tabs', type='radio', id='sourceTab', value="2")
-        label.lbl(for='sourceTab') Source
-        .wht.fil.bor.pad
-            div(id="output",rows="40",cols="100%")
-                p
+        block editorTab
+            input.tab(name='tabs', type='radio', id='editorTab', value="1",checked)
+            label.lbl#editorLabel(for='editorTab')
+                span.flx Editor
+                    details.popup#errPop
+                        summary.sml.hid#errCount
+                        div.wht.pop.pad.bor.shd#errList
+            .wht.fil.bor.pad
+                block editorArea
+                    iframe(name="x",style="display:none",src="about:blank")
+                    form.editor(target="x",action="",id="docEditor")
+                    if !min
+                        a#remove.gap.flr.fbn.vgi-del.tred Delete this entry from local Vulnogram database
+        block sourceTab
+            input.tab(name='tabs', type='radio', id='sourceTab', value="2")
+            label.lbl(for='sourceTab') Source
+            .wht.fil.bor.pad
+                div(id="output",rows="40",cols="100%")
+                    p
 
         block customtabs
 
