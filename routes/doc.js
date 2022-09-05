@@ -596,7 +596,7 @@ module.exports = function (name, opts) {
     });
 
     if (opts.static) {
-        console.log('PATH: ' + path.join(__dirname, '/../', opts.static));
+        //console.log('PATH: ' + path.join(__dirname, '/../', opts.static));
         router.use('/static', express.static(path.join(__dirname, '/../', opts.static)));
     }
     // ToDo eliminate, as it can be embedded
