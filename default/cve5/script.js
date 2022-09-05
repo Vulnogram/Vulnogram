@@ -56,7 +56,8 @@ function loadCVE(value) {
                     if(res.containers) {
                         res = cveFixForVulnogram(res);
                     }
-                    loadJSON(res, id, "Loaded "+id+" from GIT!");
+                    var edOpts = (res.cveMetadata.state == 'REJECTED')? rejectEditorOption : publicEditorOption;
+                    loadJSON(res, id, "Loaded "+id+" from GIT!", edOpts);
                     addAutoButton();
                     mainTabGroup.change(0);
                 } else {
@@ -71,6 +72,18 @@ function loadCVE(value) {
         errMsg.textContent = "CVE ID required";
     }
     return false;
+}
+
+async function rejectRecord() {
+    var id = getDocID();
+    if(window.confirm('Do you want to reject ' + id + '? All vulnerability deatils will be removed. A CVE entry once rejected can not be reverted back to a regular entry.')) {
+        loadJSON({
+            cveMetadata: {
+                cveId: id,
+                state: 'REJECTED'
+            }
+        }, id, 'Rejcting '+id, rejectEditorOption);
+    }
 }
 
 async function draftEmail(event, link, renderId) {
@@ -189,7 +202,7 @@ var additionalTabs = {
 /* fullname = vendor . product . platforms . module .others 
 /* table --> [ fullname ][version][affected|unaffected|unknown] = [ list of ranges ] */
 function versionStatusTable5(affected) {
-    var t = {};
+    var t = {}; // resulting table structure
     nameAndPlatforms = {};
     var showCols = {
         platforms: false,
@@ -221,7 +234,6 @@ function versionStatusTable5(affected) {
         if(p.programRoutines) {
             others.programRoutines = p.programRoutines;
         }
-        //pname = pname + platforms;
         var modules = p.modules ? p.modules.join(', ') : '';
         var pFullName = [
             (p.vendor ? p.vendor + ' ' : '') + pname + (major ? ' ' + major : ''),
@@ -238,12 +250,10 @@ function versionStatusTable5(affected) {
                     unaffected: [],
                     unknown: []
                 };
-                var major = undefined;//major ? major[1] : '';
-                //var pFullName = [(p.vendor ? p.vendor + ' ' : '') + pname + (major ? ' ' + major : ''), platforms, modules, others];
-                //nameAndPlatforms[pFullName] = pFullName;
+                var major = undefined; //major ? major[1] : '';
                 if (v.version) {
                     showCols[v.status] = true;
-                    if(!v.changes) {
+                    if(!v.changes) {  // simple range versions 
                         var rangeStart = '';
                         if (v.version != 'unspecified' && v.version !=  0)
                             rangeStart = 'from ' + v.version;
@@ -261,24 +271,23 @@ function versionStatusTable5(affected) {
                             rows[v.status].push(v.version);
                         }
                     } else {
-                        var prevStatus = v.status;
-                        var prevVersion = v.version;
-			            showCols[prevStatus] = true;
+                        var ver = v.version;
+			            showCols[v.status] = true;
                         var range = '';
-                        if (prevVersion != 'unspecified' && prevVersion !=  0)
-                            range = 'from ' + prevVersion;
+                        if (ver != 'unspecified' && ver !=  0)
+                            range = 'from ' + ver;
                         if(v.lessThan) {
                             var rangeEnd = ' before ' + v.lessThan;
                             if(v.lessThan == 'unspecified' || v.lessThan == '*')
                                 rangeEnd = "";
-                            range = range + (v.lessThan != prevVersion ? rangeEnd : '');
+                            range = range + (v.lessThan != ver ? rangeEnd : '');
                         } else if(v.lessThanOrEqual) {
                             var rangeEnd = ' through ' + v.lessThanOrEqual;
                             if (v.lessThanOrEqual == 'unspecified' || v.lessThanOrEqual == '*')
                                 rangeEnd = "";                            
-                                range = range + (v.lessThanOrEqual != prevVersion ? rangeEnd : '');
+                                range = range + (v.lessThanOrEqual != ver ? rangeEnd : '');
                         } else {
-                            range = prevVersion;
+                            range = ver;
                         }
                         var changes  = [];
                         for(c of v.changes) {
@@ -291,24 +300,10 @@ function versionStatusTable5(affected) {
                     }
                 }
                 if(!t[pFullName]) t[pFullName] = [];
-                //if(!t[pFullName][v.version]) t[pFullName][v.version] = [];
                 t[pFullName].push(rows);
             }
         }
-        //nameAndPlatforms[pFullName] = pFullName;
-        /*var rows = {};
-        if (p.defaultStatus) {
-            //rows[p.defaultStatus] = ["everything else"];
-            //showCols[p.defaultStatus] = true;
-            if(!t[pFullName]) {
-                t[pFullName] = [rows];
-            } else {
-                t[pFullName].push(rows);
-            }
-        }*/
     }
-    //console.log(nameAndPlatforms);
-    //console.log(t);
     return({groups:nameAndPlatforms, vals:t, show: showCols});
 }
 
@@ -1036,7 +1031,8 @@ async function loadCVEFile(event, elem) {
                     if(res && res.dataVersion == "5.0") {
                         res = cveFixForVulnogram(res);
                         //docEditor.setValue(res);
-                        loadJSON(res, null, "Imported file");
+                        var edOpts = (res.cveMetadata.state == 'REJECTED')? rejectEditorOption : publicEditorOption;
+                        loadJSON(res, null, "Imported file", edOpts);
                         addAutoButton();
                     } else {
                         showAlert("Not a CVE JSON 5.0 file!");
@@ -1079,14 +1075,10 @@ async function cveLoad(cveId) {
                 } else {
                     console.log('no containers');
                 }
-
-                loadJSON(res, cveId, "Loaded " + cveId + " from CVE.org!");
+                var edOpts = (res.cveMetadata.state == 'REJECTED')? rejectEditorOption : publicEditorOption;
+                loadJSON(res, cveId, "Loaded " + cveId + " from CVE.org!", edOpts);
                 console.log(res);
-/*                if(res.cveMetadata.state == "REJECTED") {
-                    console.log('rejected');
-                    docEditor.root_container.childNodes[1].childNodes[1].selected = true;
-                    docEditor.root_container.childNodes[1].dispatchEvent(new Event ('change'))
-                }*/
+
                 addAutoButton();
                 mainTabGroup.change(0);
                 return res;
@@ -1105,14 +1097,17 @@ async function cveLoad(cveId) {
                 };
                 try{
                     var res = await cveClient.getCveId(cveId);
+                    var edOpts = publicEditorOption;
                     if(res.state == 'RESERVED') {
                         skeleton.cveMetadata.state = "PUBLISHED";
                     } else if (res.state == 'REJECTED') {
                         skeleton.cveMetadata.state = "REJECTED";
+                        edOpts = rejectEditorOption;
                     } else {
                         return {};
                     }
-                    loadJSON(skeleton, cveId, "Loaded " + cveId);
+
+                    loadJSON(skeleton, cveId, "Loaded " + cveId, edOpts);
                     addAutoButton();
                     mainTabGroup.change(0);
                     return skeleton;

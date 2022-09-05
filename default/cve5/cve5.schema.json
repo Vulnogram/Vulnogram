@@ -6,8 +6,7 @@
   "description": "cve-schema specifies the CVE JSON record format. This is the blueprint for a rich set of JSON data that can be submitted by CVE Numbering Authorities (CNAs) and Authorized Data Publishers (ADPs) to describe a CVE Record. Some examples of CVE record data include CVE ID number, affected product(s), affected version(s), and public references. While those specific items are required when assigning a CVE, there are many other optional data in the schema that can be used to enrich CVE Records for community benefit. Learn more about the CVE program at [the official website](https://cve.mitre.org). This CVE JSON record format is defined using JSON Schema. Learn more about JSON Schema [here](https://json-schema.org/).",
   "options": {
     "class": "hid",
-    "keep_oneof_values": true,
-    "patternmessage": "Enter a valid UUID"
+    "keep_oneof_values": true
   },
   "definitions": {
     "CNA_private": {
@@ -648,7 +647,8 @@
                     "status": {
                       "title": "Affected status changes to",
                       "description": "The new status in the range starting at the given version.",
-                      "$ref": "#/definitions/status"
+                      "$ref": "#/definitions/status",
+                      "default":"unaffected"
                     }
                   }
                 }
@@ -739,7 +739,22 @@
           "$ref": "#/definitions/cveId",
           "options": {
             "grid_columns": 3
-          }
+          },
+          "links": [
+            {
+              "class": "lbl vgi-ext",
+              "href": "'https://www.cve.org/CVERecord?id=' + context.self",
+              "title": "'CVE.org Entry",
+              "rel": "'cve.org'"
+            },
+            {
+              "target": false,
+              "class": "lbl btn red vgi-no",
+              "title": "'Reject this ID",
+              "rel": "'Reject this ID'",
+              "href":"'javascript:rejectRecord()'"
+            }
+          ]
         },
         "assignerOrgId": {
           "$ref": "#/definitions/orgId",
@@ -794,6 +809,7 @@
         "state": {
           "description": "State of CVE - PUBLISHED, REJECTED.",
           "type": "string",
+          "pattern": "^PUBLISHED$",
           "enum": [
             "PUBLISHED"
           ],
@@ -869,6 +885,7 @@
         "state": {
           "type": "string",
           "description": "State of CVE - PUBLISHED, REJECTED.",
+          "pattern": "^REJECTED$",
           "enum": [
             "REJECTED"
           ],
@@ -1056,6 +1073,9 @@
     "cnaRejectedContainer": {
       "description": "An object containing the vulnerability information provided by a CVE Numbering Authority (CNA) for a rejected CVE ID. There can only be one CNA container per CVE record since there can only be one assigning CNA.",
       "type": "object",
+      "options": {
+        "class": "hid"
+      },
       "properties": {
         "providerMetadata": {
           "$ref": "#/definitions/providerMetadata"

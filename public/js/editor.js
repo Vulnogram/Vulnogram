@@ -163,7 +163,7 @@ JSONEditor.defaults.editors.number = class mystring extends JSONEditor.defaults.
 }
 JSONEditor.defaults.editors.string = class mystring extends JSONEditor.defaults.editors.string {
     addLink (link) {
-        if(this.header) this.header.appendChild(link);
+        if(this.control) this.control.appendChild(link);
     }
     getLink(data) {
         var style = null;
@@ -175,8 +175,13 @@ JSONEditor.defaults.editors.string = class mystring extends JSONEditor.defaults.
         if(style) {
             h.setAttribute('class', style);
         }
-        if(data.target){
+        if(data.target === false) {
+            h.removeAttribute('target')
+        } else {
             h.setAttribute('target', data.target)
+        }
+        if(data.onclick) {
+            h.setAttribute('onclick', data.onclick);
         }
         return h;
     }
@@ -959,6 +964,7 @@ if (typeof(defaultTab) !== 'undefined') {
     }
 }
 var insync = false;
+
 function Tabs(tabGroupId, tabOpts, primary) {
     var elem = document.getElementById(tabGroupId);
     var tg = {
@@ -985,7 +991,7 @@ function Tabs(tabGroupId, tabOpts, primary) {
     }
     tg.changeIndex[0] = 1;
     tg.select = function (event, elem) {
-        errMsg.textContent = "";
+        //errMsg.textContent = "";
         var selected = elem._tgIndex;
         //Does the tab need an update?
         //console.log('===CLICK====' + selected + ' cI '  + tg.changeIndex);
@@ -1197,6 +1203,7 @@ var defaultTabs = {
     sourceTab: {
         setValue: function (val) {
             if (sourceEditor == undefined) {
+                ace.config.set('basePath', '/js/')
                 sourceEditor = ace.edit("output");
                 sourceEditor.getSession().setMode("ace/mode/json");
                 sourceEditor.getSession().on('change', function () {
@@ -1252,18 +1259,20 @@ var defaultTabs = {
 if(typeof additionalTabs !== 'undefined') {
     Object.assign(defaultTabs, additionalTabs);
 }
+
 var mainTabGroup = new Tabs('mainTabGroup', defaultTabs, 0);
-function loadJSON(res, id, message) {
+
+function loadJSON(res, id, message, editorOptions) {
     // workaround for JSON Editor issue with clearing arrays
     // https://github.com/jdorn/json-editor/issues/617
     if (docEditor) {
         docEditor.destroy();
     }
-    docEditor = new JSONEditor(document.getElementById('docEditor'), docEditorOptions);
+    docEditor = new JSONEditor(document.getElementById('docEditor'), editorOptions ? editorOptions : docEditorOptions);
     docEditor.on('ready', async function () {
         await docEditor.root.setValue(res, true);
         infoMsg.textContent = message ? message : '';
-        errMsg.textContent = "";
+        //errMsg.textContent = "";
         if(id) {
             document.title = id;
         } else {
