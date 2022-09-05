@@ -12,13 +12,10 @@ const User = require('../models/user');
 const conf = require('../config/conf');
 const csurf = require('csurf');
 const {
+    matchedData,
     check,
     validationResult
-} = require('express-validator/check');
-const {
-    matchedData,
-    sanitize
-} = require('express-validator/filter');
+} = require('express-validator');
 
 const validator = require('validator');
 var csrfProtection = csurf();

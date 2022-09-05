@@ -13,17 +13,7 @@ const _ = require('lodash');
 const path = require('path');
 
 var queryMW;
-/*
-const {
-    check,
-    validationResult
-} = require('express-validator/check');
-const {
-    matchedData,
-    sanitize
-} = require('express-validator/filter');
-const validator = require('validator');
-*/
+
 module.exports = function (name, opts) {
     opts.schemaName = name;
     //todo make it configurable

@@ -52,11 +52,8 @@ const querymw = require('../lib/querymw');
 const {
     check,
     validationResult
-} = require('express-validator/check');
-const {
-    matchedData,
-    sanitize
-} = require('express-validator/filter');
+} = require('express-validator');
+
 const validator = require('validator');
 
 
