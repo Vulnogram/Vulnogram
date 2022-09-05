@@ -6,6 +6,51 @@ body{
 #cveUser .pop {
   right: 2em !important;
 }
+table#vgListTable td.cvss span {
+  background-color: #CCC;
+  display: inline-block;
+  min-width: 2.4em;
+  padding: 0.3em 0.5em;
+  color: #fff;
+  line-height: normal;
+  text-align: center;
+  border-radius: 0.5em;
+  font-weight: 700;
+}
+
+#vgListTable .cvss span[title^="8"],
+#vgListTable .cvss span[title^="7"]
+{
+background-color: salmon;
+}
+
+#vgListTable .cvss span[title^="6"],
+#vgListTable .cvss span[title^="5"],
+#vgListTable .cvss span[title^="4"]
+{
+background-color: orange;
+}
+
+#vgListTable .cvss span[title^="3"],
+#vgListTable .cvss span[title^="2"],
+#vgListTable .cvss span[title^="1."],
+#vgListTable .cvss span[title^="0."]
+{
+background-color: gold;
+color: #000;
+}
+
+#vgListTable .cvss span[title="0"],
+#vgListTable .cvss span[title="0.0"]
+{
+background-color:rgb(162, 213, 114);
+}
+
+#vgListTable .cvss span[title^="10"],
+#vgListTable .cvss span[title^="9"]
+{
+background-color: orangered;
+}
 
 .CVSS.NONE {
   background-color: rgb(162, 213, 114);

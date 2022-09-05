@@ -876,9 +876,11 @@ input.tab[type="radio"] + .lbl:focus
 }
 
 
-.compactTable:checked+table .extra {
-    display: hidden;
-    font-size: 0;
+.compactTable:checked+table span[class^="vgi-"],
+.compactTable:checked+table span[class*=" vgi-"] {
+    min-width: 0em;
+    width: 0em;
+    overflow: hidden;
 }
 
 label[for="compactTable"][val=""]:after {

@@ -173,6 +173,6 @@ block append head
 block content
     include util.pug
     .tabletop
-        +bulkTable(docs, columns)
+        +bulkTable(docs, columns, 'vgListTable')
         if pages == 1
             +tablesort

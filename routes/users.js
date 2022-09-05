@@ -336,7 +336,7 @@ protected.get('/list/css', function (req, res) {
             } else {
                 res.setHeader('Content-Type', 'text/css');
                 for(u of users) {
-                    res.write('.lbl[for$="]' + u.username + '"]:before {content: "' + u.emoji + '";}\n');
+                    res.write('input[value="'+u.username+'"] + .lbl:before, #vgListTable span[title="'+u.username+'"]:before {content: "' + u.emoji + ' ";}\n');
                 }
                 res.end();
             }
