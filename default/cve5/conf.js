@@ -112,7 +112,7 @@ module.exports = {
             showDistinct: true
         },
         title: {
-            path: 'body.containers.cna.providerMetadata.title',
+            path: 'body.containers.cna.title',
             href: '/cve5/',
             xref: {
                 href: 'ID'
@@ -161,7 +161,7 @@ module.exports = {
             icons: {
                 RESERVED: 'edit',
                 PUBLISHED: 'globe',
-                REJECTED: 'delete'
+                REJECTED: 'no'
             }
         },
         cvss: {
@@ -194,7 +194,7 @@ module.exports = {
                     path: 'body.containers.cna.source.advisory'
                 },*/
         date: {
-            path: 'body.containers.cna.providerMetadata.datePublic',
+            path: 'body.containers.cna.datePublic',
             bulk: true
         },
         updated: {
@@ -202,7 +202,15 @@ module.exports = {
         },
         product: {
             path: 'body.containers.cna.affected.product',
-            chart: true
+            chart: true,
+            pipeline: [
+                {
+                    $unwind: "$body.containers.cna.affected"
+                },
+                {
+                    $sortByCount: "$body.containers.cna.affected.product"
+                }
+            ]
         },
         ym: {
             path: 'body.CNA_private.publish.ym',
@@ -215,7 +223,7 @@ module.exports = {
             chart: true,
             bulk: true,
             enum: ['example', 'team', 'memebers'],
-            class: 'ico '
+            class: 'user '
         },
         /*  'state!': {
               path: 'body.CVE_data_meta.STATE',
