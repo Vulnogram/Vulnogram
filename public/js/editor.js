@@ -36,6 +36,53 @@ JSONEditor.AbstractEditor.prototype.showStar = function () {
     return this.isRequired() && !(this.schema.readOnly || this.schema.readonly || this.schema.template)
 }
 
+JSONEditor.AbstractEditor.prototype.addLinks = function () {
+    /* Add links */
+    if (!this.no_link_holder) {
+      this.link_holder = this.theme.getLinksHolder()
+      /* if description element exists, insert the link before */
+      if (typeof this.description !== 'undefined') this.description.parentNode.insertBefore(this.link_holder, this.description)
+      /* otherwise just insert link at bottom of container */
+      else this.container.appendChild(this.link_holder)
+      if (this.schema.links) {
+        for (let i = 0; i < this.schema.links.length; i++) {
+            var link = this.schema.links[i];
+            //todo: refactor
+            var style = null;
+            if(link.class) {
+                style=link.class;
+                delete link.class;
+            }
+            var h = this.getLink(link);
+            if(style) {
+                    h.setAttribute('class', style);
+                    h.removeAttribute('style')
+            }
+            if(link.style) {
+                h.setAttribute('style', link.style);
+            }
+            if(link.title) {
+                h.setAttribute('title', link.title);
+            }
+            if(link.target === false) {
+                h.removeAttribute('target')
+            } else {
+                h.setAttribute('target', link.target)
+            }
+            if(link.onclick) {
+                h.setAttribute('onclick', link.onclick);
+            }
+            if(link.place == "container" && this.container) {
+                this.container.appendChild(h);
+            } else if (link.place == "header" && this.header) {
+                this.header.appendChild(h);
+            } else {
+                this.addLink(h)
+            }
+        }
+      }
+    }
+  }
 
 JSONEditor.defaults.resolvers.unshift(function (schema) {
     if (schema.type === "string" && schema.format === "radio") {
@@ -161,30 +208,9 @@ JSONEditor.defaults.editors.number = class mystring extends JSONEditor.defaults.
         }
     }
 }
+
 JSONEditor.defaults.editors.string = class mystring extends JSONEditor.defaults.editors.string {
-    addLink (link) {
-        if(this.control) this.control.appendChild(link);
-    }
-    getLink(data) {
-        var style = null;
-        if(data.class) {
-            style=data.class;
-            delete data.class;
-        }
-        var h = super.getLink(data);
-        if(style) {
-            h.setAttribute('class', style);
-        }
-        if(data.target === false) {
-            h.removeAttribute('target')
-        } else {
-            h.setAttribute('target', data.target)
-        }
-        if(data.onclick) {
-            h.setAttribute('onclick', data.onclick);
-        }
-        return h;
-    }
+
     build() {
         super.build();
         if(this.label && this.options.class) {
@@ -821,14 +847,18 @@ JSONEditor.defaults.themes.customTheme = class customTheme extends JSONEditor.Ab
                     group = label[0];
                 }*/
                 input.errmsg = document.createElement('div');
-                input.errmsg.setAttribute('class', 'lbl tred indent');
+                //input.errmsg.setAttribute('class', 'lbl tred indent');
                 input.errmsg.style = input.errmsg.style || {};
                 group.appendChild(input.errmsg);
             } else {
                 input.errmsg.style.display = 'block';
             }
+            input.errmsg.setAttribute('class', 'lbl tred indent');
             input.errmsg.textContent = '';
             input.errmsg.appendChild(document.createTextNode(' ' + text));
+        }
+        if(input.errmsg) {
+            input.errmsg.setAttribute('class', 'lbl tred indent');
         }
     }
     removeInputError(input) {
@@ -1313,6 +1343,7 @@ function loadJSON(res, id, message, editorOptions) {
         setTimeout(function (){
             document.getElementById(selected).dispatchEvent(event);
         }, 50);
+        mainTabGroup.change(0);
     });
 }
 
