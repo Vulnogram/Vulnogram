@@ -657,6 +657,10 @@ input.tab[type="radio"] + .lbl:focus
     background-color: var(--red) !important;
 }
 
+.tag.red {
+    background-color: coral !important;
+}
+
 .tab + .red {
     background: var(--red);
     background: linear-gradient(0deg, rgba(255,255,255,255) 0%, var(--red) 400%)!important;
@@ -1368,6 +1372,10 @@ div[data-schemapath*=".cvss"] .rdg .form-control:first-child input[type="radio"]
     height: 120px;
     background-repeat: no-repeat;
     background-position: center center;
+    opacity: 0;
+    animation: fadeIn 500ms ease 1;
+    animation-delay: 1s;
+    animation-fill-mode: forwards;
   }
   .spinner::before {
     border: 10px solid #f3f3f3; /* Light grey */
@@ -1377,11 +1385,23 @@ div[data-schemapath*=".cvss"] .rdg .form-control:first-child input[type="radio"]
     display: block;
     width: 100px;
     height: 100px;
-    animation: spin 1s linear infinite;
     text-align: center;
+    animation: spin 1s linear infinite;
+    animation-delay: 1s;
+    animation-fill-mode: forwards;
   }
 
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
