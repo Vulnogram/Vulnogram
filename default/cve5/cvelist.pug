@@ -5,8 +5,8 @@ mixin cveLoginBox
         i CVE Services Portal 
         br
         i Instantly providing you CVE IDs since 2022
-        #loginErr
-        form#cveLoginForm(method='POST', onsubmit='cveLogin(event, this); return false;')
+        #loginErr=message
+        form#cveLoginForm(method='POST', onsubmit='portalLogin(event, this); return false;')
             .pad
                 label.lbl.right(style="width:10em;") Portal
                 select.bor.txt(name='portal' style="width:11em;")
@@ -112,6 +112,8 @@ mixin userstats
         summary.fbn.vgi-user=((userInfo && userInfo.name && userInfo.name.first) ? userInfo.name.first : userInfo.username)
             |  ▼ 
         dl.pop.wht.bor.rnd.shd.pad
+            .gap.row
+                button.right.sbn.vgi-fail(onclick="this.closest('details').removeAttribute('open')")     
             +userDetail(userInfo)
             hr.bort
             span.vgi-edit.fbn(onclick="cveUserEdit(this)" u=userInfo.username, f=userInfo.name?userInfo.name.first:'', l=userInfo.name?userInfo.name.last:'', ac=userInfo.active ad=userInfo.authority.active_roles.includes('ADMIN') title="Edit Info")
@@ -124,7 +126,7 @@ mixin userstats
             dt Role:  
                 b= org && org.authority ? org.authority.active_roles : 'undefined'
             hr.bort
-            span.vgi-exit.fbn(onclick="cveLogout()") Logout!
+            span.vgi-exit.fbn(onclick="portalLogout()") Logout!
 
 mixin userDetail(u)
     a.td(onclick="cveUserEdit(this)",u=u.username, f=u.name?u.name.first:'', l=u.name?u.name.last:'' ac=u.active ad=u.authority.active_roles.includes('ADMIN') title="Edit Info")

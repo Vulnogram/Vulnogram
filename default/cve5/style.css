@@ -205,6 +205,6 @@ table.striped td {
     pointer-events: none;
 }
 
-label[for="cveApiTab"] {
+label[for="cvePortalTab"] {
   background-color: var(--sec) !important;
 }
