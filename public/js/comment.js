@@ -23,7 +23,7 @@ async function sendComment(f) {
             body: JSON.stringify(comment),
         });
     } catch (e) {
-        console.log('fetch failed ' + e)
+        //console.log('fetch failed ' + e)
     }
     if (response.ok) {
         try {
