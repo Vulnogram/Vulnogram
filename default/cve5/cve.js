@@ -34,18 +34,37 @@
 
     class CveServices {
         constructor(serviceUri = 'https://cveawg.mitre.org/api', swPath = 'sw.js') {
+            //console.log('called constructer');
             this._middleware = new CveServicesMiddleware(serviceUri, swPath);
-            this._request = null;
+            //this._request = null;
+            //this._channels = [];
         }
 
         // Session mgmt
 
         login(user, org, key) {
+            //console.log('called login');
             return this._middleware.setCredentials({ user, org, key });
         }
 
         logout() {
+            //console.log("Called logout");
             return this._middleware.destroy();
+        }
+
+        active() {
+            return this._middleware ? true : false;
+        }
+
+        // Inter-instance communication.
+
+        on(chanName) {
+            return new Promise(resolve => {
+                let bc = new BroadcastChannel(chanName);
+                bc.onmessage = msg => {
+                    resolve(msg.data);
+                };
+            });
         }
 
         // API methods
@@ -103,13 +122,35 @@
             return this._middleware.get('cve-id/'.concat(id));
         }
 
-        updateCveId(id, state, org) {
-            let record = { state, org };
+        updateCveId(id, state, org = undefined) {
+            let record = { state };
+
+            if (org)
+                record['org'] = org;
+
             return this._middleware.put('cve-id/'.concat(id), record);
         }
 
-        getCves() {
-            return this._middleware.get('cve');
+        getCves(opts) {
+            let query;
+
+            if (opts) {
+                query = {};
+                if (opts.hasOwnProperty('state'))
+                    query['cveState'] = opts.state;
+                if(opts.hasOwnProperty('modBefore'))
+                    query['cveRecordFilteredTimeModifiedLt'] = opts.modBefore;
+                if(opts.hasOwnProperty('modAfter'))
+                    query['cveRecordFilteredTimeModifiedGt'] = opts.modAfter;
+                if(opts.hasOwnProperty('count'))
+                    query['countOnly'] = 1;
+                if (opts.hasOwnProperty('assignerShort'))
+                    query['assignerShortName'] = opts.assignerShort;
+                if (opts.hasOwnProperty('assigner'))
+                    query['assigner'] = opts.assigner;
+            }
+
+            return this._middleware.get('cve', query);
         }
 
         getCve(id) {
@@ -117,19 +158,19 @@
         }
 
         createCve(id, schema) {
-            return this._middleware.post('cve/'.concat(id,'/cna'), undefined, schema);
+            return this._middleware.post('cve/'.concat(id, '/cna'), undefined, schema);
         }
 
         updateCve(id, schema) {
-            return this._middleware.put('cve/'.concat(id,'/cna'), undefined, schema);
+            return this._middleware.put('cve/'.concat(id, '/cna'), undefined, schema);
         }
 
         createRejectedCve(id, schema) {
-            return this._middleware.post('cve/'.concat(id,'/reject'), undefined, schema);
+            return this._middleware.post('cve/'.concat(id, '/reject'), undefined, schema);
         }
 
         updateRejectedCve(id, schema) {
-            return this._middleware.put('cve/'.concat(id,'/reject'), undefined, schema);
+            return this._middleware.put('cve/'.concat(id, '/reject'), undefined, schema);
         }
 
         getOrg() {
@@ -237,7 +278,7 @@
                 let channel = new MessageChannel();
 
                 channel.port1.onmessage = (msg) => {
-		    if('debug' in msg)
+    		    if('debug' in msg)
                         console.log(msg);
                     resolve(msg.data);
                 };
@@ -318,15 +359,18 @@
         }
 
         destroy() {
+            // Broadcast logout event
+            let bc = new BroadcastChannel('logout');
+            bc.postMessage({'error': 'LOGOUT', message: 'The user has logged out'});
             if (this.registration) {
-                this.send({type: 'destroy'});
+                //this.send({type: 'destroy'});
                 this.registration.unregister();
                 this.registration = undefined;
 
                 return Promise.resolve(true);
+            } else {
+                return Promise.resolve(false);
             }
-
-            return Promise.resolve(false);
         }
     }
 
