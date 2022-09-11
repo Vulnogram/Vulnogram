@@ -635,6 +635,9 @@ module.exports = {
                                             "required": [
                                                 "product_data"
                                             ],
+                                            "options": {
+                                                "class": "hid"
+                                            },
                                             "properties": {
                                                 "product_data": {
                                                     "title": " ",
