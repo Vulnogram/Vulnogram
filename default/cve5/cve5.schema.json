@@ -829,7 +829,15 @@
       "properties": {
         "cveId": {
           "description": "The CVE identifier that this record pertains to.",
-          "$ref": "#/definitions/cveId"
+          "$ref": "#/definitions/cveId",
+          "links": [
+            {
+              "class": "lbl vgi-ext",
+              "href": "'https://www.cve.org/CVERecord?id=' + context.self",
+              "title": "'CVE.org Entry",
+              "rel": "'cve.org'"
+            }
+          ]
         },
         "assignerOrgId": {
           "$ref": "#/definitions/orgId",
