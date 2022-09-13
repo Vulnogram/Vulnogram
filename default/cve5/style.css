@@ -208,3 +208,69 @@ table.striped td {
 label[for="cvePortalTab"] {
   background-color: var(--sec) !important;
 }
+
+/* cveLogin box */
+
+#cpBox {
+  padding: 2em 0px;
+  display: grid; 
+  grid-template-columns: auto; 
+  grid-template-rows: min-content min-content auto; 
+  gap: 0px 0px; 
+  align-content: center; 
+  justify-items: center; 
+  align-items: center; 
+}
+#cpPrompt { grid-area: 3 / 1 / 4 / 2; }
+#cpTitle { grid-area: 2 / 1 / 3 / 2; }
+#cpLogo { grid-area: 1 / 1 / 2 / 2; }
+
+
+#cveLoginForm {
+  display: grid; 
+  grid-auto-rows: 1fr; 
+  grid-template-columns: min-content 1fr; 
+  gap: 1em .5em; 
+  padding: 1em;
+}
+
+#cveLoginForm label {
+  text-align: right;
+}
+#cveLoginForm #cpSubmit {
+  grid-area: 5 / 1 / 6 / 3; 
+  justify-self: center; 
+  align-self: center; 
+}
+
+
+@media (min-width: 600px) {
+#cpBox {
+  display: grid;
+  padding: 3em; 
+  grid-template-columns: 1fr 1.5fr; 
+  grid-template-rows: max-content min-content; 
+  gap: 5px 6px; 
+  align-content: center; 
+  justify-items: center; 
+  align-items: center; 
+  text-align: center;
+}
+#cpTitle {
+  align-self: start; 
+  grid-area: 2 / 1 / 3 / 2; 
+  text-align: center;
+  padding: 1em;
+}
+#cpLogo {
+  justify-self: stretch; 
+  align-self: end; 
+  grid-area: 1 / 1 / 2 / 2; 
+  padding: 1em;
+}
+#cpPrompt { 
+  justify-self: stretch; 
+  border-left: 2px #999999 dotted;
+  grid-area: 1 / 2 / 3 / 3;
+}
+}

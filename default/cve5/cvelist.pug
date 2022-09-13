@@ -1,29 +1,30 @@
 mixin cveLoginBox
-    center.sec.shd.rnd.pad
-        include CVE.svg
-        br
-        i CVE Services Portal 
-        br
-        i Instantly providing you CVE IDs since 2022
-        #loginErr=message
-        form#cveLoginForm(method='POST', onsubmit='portalLogin(event, this); return false;')
-            .pad
-                label.lbl.right(style="width:10em;") Portal
-                select.bor.txt(name='portal' style="width:11em;")
+    div.sec.shd.rnd.pad#cpBox
+        div#cpLogo
+            img(width="100%" src="./static/CVE.svg")
+        div#cpTitle
+            b CVE Services Portal 
+            br
+            i Instantly providing you CVE IDs since 2022
+        div#cpPrompt
+            #loginErr=message
+            form#cveLoginForm(method='POST', onsubmit='portalLogin(event, this); return false;')
+                label.lbl.vgi-globe(for="cpPortal") Portal
+                select#cpPortal.bor.txt(name='portal')
                     option(value="https://cveawg.mitre.org/api" selected=(prevPortal == 'production')) production
                     option(value="https://cveawg-test.mitre.org/api" selected=(prevPortal == 'test')) test
                     option(value="http://127.0.0.1:3000/api" selected=(prevPortal == 'local')) local
-            .pad
-                label.lbl.right(style="width:10em;") CNA Short Name
-                input.bor.txt(name='org', type='text', autocomplete='on', "pattern"=".{2,64}" required=true value=prevOrg?prevOrg:'')
-            .pad
-                label.lbl.right(style="width:10em;") CVE User
-                input.bor.txt(name='user', type='text', autocomplete="on", "pattern"=".+" required=true)
-            .pad
-                label.lbl.right(style="width:10em;") CNA API Key
-                input.bor.txt(name='key', type='password', autocomplete='off' required=true)
-            .pad.center
-                input.bor.fbn.sfe(type='submit', value='Login')
+
+                label.lbl.vgi-org(for="cpOrg") CNA Short Name
+                input#cpOrg.bor.txt(name='org', type='text', autocomplete='on', "pattern"=".{2,64}" required=true value=prevOrg?prevOrg:'')
+
+                label.lbl.vgi-user(for="cpUser") CVE User
+                input#cpUser.bor.txt(name='user', type='text', autocomplete="on", "pattern"=".+" required=true)
+
+                label.lbl.vgi-key(for="cpKey") CNA API Key
+                input#cpKey.bor.txt(name='key', type='password', autocomplete='off' required=true)
+
+                input#cpSubmit.bor.fbn.sfe.vgi-export(type='submit', value='Login')
 
 mixin dlgHeader(icon, msg)
     header.ban.sec.pad(style="min-width:20em;")

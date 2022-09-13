@@ -117,10 +117,10 @@ module.exports = {
                 href: 'ID'
             }
         },
-        todo: {
+       /* todo: {
             path: { $size: "$body.CNA_private.todo" },
             class: 'bdg'
-        },
+        },*/
         ym: {
             path: 'body.CNA_private.publish.ym',
             chart: true,
