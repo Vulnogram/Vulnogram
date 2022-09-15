@@ -1405,3 +1405,20 @@ div[data-schemapath*=".cvss"] .rdg .form-control:first-child input[type="radio"]
     }
   }
 
+
+#mainTabGroup {
+    display: grid; 
+    grid-template-columns: max-content repeat(8, max-content) 1fr; 
+    grid-auto-columns:auto; 
+    grid-template-rows: min-content max-content; 
+    gap: 0px 0px; 
+  }
+  #mainTabGroup > label {
+    justify-self:stretch;
+    grid-row: 1;
+}
+#mainTabGroup > label:first-of-type {
+    margin-left: 2em;
+}
+/*  #mainTabGroup > .label1 { grid-area: 1 / 2 / 2 / 3; }*/
+  #mainTabGroup > div { grid-area: 2 / 1 / 3 / -1; }
