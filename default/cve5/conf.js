@@ -361,7 +361,7 @@ module.exports = {
             return errors;
         }
     ],
-    errorFilter: function(errors) {
+    /*errorFilter: function(errors) {
         if(errors && errors.length > 0) {
             var out = [];
             var oneIndex = {
@@ -373,12 +373,12 @@ module.exports = {
             for(i=0; i< errors.length; i++) {
                 if(errors[i].path.indexOf("root.oneOf["+state+"]") == 0) {
                     errors[i].path = errors[i].path.substr(14);
-                    out.push(errors[i]);
                 }
+                out.push(errors[i]);
             }
             errors = out;
         }
         return errors;
-    },
+    },*/
     router: router
 }

@@ -57,8 +57,8 @@ function loadCVE(value) {
                         res = cveFixForVulnogram(res);
                     }
                     var edOpts = (res.cveMetadata.state == 'REJECTED') ? rejectEditorOption : publicEditorOption;
-                    loadJSON(res, id, "Loaded " + id + " from GIT!", edOpts);
                     mainTabGroup.change(0);
+                    loadJSON(res, id, "Loaded " + id + " from GIT!", edOpts);
                 } else {
                     errMsg.textContent = "Failed to load valid CVE JSON v 5.0 record";
                     infoMsg.textContent = "";
@@ -82,6 +82,7 @@ async function rejectRecord() {
                 state: 'REJECTED'
             }
         }, id, 'Rejcting ' + id, rejectEditorOption);
+        mainTabGroup.change(0);
     }
 }
 
@@ -500,6 +501,7 @@ async function loadCVEFile(event, elem) {
                         res = cveFixForVulnogram(res);
                         //docEditor.setValue(res);
                         var edOpts = (res.cveMetadata.state == 'REJECTED') ? rejectEditorOption : publicEditorOption;
+                        mainTabGroup.change(0);
                         loadJSON(res, null, "Imported file", edOpts);
                     } else {
                         showAlert("Not a CVE JSON 5.0 file!");
