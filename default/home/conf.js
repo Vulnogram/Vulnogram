@@ -1,4 +1,5 @@
 var appConf = require('../../config/conf');
+var sections = require('../../models/sections')();
 
 module.exports = {
 conf: {
@@ -75,7 +76,6 @@ schema: {
           "description": "Unique ID starting with PLOT-xxxxxxx..",
           "pattern": "^PLOT-([A-Za-z0-9]+)$",
       },
-      
     "title": {
       "$id": "#/properties/title",
       "type": "string",
@@ -109,7 +109,7 @@ schema: {
     "section": {
         type: "string",
         format: "radio",
-        enum: appConf.sections
+        enum: sections,
     },
     "query": {
       "title": "Query (eg., severity=CRITICAL,HIGH&product=Example) - Copy it from a filtered section view.",
