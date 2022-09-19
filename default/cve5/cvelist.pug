@@ -8,7 +8,7 @@ mixin cveLoginBox
             i Instantly providing you CVE IDs since 2022
         div#cpPrompt
             #loginErr=message
-            form#cveLoginForm(method='POST', onsubmit='portalLogin(event, this); return false;')
+            form#cveLoginForm(method='POST', onkeypress='resetPortalLoginErr();' onchange='resetPortalLoginErr();' onsubmit='portalLogin(event, this); return false;')
                 label.lbl.vgi-globe(for="cpPortal") Portal
                 select#cpPortal.bor.txt(name='portal')
                     option(value="https://cveawg.mitre.org/api" selected=(prevPortal == 'production')) production

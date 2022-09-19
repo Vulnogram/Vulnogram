@@ -45,14 +45,10 @@ block customtabs
                 a.vgi-download.btn.right(type="button",oncontextmenu='downloadHtml(document.getElementById("cvetitle").innerText, render, this);',onclick='downloadHtml(document.getElementById("cvetitle").innerText, render, this);',value="Download") Download
                 a.vgi-mail.btn.right(type="button",oncontextmenu='draftEmail(event, this, "render");',onclick='draftEmail(event, this,"render");',value="Email") Email
             div.render(id="render")
-        input.tab(name='tabs', type='radio', id='mitreTab', value="5")
-        //label.lbl(for='mitreTab') Preview
-        //.wht.fil.bor.pad
-            div#mitreweb
         input.tab(name='tabs', type='radio', id='cvePortalTab', value="6")
         label.lbl(for='cvePortalTab') CVE Portal
-        .wht.fil.bor
-            #cvePortal
+        .wht.fil.bor#port
+            
 
 block append content
     dialog.dlg.bor.rnd.shd#cveErrorsModal
