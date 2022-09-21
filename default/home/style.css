@@ -45,11 +45,6 @@
     font-family: "helvetica neue", helvetica, arial, sans-serif;
     font-size: 80px;
     opacity: .6;
-    /*    
-   stroke: #ffffff;
-    stroke-width: .5px;
-    stroke-linecap: butt;
-    stroke-linejoin: miter;*/
 }
 
 .arc path {
@@ -97,7 +92,6 @@ svg {
     display: grid;
     grid-gap: 10px;
     grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-    /* justify-content: space-around;*/
 }
 
 .vis {
@@ -105,9 +99,25 @@ svg {
     box-sizing: border-box;
     min-height: 300px;
     min-width: 320px;
+    height: 100%;
     background-color: var(--wht);
 }
 
 .vis .chart {
     font-size: 22px;
 }
+
+rect {
+    stroke: #fff;
+    stroke-width: 1px;
+}
+
+.node {
+    border: solid 1px white;
+    font: 10px sans-serif;
+    line-height: 12px;
+    overflow: hidden;
+    position: absolute;
+    text-indent: 2px;
+    box-sizing: border-box;
+  }

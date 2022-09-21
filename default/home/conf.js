@@ -102,7 +102,7 @@ schema: {
       "title": "Chart Type",
       "default": "bar",
       "enum": [
-        "pie","bar"
+        "pie","bar","treemap"
       ],
       "pattern": "^(.*)$"
     },
