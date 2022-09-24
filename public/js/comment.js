@@ -23,7 +23,7 @@ async function sendComment(f) {
             body: JSON.stringify(comment),
         });
     } catch (e) {
-        console.log('fetch failed ' + e)
+        //console.log('fetch failed ' + e)
     }
     if (response.ok) {
         try {
@@ -191,29 +191,6 @@ function alertFiles(event) {
     nf.wys = wys;
     return nf;
 }
-
-function loadimg(e) {
-    var sibs = this.parentNode.parentNode.childNodes;
-    var f = sibs[1];
-    var ok = sibs[4];
-    e.preventDefault();
-    var file = this.files[0];
-    if(file.size > 528385) {
-        alert('Image size should less than 500k');
-        return false;
-    };
-    if(file.type.indexOf("image")==-1){
-        alert("Not an image!");
-        return false;
-    }
-    var reader = new FileReader();
-    reader.onload = function (event) {
-        f.value = event.target.result;
-        ok.click();
-    };
-    reader.readAsDataURL(file);
-    return false;
-};
 
 function preview(el, ev) {
     var files = [];

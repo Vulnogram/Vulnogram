@@ -2,6 +2,145 @@
 
 extends layout
 
+mixin facetChart(facet, query, tfacet)
+  if (total > 0)
+    // && facet.length > 0 && (Object.keys(facet[0]).length)
+    form#chartForm(action='/'+schemaName,method="GET",onchange="document.getElementById('filter').className='indent btn sfe'")
+        if query && query.q
+            input(type="hidden",name="q",value=(Array.isArray(query.q) ? query.q.join(' ') : query.q))
+        if tfacet && tfacet.length && tfacet.length > 0
+            each values, field in tfacet[0]
+                each v in values
+                    - var vx = v._id;
+                    - vx = (v._id == null) ? 'null': ((v._id == '') ? 'null': v._id);
+                    - vx = Array.isArray(vx) ? vx.join(',') : vx;
+                    if (v._id == query[field] || ((typeof query[field] === 'string') && query[field].split(',').includes(v._id)) || ((query[field] instanceof Array) && query[field].includes(v._id)))
+                        input(type="hidden",name=field,value=vx)
+        if facet.length > 0 && (Object.keys(facet[0]).length)
+          div.ins.hig.flx.wlp.pad
+            each values, field in facet[0]
+              div.wht.rnd.shd.chart(class=field)
+                label.ico(class=field,for='flt'+field)=field
+                input.expand(id="flt"+field,type="checkbox")
+                each v in values
+                    - var vx = v._id;
+                    - vx = (v._id == null) ? 'null': ((v._id == '') ? 'null': v._id);
+                    - vx = Array.isArray(vx) ? vx.join(',') : vx;
+                    div.bar(style="width:" + Math.round(v.count/total*170.0+1) + "px")
+                        input(type="checkbox", id=field+vx, name=field, value= vx, checked=(v._id && query[field] && query[field].includes(v._id)) || (vx === 'null' && query[field] && query[field].includes('null')))
+                        label.otl(class=vx + (fields[field].class? ' ' + fields[field].class : ''), for=field+vx, title=vx+ " (" + v.count + ")")
+                            = vx
+                            br
+                            b=v.count
+                label(for="flt"+field)
+            .right.gap
+                input.indent.btn#filter(type="submit", value="Filter")
+                a.indent.btn(href="/" + schemaName, type="submit", value="Clear") Clear
+        if pages > 1        
+            for c in columns
+                button.hid(id="sort"+c,name="sort",value=(query.sort=="-" + c ? "" : "-") + c)=c
+
+mixin paginate
+ if total > 0
+     - pages = Number(pages)
+     - current = Number(current)
+     - query ? delete query.page : '';
+     - var bs = '?' + (qs ? qs.stringify(query) : '')  + '&page=';
+     - var kin = 3;
+     form.ban.pad(action='',method="GET",style="flex-grow:1;",onsubmit='var cf = document.getElementById("chartForm"); if(cf.q == undefined){var qin = document.createElement("input"); qin.setAttribute("name","q");qin.setAttribute("type","hidden"); cf.appendChild(qin)}; cf.q.value=this.q.value; cf.submit(); return false;')
+        - var searchString = query ? (Array.isArray(query.q) ? query.q.join(' '): query.q) : "";
+        - delete query.q;
+        //each i, d in query
+        //    input(type="hidden",name=d,value=i)
+        span.right
+            if pages <= 1
+                | Found 
+                = total
+            if pages > 1
+                span.pagination
+                    | Showing 
+                    = ((current-1)*limit + 1)
+                    |  - 
+                    = current*limit > total ? total : current*limit
+                    |  of 
+                    = total
+                    |  
+                    if current == 1
+                        a.btn.pur 1
+                    else
+                        a.btn(href=bs + '1') 1
+                    - var i =  (current > kin ? (current - kin + 1) : 2)
+                    if i != 2
+                        if(i == 3)
+                            a.btn(href=bs+2) 2
+                        else
+                            b.lbl ∙ ∙ ∙
+                    while ((i <= (current + kin - 1)) && (i < pages))
+                        if i==current
+                            a.btn.pur= i
+                        else
+                            a.btn(href=bs + i)=i
+                        if i==(current + kin - 1) && i < pages -1
+                            b.lbl ∙ ∙ ∙
+                        - i++;
+                    if current == pages
+                        a.btn.pur=pages
+                    else
+                        a.btn(href=bs+pages)=pages
+        | 
+        span.indent.out
+            input.txt(size=20,type="text",name="q",placeholder=" Filter results ",value=searchString,results="10",required)
+            input.btn(type="submit", value="filter")
+        | 
+        label.lbl.vgi-fold(for="compactTable",onclick="this.setAttribute('val', document.getElementById(this.getAttribute('for')).checked)",val="")
+
+mixin bulkTable(docs, columns, id)
+    if !docs || docs.length == 0
+        p
+            b No items found!
+    else
+        - var rowCount = 0;
+        - var sum = {}, showCheckboxes = false; 
+        - if (bulkInput) { showCheckboxes = (Object.keys(bulkInput).length !== 0)}
+        form(autocomplete="off",action='/'+schemaName+'/update',method="POST")
+            input.hid.compactTable(id="compactTable",type='checkbox',checked=true)
+            +table(docs, columns, showCheckboxes, id)
+            input(type="hidden",name="_csrf",value=csrfToken)
+            .pad.flx
+                if showCheckboxes
+                    .left.pad
+                        each spec, name in bulkInput
+                          .indent.out
+                            label.lbl.icn(class=name)=name
+                            if spec.type && spec.type == "select"
+                                select.btn(name=name)
+                                    option(selected,value="") - No Change -
+                                    each v in spec.enum
+                                        option(value=v)=v
+                            else
+                                input.txt(name=name)
+                    .left.nobr.pad
+                        input.btn(type='submit',value="Update")
+                        input.btn(type='reset')
+        +distinctSummary(docs, columns)
+
+mixin distinctSummary(docs, columns)
+        - tTime = new Date()
+        each column in columns
+            if fields[column] && fields[column].showDistinct
+                - var unique = [...new Set(docs.map(item => item[column]).reduce((a, b) => a.concat(b), []))];
+                p
+                    small Displayed  
+                        b= column
+                        |s (
+                        = unique.length
+                        | ):  
+                        = unique.join(', ')
+        //b= (Date.now() - tTime.getTime())
+        //b msec
+
+
+
 block append bannerItemsLeft
     if tfacet && tfacet.length && tfacet.length > 0
       each values, field in tfacet[0]
@@ -10,7 +149,7 @@ block append bannerItemsLeft
             if (v._id == query[field] || ((typeof query[field] === 'string') && query[field].split(',').includes(v._id)) || ((query[field] instanceof Array) && query[field].includes(v._id)))
                 - active = 'pur'
                 //input(type="hidden",name=field,value=v._id)
-            a.icn.fbn(href='/' + schemaName + '?' + field + '=' + v._id, class=active + ' ' + v._id, count=v.count)
+            a.fbn(href='/' + schemaName + '?' + field + '=' + v._id, class=active + ' ' + (opts.icons? 'vgi-'+opts.icons[v._id]: v._id), count=v.count)
                 =(v._id ? v._id : 'null')
                 |  (
                 = v.count
@@ -34,6 +173,6 @@ block append head
 block content
     include util.pug
     .tabletop
-        +bulkTable(docs, columns)
+        +bulkTable(docs, columns, 'vgListTable')
         if pages == 1
             +tablesort

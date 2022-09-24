@@ -1,0 +1,123 @@
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.grid {
+    stroke: #EEE;
+    stroke-width: 0.5px;
+}
+
+.bar {
+    fill: steelblue;
+}
+
+/*.x.axis path {}*/
+
+.chart .lbox {
+    width: 10px;
+    height: 10px;
+    display: inline-block;
+    border: 1px solid #ccc;
+    margin-left: 1em;
+}
+
+.chart .tick text {
+    font-size: 16px;
+    fill: #666666;
+    /*    stroke: #ffffff;
+    stroke-width: .5px;
+    stroke-linecap: butt;
+    stroke-linejoin: miter;
+    font-weight: 800;*/
+}
+
+.chart .total {
+    fill: #666666;
+    font-weight: bold;
+}
+
+.chart .sum {
+    font-weight: 200;
+    font-family: "helvetica neue", helvetica, arial, sans-serif;
+    font-size: 80px;
+    opacity: .6;
+}
+
+.arc path {
+    stroke: #fff;
+}
+
+.chart rect,
+.arc path {
+    opacity: 0.8;
+}
+
+.chart rect:hover,
+.arc path:hover {
+    opacity: 0.9;
+}
+
+.line {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 2px;
+}
+
+#chartZ:checked+div+.grd {
+    grid-template-columns: 110vh;
+     max-height: 100vh;
+}
+
+#chartZ:checked~.grd .vis .chart {
+    font-size: 14px;
+}
+
+#chartZ:checked~.btg>label[for="chartZ"] {
+    background-color: var(--sec);
+}
+
+#chartS:checked~.btg>label[for="chartS"] {
+    background-color: var(--sec);
+}
+
+svg {
+    background: #ffffff;
+}
+
+.grd {
+    display: grid;
+    grid-gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+}
+
+.vis {
+    display: block;
+    box-sizing: border-box;
+    min-height: 300px;
+    min-width: 320px;
+    height: 100%;
+    background-color: var(--wht);
+}
+
+.vis .chart {
+    font-size: 22px;
+}
+
+rect {
+    stroke: #fff;
+    stroke-width: 1px;
+}
+
+.node {
+    border: solid 1px white;
+    font: 10px sans-serif;
+    line-height: 12px;
+    overflow: hidden;
+    position: absolute;
+    text-indent: 2px;
+    box-sizing: border-box;
+  }

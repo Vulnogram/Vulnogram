@@ -6,13 +6,19 @@ const fs = require('fs');
 const mongoose = require('mongoose');
 const flash = require('connect-flash');
 const https = require('https');
-
+const pug = require('pug');
 // TODO: don't use express-session for large-scale production use
 const session = require('express-session');
 
 const passport = require('passport');
 const crypto = require('crypto');
 const compress = require('compression');
+
+const dotenv = require('dotenv').config()
+if (dotenv.error) {
+    console.log(".env was not loaded.");
+}
+
 const conf = require('./config/conf');
 const optSet = require('./models/set');
 
@@ -24,7 +30,9 @@ mongoose.Promise = global.Promise;
 mongoose.connect(conf.database, {
     keepAlive: true,
     useNewUrlParser: true,
-    useCreateIndex: true
+    useUnifiedTopology: true
+}).catch(function(e){
+    console.log("Error"+e.message);
 });
 const db = mongoose.connection;
 
@@ -37,10 +45,17 @@ db.once('open', function () {
 db.on('error', function (err) {
    console.error(err.message);
    console.error('Check mongodb connection URL configuration. Ensure Mongodb server is running!');
-   process.exit();
 });
 
 const app = express();
+
+var RateLimit = require('express-rate-limit');
+var limiter = new RateLimit({
+  windowMs: 1*60*1000, // 1 minute
+  max: 200
+});
+// apply rate limiter to all requests
+app.use(limiter);
 
 app.disable('x-powered-by');
 
@@ -54,6 +69,7 @@ app.set('view engine', 'pug');
 
 // make conf available for pug
 app.locals.conf = conf;
+app.locals.pugLib = pug;
 
 // parse urlencoded forms
 app.use(express.urlencoded({
@@ -99,10 +115,27 @@ function ensureAuthenticated(req, res, next) {
     }
 }
 
+function ensureConnected(req, res, next) {
+    if (mongoose.connection.readyState == 1) {
+        return next();
+    } else {
+        req.session.returnTo = req.originalUrl;
+        req.flash('error', 'Database error! Ensure mongod is up and check the settings on the server.')
+        res.status(500);
+        res.render('splash', {
+            title: 'Vulnogram'
+        });
+    }
+}
+
+app.use(ensureConnected);
+
 //delete return redirect path
 app.use(function (req, res, next) {
     res.setHeader('X-Frame-Options', 'SAMEORIGIN');
     res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader("Access-Control-Allow-Origin", "*");// XXX investigate
+    res.setHeader("Access-Control-Request-Headers", "cve-api-cna,cve-api-secret,cve-api-submitter");
 
     if (req.path != '/users/login' && req.session.returnTo) {
         delete req.session.returnTo
@@ -119,9 +152,7 @@ let docs = require('./routes/doc');
 
 app.locals.confOpts = {};
 
-var defaultSections = fs.readdirSync('./default');
-var customSections = fs.existsSync('./custom') ? fs.readdirSync('./custom') : [];
-var sections = new Set([...defaultSections, ...customSections]);
+var sections = require('./models/sections.js')();
 
 for(section of sections) {
     var s = optSet(section, ['default', 'custom']);
@@ -140,16 +171,16 @@ app.use('/home/stats', ensureAuthenticated, async function(req, res, next){
         try {
             var s = await db.collection(section+'s').stats();
         } catch (e){
-            
+
         };
         if (s === {}) {
         try {
             var s = await db.collection(section).stats();
         } catch (e){
-            
+
         };
         };
-        
+
         sections.push({
             name: section,
             items: s.count,
@@ -157,7 +188,8 @@ app.use('/home/stats', ensureAuthenticated, async function(req, res, next){
             avgSize: s.avgObjSize
         });
     }
-    res.render('list', {
+    res.render('list',
+    {
         docs: sections,
         columns: ['name', 'items', 'size', 'avgSize'],
         fields: {
@@ -173,7 +205,7 @@ app.use(function (req, res, next) {
     next();
 });
 
-//Configuring a reviewToken in conf file allows sharing drafts with 'people who have a link containing the configurable token' 
+//Configuring a reviewToken in conf file allows sharing drafts with 'people who have a link containing the configurable token'
 let review = require('./routes/review');
 
 if (review.public) {
@@ -190,7 +222,7 @@ if(conf.customRoutes) {
 }
 
 app.get('/', function (req, res, next) {
-    res.redirect(app.locals.confOpts['cve'].conf.uri);
+    res.redirect(conf.homepage? conf.homepage : '/home');
 });
 
 if(conf.httpsOptions) {

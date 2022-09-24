@@ -1,0 +1,324 @@
+mixin cveLoginBox
+    div.sec.shd.rnd.pad#cpBox
+        div#cpLogo
+            img(width="100%" src="./static/CVE.svg")
+        div#cpTitle
+            b CVE Services Portal 
+            br
+            i Instantly providing you CVE IDs since 2022
+        div#cpPrompt
+            #loginErr=message
+            form#cveLoginForm(method='POST', onkeypress='resetPortalLoginErr();' onchange='resetPortalLoginErr();' onsubmit='portalLogin(event, this); return false;')
+                label.lbl.vgi-globe(for="cpPortal") Portal
+                select#cpPortal.bor.txt(name='portal')
+                    option(value="https://cveawg.mitre.org/api" selected=(prevPortal == 'production')) production
+                    option(value="https://cveawg-test.mitre.org/api" selected=(prevPortal == 'test')) test
+                    option(value="http://127.0.0.1:3000/api" selected=(prevPortal == 'local')) local
+
+                label.lbl.vgi-org(for="cpOrg") CNA Short Name
+                input#cpOrg.bor.txt(name='org', type='text', autocomplete='on', "pattern"=".{2,64}" required=true value=prevOrg?prevOrg:'')
+
+                label.lbl.vgi-user(for="cpUser") CVE User
+                input#cpUser.bor.txt(name='user', type='text', autocomplete="on", "pattern"=".+" required=true)
+
+                label.lbl.vgi-key(for="cpKey") CNA API Key
+                input#cpKey.bor.txt(name='key', type='password', autocomplete='off' required=true)
+
+                input#cpSubmit.bor.fbn.sfe.vgi-export(type='submit', value='Login')
+
+mixin dlgHeader(icon, msg)
+    header.ban.sec.pad(style="min-width:20em;")
+        b.lbl(class=icon)=msg
+        | 
+        a.sbn.right.vgi-fail(onclick="this.closest('dialog').close()")
+
+mixin cveErrors
+    +dlgHeader('vgi-alert', typeof err == 'string' ? 'Error' : err.error)
+    center.pad2
+        if typeof err == 'string'
+            b.gap=err
+        else
+            h3=err.message
+            if err.details
+                ol.gap
+                    each d, i in err.details
+                        li= d.location
+                            | /   
+                            =d.param
+                            | :  
+                            =d.msg
+mixin portal
+    - var y = new Date().getFullYear()
+    header.pad.ban.sec
+        .left
+            label.vgi-globe.lbl Portal: 
+                =portalType
+            span.btg.rnd
+                        button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve One CVE
+                        details.popup
+                            summary.btn.t9 ▼
+                            dl.pop.wht.bor.rnd.shd.rows
+                              .gap
+                                dt.flx
+                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0, 5)' style="min-width:6em") Reserve  5
+                                    button.right.sbn.vgi-fail(onclick="this.closest('details').removeAttribute('open')")     
+                                dt
+                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0, 10)'  style="min-width:6em") Reserve 10
+                                dt 
+                                    button.btn.vgi-magic(onclick='cveReserveAndRender(1)') Reserve one for the year 
+                                        = y + 1
+        .flx
+            label#cveUser
+                +userstats
+            if userInfo && userInfo.authority && userInfo.authority.active_roles && userInfo.authority.active_roles.includes("ADMIN")
+                label#userMgmt
+                    +usermgmt
+    .pad#cveStatusMessage
+    form#cvePortalFilter.gap(onchange='cveGetList();')
+        .lbl Show
+        .rdg
+            .form-control
+                input.hid(id="chkall" type="radio" name="fstate" value="")
+                label.lbl.vgi-misc(for="chkall") All
+            .form-control
+                input.hid(id="chkres" type="radio" name="fstate" value="RESERVED" checked=true)
+                label.lbl.vgi-tag(for="chkres") Reserved
+            .form-control
+                input.hid(id="chkpub" type="radio" name="fstate" value=(portalType == 'test' ? "PUBLISHED" : "PUBLIC"))
+                label.lbl.vgi-globe(for="chkpub") Published
+            .form-control
+                input.hid(id="chkrej" type="radio" name="fstate" value=(portalType == 'test' ? "REJECTED" : "REJECT"))
+                label.lbl.vgi-no(for="chkrej") Rejected
+        .lbl Year
+        select.lbl.txt(name="y")
+            while y > 1998
+                option(value=y)=y
+                - y--;
+        |  
+        button.btn.vgi-reuse(onclick='event.preventDefault();cveGetList();return false;') Go
+    div#cvePage.gap
+        .rdg
+            div.lbl#cvePageInfo
+            .form-control
+                button.lbl#prevPage(onclick='paginate(-1)') &#8249;
+            .form-control
+                div.lbl#currentPage 1
+            .form-control
+                button.lbl#nextPage(onclick='paginate(1)') &#8250;
+		
+    div#cveList.gap
+
+mixin userstats
+    details.popup#userStatsPopup.popup(ontoggle="if(this.open && (u = document.getElementById('userListPopup'))) u.open = false;")
+        summary.fbn.vgi-user=((userInfo && userInfo.name && userInfo.name.first) ? userInfo.name.first : userInfo.username)
+            |  ▼ 
+        dl.pop.wht.bor.rnd.shd.pad
+            .gap.row
+                button.right.sbn.vgi-fail(onclick="this.closest('details').removeAttribute('open')")     
+            +userDetail(userInfo)
+            hr.bort
+            span.vgi-edit.fbn(onclick="cveUserEdit(this)" u=userInfo.username, f=userInfo.name?userInfo.name.first:'', l=userInfo.name?userInfo.name.last:'', ac=userInfo.active ad=userInfo.authority.active_roles.includes('ADMIN') title="Edit Info")
+                | Update my details
+            hr.bort
+            dt Org:  
+                b=org ? org.name : 'undefined'
+            dt ShortName:  
+                b= org ? org.short_name : 'undefined'
+            dt Role:  
+                b= org && org.authority ? org.authority.active_roles : 'undefined'
+            hr.bort
+            span.vgi-exit.fbn(onclick="portalLogout()") Logout!
+
+mixin userDetail(u)
+    a.td(onclick="cveUserEdit(this)",u=u.username, f=u.name?u.name.first:'', l=u.name?u.name.last:'' ac=u.active ad=u.authority.active_roles.includes('ADMIN') title="Edit Info")
+        b=u.name?u.name.first:''
+            | 
+            =u.name?u.name.last:''
+        i.sicn(class=u.authority.active_roles.includes('ADMIN')? 'vgi-king' : 'vgi-cap' title=u.authority.active_roles.includes('ADMIN')?'Admin':'Regular User')
+        i.sicn(class=u.active?'vgi-ok':'vgi-no' title=u.active? 'active': 'inactive')
+        br
+        small=u.username
+
+mixin listUsers
+    if users
+        each u, i in users
+            .tr
+                +userDetail(u)
+
+mixin usermgmt
+    details#userListPopup.popup(ontoggle="userlistUpdate(this, event)")
+        summary.fbn.vgi-cog Users
+            |  ▼ 
+        div.pop.wht.bor.rnd.shd.usermgmt
+            .gap.row
+                button.sfe.btn.vgi-magic(onclick="document.getElementById('userAddDialog').showModal()") Add a user  
+                button.right.sbn.vgi-fail(onclick="this.closest('details').removeAttribute('open')")     
+            .tbl.gap
+                .tbody#userlist
+                    .tr
+                        .td(colspan=6)
+                            center
+                                .spinner
+          
+mixin htext
+    if t
+        each line in t.split(/\n/)
+            if line
+                if line.startsWith('  ')
+                    code=line
+                    br
+                else
+                    p=line
+    else
+        p=t
+
+mixin date(value)
+    - var v = false;
+    - if (value instanceof Date) { v = value;} else {
+    -   var timestamp = Date.parse(value);
+    -   v = isNaN(timestamp) ? false : new Date(timestamp)
+    - }
+    if v
+        - var nowt = Date.now();
+        - var vtime = v.getTime();
+        - var delta = nowt-vtime;
+        - var hidet = '';
+        - if (Math.abs(delta) > 43000000) { hidet = 'hid';}
+        span.nobr.date(class=cl, title=v.toString())
+            = v.toISOString().slice(0,10)
+            span.nobr(class=hidet)
+                |  
+                = v.toLocaleTimeString("de-US", {hour:"2-digit", minute:"2-digit"})
+    else
+        = obj[name]
+
+mixin editables
+    each c in cveIds
+        //-if c.state == 'RESERVED'
+            option(value=c.cve_id)='🏷️ ' + c.cve_id
+        if c.state == 'PUBLISHED'
+            option(value=c.cve_id)='🌐 Published on '
+                +date(c.time.modified)
+        if c.state == 'REJECTED'
+            option(value=c.cve_id)='⛔ Rejected on ' 
+                +date(c.time.modified)
+
+mixin reserveds
+    each c in cveIds
+        if c.state == 'RESERVED'
+            option(value=c.cve_id)
+                i='🏷️ Reserved by ' + c.requested_by.user
+        //-if c.state == 'PUBLISHED'
+            option(value=c.cve_id)='🌐 Published by ' + c.requested_by.user
+        //-if c.state == 'REJECTED'
+            option(value=c.cve_id)='⛔ Rejected by ' + c.requested_by.user
+
+mixin listIds
+    if cveIds && cveIds.length > 0
+        - var stateIcons = {'RESERVED':'vgi-tag', 'PUBLISHED':'vgi-globe', 'REJECTED':'vgi-no', 'PUBLIC':'vgi-globe'}
+        table#cveListTable.tbl.sortable
+            thead
+                tr
+                    th ID
+                    th Requester
+                    th(aria-sort="ascending") Created
+                    th Modified
+                    th
+            tbody
+                each c in cveIds
+                    tr(data=c.state)
+                        td
+                            if editable
+                                a(class=stateIcons[c.state]?stateIcons[c.state]:'',href="javascript:cveLoad('"+c.cve_id+"')", title='Load ' + c.state + ' ' + c.cve_id + ' to edit')
+                                    =c.cve_id
+                            else
+                                span(class=stateIcons[c.state]?stateIcons[c.state]:'', title=c.state)
+                                    =c.cve_id
+                            if c.state != 'RESERVED'
+                                a.vgi-ext(href="https://www.cve.org/CVERecord?id="+c.cve_id, target="_blank")
+                        td=c.requested_by.user
+                        td
+                            +date(c.time.created)
+                        td
+                            if c.time.modified != c.time.created
+                                +date(c.time.modified)
+                        td
+                            if editable && c.state == 'RESERVED'
+                                a.vgi-cancel(data=c.cve_id, onclick="cveReject(this, event)", title="Reject this CVE ID",)
+    else
+        i.gap2 No CVE IDs found! 
+
+mixin autoText
+  if con
+    if con.problemTypes
+        - var pts = [];
+        for t in con.problemTypes
+            if t.descriptions
+                - var prob = t.descriptions.map(x=>x.description).join(', ').replaceAll(/CWE-\d+/g,"").trim().replaceAll(/\s+/g, ' ');
+                if prob
+                    - pts.push(prob);
+        if pts.length > 0
+            = pts.join(', ')
+        else
+            | A
+    |  vulnerability
+    - var codelist = [];
+    if con.affected
+        - var plist = [];
+        for p in con.affected
+            - var pd = [p.vendor, p.vendor != p.product ? p.product : '', p.packageName != p.product ? p.packageName : '', (p.platforms ? 'on ' + p.platforms.join(', ') : ''), p.modules ? '(' + p.modules.join(', ') + ' modules)':''].join(' ').trim().replaceAll(/\s+/g, ' ')
+            if pd
+                - plist.push(pd);
+        - var ptext = plist.join(', ');
+        if ptext
+            |  in 
+            = ptext
+    if con.impacts
+        - var ips = [];
+        for t in con.impacts
+            if t.descriptions
+                - var impact = t.descriptions.map(x=>x.value).join(', ').replaceAll(/CAPEC-\d+/g, "").trim().replaceAll(/\s+/g, ' ')
+                if impact
+                    - ips.push(impact);
+        if ips.length > 0
+            |  allows 
+            = ips.join(', ')
+    |.
+    if con.affected
+        - var fileSet = {};
+        - var funcSet = {};
+        for p in con.affected
+            if p.programFiles
+                for pf in p.programFiles
+                    - fileSet[pf] = 1
+            if p.programRoutines
+                for fn in p.programRoutines
+                    - funcSet[fn.name] = 1
+        - var files = Object.keys(fileSet);
+        - var funcs = Object.keys(funcSet);
+
+        if files.length > 0 || funcs.length > 0
+          p  This vulnerability is associated with
+            if files.length > 0
+                |  program files 
+                - var counter = 0
+                for fn in files
+                    - counter ++
+                    tt=fn
+                    if counter < files.length
+                        | , 
+            if funcs.length > 0
+                if files.length > 0
+                    |  and
+                |  program routines 
+                - var counter = 0
+                for fn in funcs
+                    - counter ++
+                    tt=fn
+                    if counter < funcs.length
+                        | , 
+            |.
+
+block red
+    if ctemplate != undefined
+        +#{ctemplate}

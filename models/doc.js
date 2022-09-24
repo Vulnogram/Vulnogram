@@ -22,8 +22,6 @@ module.exports = function (name) {
         '$**': 'text'
     });
     
-    docSchema.statics.findAndModify = function (query, sort, update, options, callback) {
-        return this.collection.findAndModify(query, sort, update, options, callback);
-    };
+
     return mongoose.model(name, docSchema);
 }

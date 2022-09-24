@@ -1,133 +1,8 @@
-mixin renderVal(name, value, sum)
-    if value != null
-        case name
-            when 'ID'
-                a.nobr(href= '/' + schemaName +'/'+ value)=value
-            when 'CVE'
-                if value instanceof Array
-                    each val in value
-                        +renderVal(name, val, sum)
-                        | 
-                else
-                    if fields !=undefined && fields.CVE != undefined && fields.CVE.link
-                        a(href=fields.CVE.link + value)=value
-                    else
-                        a(href="/cve/" + value)=value
-            when 'Draft'
-                a(href="#" + value)=value
-            when 'yyyymmdd'
-                - var v = false;
-                - if (value instanceof Date) { v = value;} else {
-                -   var timestamp = Date.parse(value);
-                -   v = isNaN(timestamp) ? false : new Date(timestamp)
-                - }
-                if v
-                    = v.toJSON().substr(0,10)
-            when 'date'
-                - var v = false;
-                - if (value instanceof Date) { v = value;} else {
-                -   var timestamp = Date.parse(value);
-                -   v = isNaN(timestamp) ? false : new Date(timestamp)
-                - }
-                if v
-                    span.nobr(class="date y"+ (new Date() > v ? Math.floor(Math.log2((new Date()).getFullYear()-v.getFullYear()+1)*2) : 'f tag'))
-                        = v.toJSON().substr(0,10)
-            //when 'ToDo'
-            //    if value.length > 0
-            //        b.bdg=value.length
-            when 'File'
-                a(href=page+(page.endsWith('/')? '':'/')+value)=value
-            when 'Filetype'
-                span.square(class=value.charAt(0))=value
-            when 'CVSS'
-                -var s = parseFloat(value)
-                if isNaN(s) || s<0 || s>10
-                    =value
-                else if s == 0
-                    b.rnd.tag.NONE=value
-                else if value <= 3.9
-                    b.rnd.tag.LOW=value
-                else if value <= 6.9
-                    b.rnd.tag.MEDIUM=value
-                else if value <= 8.9
-                    b.rnd.tag.HIGH= value
-                else if value <=10
-                    b.rnd.tag.CRITICAL=value
-                else
-                    =value
-            when 'CVSSFull'
-                = value.baseScore.toFixed(1)
-                |  
-                if value.version >= "3.0"
-                    | (
-                    a(href="https://cvssjs.github.io/#" + value.vectorString)=value.vectorString
-                    | )
-                else
-                    a(href='https://nvd.nist.gov/vuln-metrics/cvss/v2-calculator?vector='+value.vectorString)=value.vectorString
-            when 'Defect'
-                - if (!sum.Defect) {sum.Defect = {} }
-                -   
-                - var defects = value
-                - if (typeof defects === 'string' || defects instanceof String) {defects = value.split(/\s+/)}
-                - if (typeof defects === 'number') {defects = [value]}
-                each d in defects
-                    - sum.Defect[d]++;
-                    if  conf.defectURL
-                        a(href=conf.defectURL + d)= d
-                    else
-                        = d
-                    | 
-            when 'level'
-                span.nobr.icn(class="l" + value.charAt(0),title=value)
-                    = value
-            when 'scopes'
-                each s in value
-                    span.icn(class=s.Resolution,class=s.State,class=s['Resolution-Reason']?s['Resolution-Reason'].replace(/\s/g,''):null, title=[s['Planned-Release'],s.State,s.Resolution,s['Resolution-Reason']].join(' - '))
-                        = s['Planned-Release']
-                        span.extra
-                            | 
-                            = s.Resolution ? s.Resolution : s.State
-            default
-                if value instanceof Array
-                    each v in value
-                        +renderVal(name, v, sum)
-                        |  
-                else if value instanceof Date
-                    +renderVal('date', value, sum)
-                else if typeof value === 'object'
-                    for v, k in value
-                        p
-                            b=k
-                            |  
-                            +renderVal(k, v, sum)
-                else
-                    if fields && fields[name]
-                        if fields[name].link
-                            a(class=fields[name].class, href=fields[name].link+value)=value
-                        else if fields[name].class
-                            span(class=fields[name].class + ' '+value,title=value)=value
-                        else
-                            = value
-                    else
-                        =value
-
-mixin renderCell(name, value, sum)
-    case name
-        when 'CVE'
-            td.CVE(style="width:8em;")
-                +renderVal(name, value, sum)
-        when 'CVSS'
-            td.CVSS(data-sort=value ? value.toFixed(3) : false)
-                +renderVal(name, value, sum)
-        default
-            td(class=name)
-                +renderVal(name, value, sum)
-
 mixin hyperlevel(obj, name)
     - var value = obj[name];
     span.nobr.icn(class="l" + value.charAt(0),title=value)
         = value
-        
+ 
 mixin hyperscopes(obj, name)
     - var value = obj[name];
     each s in value
@@ -180,23 +55,19 @@ mixin hyperdate(obj, name)
         - var nowt = Date.now();
         - var vtime = v.getTime();
         - var delta = nowt-vtime;
-        - var hidey = '', hidem = '', hidet = '';
+        - var hidet = '';
         - if (Math.abs(delta) > 43000000) { hidet = 'hid';}
-        -// if (Math.abs(delta) < 43000000) { hidem = 'invis'; hidey = 'invis' } else if (Math.abs(delta) < 15770000000) { hidet = 'invis'; hidey = ' invis'} else { hidet = 'hid'}
         - var cl = "date y"+ (nowt > vtime ? Math.floor(Math.log2((delta/31536000000)+1)*2) : 'f tag-s');
         span.nobr(class=cl, title=v.toString())
-            span.nobr(class=hidey)
-                = v.toLocaleDateString("de-US", {year:"numeric"})+ '-'
-            span.nobr(class=hidem)
-                = v.toLocaleDateString("de-US", {month:"2-digit",day: "2-digit"})
+            = v.toISOString().slice(0,10)
             span.nobr(class=hidet)
                 |  
                 = v.toLocaleTimeString("de-US", {hour:"2-digit", minute:"2-digit"})
     else
         = obj[name]
 
-mixin hyperLink(value, url)
-    a(href=url + value)=value
+mixin hyperLink(value, url, mid, suffix, target, cls, onclick)
+    a(class=cls,href=(url?url:'') + encodeURIComponent(mid) + (suffix ? suffix : ''),target=target,onclick=onclick)=value
 
 mixin hyperVal(obj, name)
     - var value = (obj !== Object(obj) || Array.isArray(obj))? obj : obj[name];
@@ -213,21 +84,22 @@ mixin hyperVal(obj, name)
             when 'scopes'
                 +hyperscopes(obj, name)
             default
-                //- try {
-                //-    +#{'hyper' + name}(obj, name)
-                //-- } catch(e) {
                 if fields && fields[name]
                     - var cls = fields[name].class ? fields[name].class : '';
                     - var onlick = fields[name].onclick ? fields[name].onclick : false;
                     if fields[name].xref && fields[name].xref.class
                         - cls = cls + obj[fields[name].xref.class]
-                    if fields[name].href != undefined
+                    if Array.isArray(fields[name].links) && (value != '')
+                        each hv, hi in fields[name].links
+                            +hyperLink(value,hv.href,value,hv.hrefSuffix,hv.target ? hv.target: (hv.href && hv.href.startsWith('http')?"_blank":false),hv.class,hv.onclick)
+                    else if fields[name].href != undefined
                         - var href = fields[name].href;
                         - var hrefSuffix = fields[name].hrefSuffix;
                         - var target = (fields[name].target ? fields[name].target : (href && href.startsWith('http')?"_blank":false))
                         if fields[name].xref && fields[name].xref.href
-                            - href = href + obj[fields[name].xref.href] + (hrefSuffix? hrefSuffix:'');
-                            a(target=target class=cls href=href onclick=onclick)=value
+                            //- href = href + obj[fields[name].xref.href] + (hrefSuffix? hrefSuffix:'');
+                            +hyperLink(value,href,obj[fields[name].xref.href],hrefSuffix,target,cls,onclick)
+                            //-a(target=target class=cls href=href onclick=onclick)=value
                         else
                             if Array.isArray(value)
                                 each v, i in value
@@ -236,8 +108,9 @@ mixin hyperVal(obj, name)
                                     //- a(target=(ahref.startsWith('http')?"_blank":false) class=cls, href=ahref)=v
                                     |  
                             else
-                                - href = href+(value ? value : '')+ (hrefSuffix? hrefSuffix:'');
-                                a(target=target class=cls href=href onclick=onclick)=value
+                                //- href = href+(value ? value : '')+ (hrefSuffix? hrefSuffix:'');
+                                +hyperLink(value,href, value, hrefSuffix,target,cls,onclick)
+                                //a(target=target class=cls href=href onclick=onclick)=value
                     else
                         if Array.isArray(value)
                             each v, i in value
@@ -245,147 +118,13 @@ mixin hyperVal(obj, name)
                                 |  
                         else
                             if (typeof value === 'string') && value.match(/^[a-zA-Z0-9\-_]{1,30}$/) || typeof value === 'boolean'
-                                - cls = (cls ? cls + ' ' : '')+ value
+                                if(fields[name].icons && fields[name].icons[value])
+                                    - cls = (cls ? cls + ' ' : '')+ 'vgi-'+fields[name].icons[value]
+                                else
+                                    - cls = (cls ? cls + ' ' : '')+ value
                             span(class=cls title=value onclick=onlick)=value
                 else
                     =value
-
-mixin facetChart(facet, query, tfacet)
-  if (total > 0)
-    // && facet.length > 0 && (Object.keys(facet[0]).length)
-    form#chartForm(action='/'+schemaName,method="GET",onchange="document.getElementById('filter').className='indent btn sfe'")
-        if query && query.q
-            input(type="hidden",name="q",value=(Array.isArray(query.q) ? query.q.join(' ') : query.q))
-        if tfacet && tfacet.length && tfacet.length > 0
-            each values, field in tfacet[0]
-                each v in values
-                    - var vx = v._id;
-                    - vx = (v._id == null) ? 'null': ((v._id == '') ? 'null': v._id);
-                    - vx = Array.isArray(vx) ? vx.join(',') : vx;
-                    if (v._id == query[field] || ((typeof query[field] === 'string') && query[field].split(',').includes(v._id)) || ((query[field] instanceof Array) && query[field].includes(v._id)))
-                        input(type="hidden",name=field,value=vx)
-        if facet.length > 0 && (Object.keys(facet[0]).length)
-          div.ins.hig.flx.wlp.pad
-            each values, field in facet[0]
-              div.wht.rnd.shd.chart(class=field)
-                label.ico(class=field,for='flt'+field)=field
-                input.expand(id="flt"+field,type="checkbox")
-                each v in values
-                    - var vx = v._id;
-                    - vx = (v._id == null) ? 'null': ((v._id == '') ? 'null': v._id);
-                    - vx = Array.isArray(vx) ? vx.join(',') : vx;
-                    div.bar(style="width:" + Math.round(v.count/total*170.0+1) + "px")
-                        input(type="checkbox", id=field+vx, name=field, value= vx, checked=(v._id && query[field] && query[field].includes(v._id)) || (vx === 'null' && query[field] && query[field].includes('null')))
-                        label.otl(class=vx + (fields[field].class? ' ' + fields[field].class : ''), for=field+vx, title=vx+ " (" + v.count + ")")
-                            = vx
-                            br
-                            b=v.count
-                label(for="flt"+field)
-            .right.gap
-                input.indent.btn#filter(type="submit", value="Filter")
-                a.indent.btn(href="/" + schemaName, type="submit", value="Clear") Clear
-        if pages > 1        
-            for c in columns
-                button.hid(id="sort"+c,name="sort",value=(query.sort=="-" + c ? "" : "-") + c)=c
-
-mixin paginate
- if total > 0
-     - pages = Number(pages)
-     - current = Number(current)
-     - query ? delete query.page : '';
-     - var bs = '?' + (qs ? qs.stringify(query) : '')  + '&page=';
-     - var kin = 3;
-     form.ban.pad(action='',method="GET",style="flex-grow:1;",onsubmit='var cf = document.getElementById("chartForm"); if(cf.q == undefined){var qin = document.createElement("input"); qin.setAttribute("name","q");qin.setAttribute("type","hidden"); cf.appendChild(qin)}; cf.q.value=this.q.value; cf.submit(); return false;')
-        - var searchString = query ? (Array.isArray(query.q) ? query.q.join(' '): query.q) : "";
-        - delete query.q;
-        //each i, d in query
-        //    input(type="hidden",name=d,value=i)
-        span.right
-            if pages <= 1
-                | Found 
-                = total
-            if pages > 1
-                span.pagination
-                    | Showing 
-                    = ((current-1)*limit + 1)
-                    |  - 
-                    = current*limit > total ? total : current*limit
-                    |  of 
-                    = total
-                    |  
-                    if current == 1
-                        a.btn.pur 1
-                    else
-                        a.btn(href=bs + '1') 1
-                    - var i =  (current > kin ? (current - kin + 1) : 2)
-                    if i != 2
-                        if(i == 3)
-                            a.btn(href=bs+2) 2
-                        else
-                            b.lbl ∙ ∙ ∙
-                    while ((i <= (current + kin - 1)) && (i < pages))
-                        if i==current
-                            a.btn.pur= i
-                        else
-                            a.btn(href=bs + i)=i
-                        if i==(current + kin - 1) && i < pages -1
-                            b.lbl ∙ ∙ ∙
-                        - i++;
-                    if current == pages
-                        a.btn.pur=pages
-                    else
-                        a.btn(href=bs+pages)=pages
-        | 
-        span.indent.out
-            input.txt(size=20,type="text",name="q",placeholder=" Filter results ",value=searchString,results="10",required)
-            input.btn(type="submit", value="filter")
-        | 
-        label.lbl.icn.fold(for="compactTable",onclick="this.setAttribute('val', document.getElementById(this.getAttribute('for')).checked)",val="")
-
-mixin bulkTable(docs, columns, id)
-    if !docs || docs.length == 0
-        p
-            b No items found!
-    else
-        - var rowCount = 0;
-        - var sum = {}, showCheckboxes = false; 
-        - if (bulkInput) { showCheckboxes = (Object.keys(bulkInput).length !== 0)}
-        form(autocomplete="off",action='/'+schemaName+'/update',method="POST")
-            input.hid.compactTable(id="compactTable",type='checkbox',checked=true)
-            +table(docs, columns, showCheckboxes, id)
-            input(type="hidden",name="_csrf",value=csrfToken)
-            .pad.flx
-                if showCheckboxes
-                    .left.pad
-                        each spec, name in bulkInput
-                          .indent.out
-                            label.lbl.icn(class=name)=name
-                            if spec.type && spec.type == "select"
-                                select.btn(name=name)
-                                    option(selected,value) - Select -
-                                    each v in spec.enum
-                                        option(value=v)=v
-                            else
-                                input.txt(name=name)
-                    .left.nobr.pad
-                        input.btn(type='submit',value="Update")
-                        input.btn(type='reset')
-        +distinctSummary(docs, columns)
-
-mixin distinctSummary(docs, columns)
-        - tTime = new Date()
-        each column in columns
-            if fields[column] && fields[column].showDistinct
-                - var unique = [...new Set(docs.map(item => item[column]).reduce((a, b) => a.concat(b), []))];
-                p
-                    small Displayed  
-                        b= column
-                        |s (
-                        = unique.length
-                        | ):  
-                        = unique.join(', ')
-        //b= (Date.now() - tTime.getTime())
-        //b msec
 
 
 mixin table(docs, columns, showCheckboxes, id)
@@ -416,8 +155,6 @@ mixin table(docs, columns, showCheckboxes, id)
                                     th.pointer(data-sort-method='number') CVSS
                                 default
                                     th=column
-
-
             tbody
                 each doc, i in docs
                     - rowCount ++
@@ -429,28 +166,15 @@ mixin table(docs, columns, showCheckboxes, id)
                         each column in columns
                             td(class=column)
                                 +hyperVal(doc, column)
-        //b= (Date.now() - tTime.getTime())
-        //b  msec
+
 
 mixin tablesort
-    script(src="/js/tablesort.min.js")
+    script(src=conf.basedir + 'js/tablesort.min.js')
     script.
         var tables = document.getElementsByClassName('sortable')
         for (var i = 0; i < tables.length; i++) {
             new Tablesort(tables[i]);
         }
-
-
-mixin usercss(docs)
-    style
-        for v, i in docs
-            if v.emoji
-                = 'monogram ' + v.username.charAt(0) + ':before : {content:"'+ v.emoji +'"}'
-
-mixin expand(x)
-    label
-        input.hid.expnd(type="checkbox" checked="")
-        div=x
         
 mixin asis(x)
     |!{x}

@@ -1,15 +1,18 @@
+var appConf = require('../../config/conf');
+var sections = require('../../models/sections')();
+
 module.exports = {
 conf: {
     title: 'Dashboard',
     name: 'Vulnogram',
-    class: 'vulnogram',
+    class: 'vgi-logo',
     order: -10,
     uri: '/home/'
 },
 facet: {
     ID: {
         path: 'body.ID',
-        regex: 'PLOT-[A-Za-z0-9]+',
+        regex: 'PLOT-[A-Za-z0-9-_]+',
         chart: false,
         href: '/home/',
         hrefSuffix: '#chart'
@@ -73,7 +76,6 @@ schema: {
           "description": "Unique ID starting with PLOT-xxxxxxx..",
           "pattern": "^PLOT-([A-Za-z0-9]+)$",
       },
-      
     "title": {
       "$id": "#/properties/title",
       "type": "string",
@@ -100,15 +102,17 @@ schema: {
       "title": "Chart Type",
       "default": "bar",
       "enum": [
-        "pie","bar"
+        "pie","bar","treemap"
       ],
       "pattern": "^(.*)$"
     },
     "section": {
         type: "string",
-       examples: ["pr","cve","sir","jira","note","nvd","contact"]
+        format: "radio",
+        enum: sections,
     },
     "query": {
+      "title": "Query (eg., severity=CRITICAL,HIGH&product=Example) - Copy it from a filtered section view.",
         type: "string",
         "$ref": "/home/examples?field=body.query",
         "description": "URI query string For eg., field1=value&field2=value1,value2"
@@ -118,6 +122,7 @@ schema: {
       "type": "array",
       "format": "taglist",
       "title": "Group by field names (Max 2 for bar charts, Max 1 for pie charts)",
+      "$ref": "/home/examples?field=body.key",
       "items": {
             "type": "string",   
         },

@@ -50,6 +50,30 @@ function cloneJSON(obj) {
     return cloneO;
 };
 
+//for inserting images as data URLs in wysihytml5 widget
+function loadimg(e) {
+    var sibs = this.parentNode.parentNode.childNodes;
+    var f = sibs[1];
+    var ok = sibs[4];
+    e.preventDefault();
+    var file = this.files[0];
+    if(file.size > 528385) {
+        alert('Image size should less than 500k');
+        return false;
+    };
+    if(file.type.indexOf("image")==-1){
+        alert("Not an image!");
+        return false;
+    }
+    var reader = new FileReader();
+    reader.onload = function (event) {
+        f.value = event.target.result;
+        ok.click();
+    };
+    reader.readAsDataURL(file);
+    return false;
+};
+
 var textUtil = {
 jsonView: function(obj) {
     if (obj instanceof Array) {
@@ -115,18 +139,6 @@ getPR: function(cve) {
     return matches;
 },
 
-getProductList: function (cve) {
-    var lines = [];
-    for (var vendor of cve.affects.vendor.vendor_data) {
-        var pstring = [];
-        for (var product of vendor.product.product_data) {
-            pstring.push(product.product_name);
-        }
-        lines.push(vendor.vendor_name + " " + pstring.join(", "));
-    }
-    return lines.join("; ");
-},
-
 getAffectedProductString: function (cve) {
     var status={};
     var lines = [];
@@ -142,9 +154,9 @@ getAffectedProductString: function (cve) {
                     } else if (version.version_affected.startsWith('!')) {
                         cat = "unaffected";
                     }
-                    var prefix = "";
+                    var prefix = product.product_name  + " ";
                     if(version.version_name && version.version_name != "") {
-                        prefix = version.version_name + " ";
+                        prefix += version.version_name + " ";
                     }
                     switch (version.version_affected) {
                         case "!":
@@ -155,7 +167,7 @@ getAffectedProductString: function (cve) {
                         case "<":
                         case "!<":
                         case "?<":
-                            vv = prefix + "versions prior to " + version.version_value;
+                            vv = prefix + "versions earlier than " + version.version_value;
                             break;
                         case ">":
                         case "?>":
@@ -164,12 +176,12 @@ getAffectedProductString: function (cve) {
                         case "<=":
                         case "!<=":
                         case "?<=":
-                            vv = prefix + "version " + version.version_value + " and prior versions";
+                            vv = product.product_name  + " " + version.version_value + " and earlier versions";
                             break;
                         case ">=":
                         case "!>=":
                         case "?>=":
-                            vv = prefix + "version " + version.version_value + " and later versions";
+                            vv = product.product_name  + " " + version.version_value + " and later versions";
                             break;
                         default:
                             vv = version.version_value;
@@ -208,61 +220,190 @@ getAffectedProductString: function (cve) {
     }
     return ret.join('\n\n');
 },
-
-getProductAffected:
-function (cve) {
-    var lines = [];
+affectedTable: function (cve) {
+    var status={};
     for (var vendor of cve.affects.vendor.vendor_data) {
-        var pstring = [];
+        var vendor_name = vendor.vendor_name;
+        if(!status[vendor_name]) {
+            status[vendor_name] = {};
+        }
         for(var product of vendor.product.product_data) {
-            var versions = {};
-            var includePlatforms = true;
-            var platforms = {};
-            for (var version of product.version.version_data) {
-                if(version.version_affected && version.version_affected.indexOf('!') < 0 && version.version_affected.indexOf('?') < 0) {
-                    versions[version.version_name] = 1;
-                    if (version.platform == "all" || version.platform == "") {
-                        includePlatforms = false;
+            var product_name = product.product_name;
+            if(!status[vendor_name][product_name]) {
+                status[vendor_name][product_name] = {};
+            }
+            for(var version of product.version.version_data) {
+                var vv = version.version_value;
+                var cat = "affected";
+                var prefix = vn = "";
+                if(version.version_name && version.version_name != "") {
+                    vn = version.version_name;
+                }
+                if(version.version_affected) {
+                    if(version.version_affected.startsWith('?')) {
+                        cat = "unknown";
+                    } else if (version.version_affected.startsWith('!')) {
+                        cat = "unaffected";
                     }
-                    if (includePlatforms && version.platform) {
-                        var ps = version.platform.split(',');
-                        for (var p of ps) {
-                            platforms[p.trim()] = true;
-                        }
+                    switch (version.version_affected) {
+                        case "!":
+                        case "?":
+                        case "=":
+                            vv = version.version_value;
+                            break;
+                        case "<":
+                        case "!<":
+                        case "?<":
+                            vv = "< " + version.version_value;
+                            break;
+                        case ">":
+                        case "?>":
+                            vv = "> " + version.version_value;
+                            break;
+                        case "<=":
+                        case "!<=":
+                        case "?<=":
+                            vv = "<= " + version.version_value;
+                            break;
+                        case ">=":
+                        case "!>=":
+                        case "?>=":
+                            vv = ">= " + version.version_value;
+                            break;
+                        default:
+                            vv = version.version_value;
+                    }
+                }
+                if(version.platform && version.platform != "") {
+                    vv += ' on ' + version.platform;
+                }
+                if(!status[vendor_name][product_name][vn]) {
+                    status[vendor_name][product_name][vn] = {};
+                }
+                
+                if (!status[vendor_name][product_name][vn][cat]) {
+                    status[vendor_name][product_name][vn][cat] = [];
+                }
+                status[vendor_name][product_name][vn][cat].push(vv);
+            }
+        }
+    }
+    return status;
+},
+appliesTo: function(affects){
+    var ret = [];
+    for (var vendor of affects.vendor.vendor_data) {
+        var vendor_name = vendor.vendor_name;
+        for(var product of vendor.product.product_data) {
+            var product_name = product.product_name;
+            for(var version of product.version.version_data) {
+                var vv = version.version_value;
+                var prefix = vn = "";
+                if(version.version_name && version.version_name != "") {
+                    vn = version.version_name;
+                }
+                if(version.version_affected) {
+                    if(version.version_affected.startsWith('?')) {
+                        cat = "unknown";
+                    } else if (version.version_affected.startsWith('!')) {
+                        cat = "no";
+                    }
+                    switch (version.version_affected) {
+                        case "=":
+                        case "<":
+                        case ">":
+                        case "<=":
+                        case ">=":
+                            ret.push(product_name + ' ' + vn);
+                            break;
                     }
                 }
             }
-            pstring.push('This issue affects ' + product.product_name + ' ' +
-                Object.keys(versions).sort().join(", ")+ '.');
-            if(includePlatforms && (Object.keys(platforms).length > 0)) {
-                pstring.push('Affected platforms: ' + Object.keys(platforms).sort().join(', ') + '.');
-            }
         }
-        lines.push(pstring.join(" "));
     }
-    return lines.join();  
+    return ret;
 },
-getProblemTypeString: function (o) {
-    var pts = [];
-    for (var j = 0; j < o.problemtype.problemtype_data.length; j++) {
-        for (var k = 0; k < o.problemtype.problemtype_data[j].description.length; k++) {
-            if (o.problemtype.problemtype_data[j].description[k].lang == "eng") {
-                var pt = o.problemtype.problemtype_data[j].description[k].value;
-                if (pt) {
-                    pts.push(pt.replace(/^CWE-[0-9 ]+/, ''));
+affectedYesNo: function(affects){
+    var status={yes:[],no:[],unknown:[]};
+    for (var vendor of affects.vendor.vendor_data) {
+        var vendor_name = vendor.vendor_name;
+        for(var product of vendor.product.product_data) {
+            var product_name = product.product_name;
+            for(var version of product.version.version_data) {
+                var vv = version.version_value;
+                var cat = "yes";
+                var prefix = vn = "";
+                if(version.version_name && version.version_name != "") {
+                    vn = version.version_name;
+                }
+                if(version.version_affected) {
+                    if(version.version_affected.startsWith('?')) {
+                        cat = "unknown";
+                    } else if (version.version_affected.startsWith('!')) {
+                        cat = "no";
+                    }
+                    switch (version.version_affected) {
+                        case "!":
+                        case "?":
+                        case "=":
+                            vv = version.version_value;
+                            break;
+                        case "<":
+                        case "!<":
+                        case "?<":
+                            vv = "< " + version.version_value;
+                            break;
+                        case ">":
+                        case "?>":
+                            vv = "> " + version.version_value;
+                            break;
+                        case "<=":
+                        case "!<=":
+                        case "?<=":
+                            vv = "<= " + version.version_value;
+                            break;
+                        case ">=":
+                        case "!>=":
+                        case "?>=":
+                            vv = ">= " + version.version_value;
+                            break;
+                        default:
+                            vv = version.version_value;
+                    }
+                    if(version.platform && version.platform != "") {
+                            vv += ' on ' + version.platform;
+                    }
+                }
+                var ph = status[cat][product_name];
+                if(ph == undefined) {
+                    ph = status[cat][product_name] = {};
+                }
+                vns = ph.version_names;
+                if(vns == undefined) {
+                    vns = ph.version_names = []
+                }
+                if(vns.indexOf(vn)<0) {
+                    vns.push(vn);
+                }
+                vvs = ph.version_values;
+                if(vvs == undefined) {
+                    vvs = ph.version_values = []
+                }
+                if(vvs.indexOf(vv)<0) {
+                    vvs.push(vv);
                 }
             }
         }
     }
-    return pts.join(', ');
-},
-getBestTitle: function (o) {
-    var title = textUtil.deep_value(o, 'CVE_data_meta.TITLE');
-    if (!title) {
-        title = textUtil.getProblemTypeString(o) + ' vulnerability in ' + textUtil.getProductList(o);
+    var rstatus = {yes:[],no:[],unknown:[]};
+    for (var cat of ['yes','no','unknown']){
+        for(var p in status[cat]) {
+           rstatus[cat].push({product:p, version_names:status[cat][p].version_names, version_values: status[cat][p].version_values})
+        }
     }
-    return title;
+    return rstatus;
 },
+
 mergeJSON : function (target, add) {
     function isObject(obj) {
         if (typeof obj == "object") {
@@ -275,6 +416,7 @@ mergeJSON : function (target, add) {
         return false;
     }
     for (var key in add) {
+        if (key === "__proto__" || key === "constructor") continue;
         if (add.hasOwnProperty(key)) {
             if (target[key] && isObject(target[key]) && isObject(add[key])) {
                 this.mergeJSON(target[key], add[key]);
@@ -429,6 +571,14 @@ var cvssjs = {
         "integrityImpact": "I",
         "availabilityImpact": "A"
     },
+    vectorMap2: {
+        "accessVector": "AV",
+        "accessComplexity": "AC",
+        "authentication": "Au",
+        "confidentialityImpact": "C",
+        "integrityImpact": "I",
+        "availabilityImpact": "A"
+    },
     // Define associative arrays mapping each metric value to the constant used in the CVSS scoring formula.
     Weight: {
         attackVector: {
@@ -490,6 +640,16 @@ var cvssjs = {
         }
         return r;
 
+    },
+    vector2: function (cvss) {
+        var sep = "/";
+        var r = [];
+        for (var m in cvss) {
+            if (this.vectorMap2[m] && cvss[m]) {
+                r.push(this.vectorMap2[m] + ':' + cvss[m].charAt(0));
+            }
+        }
+        return r.join('/');
     },
     CVSSseveritys: [{
         name: "NONE",
@@ -591,5 +751,52 @@ var cvssjs = {
         } catch (err) {
             return err;
         }
+    },
+    w2: {
+        accessComplexity: {
+            HIGH: 0.35,
+            MEDIUM: 0.61,
+            LOW: 0.71
+        },
+        authentication: {
+            NONE: 0.704,
+            SINGLE: 0.56,
+            MULTIPLE: 0.45
+        },
+        accessVector: {
+            LOCAL: 0.395, ADJACENT_NETWORK: 0.646,
+            NETWORK: 1
+        },
+        confidentialityImpact: {
+            NONE: 0,
+            PARTIAL: 0.275,
+            COMPLETE: 0.660
+        },
+        integrityImpact: {
+            NONE: 0,
+            PARTIAL: 0.275,
+            COMPLETE: 0.660
+        },
+        availabilityImpact: {
+            NONE: 0,
+            PARTIAL: 0.275,
+            COMPLETE: 0.660
+        }
+    },
+    calculate2: function(cvss) {
+        var w2 = this.w2;
+        var impact = 10.41 * (1 -
+             (1-w2.confidentialityImpact[cvss.confidentialityImpact])
+             *(1-w2.integrityImpact[cvss.integrityImpact])
+             *(1-w2.availabilityImpact[cvss.availabilityImpact]));
+        if (impact == 0) {
+            return 0;
+        }
+        var exploitabality = 20.0 
+            * w2.accessComplexity[cvss.accessComplexity]
+            * w2.authentication[cvss.authentication]
+            * w2.accessVector[cvss.accessVector];
+
+        return ((0.6*impact + 0.4*exploitabality - 1.5)*1.176).toFixed(1);
     }
 }

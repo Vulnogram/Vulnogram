@@ -12,13 +12,10 @@ const User = require('../models/user');
 const conf = require('../config/conf');
 const csurf = require('csurf');
 const {
+    matchedData,
     check,
     validationResult
-} = require('express-validator/check');
-const {
-    matchedData,
-    sanitize
-} = require('express-validator/filter');
+} = require('express-validator');
 
 const validator = require('validator');
 var csrfProtection = csurf();
@@ -266,20 +263,6 @@ public.get('/logout', function (req, res) {
     res.redirect('/users/login');
 });
 
-protected.get('/style.css', function (req, res) {
-    if (req.isAuthenticated()) {
-        User.find({}, ['username', 'emoji', '-_id'], {}, function (err, users) {
-            if (err) {
-                res.status(500).send('Error');
-            } else {
-                res.render('users/style', {
-                    users: users,
-                    page: 'users'
-                });
-            }
-        });
-    }
-});
 
 //List users
 protected.get('/list', function (req, res) {
@@ -336,7 +319,7 @@ protected.get('/list/css', function (req, res) {
             } else {
                 res.setHeader('Content-Type', 'text/css');
                 for(u of users) {
-                    res.write('.' + u.username + ':before {content: "' + u.emoji + '";}\n');
+                    res.write('input[value="'+u.username+'"] + .lbl:before, #vgListTable span[title="'+u.username+'"]:before, .vguser[title="'+u.username+'"]:before {content: "' + u.emoji + ' ";}\n');
                 }
                 res.end();
             }
