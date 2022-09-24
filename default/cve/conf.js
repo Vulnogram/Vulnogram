@@ -59,7 +59,7 @@ module.exports = {
     facet: {
         ID: {
             path: 'body.CVE_data_meta.ID',
-            regex: 'CVE-[a-zA-Z0-9\._-]+',
+            regex: 'CVE-[a-zA-Z0-9._-]+',
             showDistinct: true
         },
         state: {
@@ -1019,7 +1019,7 @@ module.exports = {
                             "properties": {
                                 "CVE": {
                                     "type": "string",
-                                    "pattern": "(CVE-[0-9]{4}-[0-9A-Za-z\._-]{4,}[,\s]?)+"
+                                    "pattern": "(CVE-[0-9]{4}-[0-9A-Za-z._-]{4,}[, ]?)+"
                                 },
                                 "summary": {
                                     "type": "string"
