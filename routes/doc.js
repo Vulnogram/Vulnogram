@@ -119,8 +119,10 @@ module.exports = function (name, opts) {
         var o = {};
         o[x] = toIndex[x];
         delete o.createIndex;
-        //console.log(name + ' createIndex('+JSON.stringify(o)+')');
-        Document.collection.createIndex(o, { background: true });
+        Document.collection.createIndex(o, { background: true }).catch(function(e){
+            console.log('Error ensuring text index: ' + e.message)
+        });
+            
     }
 
 
@@ -549,9 +551,8 @@ module.exports = function (name, opts) {
                         var docs = await Document.find(fq);
                         var results = [];
                         for (var d of docs) {
-                            var result = await Document.findAndModify({
-                                _id: d._id
-                            }, [], {
+                            var result = await Document.findByIdAndUpdate(
+                                d._id, {
                                 "$set": q,
                                 "$inc": {
                                     __v: 1
@@ -560,9 +561,9 @@ module.exports = function (name, opts) {
                                 "upsert": false,
                                 "new": true
                             });
-                            var r = onedoc.addHistory(d, result.value);
+                            var r = onedoc.addHistory(d, result);
                             if (r) {
-                                r.__v = r.__v + ' (' + _.get(result.value, idpath) + ')';
+                                r.__v = r.__v + ' (' + _.get(result, idpath) + ')';
                                 results.push(r);
                             }
                         }

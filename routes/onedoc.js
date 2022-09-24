@@ -202,8 +202,9 @@ module.exports = function (Document, opts) {
                 author: req.user.username,
                 updatedAt: d
             };
-            Document.findAndModify(
-                queryOldID, [], {
+            Document.findOneAndUpdate(
+                queryOldID, 
+                {
                 "$set": newDoc,
                 "$inc": {
                     __v: 1
@@ -215,8 +216,8 @@ module.exports = function (Document, opts) {
                 "upsert": true
             },
                 function (err, doc) {
-                    if (doc && doc.value) {
-                        module.addHistory(doc.value, newDoc);
+                    if (doc) {
+                        module.addHistory(doc, newDoc);
                     } else {
                         module.addHistory(null, newDoc);
                     }
@@ -252,7 +253,7 @@ module.exports = function (Document, opts) {
             let query = {};
             query[opts.idpath] = req.params.id;
 
-            Document.remove(query, function (err) {
+            Document.deleteOne(query, function (err) {
                 if (err) {
                     res.send('Error Deleting');
                     return;

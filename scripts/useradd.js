@@ -73,7 +73,6 @@ hidden('Enter Password: ', (password1) => {
                 mongoose.connect(config.database, {
                     keepAlive: false,
                     useNewUrlParser: true,
-                    useCreateIndex: true,
                     useFindAndModify: false,
                 });
                 User.findOneAndUpdate({
