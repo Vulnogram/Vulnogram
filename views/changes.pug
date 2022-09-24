@@ -2,6 +2,9 @@
 
 extends layout
 
+block append head
+    link(rel='stylesheet', href= '/users/list/css')
+
 block content
     if docs && docs.length == 0
         .pad.wht No items were changed.

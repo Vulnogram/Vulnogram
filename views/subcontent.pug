@@ -91,8 +91,8 @@ mixin comments
         dt 
             - var cd = new Date(c.createdAt);
             - var ud = new Date(c.updatedAt);
-            span.pad3.lbl.icn(class=c.subject ? 'Email' : c.author)
-                b=c.author
+            span.pad3.lbl(class=c.subject ? 'Email' : '')
+                b.vguser(title=c.author)=c.author
                 | &nbsp;on  
                 = cd.toLocaleDateString("en-US",{year: 'numeric', month: 'short', day: 'numeric'})
                 |  
@@ -140,7 +140,7 @@ mixin changes
             each op, i in v.body.patch
                 tr.hig
                     td.pad(colspan=3)
-                      span.ico(class=v.author)
+                      span.vguser(title=v.author)
                         b= v.author
                         |  on 
                         +hyperdate(v,'updatedAt')
