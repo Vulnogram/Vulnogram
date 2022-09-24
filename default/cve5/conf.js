@@ -123,7 +123,7 @@ module.exports = {
             //chart: true,
             tabs: true,
             bulk: true,
-            enum: ["new", "open", "draft", "review", "waiting", "pending", "closed"],
+            enum: cve5.definitions.CNA_private.properties.state.enum,
             class: 'nobr ',
             icons: {
                 new: 'inbox',
@@ -140,7 +140,7 @@ module.exports = {
             //chart: true,
             tabs: true,
             bulk: true,
-            enum: ["unsure", "no-vuln", "advisory", "no-advisory", "doc", "misc", "duplicate"],
+            enum: cve5.definitions.CNA_private.properties.type.enum,
             class: 'nobr ',
             icons: {
                 unsure: 'what',
@@ -222,8 +222,8 @@ module.exports = {
             path: 'body.CNA_private.owner',
             chart: true,
             bulk: true,
-            enum: ['example', 'team', 'memebers'],
-            class: 'user '
+            enum: ['example', 'team', 'memebers', 'change', 'in', 'conf.js'],
+            class: 'nobr '
         },
         /*  'state!': {
               path: 'body.CVE_data_meta.STATE',
