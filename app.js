@@ -30,8 +30,9 @@ mongoose.Promise = global.Promise;
 mongoose.connect(conf.database, {
     keepAlive: true,
     useNewUrlParser: true,
-    useCreateIndex: true,
     useUnifiedTopology: true
+}).catch(function(e){
+    console.log("Error"+e.message);
 });
 const db = mongoose.connection;
 
@@ -44,7 +45,6 @@ db.once('open', function () {
 db.on('error', function (err) {
    console.error(err.message);
    console.error('Check mongodb connection URL configuration. Ensure Mongodb server is running!');
-   process.exit();
 });
 
 const app = express();
@@ -114,6 +114,21 @@ function ensureAuthenticated(req, res, next) {
         res.redirect('/users/login')
     }
 }
+
+function ensureConnected(req, res, next) {
+    if (mongoose.connection.readyState == 1) {
+        return next();
+    } else {
+        req.session.returnTo = req.originalUrl;
+        req.flash('error', 'Database error! Ensure mongod is up and check the settings on the server.')
+        res.status(500);
+        res.render('splash', {
+            title: 'Vulnogram'
+        });
+    }
+}
+
+app.use(ensureConnected);
 
 //delete return redirect path
 app.use(function (req, res, next) {
