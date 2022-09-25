@@ -85,6 +85,10 @@ hr.bort {
 .tgap {
     margin-top: 0.5em;
 }
+.vgap {
+    margin: 1em 0em;
+}
+
 .gap {
     margin: .5em;
     clear: both;

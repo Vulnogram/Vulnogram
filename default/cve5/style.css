@@ -274,3 +274,13 @@ label[for="cvePortalTab"] {
   grid-area: 1 / 2 / 3 / 3;
 }
 }
+
+#render.render p {
+  margin-left: 2em;
+  margin-top: .5em;
+}
+
+#render.render h4 {
+  margin-bottom: 0.3em;
+  margin-top: .3em;
+}

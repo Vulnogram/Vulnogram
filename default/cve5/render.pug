@@ -38,7 +38,7 @@ block prepend content
                     b.term Affects: 
                     //span.text= getProductAffected(cna) 
                 li
-                    b.term Problem: 
+                    b.term Problem Type: 
                     span.text
                         +spara(cve.description.description_data.slice(0,1))
                         if cmap && Object.keys(cmap).length > 0 && cmap.constructor === Object
@@ -65,6 +65,9 @@ mixin cvssList(cvssList)
                     |  · 
                     =cvss.baseScore
                     sub ⁄10
+                    span(style="font-size:0px;opacity:0")
+                        |  · 
+                        =cvss.vectorString
                 div.pop.wht.rnd.shd.pad.bor
                     if cvss.scenarios
                         each s, i in cvss.scenarios
@@ -88,7 +91,7 @@ mixin prodDetails(p)
         span  » 
             =p[2]
     if p[1]
-        i.lbl  on 
+        i  on 
         |  
         span.vgi-stack=p[1]
     if p[3]
@@ -190,26 +193,28 @@ mixin warnings(con)
                 span=x.message
 
 mixin container(con)
-    .cna.pad
-        h2#cvetitle
-            - var cveShowId = con.cveId.match(/^CVE-[0-9-]+$/)? con.cveId : 'CVE-yyyy-nnnn';
-            if con.source && con.source.advisory
-                = con.source.advisory
-                |  
-            = cveShowId + ' ' + (con.title ?  con.title : '')
-        p
-            if con.shortName
-                span Published by 
-                    b=con.shortName
-                |   
+    h2#cvetitle
+        - var cveShowId = con.cveId.match(/^CVE-[0-9-]+$/)? con.cveId : 'CVE-yyyy-nnnn';
+        if con.source && con.source.advisory
+            = con.source.advisory
+            |  
+        = cveShowId + ' ' + (con.title ?  con.title : '')
+    p
+        if con.shortName
+            span Published by 
+                b=con.shortName
+            |   
+        if con.datePublic
+            | Published 
             +renderDate(con.datePublic)
-            if con.dateUpdated && con.dateUpdated != con.datePublic
-                |  (updated 
-                +renderDate(con.dateUpdated)
-                |)
-        if con.cvssList
+        if con.dateUpdated && con.dateUpdated != con.datePublic
+            |  (updated 
+            +renderDate(con.dateUpdated)
+            |)
+    if con.cvssList
+        p
             +cvssList(con.cvssList)
-    .desc.pad
+    #description
         if con.state == 'REJECTED'
             b.tag.red REJECTED
             |  ·  
@@ -218,77 +223,81 @@ mixin container(con)
         +spara(con.descriptions)
         +spara(con.rejectedReasons)
     if con.configurations
-        .configs.pad
-            b.vgi-cog Required configuration for exposure: 
+        #configs
+            h4.vgi-cog Required configuration for exposure: 
             +spara(con.configurations)
     if con.problemTypes
-        .problem.pad
-            b.vgi-bug Problem: 
-            |  
-            for t in con.problemTypes
-                if t.description
-                    for d in t.description
-                        =d.value
-                        br 
-                if t.descriptions
-                    for d in t.descriptions
-                        =d.description
-                        |   
-                        if d.cweId
-                            a(href="https://cwe.mitre.org/data/definitions/"+d.cweId target="_blank")
-                                small=d.cweId
-                            br  
+        #problem
+            h4.vgi-bug Problem: 
+            p
+                for t in con.problemTypes
+                    if t.description
+                        for d in t.description
+                            =d.value
+                            br 
+                    if t.descriptions
+                        for d in t.descriptions
+                            =d.description
+                            |   
+                            if d.cweId
+                                a(href="https://cwe.mitre.org/data/definitions/"+d.cweId target="_blank")
+                                    small=d.cweId
+                                br  
     if con.impacts
-        .impact.pad
-            b.vgi-impact Impact:  
-            |  
-            for t in con.impacts
-                if t.descriptions
-                    for d in t.descriptions
-                        =d.value
-                        |   
-                if t.capecId
-                    a(href="https://capec.mitre.org/data/definitions/"+t.capecId target="_blank")
-                        small=t.capecId
-                    br  
+        #impact
+            h4.vgi-impact Impact:  
+            p
+                for t in con.impacts
+                    if t.descriptions
+                        for d in t.descriptions
+                            =d.value
+                            |   
+                    if t.capecId
+                        a(href="https://capec.mitre.org/data/definitions/"+t.capecId target="_blank")
+                            small=t.capecId
+                        br  
     if con.exploits
-        .exploits.pad
-            b.vgi-bomb Exploits
+        #exploits
+            h4.vgi-bomb Exploits:
             +spara(con.exploits)
     
     if con.pvstatus
-        .status.pad
-            b Affected Product Status
+        #status
+            h4 Affected Product Status:
             +statusTable(con.pvstatus)
+            br(style="font-size:0;")
+
 
     if con.solutions
-        .solution.pad
-            b.vgi-safe Solution
+        #solution
+            h4.vgi-safe Solution:
             +spara(con.solutions)
 
     if con.workarounds
-        .workaround.pad
-            b.vgi-avoid Workaround
+        #workaround
+            h4.vgi-avoid Workaround:
             +spara(con.workarounds)
 
     if con.credits
-        .credits.rnd.pad.sec
-            b.vgi-like Credits
+        #credits.rnd.pad.sec.vgap
+            h4.vgi-like Credits:
             +creditList(con.credits)
 
     if con.timeline
-        .timeline.pad
+        #timeline
             details(open=true) 
                 summary
-                    b.vgi-cal Timeline
-                +timeList(con)
+                    h4.vgi-cal Timeline:
+                p
+                    +timeList(con)
 
     if con.references
-        .references.pad
+        #references
             details(open=true) 
                 summary
-                    b.vgi-ext References
-                +refList(con.references)
+                    h4.vgi-ext References
+                p
+                    +refList(con.references)
     if con.json
         pre=JSON.stringify(con.json,1,1)
 
