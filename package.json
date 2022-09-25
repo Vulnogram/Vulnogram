@@ -1,5 +1,5 @@
 {
-  "name": "Vulnogram",
+  "name": "vulnogram",
   "version": "0.1.0-rc1",
   "description": "Making the world safer one CVE at a time, since 2017. Tool for creating Security Advisories and CVE ID information. With customizable plugins it can be used for tracking anything that can be expressed with a JSON-Schema. plugins are available for tracking security incidents, tickets, contacts, NVD entries and CVE assignments.",
   "main": "app.js",
@@ -13,12 +13,13 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Vulnogram/Vulnogram.git"
+    "url": "git+https://github.com/Vulnogram/Vulnogram.git"
   },
   "dependencies": {
     "busboy": "^0.3.0",
     "compression": "^1.7.4",
     "connect-flash": "^0.1.1",
+    "csso": "^5.0.5",
     "csso-cli": "^3.0.0",
     "csurf": "^1.11.0",
     "dotenv": "^16.0.2",
@@ -40,5 +41,24 @@
     "pug": "^3.0.2",
     "querymen": "^2.1.4",
     "uglify-es": "^3.3.9"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/Vulnogram/Vulnogram/issues"
+  },
+  "homepage": "https://github.com/Vulnogram/Vulnogram#readme",
+  "directories": {
+    "lib": "lib"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "Vulnogram",
+    "CVE",
+    "CVE-ID",
+    "reserve",
+    "edit",
+    "publish",
+    "JSON",
+    "schema",
+    "editor"
+  ]
 }
