@@ -257,10 +257,14 @@ public.post('/login', csrfProtection, function (req, res, next) {
 
 // Logout form
 public.get('/logout', function (req, res) {
-    req.logout();
-    req.session.returnTo = null;
-    req.flash('success', 'You are logged out');
-    res.redirect('/users/login');
+    req.logout(function(err){
+        if(err) {
+            return next(err);
+        }
+        req.session.returnTo = null;
+        req.flash('success', 'You are logged out');
+        res.redirect('/users/login');
+    });
 });
 
 
