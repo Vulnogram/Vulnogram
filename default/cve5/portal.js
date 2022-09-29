@@ -31,7 +31,9 @@ async function initCsClient() {
             portalErrorHandler(e);
         }
     } else {
-        cveShowError('Browser not supported!');
+        document.getElementById('port').innerHTML = '<h2 class="pad2 tred">Browser does not support Service Workers feature required for this tab.</h2><i class="indent pad2">Are you using Firefox in Private mode? Try normal mode.</i>';
+//        console.log("Browser does not support Service Workers. Are you using Firefox in Private mode?")
+        //cveShowError('Browser not supported!');
     }
 }
 
@@ -97,6 +99,10 @@ function listenforLogouts() {
 
 async function portalLogin(elem, credForm) {
     try {
+        if (!'serviceWorker' in navigator) {
+            cveShowError('Browser is missing required features. Try a different browser or the normal mode.')
+            return (false);
+        }
         if (!credForm.checkValidity()) {
             return (false);
         }
