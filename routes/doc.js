@@ -605,6 +605,7 @@ module.exports = function (name, opts) {
         //console.log('PATH: ' + path.join(__dirname, '/../', opts.schema));
         //router.use('/schema.js', express.static(path.join(__dirname, '/../', opts.schema)));
         router.use('/schema.js', function (req, res) {
+            res.setHeader('content-type', 'text/javascript');
             res.send('docSchema = ' + JSON.stringify(opts.schema));
         });
     }
