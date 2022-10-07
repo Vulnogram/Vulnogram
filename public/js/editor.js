@@ -1330,8 +1330,6 @@ function loadJSON(res, id, message, editorOptions) {
                     errors = docEditor.validation_results;
                 }
             }
-            console.log(docEditor.validation_results);
-            console.log(errors);
             if(errors.length > 0) {
                 showJSONerrors(errors);
             } else {

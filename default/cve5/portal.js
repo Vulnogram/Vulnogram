@@ -31,7 +31,9 @@ async function initCsClient() {
             portalErrorHandler(e);
         }
     } else {
-        cveShowError('Browser not supported!');
+        document.getElementById('port').innerHTML = '<h2 class="pad2 tred">Browser does not support Service Workers feature required for this tab.</h2><i class="indent pad2">Are you using Firefox in Private mode? Try normal mode.</i>';
+//        console.log("Browser does not support Service Workers. Are you using Firefox in Private mode?")
+        //cveShowError('Browser not supported!');
     }
 }
 
@@ -97,6 +99,10 @@ function listenforLogouts() {
 
 async function portalLogin(elem, credForm) {
     try {
+        if (!'serviceWorker' in navigator) {
+            cveShowError('Browser is missing required features. Try a different browser or the normal mode.')
+            return (false);
+        }
         if (!credForm.checkValidity()) {
             return (false);
         }
@@ -142,7 +148,7 @@ async function portalLogin(elem, credForm) {
 }
 
 function resetPortalLoginErr() {
-    console.log('changed form');
+    //console.log('changed form');
     document.getElementById("loginErr").innerText = '';
 }
 
@@ -359,7 +365,7 @@ async function cveRenderList(l, refreshEditor) {
         document.getElementById('cveList').innerHTML = cveRender({
             ctemplate: 'listIds',
             cveIds: l,
-            editable: (csCache.portalType == 'test')
+            editable: true//(csCache.portalType == 'test')
         })
         if (l.length > 0) {
             new Tablesort(document.getElementById('cveListTable'));
@@ -592,7 +598,7 @@ async function cveLoad(cveId) {
             }
         } else {
             //console.log(e);
-            showAlert('Error getting the record.' + e);
+            portalErrorHandler(e);
         }
     }
 }
@@ -619,7 +625,7 @@ async function cvePost() {
             await save();
         }*/
         try {
-            if (csCache.portalType === 'test') {
+            //if (csCache.portalType === 'test') {
                 //console.log('uploading...');
                 var j = await mainTabGroup.getValue();
                 var j = textUtil.reduceJSON(j);
@@ -670,9 +676,9 @@ async function cvePost() {
                     infoMsg.innerText = ret.message;
                     hideJSONerrors();
                 }
-            } else {
-                showAlert('CVE posting is not currently supported by production CVE services! Try Logging to Test Portal instance');
-            }
+            //} else {
+            //    showAlert('CVE posting is not currently supported by production CVE services! Try Logging to Test Portal instance');
+            //}
         } catch (e) {
             portalErrorHandler(e);
         }

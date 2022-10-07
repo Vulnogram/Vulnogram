@@ -8,7 +8,7 @@ mixin cveLoginBox
             i Instantly providing you CVE IDs since 2022
         div#cpPrompt
             #loginErr=message
-            form#cveLoginForm(method='POST', onkeypress='resetPortalLoginErr();' onchange='resetPortalLoginErr();' onsubmit='portalLogin(event, this); return false;')
+            form#cveLoginForm(method='POST', onclick='resetPortalLoginErr();' onkeypress='resetPortalLoginErr();' onchange='resetPortalLoginErr();' onsubmit='portalLogin(event, this); return false;')
                 label.lbl.vgi-globe(for="cpPortal") Portal
                 select#cpPortal.bor.txt(name='portal')
                     option(value="https://cveawg.mitre.org/api" selected=(prevPortal == 'production')) production
@@ -84,10 +84,10 @@ mixin portal
                 input.hid(id="chkres" type="radio" name="fstate" value="RESERVED" checked=true)
                 label.lbl.vgi-tag(for="chkres") Reserved
             .form-control
-                input.hid(id="chkpub" type="radio" name="fstate" value=(portalType == 'test' ? "PUBLISHED" : "PUBLIC"))
+                input.hid(id="chkpub" type="radio" name="fstate" value="PUBLISHED")
                 label.lbl.vgi-globe(for="chkpub") Published
             .form-control
-                input.hid(id="chkrej" type="radio" name="fstate" value=(portalType == 'test' ? "REJECTED" : "REJECT"))
+                input.hid(id="chkrej" type="radio" name="fstate" value="REJECTED")
                 label.lbl.vgi-no(for="chkrej") Rejected
         .lbl Year
         select.lbl.txt(name="y")
