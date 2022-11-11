@@ -249,9 +249,9 @@ mixin listIds
                         td
                             if editable 
                                 if c.state == 'RESERVED'
-                                    a.vgi-cancel(data=c.cve_id, data-state=c.state onclick="cveReject(this, event)", title="Reject this CVE ID",) &nbsp;
+                                    a.vgi-cancel(data=c.cve_id onclick="cveReject(this, event)", title="Reject this CVE ID",) &nbsp;
                                 else if c.state == 'PUBLISHED'
-                                    a.vgi-cancel(data=c.cve_id, data-state=c.state onclick="showAlert('Rejecting published record', 'To reject this published record, open this in the editor, click the Reject ID button at the bottom')", title="Reject this CVE ID!",) &nbsp;
+                                    a.vgi-cancel(data=c.cve_id onclick="showAlert('Rejecting published record', 'To reject this published record, open this in the editor, click the Reject ID button at the bottom')", title="Reject this CVE ID!",) &nbsp;
                                 else
                                     i.vgi-no.tgrey(title="This ID is already rejected!") &nbsp;
     else

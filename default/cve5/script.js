@@ -75,7 +75,7 @@ function loadCVE(value) {
 
 async function rejectRecord() {
     var id = getDocID();
-    if (window.confirm('Do you want to reject ' + id + '? All vulnerability deatils will be removed. A CVE entry once rejected can not be reverted back to a regular entry.')) {
+    if (window.confirm('Do you want to reject ' + id + '? All vulnerability deatils will be removed.')) {
         loadJSON({
             cveMetadata: {
                 cveId: id,
