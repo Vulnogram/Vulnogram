@@ -1577,6 +1577,7 @@
       "title": "Metrics",
       "description": "Collection of impact scores with attribution.",
       "uniqueItems": true,
+      "minItems":0,
       "options": {
         "class": "vgi-dial tgap"
       },

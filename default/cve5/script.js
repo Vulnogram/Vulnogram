@@ -529,5 +529,8 @@ function cveFixForVulnogram(j) {
     if (j.containers && j.containers.cna && j.containers.cna.impacts == undefined) {
         j.containers.cna.impacts = [];
     }
+    if (j.containers && j.containers.cna && j.containers.cna.metrics == undefined) {
+        j.containers.cna.metrics = [];
+    }
     return j;
 }

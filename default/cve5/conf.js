@@ -8,7 +8,7 @@ var cve5 = require('./cve5.schema.json');
 module.exports = {
     conf: {
         title: 'CVE: Common Vulnerabilities and Exposures',
-        name: 'CVE 5.0 (beta)',
+        name: 'CVE 5.0',
         uri: '/cve5/',
         class: 'vgi-alert',
         order: 0.12, //Where to place the section on heading?

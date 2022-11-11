@@ -10,7 +10,7 @@ module.exports = {
         name: 'CVE',
         uri: '/cve/?state=DRAFT,REVIEW,READY',
         class: 'vgi-alert',
-        order: 0.1, //Where to place the section on heading?
+        order: 0.14, //Where to place the section on heading?
         shortcuts: [
             {
                 label: 'My CVEs',
