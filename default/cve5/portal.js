@@ -77,6 +77,14 @@ async function showPortalView(orgInfo, userInfo) {
             userInfo: userInfo,
             org: orgInfo
         });
+        var button1 = document.getElementById('post1');
+        if(button1) {
+            if(csCache.portalType == 'test') {
+                button1.innerText = 'Post to Test Portal'
+            } else {
+                button1.innerText = 'Post to CVE.org'
+            }
+        }
         return await cveGetList();
     } catch (e) {
         portalErrorHandler(e);
