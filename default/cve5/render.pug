@@ -193,19 +193,21 @@ mixin warnings(con)
                 span=x.message
 
 mixin container(con)
-    h2#cvetitle
+    h1#cvetitle
         - var cveShowId = con.cveId.match(/^CVE-[0-9-]+$/)? con.cveId : 'CVE-yyyy-nnnn';
         if con.source && con.source.advisory
             = con.source.advisory
             |  
         = cveShowId + ' ' + (con.title ?  con.title : '')
     p
+        if con.shortName || con.datePublic
+            span Published
         if con.shortName
-            span Published by 
-                b=con.shortName
+            | by 
+            b=con.shortName
             |   
         if con.datePublic
-            | Published 
+            | on 
             +renderDate(con.datePublic)
         if con.dateUpdated && con.dateUpdated != con.datePublic
             |  (updated 
@@ -224,11 +226,11 @@ mixin container(con)
         +spara(con.rejectedReasons)
     if con.configurations
         #configs
-            h4.vgi-cog Required configuration for exposure: 
+            h2 Required configuration for exposure: 
             +spara(con.configurations)
     if con.problemTypes
         #problem
-            h4.vgi-bug Problem: 
+            h2 Problem: 
             p
                 for t in con.problemTypes
                     if t.description
@@ -245,7 +247,7 @@ mixin container(con)
                                 br  
     if con.impacts
         #impact
-            h4.vgi-impact Impact:  
+            h2 Impact:  
             p
                 for t in con.impacts
                     if t.descriptions
@@ -258,46 +260,42 @@ mixin container(con)
                         br  
     if con.exploits
         #exploits
-            h4.vgi-bomb Exploits:
+            h2 Exploits:
             +spara(con.exploits)
     
     if con.pvstatus
         #status
-            h4 Affected Product Status:
+            h2 Product Status:
             +statusTable(con.pvstatus)
             br(style="font-size:0;")
 
 
     if con.solutions
         #solution
-            h4.vgi-safe Solution:
+            h2 Solution:
             +spara(con.solutions)
 
     if con.workarounds
         #workaround
-            h4.vgi-avoid Workaround:
+            h2 Workaround:
             +spara(con.workarounds)
 
     if con.credits
         #credits.rnd.pad.sec.vgap
-            h4.vgi-like Credits:
+            h2 Credits:
             +creditList(con.credits)
 
     if con.timeline
         #timeline
-            details(open=true) 
-                summary
-                    h4.vgi-cal Timeline:
-                p
-                    +timeList(con)
+            h2 Timeline:
+            p
+                +timeList(con)
 
     if con.references
         #references
-            details(open=true) 
-                summary
-                    h4.vgi-ext References
-                p
-                    +refList(con.references)
+            h2 References
+            p
+                +refList(con.references)
     if con.json
         pre=JSON.stringify(con.json,1,1)
 

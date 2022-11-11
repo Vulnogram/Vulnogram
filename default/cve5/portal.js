@@ -673,7 +673,12 @@ async function cvePost() {
                 }
                 //console.log(ret);
                 if (ret != null && ret.message) {
-                    infoMsg.innerText = ret.message;
+                    var a = document.createElement('a');
+                    a.setAttribute('href', 'https://www.cve.org/cverecord?id='+j.cveMetadata.cveId);
+                    a.setAttribute('target', '_blank');
+                    a.innerText = ret.message;
+                    infoMsg.innerText = '';
+                    infoMsg.appendChild(a);
                     hideJSONerrors();
                 }
             //} else {
