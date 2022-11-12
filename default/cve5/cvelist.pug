@@ -272,12 +272,28 @@ mixin autoText
             | A
     |  vulnerability
     - var codelist = [];
+    - var relevantList = [];
     if con.affected
         - var plist = [];
         for p in con.affected
             - var pd = [p.vendor, p.vendor != p.product ? p.product : '', p.packageName != p.product ? p.packageName : '', (p.platforms ? 'on ' + p.platforms.join(', ') : ''), p.modules ? '(' + p.modules.join(', ') + ' modules)':''].join(' ').trim().replaceAll(/\s+/g, ' ')
+            - var pn = p.product ? p.product : p.packageName;
             if pd
                 - plist.push(pd);
+            if p.versions
+                - var vlist = [];
+                for v in p.versions
+                    if v.status == 'affected'
+                        if v.lessThan
+                            - vlist.push ( (v.version != '0' ? ' from ' + v.version: '') + (v.lessThan != '*' ? ' before ' + v.lessThan:''));
+                        else if v.lessThanOrEqual
+                            - vlist.push ( (v.version != '0' ? ' from ' + v.version: '') + (v.lessThanOrEqual != '*' ? ' through ' + v.lessThanOrEqual:''));
+                        else if v.version != '0'
+                                - vlist.push (' ' + v.version)
+                if (vlist && vlist.length > 0)
+                    - relevantList.push(pn + ':' + vlist.join(','));
+                else if p.defaultStatus == 'affected'
+                    - relevantList.push(pn);
         - var ptext = plist.join(', ');
         if ptext
             |  in 
@@ -327,6 +343,10 @@ mixin autoText
                     if counter < funcs.length
                         | , 
             |.
+        if relevantList
+            p This issue affects 
+                = relevantList.join('; ')
+                |.
 
 block red
     if ctemplate != undefined

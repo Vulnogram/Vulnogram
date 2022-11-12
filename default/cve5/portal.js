@@ -637,6 +637,14 @@ async function cvePost() {
                 //console.log('uploading...');
                 var j = await mainTabGroup.getValue();
                 var j = textUtil.reduceJSON(j);
+                /*var pts = j.containers.cna.problemTypes;
+                if(pts && pts.length == 1 && pts[0].descriptions && pts[0].descriptions[0].description == undefined) {
+                    delete j.containers.cna.problemTypes;
+                } 
+                var ims = j.containers.cna.impacts;
+                if(ims && ims.length == 1 && ims[0].descriptions && ims[0].descriptions[0].value == undefined) {
+                    delete j.containers.cna.impacts;
+                }*/
                 var ret = null;
                 try {
                     var latestId = await csClient.getCveId(j.cveMetadata.cveId);
