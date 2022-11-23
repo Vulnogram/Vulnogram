@@ -238,10 +238,6 @@
         }
 
         get worker() {
-            if (this.registration) {
-                return Promise.resolve(this.registration.active);
-            }
-
             let serviceUri = this.serviceUri;
 
             let initWorker = (worker) => {
@@ -250,6 +246,11 @@
 
                 this.simpleMessage(worker, init_msg);
             };
+
+            if (this.registration) {
+                initWorker(this.registration.active);
+                return Promise.resolve(this.registration.active);
+            }
 
             return navigator.serviceWorker.register(this.swPath)
                 .then(reg => {
