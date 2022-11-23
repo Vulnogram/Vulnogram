@@ -1482,7 +1482,7 @@ function downloadHtml(title, element, link) {
     var file = new File([
             '<html><head><title>'
             + title
-            + '</title><style>body{font-family:"Arial"} table, td {border-collapse: collapse;border: 1px solid #aaa}</style><body>'
+            + '</title><style>body{font-family:"Helvetica"; margin:3em}</style><body>'
             + element.innerHTML
             + '</body></html>'
         ], getDocID() + '.html', {

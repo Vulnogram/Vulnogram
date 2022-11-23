@@ -75,7 +75,7 @@ function loadCVE(value) {
 
 async function rejectRecord() {
     var id = getDocID();
-    if (window.confirm('Do you want to reject ' + id + '? All vulnerability deatils will be removed. A CVE entry once rejected can not be reverted back to a regular entry.')) {
+    if (window.confirm('Do you want to reject ' + id + '? All vulnerability deatils will be removed.')) {
         loadJSON({
             cveMetadata: {
                 cveId: id,
@@ -411,21 +411,26 @@ async function autoText(event) {
     if (event) {
         event.preventDefault();
     }
-    var doc = docEditor.getValue();
-    var text = cveRender({
-        ctemplate: 'autoText',
-        con: doc.containers.cna
-    });
-    // remove extra spaces
-    text = text.trim().replaceAll(/\s+/g, ' ');
-    hE = await docEditor.getEditor('root.containers.cna.descriptions.0.supportingMedia.0.value');
+    if (docEditor.validation_results && docEditor.validation_results.length == 0) {
 
-    // Capitolize sentances.
-    var rg = /(^\w{1}|\.\s*\w{1})/gi;
-    text = text.replace(rg, function (toReplace) {
-        return toReplace.toUpperCase();
-    });
-    hE.setValue(text, '', false);
+        var doc = docEditor.getValue();
+        var text = cveRender({
+            ctemplate: 'autoText',
+            con: doc.containers.cna
+        });
+        // remove extra spaces
+        text = text.trim().replaceAll(/\s+/g, ' ');
+        hE = await docEditor.getEditor('root.containers.cna.descriptions.0.supportingMedia.0.value');
+
+        // Capitolize sentances.
+        var rg = /(^\w{1}|\.\s*\w{1})/gi;
+        text = text.replace(rg, function (toReplace) {
+            return toReplace.toUpperCase();
+        });
+        hE.setValue(text, '', false);
+    } else {
+        showAlert('Please enter all the required fields first!');
+    }
 }
 
 function addRichText(d) {
@@ -528,6 +533,9 @@ function cveFixForVulnogram(j) {
     }
     if (j.containers && j.containers.cna && j.containers.cna.impacts == undefined) {
         j.containers.cna.impacts = [];
+    }
+    if (j.containers && j.containers.cna && j.containers.cna.metrics == undefined) {
+        j.containers.cna.metrics = [];
     }
     return j;
 }

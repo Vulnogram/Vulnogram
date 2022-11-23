@@ -49,6 +49,7 @@ mixin cveErrors
                             =d.msg
 mixin portal
     - var y = new Date().getFullYear()
+    - var nextY = y+1
     header.pad.ban.sec
         .left
             label.vgi-globe.lbl Portal: 
@@ -66,7 +67,7 @@ mixin portal
                                     button.btn.vgi-magic(onclick='cveReserveAndRender(0, 10)'  style="min-width:6em") Reserve 10
                                 dt 
                                     button.btn.vgi-magic(onclick='cveReserveAndRender(1)') Reserve one for the year 
-                                        = y + 1
+                                        = y+1
         .flx
             label#cveUser
                 +userstats
@@ -91,9 +92,12 @@ mixin portal
                 label.lbl.vgi-no(for="chkrej") Rejected
         .lbl Year
         select.lbl.txt(name="y")
-            while y > 1998
-                option(value=y)=y
-                - y--;
+            option(value=nextY)=nextY
+            option(value=y selected)=y
+            - var i = y-1
+            while i > 1998
+                option(value=i)=i
+                - i--;
         |  
         button.btn.vgi-reuse(onclick='event.preventDefault();cveGetList();return false;') Go
     div#cvePage.gap
@@ -223,7 +227,7 @@ mixin listIds
                     th Requester
                     th(aria-sort="ascending") Created
                     th Modified
-                    th
+                    th Actions
             tbody
                 each c in cveIds
                     tr(data=c.state)
@@ -243,8 +247,13 @@ mixin listIds
                             if c.time.modified != c.time.created
                                 +date(c.time.modified)
                         td
-                            if editable && c.state == 'RESERVED'
-                                a.vgi-cancel(data=c.cve_id, onclick="cveReject(this, event)", title="Reject this CVE ID",)
+                            if editable 
+                                if c.state == 'RESERVED'
+                                    a.vgi-cancel(data=c.cve_id onclick="cveReject(this, event)", title="Reject this CVE ID",) &nbsp;
+                                else if c.state == 'PUBLISHED'
+                                    a.vgi-cancel(data=c.cve_id onclick="showAlert('Rejecting published record', 'To reject this published record, open this in the editor, click the Reject ID button at the bottom')", title="Reject this CVE ID!",) &nbsp;
+                                else
+                                    i.vgi-no.tgrey(title="This ID is already rejected!") &nbsp;
     else
         i.gap2 No CVE IDs found! 
 
@@ -263,12 +272,28 @@ mixin autoText
             | A
     |  vulnerability
     - var codelist = [];
+    - var relevantList = [];
     if con.affected
         - var plist = [];
         for p in con.affected
             - var pd = [p.vendor, p.vendor != p.product ? p.product : '', p.packageName != p.product ? p.packageName : '', (p.platforms ? 'on ' + p.platforms.join(', ') : ''), p.modules ? '(' + p.modules.join(', ') + ' modules)':''].join(' ').trim().replaceAll(/\s+/g, ' ')
+            - var pn = p.product ? p.product : p.packageName;
             if pd
                 - plist.push(pd);
+            if p.versions
+                - var vlist = [];
+                for v in p.versions
+                    if v.status == 'affected'
+                        if v.lessThan
+                            - vlist.push ( (v.version != '0' ? ' from ' + v.version: '') + (v.lessThan != '*' ? ' before ' + v.lessThan:''));
+                        else if v.lessThanOrEqual
+                            - vlist.push ( (v.version != '0' ? ' from ' + v.version: '') + (v.lessThanOrEqual != '*' ? ' through ' + v.lessThanOrEqual:''));
+                        else if v.version != '0'
+                                - vlist.push (' ' + v.version)
+                if (vlist && vlist.length > 0)
+                    - relevantList.push(pn + ':' + vlist.join(','));
+                else if p.defaultStatus == 'affected'
+                    - relevantList.push(pn);
         - var ptext = plist.join(', ');
         if ptext
             |  in 
@@ -318,6 +343,10 @@ mixin autoText
                     if counter < funcs.length
                         | , 
             |.
+        if relevantList
+            p This issue affects 
+                = relevantList.join('; ')
+                |.
 
 block red
     if ctemplate != undefined

@@ -22,8 +22,10 @@ confOpts = {
     cve: optSet('cve5', ['default'].concat(process.argv.slice(2))),
     cve4: optSet('cve', ['default'].concat(process.argv.slice(2)))
 }
-confOpts.cve4.conf.name = 'CVE 4.0';
-confOpts.cve4.conf.uri = '../';
+confOpts.cve4.conf.name = 'CVE 4 (old)';
+confOpts.cve4.conf.uri = '/cve4';
+confOpts.cve.conf.uri = '/';
+confOpts.cve.conf.name = 'CVE 5';
 
 //console.log(confOpts.cve.render);
 confOpts.cve.conf.uri = '.';
