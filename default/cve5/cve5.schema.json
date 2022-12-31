@@ -2411,6 +2411,9 @@
       "items": {
         "type": "object",
         "title": "Credit",
+        "options": {
+          "remove_empty_properties":true
+        },
         "properties": {
           "lang": {
             "description": "The language used when describing the credits. The language field is included so that CVE Records can support translations. The value must be a BCP 47 language code.",
@@ -2426,9 +2429,10 @@
             "options": {
               "hidden": true
             },
+            "type": "string",
             "default": "",
             "description": "UUID of the user being credited if present in the CVE User Registry (optional). This UUID can be used to lookup the user record in the user registry service.",
-            "$ref": "#/definitions/uuidType"
+            "pattern": "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-4[0-9A-Fa-f]{3}-[89ABab][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$"
           },
           "type": {
             "type": "string",
