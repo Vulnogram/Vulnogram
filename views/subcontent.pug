@@ -122,14 +122,11 @@ mixin comments
 
 mixin changeIcon(op)
     if op == 'remove'
-        span.lbl
-            | &rarr; 
-        span.lbl.vgi-del
+        span.lbl &rarr; 
     else if op == 'add'
-        | +
+        span.lbl +
     else
-        span.lbl
-            | &rarr;  
+        span.lbl &rarr;  
 
 mixin changes
     - var past = {add: 'added', remove: 'removed', replace: 'changed', move: 'moved', copy: 'copied'}
@@ -183,14 +180,16 @@ mixin changes
                     else
                         td
                             if op.old instanceof Object
-                                pre= JSON.stringify(op.old, null, 3)
+                                pre= JSON.stringify(op.old, null, 1)
                             else
                                 = op.old
                         td
                             +changeIcon(op.op)
                         td
+                            if op.value == null
+                              i.vgi-del  deleted
                             if op.value instanceof Object
-                                pre= JSON.stringify(op.value, null, 3)
+                                pre= JSON.stringify(op.value, null, 1)
                             else
                                 = op.value 
 
