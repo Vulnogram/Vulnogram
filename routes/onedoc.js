@@ -31,8 +31,6 @@ module.exports = function (Document, opts) {
 
     // GET docuemnt
     router.get('/:id', csrfProtection, [checkID], function (req, res) {
-
-        //console.log('Got GET ' + req.params.id);
         var q = {};
         q[opts.idpath] = req.params.id;
         Document.findOne(q, async function (err, doc) {
@@ -49,7 +47,6 @@ module.exports = function (Document, opts) {
                 if (doc && doc._doc) {
                     delete doc._doc._id;
                 }
-                //console.log('READONLY view');
                 res.setHeader("Content-Security-Policy", "default-src 'self'; connect-src 'none'; font-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'");
                 res.render((opts.render == 'render' ? 'readonly' : opts.render), {
                     title: req.params.id,
@@ -150,9 +147,7 @@ module.exports = function (Document, opts) {
                 patch: jsonpatch.compare(oldDoc.body, newDoc.body),
             },
         };
-        //console.log(JSON.stringify(auditTrail));
         //todo: eliminate mongoose and call InsertOne directly
-        console.log(['History', model]);
         if (auditTrail.body.patch.length > 0) {
             model.bulkWrite([{
                 insertOne: {
@@ -238,7 +233,6 @@ module.exports = function (Document, opts) {
         queryNewID[opts.idpath] = inputID;
         queryOldID[opts.idpath] = req.params.id;
         var renaming = (req.params.id != inputID);
-        //console.log('req.params.id = ' + req.params.id + ' == ' + inputID)
         Document.findOne(queryNewID).then((existingDoc) => {
             if (existingDoc) {
                 // check Document ID is being renamed.
