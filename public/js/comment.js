@@ -231,7 +231,9 @@ function attach(el, event) {
             },
             updateProgress: function (progress) {
                 if (pgb) {
-                    if (progress)
+                    if (progress == 100) {
+                        pgb.className = 'hid';
+                    } else if (progress)
                         pgb.setAttribute('value', progress);
                     else
                         pgb.removeAttribute('value');
