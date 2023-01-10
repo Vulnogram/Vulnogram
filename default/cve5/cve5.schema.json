@@ -1522,7 +1522,7 @@
             "maxLength": 11,
             "pattern": "^CAPEC-[1-9][0-9]{0,4}$",
             "options": {
-              "pattentmessage": "Invalid CAPEC ID",
+              "pattentmessage": "Enter a CAPEC ID",
               "hidden": true
             },
             "template": "context.ds && context.ds[0] && context.ds[0].value ? ((W = context.ds[0].value.match(/CAPEC-[1-9][0-9]{0,4}/)) ? W[0] : '') : ''",
