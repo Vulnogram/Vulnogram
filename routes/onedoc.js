@@ -5,48 +5,6 @@ const textUtil = require('../public/js/util.js');
 var jsonpatch = require('json-patch-extended');
 var _ = require('lodash');
 const docModel = require('../models/doc');
-var History;
-
-module.addHistory = function addHistory(oldDoc, newDoc) {
-    if (oldDoc === null) {
-        oldDoc = {
-            __v: -1,
-            _id: newDoc._id,
-            author: newDoc.author,
-            updatedAt: newDoc.updatedAt,
-            body: {}
-        }
-    }
-    var auditTrail = {
-        parent_id: oldDoc._id,
-        updatedAt: newDoc.updatedAt,
-        author: newDoc.author,
-        __v: oldDoc.__v + 1,
-        body: {
-            old_version: oldDoc.__v,
-            old_author: oldDoc.author,
-            old_date: oldDoc.updatedAt,
-            patch: jsonpatch.compare(oldDoc.body, newDoc.body),
-        },
-    };
-    //console.log(JSON.stringify(auditTrail));
-    //todo: eliminate mongoose and call InsertOne directly
-    if (auditTrail.body.patch.length > 0) {
-        History.bulkWrite([{
-            insertOne: {
-                document: auditTrail
-            }
-        }], function (err, d) {
-            if (err) {
-                console.log('Error: saving history ' + err);
-            } else {
-            }
-        });
-        return auditTrail;
-    } else {
-        return null;
-    }
-}
 const querymw = require('../lib/querymw');
 
 const {
@@ -56,53 +14,73 @@ const {
 
 const validator = require('validator');
 
-
 module.exports = function (Document, opts) {
-    History = module.History = docModel(opts.schemaName + '_history');
-    var router = express.Router();
-    var queryMW = querymw(opts.facet);
-    if (!opts.conf.readonly) {
-        router.get('/new', csrfProtection, queryMW, async function (req, res) {
-            var doc = null;
-            if (req.querymen.query[opts.idpath]) {
-                var fq = {};
-                fq[opts.idpath] = req.querymen.query[opts.idpath];
-                var doc = await Document.findOne(fq);
+    var checkID = check(opts.jsonidpath)
+        .exists()
+        .custom((val, {
+            req
+        }) => {
+            if (validator.matches(val, '^' + opts.idpattern + '$')) {
+                return true;
             }
-            if (doc) {
-                res.redirect(req.querymen.query[opts.idpath]);
+            return false;
+        })
+        .withMessage('Document ID not valid. Expecting ' + opts.idpattern);
+
+    var router = module.router = express.Router();
+
+    // GET docuemnt
+    router.get('/:id', csrfProtection, [checkID], function (req, res) {
+
+        //console.log('Got GET ' + req.params.id);
+        var q = {};
+        q[opts.idpath] = req.params.id;
+        Document.findOne(q, async function (err, doc) {
+            var ucomments = undefined;
+            if (!doc) {
+                if(req.params.id != 'new') {
+                    req.flash('error', 'ID not found: ' + req.params.id);
+                }
             } else {
-                var doc = {};
-                for (a in req.querymen.query) {
-                    _.set(doc, a, req.querymen.query[a]);
-                };
-                //console.log(JSON.stringify(req.querymen.query));
+                ucomments = doc.comments;
+            }
+            res.locals.renderStartTime = Date.now();
+            if (opts.conf.readonly) {
+                if (doc && doc._doc) {
+                    delete doc._doc._id;
+                }
+                //console.log('READONLY view');
+                res.setHeader("Content-Security-Policy", "default-src 'self'; connect-src 'none'; font-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'");
+                res.render((opts.render == 'render' ? 'readonly' : opts.render), {
+                    title: req.params.id,
+                    doc: doc ? doc._doc : {},
+                    textUtil: textUtil,
+                    doc_id: req.params.id,
+                    csrfToken: req.csrfToken(),
+                    renderTemplate: 'default',
+                    ucomments: ucomments
+                });
+            } else {
                 res.render(opts.edit, {
-                    title: 'New',
-                    doc: doc,
+                    title: req.params.id,
                     opts: opts,
+                    doc_id: req.params.id,
                     idpath: opts.jsonidpath,
+                    doc: doc,
                     textUtil: textUtil,
                     csrfToken: req.csrfToken(),
-                    allowAjax: true
+                    allowAjax: true,
+                    ucomments: ucomments
                 });
             }
         });
-    }
-    var checkID = module.checkID =
-        check(opts.jsonidpath)
-            .exists()
-            .custom((val, {
-                req
-            }) => {
-                if (validator.matches(val, '^' + opts.idpattern + '$')) {
-                    return true;
-                }
-                return false;
-            })
-            .withMessage('Document ID not valid. Expecting ' + opts.idpattern);
+    });
 
-    var existCheck = module.existCheck = check(opts.jsonidpath)
+    if (opts.conf.readonly) {
+        return module;
+    }
+
+    var existCheck = check(opts.jsonidpath)
         .exists()
         .custom((val, {
             req
@@ -119,10 +97,85 @@ module.exports = function (Document, opts) {
             });
         });
 
+    var queryMW = querymw(opts.facet);
+
+    // Render a NEW editable document
+    router.get('/new', csrfProtection, queryMW, async function (req, res) {
+        var doc = null;
+        if (req.querymen.query[opts.idpath]) {
+            var fq = {};
+            fq[opts.idpath] = req.querymen.query[opts.idpath];
+            var doc = await Document.findOne(fq);
+        }
+        if (doc) {
+            res.redirect(req.querymen.query[opts.idpath]);
+        } else {
+            var doc = {};
+            for (a in req.querymen.query) {
+                _.set(doc, a, req.querymen.query[a]);
+            };
+            //console.log(JSON.stringify(req.querymen.query));
+            res.render(opts.edit, {
+                title: 'New',
+                doc: doc,
+                opts: opts,
+                idpath: opts.jsonidpath,
+                textUtil: textUtil,
+                csrfToken: req.csrfToken(),
+                allowAjax: true
+            });
+        }
+    });
 
 
-    // CREATE // DELETE
-    module.createDoc = function (req, res) {
+    module.addModelHistory = function (model, oldDoc, newDoc) {
+        if (oldDoc === null) {
+            oldDoc = {
+                __v: -1,
+                _id: newDoc._id,
+                author: newDoc.author,
+                updatedAt: newDoc.updatedAt,
+                body: {}
+            }
+        }
+        var auditTrail = {
+            parent_id: oldDoc._id,
+            updatedAt: newDoc.updatedAt,
+            author: newDoc.author,
+            __v: oldDoc.__v + 1,
+            body: {
+                old_version: oldDoc.__v,
+                old_author: oldDoc.author,
+                old_date: oldDoc.updatedAt,
+                patch: jsonpatch.compare(oldDoc.body, newDoc.body),
+            },
+        };
+        //console.log(JSON.stringify(auditTrail));
+        //todo: eliminate mongoose and call InsertOne directly
+        console.log(['History', model]);
+        if (auditTrail.body.patch.length > 0) {
+            model.bulkWrite([{
+                insertOne: {
+                    document: auditTrail
+                }
+            }], function (err, d) {
+                if (err) {
+                    console.log('Error: saving history ' + err);
+                } else {
+                }
+            });
+            return auditTrail;
+        } else {
+            return null;
+        }
+    }
+    var History = docModel(opts.schemaName + '_history');
+    var addHistory = function(oldDoc, newDoc) {
+        return module.addModelHistory(History, oldDoc, newDoc);
+    }
+
+    // Creat a new document
+    router.post(/\/(new)$/, csrfProtection, [checkID, existCheck], function (req, res) {
         let errors = validationResult(req).array();
         if (errors.length > 0) {
             var msg = 'Error: ';
@@ -148,7 +201,7 @@ module.exports = function (Document, opts) {
                 });
                 return;
             } else {
-                module.addHistory(null, doc);
+                addHistory(null, doc);
                 res.json({
                     type: 'go',
                     to: _.get(doc, opts.idpath)
@@ -157,9 +210,10 @@ module.exports = function (Document, opts) {
             }
         });
         return;
-    };
+    });
 
-    module.upsertDoc = function (req, res) {
+    // Update or insert existing Document ID 
+    router.post('/:id(' + opts.idpattern + ')', csrfProtection, [checkID], function (req, res) {
         let errors = validationResult(req).array();
         if (errors.length > 0) {
             var msg = 'Error: ';
@@ -203,23 +257,23 @@ module.exports = function (Document, opts) {
                 updatedAt: d
             };
             Document.findOneAndUpdate(
-                queryOldID, 
+                queryOldID,
                 {
-                "$set": newDoc,
-                "$inc": {
-                    __v: 1
-                },
-                "$setOnInsert": {
-                    createdAt: d
-                }
-            }, {
+                    "$set": newDoc,
+                    "$inc": {
+                        __v: 1
+                    },
+                    "$setOnInsert": {
+                        createdAt: d
+                    }
+                }, {
                 "upsert": true
             },
                 function (err, doc) {
                     if (doc) {
-                        module.addHistory(doc, newDoc);
+                        addHistory(doc, newDoc);
                     } else {
-                        module.addHistory(null, newDoc);
+                        addHistory(null, newDoc);
                     }
                     if (err) {
                         res.json({
@@ -242,32 +296,24 @@ module.exports = function (Document, opts) {
                 });
         });
         return;
-    };
-    if (!opts.conf.readonly) {
-        router.post(/\/(new)$/, csrfProtection, [checkID, existCheck], module.createDoc);
+    });
 
-        // update or submit new Document ID 
-        router.post('/:id(' + opts.idpattern + ')', csrfProtection, [checkID], module.upsertDoc);
+    //Delete Document
+    router.delete('/:id(' + opts.idpattern + ')', csrfProtection, function (req, res) {
+        let query = {};
+        query[opts.idpath] = req.params.id;
 
-        router.delete('/:id(' + opts.idpattern + ')', csrfProtection, function (req, res) {
-            let query = {};
-            query[opts.idpath] = req.params.id;
-
-            Document.deleteOne(query, function (err) {
-                if (err) {
-                    res.send('Error Deleting');
-                    return;
-                } else {
-                    res.send('Deleted');
-                }
-            });
+        Document.deleteOne(query, function (err) {
+            if (err) {
+                res.send('Error Deleting');
+                return;
+            } else {
+                res.send('Deleted');
+            }
         });
-        // load Document editor form
-    }
+    });
 
-
-    // GET
-
+    // fetch either logs or comments
     var getSubDocs = async function (subSchema, doc_id) {
         var q = {}
         q[opts.idpath] = doc_id;
@@ -289,62 +335,20 @@ module.exports = function (Document, opts) {
             };
         }
     }
+
+    // Get document chage history (JSON patches)
     router.get('/log/:id', [checkID], function (req, res) {
         getSubDocs(History, req.params.id).then(r => {
             res.json(r);
         });
     });
+
+    // Get document comments
     router.get('/comment/:id', [checkID], function (req, res) {
         getSubDocs(History, req.params.id).then(r => {
             res.json(r);
         });
     });
-    router.get('/:id', csrfProtection, [checkID], function (req, res) {
 
-        //console.log('Got GET ' + req.params.id);
-        var q = {};
-        q[opts.idpath] = req.params.id;
-        Document.findOne(q, async function (err, doc) {
-            var ucomments = undefined;
-            if (!doc) {
-                req.flash('error', 'ID not found: ' + req.params.id);
-                //console.log('GOT doc/' + idpath + req.params.id + doc);
-                
-            } else {
-                ucomments = doc.comments;
-            }
-            res.locals.renderStartTime = Date.now();
-            if (opts.conf.readonly) {
-                if (doc && doc._doc) {
-                    delete doc._doc._id;
-                }
-                //console.log('READONLY view');
-                res.setHeader("Content-Security-Policy", "default-src 'self'; connect-src 'none'; font-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'");
-                res.render((opts.render == 'render' ? 'readonly' : opts.render), {
-                    title: req.params.id,
-                    doc: doc ? doc._doc : {},
-                    textUtil: textUtil,
-                    doc_id: req.params.id,
-                    csrfToken: req.csrfToken(),
-                    renderTemplate: 'default',
-                    ucomments: ucomments
-                });
-            } else {
-                res.render(opts.edit, {
-                    title: req.params.id,
-                    opts: opts,
-                    doc_id: req.params.id,
-                    idpath: opts.jsonidpath,
-                    doc: doc,
-                    textUtil: textUtil,
-                    csrfToken: req.csrfToken(),
-                    allowAjax: true,
-                    ucomments: ucomments
-                });
-            }
-        });
-    });
-    module.router = router;
     return module;
-
 }
