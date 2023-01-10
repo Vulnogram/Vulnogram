@@ -4,7 +4,7 @@ var csrfProtection = csurf();
 const path = require('path');
 const os = require('os');
 const Busboy = require('busboy');
-
+const fs = require('fs');
 // input doc, opts
 
 module.exports = function (Document, opts) {
