@@ -9,6 +9,7 @@ const mongoose = require('mongoose');
 const config = require('../config/conf');
 
 mongoose.Promise = global.Promise;
+mongoose.set('strictQuery', false);
 
 function hidden(query, callback) {
     var stdin = process.openStdin();
@@ -72,8 +73,6 @@ hidden('Enter Password: ', (password1) => {
                 newUser.password = hash;
                 mongoose.connect(config.database, {
                     keepAlive: false,
-                    useNewUrlParser: true,
-                    useFindAndModify: false,
                 });
                 User.findOneAndUpdate({
                         username: newUser.username
