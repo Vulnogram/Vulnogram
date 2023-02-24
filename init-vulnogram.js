@@ -4,11 +4,10 @@ const mongoose = require('mongoose');
 const config = require('./config/conf');
 
 mongoose.Promise = global.Promise;
+mongoose.set('strictQuery', false);
 
 mongoose.connect(config.database, {
     keepAlive: false,
-    useNewUrlParser: true,
-    useFindAndModify: false,
 });
 
 User.findOne({username: process.env.VULNOGRAM_ADMIN_USERNAME}, function(err, adminUser) {

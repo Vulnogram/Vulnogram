@@ -27,10 +27,9 @@ if(!process.env.NODE_ENV) {
 }
 
 mongoose.Promise = global.Promise;
+mongoose.set('strictQuery', false);
 mongoose.connect(conf.database, {
     keepAlive: true,
-    useNewUrlParser: true,
-    useUnifiedTopology: true
 }).catch(function(e){
     console.log("Error"+e.message);
 });
