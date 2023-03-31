@@ -737,14 +737,14 @@ var cvssjs = {
             } else {
                 impactSubScore = metricWeight.scope * (impactSubScoreMultiplier - 0.029) - 3.25 * Math.pow(impactSubScoreMultiplier - 0.02, 15);
             }
-            exploitabality = exploitabilityCoefficient * metricWeight.attackVector * metricWeight.attackComplexity * metricWeight.privilegesRequired * metricWeight.userInteraction;
+            exploitability = exploitabilityCoefficient * metricWeight.attackVector * metricWeight.attackComplexity * metricWeight.privilegesRequired * metricWeight.userInteraction;
             if (impactSubScore <= 0) {
                 baseScore = 0;
             } else {
                 if (val.scope === 'UNCHANGED') {
-                    baseScore = this.roundUp1(Math.min((exploitabality + impactSubScore), 10));
+                    baseScore = this.roundUp1(Math.min((exploitability + impactSubScore), 10));
                 } else {
-                    baseScore = this.roundUp1(Math.min((exploitabality + impactSubScore) * scopeCoefficient, 10));
+                    baseScore = this.roundUp1(Math.min((exploitability + impactSubScore) * scopeCoefficient, 10));
                 }
             }
             return baseScore.toFixed(1);
@@ -792,11 +792,11 @@ var cvssjs = {
         if (impact == 0) {
             return 0;
         }
-        var exploitabality = 20.0 
+        var exploitability = 20.0
             * w2.accessComplexity[cvss.accessComplexity]
             * w2.authentication[cvss.authentication]
             * w2.accessVector[cvss.accessVector];
 
-        return ((0.6*impact + 0.4*exploitabality - 1.5)*1.176).toFixed(1);
+        return ((0.6*impact + 0.4*exploitability - 1.5)*1.176).toFixed(1);
     }
 }
