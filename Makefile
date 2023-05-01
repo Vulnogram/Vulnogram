@@ -5,10 +5,13 @@ JS = $(OUT)/js
 CSSO = ./node_modules/.bin/csso
 UJS = ./node_modules/.bin/uglifyjs
 
-TARGETS := $(OUT) $(OUT)/static $(OUT)/index.html $(CSS)/min.css $(CSS)/vg-icons.css $(CSS)/tagify.css $(CSS)/logo.png $(CSS)/logo.gif $(JS)/util.js $(JS)/editor.js $(JS)/mode-json.js $(JS)/cvss.json $(JS)/cwe-frequent.json $(JS)/capec.json $(JS)/wy/ $(JS)/wy/ $(JS)/tablesort.min.js $(JS)/tagify.min.js
+TARGETS := $(OUT) $(OUT)/static $(OUT)/index.html $(CSS)/min.css $(CSS)/vg-icons.css $(CSS)/tagify.css $(CSS)/logo.png $(CSS)/logo.gif $(JS)/util.js $(JS)/editor.js $(JS)/mode-json.js $(JS)/cvss.json $(JS)/cwe-frequent.json $(JS)/capec.json $(JS)/wy/ $(JS)/tablesort.min.js $(JS)/tagify.min.js $(OUT)/static/CVE.svg $(OUT)/static/cve5sw.js
 
 $(OUT):
 	mkdir $(OUT)
+
+$(OUT)/static:
+	mkdir -p $(OUT)/static
 
 $(OUT)/index.html: ./scripts/standalone.js ./config/conf-standalone.js ./[cd][ue][sf]*[mt]/cve5/* ./views/*
 	if [ -e "./custom/cve5/conf.js" ]; then node $< custom ;  else node $< ; fi
@@ -46,6 +49,7 @@ $(JS)/%.json: ./public/js/%.json
 #$(OUT)/%: ./public/js/cve/%
 #	$(UJS) $< -o $@
 
-$(OUT)/static/: ./default/cve5/static/
+$(OUT)/static/%: ./default/cve5/static/%
 	cp -pr $< $@
-min: $(OUT) $(CSS) $(JS) $(TARGETS)
+
+min: $(OUT) $(OUT)/static $(CSS) $(JS) $(TARGETS)
