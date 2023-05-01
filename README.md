@@ -108,6 +108,7 @@ Web application should be now accessible at one of the following addresses, depe
 
 ### Configure defaults
 
+- nodejs 14.0.0 or later is required to generate files (nodejs is not needed on a web server; it is only needed to execute the `node` command locally)
 - Install required nodejs modules. See [step 1](https://github.com/Vulnogram/Vulnogram#step-1-install-required-nodejs-modules) above.
 - Configure Vulnogram following [step 3](https://github.com/Vulnogram/Vulnogram#step-3-edit-the-config-parameters-in-confjs-to-suite-your-requirements) to 5 above.
 
