@@ -133,7 +133,7 @@ module.exports = function (Document, opts) {
     // delete file
     router.delete('/:id(' + opts.idpattern + ')/file/:filename', csrfProtection, async function (req, res) {
         var fq = {};
-        fq[idpath] = req.params.id;
+        fq[opts.idpath] = req.params.id;
         try {
             var ret = await Document.update(fq, { $pull: { files: { name: req.params.filename } } });
             res.json({ ok: ret.ok, n: ret.n });
