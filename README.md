@@ -68,6 +68,8 @@ Copy the `example.env` file to `.env` and configure the environment variables to
 $ node app.js
 ```
 
+(set `NODE_ENV=development` for local testing without HTTPS)
+
 ### Step 8. Run the application as a daemon server
 
 Use a process monitor like [pm2](https://www.npmjs.com/package/pm2) (preferred) or [forever] to run vulnogram as a service:

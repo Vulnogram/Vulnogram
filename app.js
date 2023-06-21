@@ -85,7 +85,11 @@ app.use(express.static('public'));
 app.use(session({
     secret: crypto.randomBytes(64).toString('hex'),
     resave: true,
-    saveUninitialized: false
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV == "production",
+      httpOnly: true
+    }
 }));
 
 // Passport config
