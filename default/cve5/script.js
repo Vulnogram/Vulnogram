@@ -365,7 +365,7 @@ function htmltoText(html) {
         //text = text.replace(/^\s*/gim, "");
         //text = text.replace(/ ,/gi, ",");
         //text = text.replace(/ +/gi, " ");
-        //text = text.replace(/\n\n/gi, "\n");
+        text = text.replace(/\n\n+/gi, "\n\n");
         return text;
     }
 };
