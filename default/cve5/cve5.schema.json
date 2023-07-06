@@ -659,7 +659,7 @@
                 "minLength": 1,
                 "options": {
                   "inputAttributes": {
-                    "placeholder": "eg., patch 10, 1.2.5a, 1.2.6",
+                    "placeholder": "eg. semver, maven, custom, python",
                     "size": "5"
                   }                  
                 },
