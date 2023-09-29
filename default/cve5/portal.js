@@ -637,6 +637,10 @@ async function cvePost() {
                 //console.log('uploading...');
                 var j = await mainTabGroup.getValue();
                 var j = textUtil.reduceJSON(j);
+                if (j.containers.cna?.descriptions?.[0]?.value?.includes('[PROBLEMTYPE]') && j.containers.cna?.descriptions?.[0]?.value?.includes('[COMPONENT]')) {
+                    showAlert('Please replace all CVE Description placeholders such as [PROBLEMTYPE] before posting');
+                    return;
+                }
                 /*var pts = j.containers.cna.problemTypes;
                 if(pts && pts.length == 1 && pts[0].descriptions && pts[0].descriptions[0].description == undefined) {
                     delete j.containers.cna.problemTypes;
