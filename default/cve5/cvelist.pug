@@ -13,6 +13,7 @@ mixin cveLoginBox
                 select#cpPortal.bor.txt(name='portal')
                     option(value="https://cveawg.mitre.org/api" selected=(prevPortal == 'production')) production
                     option(value="https://cveawg-test.mitre.org/api" selected=(prevPortal == 'test')) test
+                    option(value="https://cveawg-adp-test.mitre.org/api" selected=(prevPortal == 'adp-test')) adp-test
                     option(value="http://127.0.0.1:3000/api" selected=(prevPortal == 'local')) local
 
                 label.lbl.vgi-org(for="cpOrg") CNA Short Name
