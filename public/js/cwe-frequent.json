@@ -1,5 +1,6 @@
 {"examples": [
 "CWE-20 Improper Input Validation",
+"CWE-1284 Improper Validation of Specified Quantity in Input",
 "CWE-129 Improper Validation of Array Index",
 "CWE-74 Improper Neutralization of Special Elements in Output Used by a Downstream Component ('Injection')",
 "CWE-1236 Improper Neutralization of Formula Elements in a CSV File",
@@ -59,8 +60,10 @@
 "CWE-459 Incomplete Cleanup",
 "CWE-763 Release of Invalid Pointer or Reference",
 "CWE-772 Missing Release of Resource after Effective Lifetime",
+"CWE-407 Inefficient Algorithmic Complexity",
+"CWE-1333 Inefficient Regular Expression Complexity",
 "CWE-436 Interpretation Conflict",
-"CWE-444 Inconsistent Interpretation of HTTP Requests ('HTTP Request Smuggling')",
+"CWE-444 Inconsistent Interpretation of HTTP Requests ('HTTP Request/Response Smuggling')",
 "CWE-610 Externally Controlled Reference to a Resource in Another Sphere",
 "CWE-1021 Improper Restriction of Rendered UI Layers or Frames",
 "CWE-384 Session Fixation",
@@ -122,8 +125,8 @@
 "CWE-863 Incorrect Authorization",
 "CWE-639 Authorization Bypass Through User-Controlled Key",
 "CWE-913 Improper Control of Dynamically-Managed Code Resources",
+"CWE-1321 Improperly Controlled Modification of Object Prototype Attributes ('Prototype Pollution')",
 "CWE-470 Use of Externally-Controlled Input to Select Classes or Code ('Unsafe Reflection')",
 "CWE-502 Deserialization of Untrusted Data",
-"CWE-915 Improperly Controlled Modification of Dynamically-Determined Object Attributes",
 "CWE-922 Insecure Storage of Sensitive Information"
 ]}
