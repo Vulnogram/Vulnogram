@@ -16,6 +16,7 @@
 "CWE-838 Inappropriate Encoding for Output Context",
 "CWE-119 Improper Restriction of Operations within the Bounds of a Memory Buffer",
 "CWE-120 Buffer Copy without Checking Size of Input ('Classic Buffer Overflow')",
+"CWE-122 Heap-based Buffer Overflow",
 "CWE-125 Out-of-bounds Read",
 "CWE-787 Out-of-bounds Write",
 "CWE-824 Access of Uninitialized Pointer",
