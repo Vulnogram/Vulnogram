@@ -30,7 +30,7 @@
     "express-validator": "^6.14.2",
     "extend": "^3.0.2",
     "json-patch-extended": "^0.1.2",
-    "linkifyjs": "^2.1.9",
+    "linkifyjs": "^4.1.1",
     "mongodb": "^3.7.3",
     "mongoose": "^6.10.0",
     "node-fetch": "^2.6.7",
