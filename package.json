@@ -27,7 +27,7 @@
     "express-messages": "^1.0.1",
     "express-rate-limit": "^5.5.1",
     "express-session": "^1.17.3",
-    "express-validator": "^6.14.2",
+    "express-validator": "^7.0.1",
     "extend": "^3.0.2",
     "json-patch-extended": "^0.1.2",
     "linkifyjs": "^2.1.9",
