@@ -1593,11 +1593,10 @@
         "oneOf": [
           { "required": ["format", "scenarios", "cvssV3_1"], "title": "CVSS 3.1" },
           { "required": ["format", "scenarios", "cvssV2_0"], "title": "CVSS 2 (Obsolete)"},
-          { "required": ["other", "ssvc"], "title": "SSVC",
+          { "required": ["other", "SSVCv2.0"], "title": "SSVCv2.0",
             "default": {
               "other": {
-                "type": "SSVC",
-                "version":"2.0",
+                "type": "SSVCv2.0",
                 "content": {
                   "Exploitation": "Active",
                   "Automatable": "Yes",
@@ -1613,18 +1612,11 @@
                 "required": ["type","content"],
                 "description": "A non-standard impact description, may be prose or JSON block.",
                 "properties": {
-                  "version":{
-                    "type":"string",
-                    "default":"2.0",
-                    "options":{
-                      "hidden":"true"
-                    }
-                  },
                   "type": {
                     "description": "Name of the non-standard impact metrics format used.",
                     "type": "string",
-                    "enum": ["SSVC"],
-                    "default":"SSVC",
+                    "enum": ["SSVCv2.0"],
+                    "default":"SSVCv2.0",
                     "minLength": 1,
                     "maxLength": 128,
                     "options": {
@@ -1683,11 +1675,6 @@
                             "Partial": "signal-2",
                             "Total": "signal-1"
                           }
-                        }
-                      },
-                      "text": {
-                        "options": {
-                          "hidden":"true"
                         }
                       }
                     }
