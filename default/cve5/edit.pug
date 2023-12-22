@@ -12,6 +12,9 @@ block append bannerItemsLeft
     //-a.vgi-download.fbn(type="button",oncontextmenu='saveCSAF(event, this);',onclick='saveCSAF(event, this);',target="_blank",title="Download CSAF") CSAF
 
 block append scripts
+    script(type="module")
+        | import {CVSS40} from './static/cvss40.js';
+        | window.CVSS40 = CVSS40;
     script
         include cve.js
         //include csaf.js
@@ -65,7 +68,7 @@ mixin userAddDialog
     dialog.dlg.bor.rnd.shd#userAddDialog
         +dlgHeader('vgi-user','Add a new user')
         form.gap(onsubmit="event.preventDefault();cveAddUser(this)")
-            +userEdit()
+            +userEdit('Add user')
 
 mixin userEditDialog
     dialog.dlg.bor.rnd.shd#userEditDialog
@@ -81,13 +84,14 @@ mixin userEdit(label)
     input.txt(name="last" "pattern"=".{1,64}" required=true placeholder="Last name" title="Last Name")
     div
         br
-        input#cveUserAdmin(type="checkbox" name="admin")
-        label.vgi-king.lbl(for="cveUserAdmin" title="Is this an admin?") Admin
+        - var idName = "cveUserAdmin"+label[0];
+        input(id=idName type="checkbox" name="admin")
+        label.vgi-king.lbl(for=idName title="Is this an admin?") Admin
         if label
-            input#cveUserActive.lbl(type="checkbox" name="active" checked)
-            label.lbl(for="cveUserActive" title="Is the account active?") Active
+            input(id = idName + 'Active').lbl(type="checkbox" name="active" checked)
+            label.lbl(for=idName + 'Active', title="Is the account active?") Active
     br
-    input.gap.sfe.btn.vgi-magic(type="submit" value=label?label:"Add user")
+    input.gap.sfe.btn.vgi-magic(type="submit" value=label)
     if label
         | 
         button.gap.btn.vgi-reuse(onclick="cveUserKeyReset(this)") Reset API Key
