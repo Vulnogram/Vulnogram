@@ -88,7 +88,7 @@ mixin userEdit(label)
         input(id=idName type="checkbox" name="admin")
         label.vgi-king.lbl(for=idName title="Is this an admin?") Admin
         if label
-            input(id = idName + 'Active').lbl(type="checkbox" name="active" checked)
+            input.lbl(id = idName + 'Active', type="checkbox" name="active" checked)
             label.lbl(for=idName + 'Active', title="Is the account active?") Active
     br
     input.gap.sfe.btn.vgi-magic(type="submit" value=label)

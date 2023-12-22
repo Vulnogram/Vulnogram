@@ -1641,6 +1641,12 @@
                     "description": "JSON object not covered by another metrics format.",
                     "minProperties": 0,
                     "properties": {
+                      "version": {
+                        "format": "string",
+                        "options": {
+                          "hidden": true
+                        }
+                      },
                       "Exploitation": {
                         "format": "radio",
                         "type":"string",

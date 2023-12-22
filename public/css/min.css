@@ -1138,7 +1138,7 @@ div[data-schematype="object"]>h3>span:before {
     transition-delay: 0.5s;
     content: "";
     position: absolute;
-    top: -20%;
+    top: -30%;
     left: 50%;
     margin-left: -7px;
     border-width: 7px;
@@ -1158,7 +1158,7 @@ div[data-schematype="object"]>h3>span:before {
     background-color: #fff8e0;
     backdrop-filter: blur(2px);
     left: -20%;
-    bottom: 120%;
+    bottom: 130%;
     text-align: left;
     padding: 5px;
     border-radius: 6px;
