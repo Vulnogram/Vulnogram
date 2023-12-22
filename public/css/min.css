@@ -1,6 +1,6 @@
 body {
     /*font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;*/
-    font-family: "Montserrat","-apple-system", "system-ui", "Arial", "sans-serif";
+    font-family: "-apple-system", "system-ui", "Arial", "sans-serif";
     --wht: #fff;
     --pur: #fff;
     --bck: #f6f6f7;
@@ -1122,6 +1122,52 @@ div[data-schematype="object"]>h3>span:before {
     margin-left: 0px;
     border-left: 0px;
 }
+
+.lbl[data-tooltip] {
+    position: relative;
+}
+.lbl[data-tooltip]:before, .lbl[data-tooltip]:after {
+    opacity:0;
+    content: '';
+}
+
+.lbl[data-tooltip]:hover:before {
+    opacity: .9;
+    transition-property: opacity;
+    transition-duration: 0.5s;
+    transition-delay: 0.5s;
+    content: "";
+    position: absolute;
+    top: -20%;
+    left: 50%;
+    margin-left: -7px;
+    border-width: 7px;
+    border-style: solid;
+    border-color: #000 transparent transparent;
+}
+
+.lbl[data-tooltip]:hover:after {
+    opacity: .9;
+    transition-property: opacity;
+    transition-duration: 0.5s;
+    transition-delay: 0.5s;
+    content: attr(data-tooltip);
+    white-space: normal;
+    width:max-content;
+    max-width: 50vw;
+    background-color: #fff8e0;
+    backdrop-filter: blur(2px);
+    left: -20%;
+    bottom: 120%;
+    text-align: left;
+    padding: 5px;
+    border-radius: 6px;
+    border: 1px solid #000;
+    position: absolute;
+    z-index: 10;
+    box-shadow: 0px 2px 4px rgba(0,0,0,0.2);   
+}
+
 .je-infobutton-icon {
     font-size: 60% !important;
     color: gray;
@@ -1368,6 +1414,9 @@ div[data-schemapath*=".cvss"] .rdg .form-control:first-child input[type="radio"]
     background-color: rgb(240, 130, 120);
   }
 
+  div[data-schemapath*=".cvss"] .rdg .form-control:first-child input[value="NOT_DEFINED"]:checked+label {
+    background-color: rgb(202, 202, 202);
+  }
   .spinner {
     background-image: url(logo.gif);
     content: "";

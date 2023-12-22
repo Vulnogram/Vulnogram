@@ -139,7 +139,7 @@
             "type": "number",
             "minimum": 0,
             "maximum": 10,
-            "template": "cvssjs.calculate(context)",
+            "template": "cvssjs.calculate3(context)",
             "watch": {
               "attackVector": "cvss.attackVector",
               "attackComplexity": "cvss.attackComplexity",
@@ -179,7 +179,7 @@
               "formClass": "lni"
             },
             "pattern": "^CVSS:3.[0-1]/((AV:[NALP]|AC:[LH]|PR:[UNLH]|UI:[NR]|S:[UC]|[CIA]:[NLH]|E:[XUPFH]|RL:[XOTWU]|RC:[XURC]|[CIA]R:[XLMH]|MAV:[XNALP]|MAC:[XLH]|MPR:[XUNLH]|MUI:[XNR]|MS:[XUC]|M[CIA]:[XNLH])/)*(AV:[NALP]|AC:[LH]|PR:[UNLH]|UI:[NR]|S:[UC]|[CIA]:[NLH]|E:[XUPFH]|RL:[XOTWU]|RC:[XURC]|[CIA]R:[XLMH]|MAV:[XNALP]|MAC:[XLH]|MPR:[XUNLH]|MUI:[XNR]|MS:[XUC]|M[CIA]:[XNLH])$",
-            "template": "cvssjs.vector(context)",
+            "template": "cvssjs.vector3(context)",
             "watch": {
               "attackVector": "cvss.attackVector",
               "attackComplexity": "cvss.attackComplexity",
