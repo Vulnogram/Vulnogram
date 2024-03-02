@@ -383,6 +383,15 @@ module.exports = {
                     });
                 };
             }
+            if (schema.id == "datePublic") {
+                if(value && (new Date(value) > new Date())) {
+                    errors.push({
+                        path: path,
+                        property: 'format',
+                        message: 'Date is in the future!'
+                    });
+                }
+            }
             return errors;
         }
     ],

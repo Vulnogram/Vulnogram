@@ -973,6 +973,7 @@
           }
         },
         "datePublic": {
+          "id": "datePublic",
           "$ref": "#/definitions/timestamp",
           "title": "Public at",
           "description": "If known, the date/time the vulnerability was disclosed publicly.",
