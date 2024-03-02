@@ -339,6 +339,10 @@ JSONEditor.defaults.editors.radio = class radio extends JSONEditor.AbstractEdito
                 this.label.className = this.label.className + ' req'; 
             }
         }
+
+        if (this.schema.options.infoText) {
+            this.label.setAttribute('data-tooltip', this.schema.options.infoText);
+        }
         if (this.schema.description) this.description = this.theme.getFormInputDescription(this.schema.description);
 
         this.select_options = {};
@@ -367,6 +371,9 @@ JSONEditor.defaults.editors.radio = class radio extends JSONEditor.AbstractEdito
                 this.schema.options.enum_titles[i] :
                 options[i]);
             label.setAttribute('for', xid);
+            if(this.schema.options && this.schema.options.tooltips && this.schema.options.tooltips[options[i]]) {
+                label.setAttribute('data-tooltip', this.schema.options.tooltips[options[i]]);
+            }
             var rdicon = null;
             if(this.options.icons && this.options.icons[options[i]]) {
                 rdicon = this.options.icons[options[i]];
@@ -1177,15 +1184,20 @@ function showJSONerrors(errors) {
     for (i = 0;i < errors.length; i++) {
         var e = errors[i];
         var showLabel = undefined;
-        var ee = docEditor.getEditor('root.'+e.path);
+        var ee = docEditor.getEditor(e.path);
         if (ee && ee.header && ee.header.innerText) {
             showLabel = ee.header.innerText;
+        }
+        if(!showLabel && ee.original_schema) {
+            showLabel = ee.original_schema.title
+        } else {
+            showLabel = ee.getHeaderText();
         }
         var a = document.createElement('a');
         a.setAttribute('class', 'vgi-alert')
         a.setAttribute('e_path', e.path);
         a.setAttribute('onclick', 'scroll2Err(this)');
-        a.textContent = (showLabel && showLabel.trim() ? showLabel : e.path) + ": " + e.message;
+        a.textContent = (showLabel && showLabel.trim() ? showLabel : e.path.replace('^root.','')) + ": " + e.message;
         errList.appendChild(a);
         errList.appendChild(document.createElement('br'))
     }

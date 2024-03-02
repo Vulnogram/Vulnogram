@@ -340,11 +340,12 @@ function getProductAffected(cve) {
     return lines.join();
 };
 
+/* safely convert HTML in supportingMedia to text */
 function domhtml(html) {
     text = htmltoText(html) || "";
     let doc = new DOMParser().parseFromString('<pre>' + text + '</pre>', 'text/html');
     var ret = doc.body.innerText || "";
-    return ret;
+    return ret.trim();
 }
 
 function htmltoText(html) {
@@ -365,7 +366,9 @@ function htmltoText(html) {
         //text = text.replace(/^\s*/gim, "");
         //text = text.replace(/ ,/gi, ",");
         //text = text.replace(/ +/gi, " ");
-        text = text.replace(/\n\n+/gi, "\n\n");
+        //text = text.replace(/\n\n/gi, "\n");
+        text = text.replace(/^\s+/,"");
+        text = text.replace(/\s+$/,"");
         return text;
     }
 };
