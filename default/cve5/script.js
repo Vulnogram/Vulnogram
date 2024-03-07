@@ -411,12 +411,29 @@ document.addEventListener("click", function (e) {
     }
 });
 
+var autoTextRequired = [
+    'root.containers.cna.affected',
+    'root.containers.cna.problemTypes',
+    'root.containers.cna.impacts',
+]
+function enoughAutoTextFields(res) {
+    for(s of res) {
+        for(p of autoTextRequired) {
+            if (s.path.startsWith(p)) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 async function autoText(event) {
     if (event) {
         event.preventDefault();
     }
-    if (docEditor.validation_results && docEditor.validation_results.length == 0) {
-
+    if (docEditor.validation_results 
+        && (docEditor.validation_results.length == 0 || enoughAutoTextFields(docEditor.validation_results)))
+         {
         var doc = docEditor.getValue();
         var text = cveRender({
             ctemplate: 'autoText',
