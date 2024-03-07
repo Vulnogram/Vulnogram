@@ -1188,7 +1188,7 @@ function showJSONerrors(errors) {
         if (ee && ee.header && ee.header.innerText) {
             showLabel = ee.header.innerText;
         }
-        if(!showLabel && ee.original_schema) {
+        if(!showLabel && ! (ee.original_schema === undefined) ) {
             showLabel = ee.original_schema.title
         } else {
             showLabel = ee.getHeaderText();
