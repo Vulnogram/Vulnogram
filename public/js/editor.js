@@ -1185,13 +1185,15 @@ function showJSONerrors(errors) {
         var e = errors[i];
         var showLabel = undefined;
         var ee = docEditor.getEditor(e.path);
-        if (ee && ee.header && ee.header.innerText) {
-            showLabel = ee.header.innerText;
-        }
-        if(!showLabel && ! (ee.original_schema === undefined) ) {
-            showLabel = ee.original_schema.title
-        } else {
-            showLabel = ee.getHeaderText();
+        if (ee) {
+            if(ee.header && ee.header.innerText) {
+                showLabel = ee.header.innerText;
+            }
+            if(!showLabel && !(ee.original_schema === undefined) && !(ee.original_schema.title === undefined)) {
+                showLabel = ee.original_schema.title
+            } else {
+                showLabel = ee.getHeaderText();
+            }
         }
         var a = document.createElement('a');
         a.setAttribute('class', 'vgi-alert')
