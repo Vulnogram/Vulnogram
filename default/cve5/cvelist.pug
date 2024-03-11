@@ -69,6 +69,10 @@ mixin portal
                                 dt 
                                     button.btn.vgi-magic(onclick='cveReserveAndRender(1)') Reserve one for the year 
                                         = y+1
+                                dt
+                                    button.btn.vgi-magic(onclick='cveReserveAndRender(-1)') Reserve one for the year 
+                                        = y-1
+
         .flx
             label#cveUser
                 +userstats
