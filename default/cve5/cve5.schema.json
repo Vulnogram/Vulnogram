@@ -1767,7 +1767,7 @@
                 "enum": [
                   "PHYSICAL",
                   "LOCAL",
-                  "ADJACENT_NETWORK",
+                  "ADJACENT",
                   "NETWORK"
                 ],
                 "options": {
@@ -1781,14 +1781,14 @@
                   ],
                   "tooltips": {
                     "NETWORK": "The vulnerable system is bound to the network stack and the set of possible attackers extends beyond the other options listed below, up to and including the entire Internet. Such a vulnerability is often termed “remotely exploitable” and can be thought of as an attack being exploitable at the protocol level one or more network hops away (e.g., across one or more routers).",
-                    "ADJACENT_NETWORK": "The vulnerable system is bound to a protocol stack, but the attack is limited at the protocol level to a logically adjacent topology. This can mean an attack must be launched from the same shared proximity (e.g., Bluetooth, NFC, or IEEE 802.11) or logical network (e.g., local IP subnet), or from within a secure or otherwise limited administrative domain (e.g., MPLS, secure VPN within an administrative network zone).",
+                    "ADJACENT": "The vulnerable system is bound to a protocol stack, but the attack is limited at the protocol level to a logically adjacent topology. This can mean an attack must be launched from the same shared proximity (e.g., Bluetooth, NFC, or IEEE 802.11) or logical network (e.g., local IP subnet), or from within a secure or otherwise limited administrative domain (e.g., MPLS, secure VPN within an administrative network zone).",
                     "LOCAL": "The vulnerable system is not bound to the network stack and the attacker’s path is via read/write/execute capabilities. Either the attacker exploits the vulnerability by accessing the target system locally (e.g., keyboard, console), or through terminal emulation (e.g., SSH); or the attacker relies on User Interaction by another person to perform actions required to exploit the vulnerability (e.g., using social engineering techniques to trick a legitimate user into opening a malicious document).",
                     "PHYSICAL": "The attack requires the attacker to physically touch or manipulate the vulnerable system. Physical interaction may be brief (e.g., evil maid attack) or persistent."
                    },
                   "icons": {
                     "PHYSICAL": "cvss-physical",
                     "LOCAL": "cvss-user",
-                    "ADJACENT_NETWORK": "cvss-adj",
+                    "ADJACENT": "cvss-adj",
                     "NETWORK": "cvss-net"
                   }
                 }
