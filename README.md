@@ -89,7 +89,7 @@ $ pm2 start app.js
 #### 8.b Example using [forever](https://www.npmjs.com/package/forever)
 
 ```console
-$ npm start
+$ forever start app.js
 > Vulnogram@0.0.6 start /home/vulnogram/
 > forever start --id 'vulnogram' --spinSleepTime 5000 --minUptime 2000 app.js
 
