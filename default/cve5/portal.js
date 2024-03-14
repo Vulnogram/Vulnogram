@@ -626,7 +626,13 @@ async function cveReject(elem, event) {
         }
     }
 }
-
+function transatePath(p) {
+    if(p) {
+        p = p.replace("/cnaContainer", "root.containers.cna");
+        p = p.replaceAll('/', '.');
+    }
+    return p;
+}
 async function cvePost() {
     if (docEditor.validation_results && docEditor.validation_results.length == 0) {
         /*if (save != undefined) {
@@ -668,12 +674,13 @@ async function cvePost() {
                     //console.log(e);
                     if (e.error) {
                         infoMsg.innerText = "";
-                        errMsg.innerText = "Error publishing CVE";
+                        var alertMessage = "";
                         if (e.details && e.details.errors) {
                             showJSONerrors(e.details.errors.map(
                                 a => {
+                                    alertMessage = alertMessage + ', ' + a.message;
                                     return ({
-                                        path: a.instancePath,
+                                        path: transatePath(a.instancePath),
                                         message: a.message
                                     });
                                 }
@@ -682,6 +689,8 @@ async function cvePost() {
                             //console.log(e);
                             cveShowError(e);
                         }
+                        showAlert('Error publishing!', alertMessage);
+
                         //cveShowError(e);
                     } else {
                         showAlert('Error publishing! Got error ' + e)
@@ -690,7 +699,7 @@ async function cvePost() {
                 //console.log(ret);
                 if (ret != null && ret.message) {
                     var a = document.createElement('a');
-                    a.setAttribute('href', 'https://www.cve.org/cverecord?id='+j.cveMetadata.cveId);
+                    a.setAttribute('href', (csCache.portalType == 'test'? 'https://test.cve.org/cverecord?id=' :  'https://www.cve.org/cverecord?id=')+j.cveMetadata.cveId);
                     a.setAttribute('target', '_blank');
                     a.innerText = ret.message;
                     infoMsg.innerText = '';
