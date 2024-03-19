@@ -334,18 +334,20 @@ async function cveUserEdit(elem) {
 async function cveAddUser(f) {
     if (validateForm(f)) {
         try {
-            var ret = await csClient.createOrgUser({
+            const userFields = {
                 "username": f.new_username.value,
                 "name": {
                     "first": f.first.value,
                     "last": f.last.value
                 },
                 "authority": {
-                    "active_roles": [
-                        "ADMIN"
-                    ]
+                    "active_roles": []
                 }
-            });
+            }
+            if (f.admin.checked) {
+              userFields.authority.active_roles.push("ADMIN")
+            }
+            var ret = await csClient.createOrgUser(userFields);
             if (ret.created && ret.created.secret) {
                 document.getElementById('userAddDialog').close();
                 document.getElementById("secretDialogForm").pass.value = ret.created.secret;
