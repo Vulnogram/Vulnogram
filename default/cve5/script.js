@@ -75,7 +75,7 @@ function loadCVE(value) {
 
 async function rejectRecord() {
     var id = getDocID();
-    if (window.confirm('Do you want to reject ' + id + '? All vulnerability deatils will be removed.')) {
+    if (window.confirm('Do you want to reject ' + id + '? All vulnerability details will be removed.')) {
         loadJSON({
             cveMetadata: {
                 cveId: id,
