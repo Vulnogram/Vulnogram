@@ -117,7 +117,9 @@ async function portalLogin(elem, credForm) {
         elem.preventDefault();
         var url = credForm.portal.value;
         var portalType = credForm.portal.options[credForm.portal.selectedIndex].text;
-        csClient = new CveServices(url, "./static/cve5sw.js");
+        if (csClient && csCache.url != url) {
+            csClient = new CveServices(url, "./static/cve5sw.js");
+        }
         var ret = await csClient.login(
             credForm.user.value,
             credForm.org.value,
