@@ -114,6 +114,8 @@ block content
     script(src=conf.basedir + "js/wy/wysihtml-toolbar.min.js")
     if !min && opts && opts.schema
         script(src=conf.basedir + schemaName + '/schema.js')
+    if conf.ajv && conf.ajvHash
+      script(src=conf.ajv,integrity=conf.ajvHash,crossorigin="anonymous")
     script(src=conf.jsoneditor,integrity=conf.jsoneditorHash,crossorigin="anonymous")
     script(src=conf.basedir + "js/tagify.min.js")
     script(src=conf.ace,integrity=conf.aceHash,crossorigin="anonymous")

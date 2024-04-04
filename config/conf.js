@@ -59,6 +59,13 @@ module.exports = {
     // if you want this served locally, download above jsoneditor editor to /public/js/ directory and point to that:
     //jsoneditor: '/js/jsoneditor.min.js',
 
+    // ajv - JSON schema draft-07 validation
+    ajv: 'https://cdnjs.cloudflare.com/ajax/libs/ajv/8.12.0/ajv7.min.js',
+    ajvHash: 'sha512-U2SW9Ihh3GF6F8gP8QgLS+I244xnM5pFCh3cigpw7bAzUDnKDlxdlFL4kjyXTle8SJl/tJ0gdnwd44Eb3hLG/Q==',
+    // if you want this served locally, download above ajv to /public/js/ directory and point to that:
+    //ajv: '/js/ajv7.min.js',
+    //ajvHash: 'sha512-U2SW9Ihh3GF6F8gP8QgLS+I244xnM5pFCh3cigpw7bAzUDnKDlxdlFL4kjyXTle8SJl/tJ0gdnwd44Eb3hLG/Q==',
+
     usernameRegex: '[a-zA-Z0-9]{3,}',
     sections: [
         'cve',

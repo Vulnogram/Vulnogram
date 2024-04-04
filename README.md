@@ -160,6 +160,7 @@ This project uses or depends on software from:
 - JSON Schema based editor <https://github.com/jdorn/json-editor>
 - tablesort v5.0.1 <https://github.com/tristen/tablesort>
 - cvssjs <https://github.com/cvssjs>
+- Ajv <https://github.com/ajv-validator/ajv>
 - json-patch-extended
 - querymen
 - linkifyjs
