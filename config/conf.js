@@ -60,6 +60,7 @@ module.exports = {
     //jsoneditor: '/js/jsoneditor.min.js',
 
     // ajv - JSON schema draft-07 validation
+    // NOTE -- including ajv is experimental and can be excluded if desired by commenting out the next two lines
     ajv: 'https://cdnjs.cloudflare.com/ajax/libs/ajv/8.12.0/ajv7.min.js',
     ajvHash: 'sha512-U2SW9Ihh3GF6F8gP8QgLS+I244xnM5pFCh3cigpw7bAzUDnKDlxdlFL4kjyXTle8SJl/tJ0gdnwd44Eb3hLG/Q==',
     // if you want this served locally, download above ajv to /public/js/ directory and point to that:
