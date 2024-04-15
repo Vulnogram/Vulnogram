@@ -38,8 +38,8 @@ async function initCsClient() {
 }
 
 function showPortalLogin(message) {
-    const prevPortalType = window.localStorage.getItem('portalType');
-    const prevPortalUrl = window.localStorage.getItem('portalUrl');
+    let prevPortalType = window.localStorage.getItem('portalType');
+    let prevPortalUrl = window.localStorage.getItem('portalUrl');
     if (!prevPortalType || !prevPortalUrl) {
       // ensure consistency if either value is missing from localStorage by setting both to default
       prevPortalType = 'production';
