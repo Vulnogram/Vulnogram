@@ -60,7 +60,9 @@ block content
         block editorTab
             input.tab(name='tabs', type='radio', id='editorTab', value="1",checked)
             label.lbl#editorLabel(for='editorTab')
-                span.flx Editor
+                span.flx
+                    block editorLabel
+                        | Editor
                     details.popup#errPop
                         summary.sml.hid#errCount
                         div.wht.pop.pad.bor.shd#errList
@@ -72,7 +74,9 @@ block content
                         a#remove.gap.flr.fbn.vgi-del.tred Delete this entry from local Vulnogram database
         block sourceTab
             input.tab(name='tabs', type='radio', id='sourceTab', value="2")
-            label.lbl(for='sourceTab') Source
+            label.lbl(for='sourceTab')
+                block sourceLabel 
+                    | Source
             .wht.fil.bor.pad
                 div(id="output",rows="40",cols="100%")
                     p

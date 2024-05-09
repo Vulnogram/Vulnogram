@@ -245,7 +245,6 @@ var uid = 1;
 JSONEditor.defaults.editors.radio = class radio extends JSONEditor.AbstractEditor {
     setValue(value, initial) {
         value = this.typecast(value || '');
-
         // Sanitize value before setting it
         var sanitized = value;
         if (this.schema.enum.indexOf(sanitized) < 0) {
@@ -341,7 +340,7 @@ JSONEditor.defaults.editors.radio = class radio extends JSONEditor.AbstractEdito
         }
 
         if (this.schema.options.infoText) {
-            this.label.setAttribute('data-tooltip', this.schema.options.infoText);
+            this.label.setAttribute('title', this.schema.options.infoText);
         }
         if (this.schema.description) this.description = this.theme.getFormInputDescription(this.schema.description);
 
@@ -372,7 +371,7 @@ JSONEditor.defaults.editors.radio = class radio extends JSONEditor.AbstractEdito
                 options[i]);
             label.setAttribute('for', xid);
             if(this.schema.options && this.schema.options.tooltips && this.schema.options.tooltips[options[i]]) {
-                label.setAttribute('data-tooltip', this.schema.options.tooltips[options[i]]);
+                label.setAttribute('title', this.schema.options.tooltips[options[i]]);
             }
             var rdicon = null;
             if(this.options.icons && this.options.icons[options[i]]) {
