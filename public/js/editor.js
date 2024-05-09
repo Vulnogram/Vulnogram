@@ -58,6 +58,9 @@ JSONEditor.AbstractEditor.prototype.addLinks = function () {
                     h.setAttribute('class', style);
                     h.removeAttribute('style')
             }
+            if(link.id) {
+                h.setAttribute('id', link.id)
+            }
             if(link.style) {
                 h.setAttribute('style', link.style);
             }
