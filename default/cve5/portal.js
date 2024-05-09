@@ -38,9 +38,16 @@ async function initCsClient() {
 }
 
 function showPortalLogin(message) {
+    let prevPortalType = window.localStorage.getItem('portalType');
+    let prevPortalUrl = window.localStorage.getItem('portalUrl');
+    if (!prevPortalType || !prevPortalUrl) {
+      // ensure consistency if either value is missing from localStorage by setting both to default
+      prevPortalType = 'production';
+      prevPortalUrl = 'https://cveawg.mitre.org/api';
+    }
     csCache = {
-        portalType: 'production',
-        url: 'https://cveawg.mitre.org/api',
+        portalType: prevPortalType,
+        url: prevPortalUrl,
         org: null,
         user: null,
         orgInfo: null
@@ -50,7 +57,7 @@ function showPortalLogin(message) {
     document.getElementById('port').innerHTML = cveRender({
         ctemplate: 'cveLoginBox',
         message: message,
-        prevPortal: window.localStorage.getItem('portalType'),
+        prevPortal: prevPortalType,
         prevOrg: window.localStorage.getItem('shortName')
     })
 }
@@ -137,6 +144,7 @@ async function portalLogin(elem, credForm) {
 
         window.localStorage.setItem('cveApi', JSON.stringify(csCache));
         window.localStorage.setItem('portalType', portalType);
+        window.localStorage.setItem('portalUrl', url);
         window.localStorage.setItem('shortName', credForm.org.value);
 
         if (ret == 'ok' || ret.data == "ok") {
