@@ -520,8 +520,8 @@ box-shadow: 0 0 0 0.2em rgba(147, 147, 147, 0.3);
 .rdg input[type="radio"]:checked + .lbl,
 .rdg input[type="radio"] + .lbl:hover,
 .rdg input[type="radio"] + .lbl:active {
-    background-color: Highlight;
-    color: HighlightText;
+    background-color: var(--hig);
+    color: var(--txt);
     border: 1px solid var(--bor2);
     z-index: 1;
 }
@@ -1357,8 +1357,8 @@ td.compact .form-control {
    overflow: hidden;
 }
 .je-switcher option:checked {
-    background-color: Highlight;
-    color: HighlightText;
+    background-color: var(--hig);
+    color: var(--txt);
 }
 
 .je-switcher option{
