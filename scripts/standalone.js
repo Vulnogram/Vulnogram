@@ -20,10 +20,10 @@ var editTemplate = fs.existsSync('custom/cve5/edit.pug') ? 'custom/cve5/edit.pug
 var cveEdit = pug.compileFile(editTemplate, {compileDebug: false});
 confOpts = {
     cve: optSet('cve5', ['default'].concat(process.argv.slice(2))),
-    cve4: optSet('cve', ['default'].concat(process.argv.slice(2)))
+    //cve4: optSet('cve', ['default'].concat(process.argv.slice(2)))
 }
-confOpts.cve4.conf.name = 'CVE 4 (old)';
-confOpts.cve4.conf.uri = '/cve4';
+//confOpts.cve4.conf.name = 'CVE 4 (old)';
+//confOpts.cve4.conf.uri = '/cve4';
 confOpts.cve.conf.uri = '/';
 confOpts.cve.conf.name = 'CVE 5';
 
