@@ -180,7 +180,8 @@ function resetPortalLoginErr() {
 function portalErrorHandler(e) {
     if (e.error && (e.error == 'NO_SESSION' || e.error == 'UNAUTHORIZED' || e.error.message == 'Failed to fetch')) {
         if (e.error == 'UNAUTHORIZED') {
-            e.message = "Valid credentials required"
+            e.message = "Valid credentials required",
+            mainTabGroup.focus(3);
         }
         if (e.error.message == 'Failed to fetch') {
             e.message = "Error connecting to service";
@@ -467,9 +468,10 @@ async function pageShow(ret) {
 }
 
 async function cveShowError(err) {
-    if ((err.error == 'NO_SESSION' || csClient == null || await csClient._middleware.worker == null)) {
+    if ((err.error == 'UNAUTHORIZED' || err.error == 'NO_SESSION' || csClient == null || await csClient._middleware.worker == null)) {
+        err.message = 'Login required';
         showPortalLogin();
-        mainTabGroup.focus(4);
+        mainTabGroup.focus(3);
     }
     document.getElementById('cveErrors').innerHTML = cveRender({
         ctemplate: 'cveErrors',
@@ -703,19 +705,16 @@ async function cvePost() {
                                     });
                                 }
                             ));
-                        } else {
-                            //console.log(e);
+                        } else if (e.error == 'UNAUTHORIZED') {
                             cveShowError(e);
                         }
-                        showAlert('Error publishing!', alertMessage);
-
-                        //cveShowError(e);
                     } else {
                         showAlert('Error publishing! Got error ' + e)
                     }
                 }
                 //console.log(ret);
                 if (ret != null && ret.message) {
+                    showAlert("CVE Record is Published", ret.message, 10000);
                     var a = document.createElement('a');
                     a.setAttribute('href', (csCache.portalType == 'test'? 'https://test.cve.org/cverecord?id=' :  'https://www.cve.org/cverecord?id=')+j.cveMetadata.cveId);
                     a.setAttribute('target', '_blank');
