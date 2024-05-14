@@ -49,7 +49,7 @@ function loadCVE(value) {
                 return response.json();
             })
             .then(function (res) {
-                if (res.dataVersion && res.dataVersion == '5.0') {
+                if (res.dataVersion && (res.dataVersion == '5.0' || res.dataVersion == '5.1')) {
                     if (res.containers.cna.x_legacyV4Record) {
                         delete res.containers.cna.x_legacyV4Record;
                     }
@@ -523,7 +523,7 @@ async function loadCVEFile(event, elem) {
             reader.onload = function (evt) {
                 try {
                     res = JSON.parse(evt.target.result);
-                    if (res && res.dataVersion == "5.0") {
+                    if (res && res.dataVersion == "5.0" || res.dataVersion == "5.1") {
                         res = cveFixForVulnogram(res);
                         //docEditor.setValue(res);
                         var edOpts = (res.cveMetadata.state == 'REJECTED') ? rejectEditorOption : publicEditorOption;
