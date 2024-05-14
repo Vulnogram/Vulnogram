@@ -666,11 +666,15 @@
                 "maxLength": 128,
                 "examples": [
                   "custom",
+                  "semver",
                   "git",
+                  "date",
                   "maven",
                   "python",
                   "rpm",
-                  "semver"
+                  "SKU",
+                  "cpe",
+                  "purl"
                 ]
               }
             },
@@ -1017,6 +1021,12 @@
             }
           ]        
         },
+        "tags": {
+          "$ref": "#/definitions/cnaTags",
+          "options": {
+            "class": "vgi-tag"
+          }
+        },
         "references": {
           "$ref": "#/definitions/references"
         },
@@ -1043,12 +1053,6 @@
         },
         "source": {
           "$ref": "#/definitions/source"
-        },
-        "tags": {
-          "$ref": "#/definitions/cnaTags",
-          "options": {
-            "class": "vgi-tag"
-          }
         },
         "taxonomyMappings": {
           "$ref": "#/definitions/taxonomyMappings"
@@ -1586,7 +1590,7 @@
       "items": {
         "type": "object",
         "title": "Rating Metric",
-        "headerTemplate": "'Rating Metric ' + context.i1 + ' · ' + (context.self.format ? context.self.format: 'Other')",
+        "headerTemplate": "'Select the metric type ' + context.i1 + ' · ' + (context.self.format ? context.self.format: 'Other')",
         "options": {
           "remove_empty_properties": false,
           "display_required_only": true,
@@ -3229,6 +3233,8 @@
         "type": "string",
         "description": "exclusively-hosted-service: All known software and/or hardware affected by this CVE Record is known to exist only in the affected hosted service. If the vulnerability affects both hosted and on-prem software and/or hardware, then the tag should not be used.\n\nunsupported-when-assigned: Used by the assigning CNA to indicate that when a request for a CVE assignment was received, the product was already end-of-life (EOL) or a product or specific version was deemed not to be supported by the vendor. This tag should only be applied to a CVE Record when all affected products or version lines referenced in the CVE-Record are EOL.\n\ndisputed: When one party disagrees with another party's assertion that a particular issue in software is a vulnerability, a CVE Record assigned to that issue may be tagged as being 'disputed'.",
         "examples": [
+          "x_known-exploited-vulnerability",
+          "x_open-source",
           "unsupported-when-assigned",
           "exclusively-hosted-service",
           "disputed"
