@@ -38,9 +38,16 @@ async function initCsClient() {
 }
 
 function showPortalLogin(message) {
+    let prevPortalType = window.localStorage.getItem('portalType');
+    let prevPortalUrl = window.localStorage.getItem('portalUrl');
+    if (!prevPortalType || !prevPortalUrl) {
+      // ensure consistency if either value is missing from localStorage by setting both to default
+      prevPortalType = 'production';
+      prevPortalUrl = 'https://cveawg.mitre.org/api';
+    }
     csCache = {
-        portalType: 'production',
-        url: 'https://cveawg.mitre.org/api',
+        portalType: prevPortalType,
+        url: prevPortalUrl,
         org: null,
         user: null,
         orgInfo: null
@@ -50,7 +57,7 @@ function showPortalLogin(message) {
     document.getElementById('port').innerHTML = cveRender({
         ctemplate: 'cveLoginBox',
         message: message,
-        prevPortal: window.localStorage.getItem('portalType'),
+        prevPortal: prevPortalType,
         prevOrg: window.localStorage.getItem('shortName')
     })
 }
@@ -83,6 +90,14 @@ async function showPortalView(orgInfo, userInfo) {
                 button1.innerText = 'Post to Test Portal'
             } else {
                 button1.innerText = 'Post to CVE.org'
+            }
+        }
+        var button2 = document.getElementById("post2")
+        if(button2) {
+            if(csCache.portalType == 'test') {
+                button2.innerText = 'Post to Test Portal'
+            } else {
+                button2.innerText = 'Post to CVE.org';
             }
         }
         return await cveGetList();
@@ -137,6 +152,7 @@ async function portalLogin(elem, credForm) {
 
         window.localStorage.setItem('cveApi', JSON.stringify(csCache));
         window.localStorage.setItem('portalType', portalType);
+        window.localStorage.setItem('portalUrl', url);
         window.localStorage.setItem('shortName', credForm.org.value);
 
         if (ret == 'ok' || ret.data == "ok") {
@@ -164,7 +180,8 @@ function resetPortalLoginErr() {
 function portalErrorHandler(e) {
     if (e.error && (e.error == 'NO_SESSION' || e.error == 'UNAUTHORIZED' || e.error.message == 'Failed to fetch')) {
         if (e.error == 'UNAUTHORIZED') {
-            e.message = "Valid credentials required"
+            e.message = "Valid credentials required",
+            mainTabGroup.focus(3);
         }
         if (e.error.message == 'Failed to fetch') {
             e.message = "Error connecting to service";
@@ -334,18 +351,20 @@ async function cveUserEdit(elem) {
 async function cveAddUser(f) {
     if (validateForm(f)) {
         try {
-            var ret = await csClient.createOrgUser({
+            const userFields = {
                 "username": f.new_username.value,
                 "name": {
                     "first": f.first.value,
                     "last": f.last.value
                 },
                 "authority": {
-                    "active_roles": [
-                        "ADMIN"
-                    ]
+                    "active_roles": []
                 }
-            });
+            }
+            if (f.admin.checked) {
+              userFields.authority.active_roles.push("ADMIN")
+            }
+            var ret = await csClient.createOrgUser(userFields);
             if (ret.created && ret.created.secret) {
                 document.getElementById('userAddDialog').close();
                 document.getElementById("secretDialogForm").pass.value = ret.created.secret;
@@ -449,9 +468,10 @@ async function pageShow(ret) {
 }
 
 async function cveShowError(err) {
-    if ((err.error == 'NO_SESSION' || csClient == null || await csClient._middleware.worker == null)) {
+    if ((err.error == 'UNAUTHORIZED' || err.error == 'NO_SESSION' || csClient == null || await csClient._middleware.worker == null)) {
+        err.message = 'Login required';
         showPortalLogin();
-        mainTabGroup.focus(4);
+        mainTabGroup.focus(3);
     }
     document.getElementById('cveErrors').innerHTML = cveRender({
         ctemplate: 'cveErrors',
@@ -626,7 +646,13 @@ async function cveReject(elem, event) {
         }
     }
 }
-
+function transatePath(p) {
+    if(p) {
+        p = p.replace("/cnaContainer", "root.containers.cna");
+        p = p.replaceAll('/', '.');
+    }
+    return p;
+}
 async function cvePost() {
     if (docEditor.validation_results && docEditor.validation_results.length == 0) {
         /*if (save != undefined) {
@@ -668,29 +694,29 @@ async function cvePost() {
                     //console.log(e);
                     if (e.error) {
                         infoMsg.innerText = "";
-                        errMsg.innerText = "Error publishing CVE";
+                        var alertMessage = "";
                         if (e.details && e.details.errors) {
                             showJSONerrors(e.details.errors.map(
                                 a => {
+                                    alertMessage = alertMessage + ', ' + a.message;
                                     return ({
-                                        path: a.instancePath,
+                                        path: transatePath(a.instancePath),
                                         message: a.message
                                     });
                                 }
                             ));
-                        } else {
-                            //console.log(e);
+                        } else if (e.error == 'UNAUTHORIZED') {
                             cveShowError(e);
                         }
-                        //cveShowError(e);
                     } else {
                         showAlert('Error publishing! Got error ' + e)
                     }
                 }
                 //console.log(ret);
                 if (ret != null && ret.message) {
+                    showAlert("CVE Record is Published", ret.message, 10000);
                     var a = document.createElement('a');
-                    a.setAttribute('href', 'https://www.cve.org/cverecord?id='+j.cveMetadata.cveId);
+                    a.setAttribute('href', (csCache.portalType == 'test'? 'https://test.cve.org/cverecord?id=' :  'https://www.cve.org/cverecord?id=')+j.cveMetadata.cveId);
                     a.setAttribute('target', '_blank');
                     a.innerText = ret.message;
                     infoMsg.innerText = '';
