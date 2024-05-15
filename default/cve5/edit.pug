@@ -60,6 +60,7 @@ block prepend content
     +showSecret
     +userAddDialog
     +userEditDialog
+    +cveReserveDialog
 
 mixin userAddDialog
     dialog.dlg.bor.rnd.shd#userAddDialog
@@ -114,3 +115,17 @@ mixin dlgHeader(icon, msg)
         b.lbl(class=icon)=msg
         | 
         a.sbn.right.vgi-fail(onclick="this.closest('dialog').close()")
+
+mixin cveReserveDialog
+    dialog.dlg.bor.rnd.shd#cveReserveDialog
+        +dlgHeader('vgi-user','Reserve a CVE')
+        form#cveReserveForm.gap(onsubmit="event.preventDefault();cveReserveGeneric(this)")
+            +cveReserve()
+
+mixin cveReserve()
+    input.txt(name="cve_year" "pattern"="[0-9]{4}" type="number" required=true placeholder="year" size="6" maxlength="4" title="Year (2024)" autocomplete="off")
+    br
+    input.txt(name="count" "pattern"="[0-9]{1,2}" type="number" required=true placeholder="count" title="count" size="6" maxlength="2" autocomplete="off")
+    br
+    input.gap.sfe.btn.vgi-magic(type="submit" value="Reserve CVE")
+

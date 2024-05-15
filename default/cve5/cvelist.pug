@@ -57,7 +57,7 @@ mixin portal
                 =portalType
             span.btg.rnd
                         button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve One CVE
-                        details.popup
+                        details.popup#cveReservePopup
                             summary.btn.t9 ▼
                             dl.pop.wht.bor.rnd.shd.rows
                               .gap
@@ -72,6 +72,8 @@ mixin portal
                                 dt
                                     button.btn.vgi-magic(onclick='cveReserveAndRender(-1)') Reserve one for the year 
                                         = y-1
+                                dt
+                                    button.btn.vgi-magic(onclick="cveReserveForm()") Reserve (Generic)
 
         .flx
             label#cveUser
