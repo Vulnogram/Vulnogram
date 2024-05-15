@@ -24,6 +24,7 @@ confOpts = {
 }
 confOpts.cve.conf.uri = '/';
 confOpts.cve.conf.name = 'CVE';
+confOpts.cvss4.conf.uri = '/cvss4';
 
 var cd = confOpts.cve.schema?.definitions;
 if (cd && cd.CNA_private) {
