@@ -1,0 +1,45 @@
+body{
+ /*--hig:#f6f6f7;*/
+ --hig: #e5ebec;
+ --bck:#fafafc;
+}   
+
+.rdg .form-control:first-child input[type="radio"]:checked+label {
+  background-color: rgb(162, 213, 114);
+}
+
+.rdg .form-control input[type="radio"]:checked+label {
+  background-color: rgb(250, 230, 120);
+}
+
+.rdg .form-control:nth-child(3) input[type="radio"]:checked+label {
+  background-color: rgb(240, 170, 83);
+}
+
+.rdg .form-control:nth-child(4) input[type="radio"]:checked+label {
+  background-color: rgb(240, 130, 120);
+}
+
+ .rdg .form-control:last-child input[type="radio"]:checked+label {
+  background-color: rgb(240, 130, 120);
+}
+
+ .rdg .form-control:first-child input[value="NOT_DEFINED"]:checked+label {
+  background-color: rgb(202, 202, 202);
+}
+
+div[data-schemaid="cvss4"] .je-indented-panel div div div.row:nth-child(7),
+div[data-schemaid="cvss4"] .je-indented-panel div div div.row:nth-child(8),
+div[data-schemaid="cvss4"] .je-indented-panel div div div.row:nth-child(9)
+{
+  background-color: var(--hig);
+  border-radius: 5px;
+    padding: 3px;
+}
+div[data-schemaid="cvss4"] .je-indented-panel div div div.row:last-child
+{
+  background-color: var(--sec);
+  border-radius: 5px;
+  padding: 10px;
+  margin: 10px;
+}
