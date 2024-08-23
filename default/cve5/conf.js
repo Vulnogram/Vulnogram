@@ -329,13 +329,6 @@ module.exports = {
                         message: 'Version type is required for ranges'
                     });
                 }
-                if(value.lessThan == undefined && value.lessThanOrEqual == undefined && value.version != undefined && value.versionType != undefined) {
-                    errors.push({
-                        path: path+'.versionType',
-                        property: 'format',
-                        message: 'Version type is used only for ranges. Clear this or define a range'
-                    });
-                }
                 if(value.lessThan == undefined && value.lessThanOrEqual == undefined && value.version != undefined && value.changes != undefined) {
                     errors.push({
                         path: path+'.changes',
