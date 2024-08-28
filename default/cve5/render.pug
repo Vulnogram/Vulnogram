@@ -242,7 +242,7 @@ mixin container(con)
                             =d.description
                             |   
                             if d.cweId
-                                a(href="https://cwe.mitre.org/data/definitions/"+d.cweId target="_blank")
+                                a(href="https://cwe.mitre.org/data/definitions/"+d.cweId.substr(4) target="_blank")
                                     small=d.cweId
                                 br  
     if con.impacts
@@ -255,7 +255,7 @@ mixin container(con)
                             =d.value
                             |   
                     if t.capecId
-                        a(href="https://capec.mitre.org/data/definitions/"+t.capecId target="_blank")
+                        a(href="https://capec.mitre.org/data/definitions/"+t.capecId.substr(6) target="_blank")
                             small=t.capecId
                         br  
     if con.exploits

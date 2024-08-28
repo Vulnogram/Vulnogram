@@ -89,7 +89,7 @@ $ pm2 start app.js
 #### 8.b Example using [forever](https://www.npmjs.com/package/forever)
 
 ```console
-$ npm start
+$ forever start app.js
 > Vulnogram@0.0.6 start /home/vulnogram/
 > forever start --id 'vulnogram' --spinSleepTime 5000 --minUptime 2000 app.js
 
@@ -108,19 +108,27 @@ Web application should be now accessible at one of the following addresses, depe
 
 ## Browser mode deployment
 
-### Configure defaults
+### Step 1. Install required NodeJS modules
 
-- nodejs 14.0.0 or later is required to generate files (nodejs is not needed on a web server; it is only needed to execute the `node` command locally)
-- Install required nodejs modules. See [step 1](https://github.com/Vulnogram/Vulnogram#step-1-install-required-nodejs-modules) above.
-- Configure Vulnogram following [step 3](https://github.com/Vulnogram/Vulnogram#step-3-edit-the-config-parameters-in-confjs-to-suite-your-requirements) to 5 above.
+Note: NodeJS 14.0.0 or later is required to generate files (NodeJS is not needed on a web server; it is only needed to execute the `node` command locally).
 
-### Generate files needed for a front-end only static website (browser mode)
+Install required NodeJS modules by following [step 1](https://github.com/Vulnogram/Vulnogram#step-1-install-required-nodejs-modules) above.
+
+### Step 2 (Optional). Configure defaults
+
+Edit the `config/conf-standalone.js` file to suit your requirements.
+
+### Step 3 (Optional). Add custom functionality
+
+See [step 4](https://github.com/Vulnogram/Vulnogram#step-4-optional-add-custom-templates-schemas-or-routes) above
+
+### Step 4. Generate files needed for a front-end only static website (browser mode)
 
 ```plaintext
 $ make min
 ```
 
-This creates standalone /index.html with minimized javascript and stylesheets can be hosted independently on websites serving static files. This does not require the backend mongodb server or the nodejs server application to be running.
+This creates standalone /index.html with minimized JavaScript and stylesheets can be hosted independently on websites serving static files. This does not require the backend MongoDB server or the NodeJS server application to be running.
 
 Note: Opening the index.html as a file URL may not work since some browsers (including Chrome) will not run async requests on file:// URLs. It is recommended to serve these files from a webserver. See <https://developer.mozilla.org/en-US/docs/Learn/Common_questions/set_up_a_local_testing_server> for examples on how to run a simple testing webserver.
 
@@ -160,6 +168,7 @@ This project uses or depends on software from:
 - JSON Schema based editor <https://github.com/jdorn/json-editor>
 - tablesort v5.0.1 <https://github.com/tristen/tablesort>
 - cvssjs <https://github.com/cvssjs>
+- Ajv <https://github.com/ajv-validator/ajv>
 - json-patch-extended
 - querymen
 - linkifyjs

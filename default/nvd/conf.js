@@ -11,14 +11,35 @@ facet: {
         regex: 'CVE-[0-9]{4}-[0-9]{4,10}',
         class: 'nobr'
     },
-    CVSS: {
+    cvss: {
         path: 'impact.baseMetricV3.cvssV3.baseScore',
         //chart: true,
         //hideColumn: true
     },
     severity: {
         path: 'impact.baseMetricV3.cvssV3.baseSeverity',
-        //chart: true,
+        chart: true,
+        hideColumn: true
+    },
+    AV: {
+        path: 'impact.baseMetricV3.cvssV3.attackVector',
+        chart: true,
+    },
+    PR: {
+        path: 'impact.baseMetricV3.cvssV3.privilegesRequired',
+        chart: true,
+    },
+    C: {
+        path: 'impact.baseMetricV3.cvssV3.confidentialityImpact',
+        chart: true,
+    },
+    I: {
+        path: 'impact.baseMetricV3.cvssV3.integrityImpact',
+        chart: true,
+    },
+    A: {
+        path: 'impact.baseMetricV3.cvssV3.avilabilityVector',
+        chart: true,
     },
     date: {
         path: 'publishedDate',

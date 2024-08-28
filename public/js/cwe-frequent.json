@@ -6,7 +6,7 @@
 "CWE-1236 Improper Neutralization of Formula Elements in a CSV File",
 "CWE-77 Improper Neutralization of Special Elements used in a Command ('Command Injection')",
 "CWE-78 Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')",
-"CWE-79 Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')",
+"CWE-79 Improper Neutralization of Input During Web Page Generation (XSS or 'Cross-site Scripting')",
 "CWE-88 Improper Neutralization of Argument Delimiters in a Command ('Argument Injection')",
 "CWE-89 Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')",
 "CWE-91 XML Injection (aka Blind XPath Injection)",

@@ -20,15 +20,12 @@ var editTemplate = fs.existsSync('custom/cve5/edit.pug') ? 'custom/cve5/edit.pug
 var cveEdit = pug.compileFile(editTemplate, {compileDebug: false});
 confOpts = {
     cve: optSet('cve5', ['default'].concat(process.argv.slice(2))),
-    cve4: optSet('cve', ['default'].concat(process.argv.slice(2)))
+    cvss4: optSet('cvss4', ['default'].concat(process.argv.slice(2)))
 }
-confOpts.cve4.conf.name = 'CVE 4 (old)';
-confOpts.cve4.conf.uri = '/cve4';
 confOpts.cve.conf.uri = '/';
-confOpts.cve.conf.name = 'CVE 5';
+confOpts.cve.conf.name = 'CVE';
+confOpts.cvss4.conf.uri = '/cvss4';
 
-//console.log(confOpts.cve.render);
-confOpts.cve.conf.uri = '.';
 var cd = confOpts.cve.schema?.definitions;
 if (cd && cd.CNA_private) {
     delete cd.CNA_private;
@@ -48,5 +45,18 @@ fs.writeFileSync("standalone/index.html", cveEdit({
     confOpts: confOpts,
     opts: confOpts.cve,
     schemaName: 'cve',
+    allowAjax: false,
+}));
+
+fs.writeFileSync("standalone/cvss4.html", pug.compileFile('default/cvss4/edit.pug', {compileDebug: false})({
+    title: 'Vulnogram CVSS Calculator',
+    idpath: 'vectorString',
+    min: true,
+    doc: null,
+    pugLib: pug,
+    conf: conf,
+    confOpts: confOpts,
+    opts: confOpts.cvss4,
+    schemaName: 'cvss4',
     allowAjax: false,
 }));
