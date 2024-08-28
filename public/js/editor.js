@@ -1364,7 +1364,7 @@ function loadJSON(res, id, message, editorOptions) {
     });
 }
 
-function save() {
+function save(e, onSuccess) {
     var j = mainTabGroup.getValue();
     if (!j){
         return;
@@ -1405,6 +1405,8 @@ function save() {
                     save1.className = "fbn sfe";
                 }
                 getChanges(getDocID());
+                if (onSuccess)
+                    onSuccess()
             }
             changes = 0;
         })
