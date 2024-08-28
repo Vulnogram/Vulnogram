@@ -236,8 +236,16 @@ module.exports = {
     validators: [
         function (schema, value, path) {
             var errors = [];
-            if (schema.id == "desc" && value.value == "") {
-                value = {}
+            if (schema.id == "desc") {
+                if((value.value == "")) {
+                    value = {}
+                } else if(value.value.match(/^\s+$/) || value.value.length < 10) {
+                    errors.push({
+                        path: path,
+                        property: 'format',
+                        message: 'Valid description required'
+                    });
+                }
             }
             if(schema.id == "pE") {
                 if((value.vendor != undefined && value.product != undefined) || (value.collectionURL != undefined && value.packageName != undefined)) {
@@ -329,6 +337,13 @@ module.exports = {
                         message: 'Version type is required for ranges'
                     });
                 }
+                if(value.version != undefined && (value.version == value.lessThan)) {
+                    errors.push({
+                        path: path+'.lessThan',
+                        property: 'format',
+                        message: 'Version can\'t be same as lessThan'
+                    });
+                }
                 if(value.lessThan == undefined && value.lessThanOrEqual == undefined && value.version != undefined && value.changes != undefined) {
                     errors.push({
                         path: path+'.changes',
@@ -349,6 +364,25 @@ module.exports = {
                             break;
                         }
                     }
+                }
+            }
+            if(schema.id == "description") { // check for bad descriptions
+                if(value && value[0] 
+                    && value[0].value.match(/\[(PROBLEMTYPE|COMPONENT|VENDOR|PRODUCT|VERSION|PLATFORMS|ATTACKER|IMPACT|VECTOR)\]/)) {
+                    errors.push({
+                        path: path,
+                        property: 'format',
+                        message: 'Replace the placeholders in the template.'
+                    });
+                };
+            }
+            if (schema.id == "datePublic") {
+                if(value && (new Date(value) > new Date())) {
+                    errors.push({
+                        path: path,
+                        property: 'format',
+                        message: 'Date is in the future!'
+                    });
                 }
             }
             return errors;

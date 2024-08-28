@@ -561,7 +561,47 @@ if(typeof module !== 'undefined') {
     module.exports = textUtil;
 }
 var cvssjs = {
-    vectorMap: {
+    vectorMap4: {
+        "attackVector": "AV",
+        "attackComplexity": "AC",
+        "attackRequirements": "AT",
+        "privilegesRequired": "PR",
+        "userInteraction": "UI",
+        "vulnConfidentialityImpact": "VC",
+        "vulnIntegrityImpact": "VI",
+        "vulnAvailabilityImpact": "VA",
+        "subConfidentialityImpact": "SC",
+        "subIntegrityImpact": "SI",
+        "subAvailabilityImpact": "SA",
+        "Safety": "S",
+        "Automatable": "AU",
+        "Recovery": "R",
+        "valueDensity": "V",
+        "vulnerabilityResponseEffort": "RE",
+        "providerUrgency": "U",
+        "exploitMaturity": "E"
+    },
+    metricMap4: {
+        "AV": "attackVector",
+        "AC": "attackComplexity",
+        "AT": "attackRequirements",
+        "PR": "privilegesRequired",
+        "UI": "userInteraction",
+        "VC": "vulnConfidentialityImpact",
+        "VI": "vulnIntegrityImpact",
+        "VA": "vulnAvailabilityImpact",
+        "SC": "subConfidentialityImpact",
+        "SI": "subIntegrityImpact",
+        "SA": "subAvailabilityImpact",
+        "S": "Safety",
+        "AU": "Automatable",
+        "R": "Recovery",
+        "V": "valueDensity",
+        "RE": "vulnerabilityResponseEffort",
+        "U": "providerUrgency",
+        "E": "exploitMaturity"
+    },
+    vectorMap3: {
         "attackVector": "AV",
         "attackComplexity": "AC",
         "privilegesRequired": "PR",
@@ -579,6 +619,7 @@ var cvssjs = {
         "integrityImpact": "I",
         "availabilityImpact": "A"
     },
+
     // Define associative arrays mapping each metric value to the constant used in the CVSS scoring formula.
     Weight: {
         attackVector: {
@@ -630,12 +671,39 @@ var cvssjs = {
         }
         // C, I and A have the same weights
     },
-    vector: function (cvss) {
+    valueMap: {
+        "GREEN": "Green",
+        "RED": "Red",
+        "CLEAR": "Clear",
+        "AMBER": "Amber"
+    },
+    cvss: {},
+    m: function(m) {
+        var metric = this.metricMap4[m];
+        if (metric && this.cvss[metric]) {
+            console.log(["M:", m, this.valueMap[this.cvss[metric]] || this.cvss[metric].charAt(0)]);
+           return (this.valueMap[this.cvss[metric]] || this.cvss[metric].charAt(0));
+        } else { 
+            console.log("M:", m, "X!");
+            return "X";
+        }
+    },
+    vector4: function (cvss) {
+        var sep = "/";
+        var r = "CVSS:4.0";
+        for (var m in this.vectorMap4) {
+            if (this.vectorMap4[m] && cvss[m] && cvss[m] != 'NOT_DEFINED') {
+                r += sep + this.vectorMap4[m] + ':' + (this.valueMap[cvss[m]] || cvss[m].charAt(0));
+            }
+        }
+        return r;
+    },
+    vector3: function (cvss) {
         var sep = "/";
         var r = "CVSS:3.1";
         for (var m in cvss) {
-            if (this.vectorMap[m] && cvss[m]) {
-                r += sep + this.vectorMap[m] + ':' + cvss[m].charAt(0);
+            if (this.vectorMap3[m] && cvss[m]) {
+                r += sep + this.vectorMap3[m] + ':' + cvss[m].charAt(0);
             }
         }
         return r;
@@ -707,7 +775,7 @@ var cvssjs = {
             return (Math.floor(int_input / 10000) + 1) / 10
         }
     },
-    calculate: function (cvss) {
+    calculate3: function (cvss) {
         var cvssVersion = "3.1";
         var exploitabilityCoefficient = 8.22;
         var scopeCoefficient = 1.08;

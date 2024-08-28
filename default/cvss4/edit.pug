@@ -1,0 +1,21 @@
+//- Copyright (c) 2017 Chandan B N. All rights reserved.
+
+//- Extends default document editor for CVSS
+
+extends ../../views/edit
+block banner 
+    header.ban.pad.ht4.wht.shd
+        .left.flx
+            include cvss.svg
+            h2.indent CVSS 4.0 Pocket Calc
+
+block editorLabel
+    | Calculator
+
+block sourceLabel
+    | JSON
+
+block append scripts
+    script(type="module")
+        | import {CVSS40} from './static/cvss40.js';
+        | window.CVSS40 = CVSS40;
