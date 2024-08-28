@@ -239,7 +239,7 @@ module.exports = {
             if (schema.id == "desc") {
                 if((value.value == "")) {
                     value = {}
-                } else if(value.value.match("^\s+$") || value.value.length < 10) {
+                } else if(value.value.match(/^\s+$/) || value.value.length < 10) {
                     errors.push({
                         path: path,
                         property: 'format',
