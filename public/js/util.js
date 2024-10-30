@@ -593,13 +593,13 @@ var cvssjs = {
         "SC": "subConfidentialityImpact",
         "SI": "subIntegrityImpact",
         "SA": "subAvailabilityImpact",
+        "E": "exploitMaturity",
         "S": "Safety",
         "AU": "Automatable",
         "R": "Recovery",
         "V": "valueDensity",
         "RE": "vulnerabilityResponseEffort",
         "U": "providerUrgency",
-        "E": "exploitMaturity"
     },
     vectorMap3: {
         "attackVector": "AV",
