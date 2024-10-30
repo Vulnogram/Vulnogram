@@ -1,30 +1,30 @@
 function orderKeys(obj) {
 
-    var keys = Object.keys(obj).sort(function keyOrder(k1, k2) {
-        if (k1 < k2) return -1;
-        else if (k1 > k2) return +1;
-        else return 0;
-    });
+  var keys = Object.keys(obj).sort(function keyOrder(k1, k2) {
+      if (k1 < k2) return -1;
+      else if (k1 > k2) return +1;
+      else return 0;
+  });
 
-    var i, after = {};
-    for (i = 0; i < keys.length; i++) {
-        after[keys[i]] = obj[keys[i]];
-        delete obj[keys[i]];
-    }
+  var i, after = {};
+  for (i = 0; i < keys.length; i++) {
+    after[keys[i]] = obj[keys[i]];
+    delete obj[keys[i]];
+  }
 
-    for (i = 0; i < keys.length; i++) {
-        obj[keys[i]] = after[keys[i]];
-        //recurse
-        if (obj[keys[i]] instanceof Object) {
-            obj[keys[i]] = orderKeys(obj[keys[i]]);
-        }
+  for (i = 0; i < keys.length; i++) {
+    obj[keys[i]] = after[keys[i]];
+    //recurse
+    if (obj[keys[i]] instanceof Object) {
+             obj[keys[i]] = orderKeys(obj[keys[i]]);
     }
-    return obj;
+  }
+  return obj;
 }
 
 function cloneJSON(obj) {
     // basic type deep copy
-    if (obj === null || obj === undefined || typeof obj !== 'object' || obj === "") {
+    if (obj === null || obj === undefined || typeof obj !== 'object' || obj === "")  {
         return obj
     }
     // array deep copy
@@ -33,17 +33,17 @@ function cloneJSON(obj) {
         for (var i = 0; i < obj.length; ++i) {
             cloneA[i] = cloneJSON(obj[i]);
         }
-        if (cloneA.length > 0) {
+        if(cloneA.length > 0) {   
             return cloneA;
         } else {
             return null;
         }
-    }
+    }        
     // object deep copy
-    var cloneO = {};
+    var cloneO = {};   
     for (var i in obj) {
         var c = cloneJSON(obj[i]);
-        if (c !== null && c !== "") {
+        if(c !== null && c !== "") {
             cloneO[i] = c;
         }
     }
@@ -57,11 +57,11 @@ function loadimg(e) {
     var ok = sibs[4];
     e.preventDefault();
     var file = this.files[0];
-    if (file.size > 528385) {
+    if(file.size > 528385) {
         alert('Image size should less than 500k');
         return false;
     };
-    if (file.type.indexOf("image") == -1) {
+    if(file.type.indexOf("image")==-1){
         alert("Not an image!");
         return false;
     }
@@ -75,421 +75,421 @@ function loadimg(e) {
 };
 
 var textUtil = {
-    jsonView: function (obj) {
-        if (obj instanceof Array) {
-            var ret = '<table>';
-            for (var k in obj) {
-                ret = ret + '<tr><td>' + this.jsonView(obj) + '</td></tr>';
+jsonView: function(obj) {
+    if (obj instanceof Array) {
+        var ret = '<table>'; 
+        for(var k in obj) {
+            ret = ret + '<tr><td>' + this.jsonView(obj)+ '</td></tr>';
+        }
+        return(ret + '</table>');
+    } else if (obj instanceof Object) {
+        var ret = '<div>';
+        for (var k in obj){
+            if (obj.hasOwnProperty(k)){
+                ret = ret + '<div><b>' + k + '</b>: ' + this.jsonView(obj[k]) + '</div>';
             }
-            return (ret + '</table>');
-        } else if (obj instanceof Object) {
-            var ret = '<div>';
-            for (var k in obj) {
-                if (obj.hasOwnProperty(k)) {
-                    ret = ret + '<div><b>' + k + '</b>: ' + this.jsonView(obj[k]) + '</div>';
+        }
+        return ret + '</div>'
+    } else {
+        return obj;
+    };
+},
+reduceJSON: function (cve) {
+    //todo: this is to create a duplcate object
+    // needs cleaner implementation
+    var c = cloneJSON(cve);
+    delete c.CNA_private;
+    if (c.description && c.description.description_data) {
+        var merged = {};
+        var d;
+        for (d of c.description.description_data) {
+            if (d && d.lang) {
+                if (!merged[d.lang]) {
+                    merged[d.lang] = [];
                 }
+                merged[d.lang].push(d.value);
             }
-            return ret + '</div>'
-        } else {
-            return obj;
-        };
-    },
-    reduceJSON: function (cve) {
-        //todo: this is to create a duplcate object
-        // needs cleaner implementation
-        var c = cloneJSON(cve);
-        delete c.CNA_private;
-        if (c.description && c.description.description_data) {
-            var merged = {};
-            var d;
-            for (d of c.description.description_data) {
-                if (d && d.lang) {
-                    if (!merged[d.lang]) {
-                        merged[d.lang] = [];
+        }
+        var new_d = [];
+        for (var m in merged) {
+            new_d.push({
+                lang: m,
+                value: merged[m].join("\n")
+            });
+        }
+        c.description.description_data = new_d;
+    }
+    if(c.impact && c.impact.cvss && c.impact.cvss.baseScore === 0) {
+        delete c.impact;    
+    }
+    return(orderKeys(c));
+},
+
+getMITREJSON: function(cve) {
+    return JSON.stringify(cve, null, "    ");
+},
+getPR: function(cve) {
+    var matches = [];
+    var re = /PRs?[ \t]+((or|and|[0-9\t\ \,])+)/igm;
+    var m;
+    while((m = re.exec(cve.solution)) !== null) {
+        var prs = m[1].trim().split(/[ \t,andor]{1,}/).filter(x => x);
+        matches = matches.concat(prs);
+    }
+    return matches;
+},
+
+getAffectedProductString: function (cve) {
+    var status={};
+    var lines = [];
+    for (var vendor of cve.affects.vendor.vendor_data) {
+        var vendor_name = vendor.vendor_name;
+        for(var product of vendor.product.product_data) {
+            for(var version of product.version.version_data) {
+                var vv = version.version_value;
+                var cat = "affected";
+                if(version.version_affected) {
+                    if(version.version_affected.startsWith('?')) {
+                        cat = "unknown";
+                    } else if (version.version_affected.startsWith('!')) {
+                        cat = "unaffected";
                     }
-                    merged[d.lang].push(d.value);
+                    var prefix = product.product_name  + " ";
+                    if(version.version_name && version.version_name != "") {
+                        prefix += version.version_name + " ";
+                    }
+                    switch (version.version_affected) {
+                        case "!":
+                        case "?":
+                        case "=":
+                            vv = version.version_value;
+                            break;
+                        case "<":
+                        case "!<":
+                        case "?<":
+                            vv = prefix + "versions earlier than " + version.version_value;
+                            break;
+                        case ">":
+                        case "?>":
+                            vv = prefix + "versions later than " + version.version_value;
+                            break;
+                        case "<=":
+                        case "!<=":
+                        case "?<=":
+                            vv = product.product_name  + " " + version.version_value + " and earlier versions";
+                            break;
+                        case ">=":
+                        case "!>=":
+                        case "?>=":
+                            vv = product.product_name  + " " + version.version_value + " and later versions";
+                            break;
+                        default:
+                            vv = version.version_value;
+                    }
                 }
-            }
-            var new_d = [];
-            for (var m in merged) {
-                new_d.push({
-                    lang: m,
-                    value: merged[m].join("\n")
-                });
-            }
-            c.description.description_data = new_d;
-        }
-        if (c.impact && c.impact.cvss && c.impact.cvss.baseScore === 0) {
-            delete c.impact;
-        }
-        return (orderKeys(c));
-    },
-
-    getMITREJSON: function (cve) {
-        return JSON.stringify(cve, null, "    ");
-    },
-    getPR: function (cve) {
-        var matches = [];
-        var re = /PRs?[ \t]+((or|and|[0-9\t\ \,])+)/igm;
-        var m;
-        while ((m = re.exec(cve.solution)) !== null) {
-            var prs = m[1].trim().split(/[ \t,andor]{1,}/).filter(x => x);
-            matches = matches.concat(prs);
-        }
-        return matches;
-    },
-
-    getAffectedProductString: function (cve) {
-        var status = {};
-        var lines = [];
-        for (var vendor of cve.affects.vendor.vendor_data) {
-            var vendor_name = vendor.vendor_name;
-            for (var product of vendor.product.product_data) {
-                for (var version of product.version.version_data) {
-                    var vv = version.version_value;
-                    var cat = "affected";
-                    if (version.version_affected) {
-                        if (version.version_affected.startsWith('?')) {
-                            cat = "unknown";
-                        } else if (version.version_affected.startsWith('!')) {
-                            cat = "unaffected";
-                        }
-                        var prefix = product.product_name + " ";
-                        if (version.version_name && version.version_name != "") {
-                            prefix += version.version_name + " ";
-                        }
-                        switch (version.version_affected) {
-                            case "!":
-                            case "?":
-                            case "=":
-                                vv = version.version_value;
-                                break;
-                            case "<":
-                            case "!<":
-                            case "?<":
-                                vv = prefix + "versions earlier than " + version.version_value;
-                                break;
-                            case ">":
-                            case "?>":
-                                vv = prefix + "versions later than " + version.version_value;
-                                break;
-                            case "<=":
-                            case "!<=":
-                            case "?<=":
-                                vv = product.product_name + " " + version.version_value + " and earlier versions";
-                                break;
-                            case ">=":
-                            case "!>=":
-                            case "?>=":
-                                vv = product.product_name + " " + version.version_value + " and later versions";
-                                break;
-                            default:
-                                vv = version.version_value;
-                        }
-                    }
-                    if (version.platform) {
-                        vv = vv + " on " + version.platform;
-                    }
-
-                    if (!status[cat]) {
-                        status[cat] = {};
-                    }
-                    if (!status[cat][vendor_name + ' ' + product.product_name]) {
-                        status[cat][vendor_name + ' ' + product.product_name] = [];
-                    }
-                    status[cat][vendor_name + ' ' + product.product_name].push(vv);
+                if (version.platform) {
+                    vv = vv + " on " + version.platform;
                 }
+                
+                if (!status[cat]) {
+                    status[cat] = {};
+                }
+                if(!status[cat][vendor_name + ' ' + product.product_name]) {
+                    status[cat][vendor_name + ' ' + product.product_name] = [];
+                }
+                status[cat][vendor_name + ' ' + product.product_name].push(vv);
             }
         }
-        var stringifyArray = function (ob) {
-            var ret = [];
-            for (var p in ob) {
-                ret.push(p + "\n" + ob[p].join(';\n') + ".");
-            }
-            return ret.join('\n');
-        }
+    }
+    var stringifyArray = function(ob) {
         var ret = [];
-        if (status.affected) {
-            ret.push('This issue affects:\n' + stringifyArray(status.affected));
+        for(var p in ob) {
+            ret.push(p + "\n" + ob[p].join(';\n') + ".");
         }
-        if (status.unaffected) {
-            ret.push('This issue does not affect:\n' + stringifyArray(status.unaffected));
+        return ret.join('\n');
+    }
+    var ret = [];
+    if (status.affected) {
+        ret.push('This issue affects:\n' + stringifyArray(status.affected));
+    }
+    if (status.unaffected) {
+        ret.push('This issue does not affect:\n' + stringifyArray(status.unaffected));
+    }
+    if (status.unknown) {
+        ret.push('It is not known whether this issue affects:\n' + stringifyArray(status.unknown));
+    }
+    return ret.join('\n\n');
+},
+affectedTable: function (cve) {
+    var status={};
+    for (var vendor of cve.affects.vendor.vendor_data) {
+        var vendor_name = vendor.vendor_name;
+        if(!status[vendor_name]) {
+            status[vendor_name] = {};
         }
-        if (status.unknown) {
-            ret.push('It is not known whether this issue affects:\n' + stringifyArray(status.unknown));
-        }
-        return ret.join('\n\n');
-    },
-    affectedTable: function (cve) {
-        var status = {};
-        for (var vendor of cve.affects.vendor.vendor_data) {
-            var vendor_name = vendor.vendor_name;
-            if (!status[vendor_name]) {
-                status[vendor_name] = {};
+        for(var product of vendor.product.product_data) {
+            var product_name = product.product_name;
+            if(!status[vendor_name][product_name]) {
+                status[vendor_name][product_name] = {};
             }
-            for (var product of vendor.product.product_data) {
-                var product_name = product.product_name;
-                if (!status[vendor_name][product_name]) {
-                    status[vendor_name][product_name] = {};
+            for(var version of product.version.version_data) {
+                var vv = version.version_value;
+                var cat = "affected";
+                var prefix = vn = "";
+                if(version.version_name && version.version_name != "") {
+                    vn = version.version_name;
                 }
-                for (var version of product.version.version_data) {
-                    var vv = version.version_value;
-                    var cat = "affected";
-                    var prefix = vn = "";
-                    if (version.version_name && version.version_name != "") {
-                        vn = version.version_name;
+                if(version.version_affected) {
+                    if(version.version_affected.startsWith('?')) {
+                        cat = "unknown";
+                    } else if (version.version_affected.startsWith('!')) {
+                        cat = "unaffected";
                     }
-                    if (version.version_affected) {
-                        if (version.version_affected.startsWith('?')) {
-                            cat = "unknown";
-                        } else if (version.version_affected.startsWith('!')) {
-                            cat = "unaffected";
-                        }
-                        switch (version.version_affected) {
-                            case "!":
-                            case "?":
-                            case "=":
-                                vv = version.version_value;
-                                break;
-                            case "<":
-                            case "!<":
-                            case "?<":
-                                vv = "< " + version.version_value;
-                                break;
-                            case ">":
-                            case "?>":
-                                vv = "> " + version.version_value;
-                                break;
-                            case "<=":
-                            case "!<=":
-                            case "?<=":
-                                vv = "<= " + version.version_value;
-                                break;
-                            case ">=":
-                            case "!>=":
-                            case "?>=":
-                                vv = ">= " + version.version_value;
-                                break;
-                            default:
-                                vv = version.version_value;
-                        }
-                    }
-                    if (version.platform && version.platform != "") {
-                        vv += ' on ' + version.platform;
-                    }
-                    if (!status[vendor_name][product_name][vn]) {
-                        status[vendor_name][product_name][vn] = {};
-                    }
-
-                    if (!status[vendor_name][product_name][vn][cat]) {
-                        status[vendor_name][product_name][vn][cat] = [];
-                    }
-                    status[vendor_name][product_name][vn][cat].push(vv);
-                }
-            }
-        }
-        return status;
-    },
-    appliesTo: function (affects) {
-        var ret = [];
-        for (var vendor of affects.vendor.vendor_data) {
-            var vendor_name = vendor.vendor_name;
-            for (var product of vendor.product.product_data) {
-                var product_name = product.product_name;
-                for (var version of product.version.version_data) {
-                    var vv = version.version_value;
-                    var prefix = vn = "";
-                    if (version.version_name && version.version_name != "") {
-                        vn = version.version_name;
-                    }
-                    if (version.version_affected) {
-                        if (version.version_affected.startsWith('?')) {
-                            cat = "unknown";
-                        } else if (version.version_affected.startsWith('!')) {
-                            cat = "no";
-                        }
-                        switch (version.version_affected) {
-                            case "=":
-                            case "<":
-                            case ">":
-                            case "<=":
-                            case ">=":
-                                ret.push(product_name + ' ' + vn);
-                                break;
-                        }
+                    switch (version.version_affected) {
+                        case "!":
+                        case "?":
+                        case "=":
+                            vv = version.version_value;
+                            break;
+                        case "<":
+                        case "!<":
+                        case "?<":
+                            vv = "< " + version.version_value;
+                            break;
+                        case ">":
+                        case "?>":
+                            vv = "> " + version.version_value;
+                            break;
+                        case "<=":
+                        case "!<=":
+                        case "?<=":
+                            vv = "<= " + version.version_value;
+                            break;
+                        case ">=":
+                        case "!>=":
+                        case "?>=":
+                            vv = ">= " + version.version_value;
+                            break;
+                        default:
+                            vv = version.version_value;
                     }
                 }
+                if(version.platform && version.platform != "") {
+                    vv += ' on ' + version.platform;
+                }
+                if(!status[vendor_name][product_name][vn]) {
+                    status[vendor_name][product_name][vn] = {};
+                }
+                
+                if (!status[vendor_name][product_name][vn][cat]) {
+                    status[vendor_name][product_name][vn][cat] = [];
+                }
+                status[vendor_name][product_name][vn][cat].push(vv);
             }
         }
-        return ret;
-    },
-    affectedYesNo: function (affects) {
-        var status = { yes: [], no: [], unknown: [] };
-        for (var vendor of affects.vendor.vendor_data) {
-            var vendor_name = vendor.vendor_name;
-            for (var product of vendor.product.product_data) {
-                var product_name = product.product_name;
-                for (var version of product.version.version_data) {
-                    var vv = version.version_value;
-                    var cat = "yes";
-                    var prefix = vn = "";
-                    if (version.version_name && version.version_name != "") {
-                        vn = version.version_name;
+    }
+    return status;
+},
+appliesTo: function(affects){
+    var ret = [];
+    for (var vendor of affects.vendor.vendor_data) {
+        var vendor_name = vendor.vendor_name;
+        for(var product of vendor.product.product_data) {
+            var product_name = product.product_name;
+            for(var version of product.version.version_data) {
+                var vv = version.version_value;
+                var prefix = vn = "";
+                if(version.version_name && version.version_name != "") {
+                    vn = version.version_name;
+                }
+                if(version.version_affected) {
+                    if(version.version_affected.startsWith('?')) {
+                        cat = "unknown";
+                    } else if (version.version_affected.startsWith('!')) {
+                        cat = "no";
                     }
-                    if (version.version_affected) {
-                        if (version.version_affected.startsWith('?')) {
-                            cat = "unknown";
-                        } else if (version.version_affected.startsWith('!')) {
-                            cat = "no";
-                        }
-                        switch (version.version_affected) {
-                            case "!":
-                            case "?":
-                            case "=":
-                                vv = version.version_value;
-                                break;
-                            case "<":
-                            case "!<":
-                            case "?<":
-                                vv = "< " + version.version_value;
-                                break;
-                            case ">":
-                            case "?>":
-                                vv = "> " + version.version_value;
-                                break;
-                            case "<=":
-                            case "!<=":
-                            case "?<=":
-                                vv = "<= " + version.version_value;
-                                break;
-                            case ">=":
-                            case "!>=":
-                            case "?>=":
-                                vv = ">= " + version.version_value;
-                                break;
-                            default:
-                                vv = version.version_value;
-                        }
-                        if (version.platform && version.platform != "") {
+                    switch (version.version_affected) {
+                        case "=":
+                        case "<":
+                        case ">":
+                        case "<=":
+                        case ">=":
+                            ret.push(product_name + ' ' + vn);
+                            break;
+                    }
+                }
+            }
+        }
+    }
+    return ret;
+},
+affectedYesNo: function(affects){
+    var status={yes:[],no:[],unknown:[]};
+    for (var vendor of affects.vendor.vendor_data) {
+        var vendor_name = vendor.vendor_name;
+        for(var product of vendor.product.product_data) {
+            var product_name = product.product_name;
+            for(var version of product.version.version_data) {
+                var vv = version.version_value;
+                var cat = "yes";
+                var prefix = vn = "";
+                if(version.version_name && version.version_name != "") {
+                    vn = version.version_name;
+                }
+                if(version.version_affected) {
+                    if(version.version_affected.startsWith('?')) {
+                        cat = "unknown";
+                    } else if (version.version_affected.startsWith('!')) {
+                        cat = "no";
+                    }
+                    switch (version.version_affected) {
+                        case "!":
+                        case "?":
+                        case "=":
+                            vv = version.version_value;
+                            break;
+                        case "<":
+                        case "!<":
+                        case "?<":
+                            vv = "< " + version.version_value;
+                            break;
+                        case ">":
+                        case "?>":
+                            vv = "> " + version.version_value;
+                            break;
+                        case "<=":
+                        case "!<=":
+                        case "?<=":
+                            vv = "<= " + version.version_value;
+                            break;
+                        case ">=":
+                        case "!>=":
+                        case "?>=":
+                            vv = ">= " + version.version_value;
+                            break;
+                        default:
+                            vv = version.version_value;
+                    }
+                    if(version.platform && version.platform != "") {
                             vv += ' on ' + version.platform;
-                        }
                     }
-                    var ph = status[cat][product_name];
-                    if (ph == undefined) {
-                        ph = status[cat][product_name] = {};
-                    }
-                    vns = ph.version_names;
-                    if (vns == undefined) {
-                        vns = ph.version_names = []
-                    }
-                    if (vns.indexOf(vn) < 0) {
-                        vns.push(vn);
-                    }
-                    vvs = ph.version_values;
-                    if (vvs == undefined) {
-                        vvs = ph.version_values = []
-                    }
-                    if (vvs.indexOf(vv) < 0) {
-                        vvs.push(vv);
-                    }
+                }
+                var ph = status[cat][product_name];
+                if(ph == undefined) {
+                    ph = status[cat][product_name] = {};
+                }
+                vns = ph.version_names;
+                if(vns == undefined) {
+                    vns = ph.version_names = []
+                }
+                if(vns.indexOf(vn)<0) {
+                    vns.push(vn);
+                }
+                vvs = ph.version_values;
+                if(vvs == undefined) {
+                    vvs = ph.version_values = []
+                }
+                if(vvs.indexOf(vv)<0) {
+                    vvs.push(vv);
                 }
             }
         }
-        var rstatus = { yes: [], no: [], unknown: [] };
-        for (var cat of ['yes', 'no', 'unknown']) {
-            for (var p in status[cat]) {
-                rstatus[cat].push({ product: p, version_names: status[cat][p].version_names, version_values: status[cat][p].version_values })
-            }
+    }
+    var rstatus = {yes:[],no:[],unknown:[]};
+    for (var cat of ['yes','no','unknown']){
+        for(var p in status[cat]) {
+           rstatus[cat].push({product:p, version_names:status[cat][p].version_names, version_values: status[cat][p].version_values})
         }
-        return rstatus;
-    },
+    }
+    return rstatus;
+},
 
-    mergeJSON: function (target, add) {
-        function isObject(obj) {
-            if (typeof obj == "object") {
-                for (var key in obj) {
-                    if (obj.hasOwnProperty(key)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-        for (var key in add) {
-            if (key === "__proto__" || key === "constructor") continue;
-            if (add.hasOwnProperty(key)) {
-                if (target[key] && isObject(target[key]) && isObject(add[key])) {
-                    this.mergeJSON(target[key], add[key]);
-                } else {
-                    target[key] = add[key];
+mergeJSON : function (target, add) {
+    function isObject(obj) {
+        if (typeof obj == "object") {
+            for (var key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    return true; 
                 }
             }
         }
-        return target;
-    },
-    timeSince: function (date) {
-
-        var seconds = Math.floor((new Date() - date) / 1000);
-
-        var interval = Math.floor(seconds / 31536000);
-
-        if (interval > 1) {
-            return interval + " years";
-        }
-        interval = Math.floor(seconds / 2592000);
-        if (interval > 1) {
-            return interval + " months";
-        }
-        interval = Math.floor(seconds / 86400);
-        if (interval > 1) {
-            return interval + " days";
-        }
-        interval = Math.floor(seconds / 3600);
-        if (interval > 1) {
-            return interval + " hours";
-        }
-        interval = Math.floor(seconds / 60);
-        if (interval > 1) {
-            return interval + " minutes";
-        }
-        return Math.floor(seconds) + " seconds";
-    },
-
-    //determine next bundle date
-    nextPatchDay: function (dateString, weekday) {
-        const n = 2; //2nd Wednesday
-        var date = new Date(dateString);
-        var monthstogo = (12 - date.getMonth()) % 3;
-
-        var count = 0,
-            idate = new Date(date.getFullYear(), date.getMonth() + monthstogo, 1);
-
-        while (true) {
-            if (idate.getDay() === weekday) {
-                if (++count == n) {
-                    break;
-                }
+        return false;
+    }
+    for (var key in add) {
+        if (key === "__proto__" || key === "constructor") continue;
+        if (add.hasOwnProperty(key)) {
+            if (target[key] && isObject(target[key]) && isObject(add[key])) {
+                this.mergeJSON(target[key], add[key]);
+            } else {
+                target[key] = add[key];
             }
-            idate.setDate(idate.getDate() + 1);
         }
-        if (idate < date) {
-            return this.nextPatchDay(date.setMonth(date.getMonth() + 1), weekday);
-        } else {
-            return idate;
+    }
+    return target;
+},
+timeSince: function(date) {
+
+  var seconds = Math.floor((new Date() - date) / 1000);
+
+  var interval = Math.floor(seconds / 31536000);
+
+  if (interval > 1) {
+    return interval + " years";
+  }
+  interval = Math.floor(seconds / 2592000);
+  if (interval > 1) {
+    return interval + " months";
+  }
+  interval = Math.floor(seconds / 86400);
+  if (interval > 1) {
+    return interval + " days";
+  }
+  interval = Math.floor(seconds / 3600);
+  if (interval > 1) {
+    return interval + " hours";
+  }
+  interval = Math.floor(seconds / 60);
+  if (interval > 1) {
+    return interval + " minutes";
+  }
+  return Math.floor(seconds) + " seconds";
+},
+    
+//determine next bundle date
+nextPatchDay : function (dateString, weekday) {
+  const n = 2; //2nd Wednesday
+  var date = new Date(dateString);
+  var monthstogo = (12-date.getMonth()) % 3;
+
+  var count = 0,
+  idate = new Date(date.getFullYear(), date.getMonth()+ monthstogo, 1);
+
+  while (true) {
+    if (idate.getDay() === weekday) {
+      if (++count == n) {
+        break;
+      }
+    }
+    idate.setDate(idate.getDate() + 1);
+  }
+  if (idate < date) {
+      return this.nextPatchDay(date.setMonth(date.getMonth()+1), weekday);
+  } else {
+    return idate;
+  }
+},
+deep_value: function(obj, path) {
+    var ret = obj;
+    for (var i=0, path=path.split('.'), len=path.length; i<len; i++){
+        ret = ret[path[i]];
+        if (ret === undefined) {
+            break;
         }
-    },
-    deep_value: function (obj, path) {
-        var ret = obj;
-        for (var i = 0, path = path.split('.'), len = path.length; i < len; i++) {
-            ret = ret[path[i]];
-            if (ret === undefined) {
-                break;
-            }
-        };
-        return ret;
-    },
-    getDocuments: async function (schemaName, ids, paths) {
-        const res = await fetch('/' + schemaName + '/json/', {
+    };
+    return ret;
+},
+getDocuments: async function(schemaName, ids, paths) {
+    const res = await fetch('/' + schemaName + '/json/', {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -497,13 +497,13 @@ var textUtil = {
                 'Content-Type': 'application/json'
             },
             redirect: 'error',
-            body: JSON.stringify({ ids: ids, fields: paths })
-        });
-        const docs = await res.json();
-        return docs;
-    },
-
-    diffline: function (line1, line2) {
+            body: JSON.stringify({ids:ids,fields:paths})
+    });
+    const docs = await res.json();
+    return docs;
+},
+    
+    diffline: function(line1, line2) {
         var ret1 = [];
         var ret2 = [];
         var s = 0;
@@ -520,24 +520,24 @@ var textUtil = {
 
         // deleted
         if (s <= m) {
-            ret1.push({ t: 0, str: line1.substring(0, s) });
+            ret1.push({t:0, str: line1.substring(0, s)});
             //StringBuilder sb = new StringBuilder();
             //sb.append(Util.htmlize(line1.substring(0, s)));
-            ret1.push({ t: 1, str: line1.substring(s, m + 1) });
-            ret1.push({ t: 0, str: line1.substring(m + 1, line1.length) });
+            ret1.push({t:1, str: line1.substring(s, m + 1)});
+            ret1.push({t:0, str: line1.substring(m+1, line1.length)}); 
             //sb.append(Util.htmlize(line1.substring(m + 1, line1.length())));
             //ret1.push({t:0, str: line1.substring(0, s)}) 
             //    = sb.toString();
         } else {
-            ret1.push({ t: 0, str: line1 });
+            ret1.push({t:0, str: line1});
             //ret[0] = Util.htmlize(line1.toString()); // no change
         }
 
         // added
         if (s <= n) {
-            ret2.push({ t: 0, str: line2.substring(0, s) });
-            ret2.push({ t: 1, str: line2.substring(s, n + 1) });
-            ret2.push({ t: 0, str: line2.substring(n + 1, line2.length) });
+            ret2.push({t:0,str:line2.substring(0, s)});
+            ret2.push({t:1,str:line2.substring(s, n + 1)});
+            ret2.push({t:0,str:line2.substring(n + 1, line2.length)});
             //StringBuilder sb = new StringBuilder();
             //sb.append(Util.htmlize(line2.substring(0, s)));
             //sb.append(HtmlConsts.SPAN_A);
@@ -546,18 +546,18 @@ var textUtil = {
             //sb.append(Util.htmlize(line2.substring(n + 1, line2.length())));
             //ret[1] = sb.toString();
         } else {
-            ret2.push({ t: 0, str: line2 });
+            ret2.push({t:0,str: line2});
             //ret[1] = Util.htmlize(line2.toString()); // no change
         }
 
-        return { lhs: ret1, rhs: ret2 };
+        return {lhs: ret1, rhs: ret2};
     },
-    fileSize: function (a, b, c, d, e) {
-        return (b = Math, c = b.log, d = 1024, e = c(a) / c(d) | 0, a / b.pow(d, e)).toFixed(2)
-            + ' ' + (e ? 'KMGTPEZY'[--e] + 'B' : 'Bytes')
+    fileSize : function(a,b,c,d,e){
+        return (b=Math,c=b.log,d=1024,e=c(a)/c(d)|0,a/b.pow(d,e)).toFixed(2)
+            +' '+(e?'KMGTPEZY'[--e]+'B':'Bytes')
     }
 };
-if (typeof module !== 'undefined') {
+if(typeof module !== 'undefined') {
     module.exports = textUtil;
 }
 var cvssjs = {
@@ -593,13 +593,13 @@ var cvssjs = {
         "SC": "subConfidentialityImpact",
         "SI": "subIntegrityImpact",
         "SA": "subAvailabilityImpact",
-        "E": "exploitMaturity",
         "S": "Safety",
         "AU": "Automatable",
         "R": "Recovery",
         "V": "valueDensity",
         "RE": "vulnerabilityResponseEffort",
-        "U": "providerUrgency"
+        "U": "providerUrgency",
+        "E": "exploitMaturity"
     },
     vectorMap3: {
         "attackVector": "AV",
@@ -678,12 +678,12 @@ var cvssjs = {
         "AMBER": "Amber"
     },
     cvss: {},
-    m: function (m) {
+    m: function(m) {
         var metric = this.metricMap4[m];
         if (metric && this.cvss[metric]) {
             console.log(["M:", m, this.valueMap[this.cvss[metric]] || this.cvss[metric].charAt(0)]);
-            return (this.valueMap[this.cvss[metric]] || this.cvss[metric].charAt(0));
-        } else {
+           return (this.valueMap[this.cvss[metric]] || this.cvss[metric].charAt(0));
+        } else { 
             console.log("M:", m, "X!");
             return "X";
         }
@@ -723,23 +723,23 @@ var cvssjs = {
         name: "NONE",
         bottom: 0.0,
         top: 0.0
-    }, {
+   }, {
         name: "LOW",
         bottom: 0.1,
         top: 3.9
-    }, {
+   }, {
         name: "MEDIUM",
         bottom: 4.0,
         top: 6.9
-    }, {
+   }, {
         name: "HIGH",
         bottom: 7.0,
         top: 8.9
-    }, {
+   }, {
         name: "CRITICAL",
         bottom: 9.0,
         top: 10.0
-    }],
+   }],
     severityLevel: function (score) {
         if (score == 0) {
             return 'NONE'
@@ -851,12 +851,12 @@ var cvssjs = {
             COMPLETE: 0.660
         }
     },
-    calculate2: function (cvss) {
+    calculate2: function(cvss) {
         var w2 = this.w2;
         var impact = 10.41 * (1 -
-            (1 - w2.confidentialityImpact[cvss.confidentialityImpact])
-            * (1 - w2.integrityImpact[cvss.integrityImpact])
-            * (1 - w2.availabilityImpact[cvss.availabilityImpact]));
+             (1-w2.confidentialityImpact[cvss.confidentialityImpact])
+             *(1-w2.integrityImpact[cvss.integrityImpact])
+             *(1-w2.availabilityImpact[cvss.availabilityImpact]));
         if (impact == 0) {
             return 0;
         }
@@ -865,6 +865,6 @@ var cvssjs = {
             * w2.authentication[cvss.authentication]
             * w2.accessVector[cvss.accessVector];
 
-        return ((0.6 * impact + 0.4 * exploitability - 1.5) * 1.176).toFixed(1);
+        return ((0.6*impact + 0.4*exploitability - 1.5)*1.176).toFixed(1);
     }
 }
