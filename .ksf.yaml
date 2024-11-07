@@ -1,0 +1,3 @@
+notifications:
+  commits: private@security.khulnasoft.com
+  pullrequests: private@security.khulnasoft.com
