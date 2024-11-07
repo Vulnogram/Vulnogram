@@ -4,7 +4,6 @@ npm-debug.log
 .env
 .vscode
 .jshintrc
-custom*
 package-lock.json
 *.swp
 ignore
