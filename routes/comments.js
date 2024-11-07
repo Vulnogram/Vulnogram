@@ -2,6 +2,9 @@ const express = require('express');
 const csurf = require('csurf');
 var csrfProtection = csurf();
 const crypto = require('crypto');
+// KSF
+const ksf = require('../custom/ksf.js');
+// END KSF
 
 var random_slug = function () {
     return crypto.randomBytes(13).toString('base64').replace(/[\+\/\=]/g, '-');
@@ -111,6 +114,12 @@ module.exports = function (Document, opts) {
     }
     router = express.Router();
     router.post('/comment', csrfProtection, async function (req, res) {
+        // KSF we need to load the document so we can get the PMC
+        var q = {};
+        q[opts.idpath] = req.body.id;
+        var ret = await Document.findOne(q).exec();
+        ksf.ksfhookaddcomment(ret,req);
+        // END KSF
         if (req.body.slug) {
             var r = await updateComment(req.body.id, req.user.username, req.body.text, req.body.slug, new Date());
             res.json(r);

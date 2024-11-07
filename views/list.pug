@@ -33,7 +33,7 @@ mixin facetChart(facet, query, tfacet)
                             br
                             b=v.count
                 label(for="flt"+field)
-            .right.gap
+            .gap
                 input.indent.btn#filter(type="submit", value="Filter")
                 a.indent.btn(href="/" + schemaName, type="submit", value="Clear") Clear
         if pages > 1        
@@ -54,8 +54,8 @@ mixin paginate
         //    input(type="hidden",name=d,value=i)
         span.right
             if pages <= 1
-                | Found 
-                = total
+                // | Found 
+                // = total
             if pages > 1
                 span.pagination
                     | Showing 
@@ -89,15 +89,15 @@ mixin paginate
                         a.btn(href=bs+pages)=pages
         | 
         span.indent.out
-            input.txt(size=20,type="text",name="q",placeholder=" Filter results ",value=searchString,results="10",required)
-            input.btn(type="submit", value="filter")
+            // input.txt(size=20,type="text",name="q",placeholder=" Filter results ",value=searchString,results="10",required)
+            // input.btn(type="submit", value="filter")
         | 
-        label.lbl.vgi-fold(for="compactTable",onclick="this.setAttribute('val', document.getElementById(this.getAttribute('for')).checked)",val="")
+        // label.lbl.vgi-fold(for="compactTable",onclick="this.setAttribute('val', document.getElementById(this.getAttribute('for')).checked)",val="")
 
 mixin bulkTable(docs, columns, id)
     if !docs || docs.length == 0
         p
-            b No items found!
+            b No CVE entries for your PMCs match the query. Try the CVE (old) tab as well.
     else
         - var rowCount = 0;
         - var sum = {}, showCheckboxes = false; 

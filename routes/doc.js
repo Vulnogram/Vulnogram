@@ -6,6 +6,9 @@ const conf = require('../config/conf');
 const querymw = require('../lib/querymw');
 const package = require('../package.json');
 const csurf = require('csurf');
+// KSF
+const ksf =  require('../custom/ksf.js');
+// END KSF
 var csrfProtection = csurf();
 var querymen = require('querymen');
 var qs = require('querystring');
@@ -402,16 +405,33 @@ module.exports = function (name, opts) {
     /* The Main listing routine */
     router.get('/', csrfProtection, queryMW, async function (req, res) {
         try {
-
+            // KSF
+            var mychartCount = chartCount;
+            // END KSF
             var pipeLine = normalizeQuery(req.querymen.query);
             // to get the documents
             // get top level tabs aggregated counts
             var tabs = [];
-            if (Object.keys(tabFacet).length != 0) {
-                //console.log('QUERY:' + JSON.stringify(req.querymen.query,2,3,4));
+            // KSF
+            if (!ksf.ksfgroupacls(conf.admingroupname,req.user.pmcs)) {
+                if (res.locals.schemaName == "cve5") {
+                    mytabFacet = {"state":[ {"$match":{"body.CNA_private.owner":{"$in":req.user.pmcs}}}, {"$group":{ _id:"$body.CNA_private.state", count: {$sum:1}}}]};
+                } else {
+                    mytabFacet = {"state":[ {"$match":{"body.CNA_private.owner":{"$in":req.user.pmcs}}}, {"$group":{ _id:"$body.CVE_data_meta.STATE", count: {$sum:1}}}]};
+                }
+                mychartCount = 0;
+                // KSF because we have to filter them all
                 tabs = await Document.aggregate([{
-                    $facet: tabFacet
+                    $facet: mytabFacet
                 }]).exec();
+            } else {
+                if (Object.keys(tabFacet).length != 0) {
+                //console.log('QUERY:' + JSON.stringify(req.querymen.query,2,3,4));
+                    tabs = await Document.aggregate([{
+                        $facet: tabFacet
+                    }]).exec();
+                }
+            // END KSF
             }
 
             // get the charts aggregated counts            
@@ -450,7 +470,9 @@ module.exports = function (name, opts) {
             var charts = [];
             var total = 0;
             var numCollation = { locale: "en_US", numericOrdering: true };
-            if (chartCount > 0) {
+            // KSF
+            if (mychartCount > 0) {
+            // END KSF
                 chartFacet.all = allQuery;
                 pipeLine.push({
                     $facet: chartFacet
@@ -479,6 +501,12 @@ module.exports = function (name, opts) {
             }
             //console.log('Results'+ JSON.stringify(docs,1,1,1));
 
+            // KSF filter out things you have no access to here. we could alter the query, but lets do it here
+            var filtered = docs.filter(function(value,index,arr) {
+                 return ksf.ksfgroupacls(value.owner,req.user.pmcs)});
+            docs = filtered;
+            total = docs.length;
+            // END KSF
             var currentPage = 1;
             if (req.query.page) {
                 currentPage = req.query.page;

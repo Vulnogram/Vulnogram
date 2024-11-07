@@ -1,0 +1,39 @@
+extends ../views/layout
+
+block content
+ div
+  h2="Request a CVE"
+  p="You should request a separate CVE name for each issue you are fixing. In some cases it may be possible to combine issues that are the same type and affect the same versions into one CVE, but you should ask the KSF security team for advice in this case."
+  p="If you need more than one CVE please just submit this form multiple times."
+  - var action = '/allocatecve/';
+  form.pad2.bor.shd.rnd(method='POST', action=action)
+    p=title
+    p
+    input(type='hidden', name='_csrf', value=csrfToken)
+    if (number)
+      .row
+        label.lbl.icn Number of CVE:
+        input.txt(name='number', type='text', value=number, style="width:4em")
+    if (year)
+      .row
+        label.lbl.icn Year:
+        input.txt(name='year', type='text', value=year, style="width:6em")
+    if user.pmcs && user.pmcs.includes("security")
+      .row
+        label.lbl.icn PMC:
+        input.txt(name='pmc', type='text', value="security")
+    else
+      .row
+        label.lbl.icn PMC:
+        -var z = user.pmcs
+        if z
+          select(name='pmc')
+            for p in z
+              option(value=p) #{p}
+    .row
+      label.lbl.icn Short one line description/title (you can change this later):
+      input.txt(name='cvetitle', type='text', style="width:40em", value=cvetitle)      
+    .row
+      p
+      button.btn.sfe(type='submit', value='Request a CVE') Request a CVE
+    

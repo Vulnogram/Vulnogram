@@ -147,6 +147,12 @@ module.exports = function (Document, opts) {
     router.delete('/:id(' + opts.idpattern + ')/file/:filename', csrfProtection, checkDir, async function (req, res) {
         var fq = {};
         fq[opts.idpath] = req.params.id;
+        // KSF
+        if (!req.user.pmcs.includes(conf.admingroupname)) {
+            res.send('not authorized');
+            return;
+        }
+        // END KSF
         try {
             var ret = await Document.update(fq, { $pull: { files: { name: req.params.filename } } });
             res.json({ ok: ret.ok, n: ret.n });

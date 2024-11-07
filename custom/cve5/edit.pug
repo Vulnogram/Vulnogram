@@ -1,0 +1,271 @@
+extends ../../default/cve5/edit
+
+block bannerItemsRightLoad
+
+block bannerItemsLeft
+    if !min
+        a.fbn(href=(confOpts[schemaName].conf.uri? confOpts[schemaName].conf.uri : '/' + schemaName + '/' ), title=confOpts[schemaName].conf.title) ☰
+    if !confOpts[schemaName].conf.readonly
+        button.fbn.sfe.vgi-put(id="save1") SAVE    
+        block openButton
+            input#importJSON.hid(type="file",accept="application/json",onchange="loadFile(event,this);")
+            a.fbn.vgi-folder(type="file",onclick='importFile(event, this);') Open
+        a.fbn.vgi-download(type="button",oncontextmenu='downloadFile(event, this);',onclick='downloadFile(event, this);',value="Download") Download
+    - var pmcs = user.pmcs
+    - var security = pmcs.includes("security")
+    if security        
+       button.fbn.sfe.vgi-put(id="post1") Post to CVE.org        
+
+block loadEditorloadJSON
+
+block append loadEditor
+    script
+        | if (!userPMCS.split(',').includes('security')) {
+        |   selected = "aboutTab";
+        |   document.getElementById(selected).checked = true;
+        |   //mainTabGroup.focus(4);
+        | }
+
+block prepend loadEditor
+    script
+        include ksfpreload.js        
+
+    script 
+        | var loadEditorWithProducts = async function() {
+        |   docSchema.definitions.product.properties.product.examples = await loadProductNames();
+        |   loadJSON(initJSON)
+        | };
+        | loadEditorWithProducts();
+
+    script
+        | var tabs = document.getElementsByName("tabs");
+        | for (var i = 0; i < tabs.length; i++) {
+        |   var t = tabs[i];
+        |   if (t.id == "emailTab") {
+        |     t.addEventListener('change',async function() {
+        |         var j = docEditor.getValue();
+        |         var emailto = "oss-security@lists.openwall.com";
+        |         var projectannounce = j.CNA_private.userslist;
+        |         if (!projectannounce) {
+        |            projectannounce = await loadEmailLists( j.CNA_private.owner );
+        |            j.CNA_private.userslist = projectannounce;
+        |            save();
+        |         }
+        |         var projecturl = j.CNA_private.projecturl;
+        |         if (!projecturl) {
+        |            projecturl = await loadProjectUrl( j.CNA_private.owner );
+        |            j.CNA_private.projecturl = projecturl;
+        |            save();
+        |         }        
+        |         var replyto = "";
+        |         if (projectannounce) {
+        |             replyto = projectannounce.split(',')[0]
+        |         }
+        |         var replyto = "";
+        |         if (projectannounce) {
+        |             replyto = projectannounce.split(',')[0]
+        |         }
+        |         var subject = j.containers.cna.source.advisory || ""
+        |         if (subject) {
+        |            subject = subject + ": "
+        |         }
+        |         subject = subject + j.cveMetadata.cveId+": "
+        |         if (j.containers.cna.title) {
+        |            if (!(j.containers.cna.title.substring(0,40).includes("Khulnasoft"))) {
+        |               subject = subject + getProductListNoVendor(j) + ": "
+        |            }
+        |            subject = subject + j.containers.cna.title + " "
+        |         } else {
+        |            subject = subject + getProductListNoVendor(j)+": "
+        |            for (d of j.containers.cna.problemTypes) {
+        |                for (b of d.descriptions) {
+        |                   subject = subject + b.description
+        |                }
+        |            }
+        |         }
+        |         mt = ""
+        |         if (j.containers.cna.metrics && j.containers.cna.metrics[0] && j.containers.cna.metrics[0].other && j.containers.cna.metrics[0].other.content && j.containers.cna.metrics[0].other.content.text) {
+        |             mt = mt + "Severity: "+j.containers.cna.metrics[0].other.content.text+"\n\n"
+        |         }
+        |         mt = mt + "Affected versions:\n\n"
+        |         for (a of j.containers.cna.affected) {
+        |             for (v of a.versions) {
+        |                mt = mt + "- " + a.product
+        |                const openended = v.lessThan == "*" || v.lessThanOrEqual == "*"
+        |                if (v.version == "0" && openended) {
+        |                    mt = mt + ": all versions"
+        |                } else {
+        |                    if (v.version != "0") mt = mt + " " + v.version
+        |                    if (openended) {
+        |                        mt = mt + " or later"
+        |                    } else {
+        |                        if (v.lessThan) mt = mt + " before " + v.lessThan
+        |                        if (v.lessThanOrEqual) mt = mt + " through " + v.lessThanOrEqual
+        |                    }
+        |                }
+        |                if (v.status != "affected") mt = mt + " " + v.status
+        |                mt = mt + "\n"
+        |             }
+        |         }
+        |         mt = mt + "\nDescription:\n\n"
+        |         for (d of j.containers.cna.descriptions) {
+        |             mt = mt + d.value.trim() + "\n\n"
+        |         }
+        |         if (j.containers.cna.AKA ) {
+        |             mt = mt + "This issue is also known as "+j.CVE_data_meta.AKA +"\n\n"
+        |         }
+        |         if (j.containers.cna.source.defect && j.containers.cna.source.defect[0]) {
+        |             mt = mt + "This issue is being tracked as "
+        |             for (d of j.containers.cna.source.defect)
+        |               mt = mt + d + " "
+        |             mt = mt + "\n\n"
+        |         }
+        |         if (j.containers.cna.configurations && j.containers.cna.configurations[0]) {
+        |             mt = mt + "Required Configurations:\n\n"
+        |             for (d of j.containers.cna.configurations) {
+        |                mt = mt + d.value + "\n\n"
+        |             }
+        |         }        
+        |         if (j.containers.cna.solutions && j.containers.cna.solutions[0] ) {
+        |             mt = mt + "Solution:\n\n"
+        |             for (d of j.containers.cna.solutions) {
+        |                mt = mt + d.value.trim() + "\n\n"
+        |             }
+        |         }
+        |         if (j.containers.cna.workarounds && j.containers.cna.workarounds[0]) {
+        |             mt = mt + "Work Arounds:\n\n"
+        |             for (d of j.containers.cna.workarounds) {
+        |                mt = mt + d.value.trim() + "\n\n"
+        |             }
+        |         }
+        |         if (j.containers.cna.credits) {
+        |             mt = mt + "Credit:\n\n"
+        |             for (d of j.containers.cna.credits) {
+        |                mt = mt + d.value + " ("+d.type+")\n"
+        |             }
+        |             mt = mt + "\n"
+        |         }
+        |         if ((j.containers.cna.references && j.containers.cna.references[0]) || projecturl != "" || 1) {
+        |             mt = mt + "References:\n\n"
+        |             for (d of j.containers.cna.references) {
+        |                mt = mt + d.url + "\n"
+        |             }
+        |             if (projecturl) {
+        |                 mt = mt + projecturl + "\n"
+        |             }
+        |             mt = mt + "https://www.cve.org/CVERecord?id=" + j.cveMetadata.cveId + "\n"
+        |             if (j.containers.cna.source.defect && j.containers.cna.source.defect[0]) {
+        |               for (d of j.containers.cna.source.defect)
+        |                 mt = mt + "https://issues.khulnasoft.com/jira/browse/"+ d + "\n"
+        |             }        
+        |             mt = mt + "\n"
+        |         }
+        |         if (j.containers.cna.timeline && j.containers.cna.timeline[0]) {
+        |             mt = mt + "Timeline:\n\n"
+        |             for (d of j.containers.cna.timeline) {
+        |                mt = mt + d.time.substring(0,10) + ": " + d.value + "\n"
+        |             }
+        |             mt = mt + "\n"
+        |         }        
+        |         var jmt = "To: "+emailto+"\nReply-To: "+replyto+"\nSubject: "+subject+"\n\n"
+        |         document.getElementById("outemail").innerHTML = "<pre>"+jmt+mt.replace(/</g, '&lt;').replace(/>/g,'&gt;')+"</pre>\n"
+        |         document.getElementById("emailtext").value = mt
+        |         document.getElementById("emailsubject").value = subject
+        |         document.getElementById("emailreplyto").value = replyto
+        |         document.getElementById("emailto1").value = emailto
+        |         emailto = "announce@khulnasoft.com, "+projectannounce
+        |         jmt = "To: "+emailto+"\nBcc: security@khulnasoft.com\nReply-To: "+replyto+"\nSubject: "+subject+"\n\n"
+        |         document.getElementById("ksfemail").innerHTML = "<pre>"+jmt+mt.replace(/</g, '&lt;').replace(/>/g,'&gt;')+"</pre>\n"        
+        |         document.getElementById("emailto2").value = emailto
+        |         if (j.CNA_private.emailed) {
+        |             document.getElementById("emailbutton").disabled= true
+        |             document.getElementById("emailbuttonnote").innerHTML = "You have already sent the emails"
+        |         } else if (j.CNA_private.state == "READY" || j.CNA_private.state == "PUBLIC") {
+        |             if(docEditor.validation_results && docEditor.validation_results.length > 0) {
+        |                document.getElementById("emailbutton").disabled= true        
+        |                document.getElementById("emailbuttonnote").innerHTML = "Correct errors before you can send emails"
+        |             } else {
+        |                document.getElementById("emailbutton").disabled= false
+        |                document.getElementById("emailbuttonnote").innerHTML = ""        
+        |             }
+        |         } else {
+        |             document.getElementById("emailbutton").disabled= true
+        |             document.getElementById("emailbuttonnote").innerHTML = "State must be READY to send emails"
+        |         }
+        |     });
+        |   }
+        | }        
+
+
+        | <!--        input.tab(name='tabs', type='radio', id='advisoryTab', value="7") -->
+        | <!--        label.lbl(for='advisoryTab') Advisory -->
+        | <!--        .wht.fil.bor.pad -->
+        | <!--            div.render(id="render") -->
+
+block customtabs
+        input.tab(name='tabs', type='radio', id='jsonTab', value="6")
+        label.lbl(for='jsonTab') CVE-JSON
+        .wht.fil.bor.pad
+            div(style='float:right')
+                a.icn.right.copy.btn(onmouseover='this.textContent="Copy"',onclick='copyText(outjson);this.textContent="Copied";infoMsg.textContent="Copied to clipboard"') Copy
+                | 
+                a.icn.right.download.btn(onclick='downloadText(outjson, this);') Download
+            .pre#outjson
+
+        input.tab(name='tabs', type='radio', id='emailTab', value="7")
+        label.lbl(for='emailTab') OSS/KSF Emails
+        .wht.fil.bor.pad
+            h1!= "OSS Email"
+            p!= "Use the button below to send these mails, or copy, paste, and send the email yourself. Subscription not required. Use a separate email for this, don't cc or bcc."
+            div(style='float:right')
+                a.icn.right.copy.btn(onmouseover='this.textContent="Copy"',onclick='copyText(outemail);this.textContent="Copied";infoMsg.textContent="Copied to Clipboard"')  Copy
+            .indent.bor.pad
+                div#outemail
+            h1!= "KSF Email"               
+            p!= "Use the button below to send these mails, or copy, paste, and send the email yourself."
+            p!= "Note that KSF announcement mailing lists are moderated. It may take some hours/days before your email will be published."
+            div(style='float:right')
+                a.icn.right.copy.btn(onmouseover='this.textContent="Copy"',onclick='copyText(ksfemail);this.textContent="Copied";infoMsg.textContent="Copied to Clipboard"')  Copy
+            .indent.bor.pad
+                div#ksfemail
+
+            p
+            form.rnd(method='POST', action='/sendemails')
+               input(type='hidden', name='_csrf', value=csrfToken)
+               input(type='hidden',name='emailtext',id='emailtext')
+               input(type='hidden',name='emailsubject',id='emailsubject')
+               input(type='hidden',name='emailreplyto',id='emailreplyto')
+               input(type='hidden',name='emailto1',id='emailto1')
+               input(type='hidden',name='emailto2',id='emailto2')               
+               button.btn.sfe(disabled='true', type='button', value='Email', id='emailbutton', onclick='var j=mainTabGroup.getValue(); j.CNA_private.emailed="yes";save(undefined, function(){form.submit();});') Send these Emails
+               div#emailbuttonnote               
+
+block append customtabs
+        input.tab(name='tabs', type='radio', id='aboutTab')
+        label.lbl(for='aboutTab') Instructions
+        .wht.fil.bor.pad
+         p!= "This site is designed to help you handle vulnerabilities according to the <a href='https://www.khulnasoft.com/security/committers.html' target='_blank'>KSF CVE process</a>, step 16.  A short <a href='https://s.khulnasoft.com/cveprocessvideo' target='_blank'>video overview</a> is also available, but note the interface has changed a little since the video was created."
+         ul
+             li!= "Fill in the details on 'Editor' tab. Any field marked optional is not required, but are used in emails."
+             p=""
+             li!= "Make sure you use 'SAVE' button to save your changes  Your entry is only visible to other members of your PMC and the KSF security team until it's set to state 'PUBLIC' later."
+             p=""
+             li!= "Make sure you fix any errors that are shown."
+             p=""
+             li!= "'REVIEW' state is optional. Set this if you want KSF Security to be notified to help with this entry. They will move it back to 'DRAFT' once done."
+             p=""
+             li!= "Once you go public set the state to 'READY'.  Use the 'OSS/KSF Emails' tab for the emails you should send to oss-security and to Khulnasoft lists.  Also update your security page if you have one."
+             p=""
+             li!= "Fill in a 'reference' with tag 'vendor advisory' with the URL to your public post about this issue.  KSF Security will be notified and will submit to the CVE project and will set the state to 'PUBLIC'."
+         p=""
+         p!= "For further help contact <a href='mailto:security@khulnasoft.com' target='_blank'>security@khulnasoft.com</a>."
+
+block append customtabs
+        - var pmcs = user.pmcs
+        - var security = pmcs.includes("security")
+        if security
+          input.tab(name='tabs', type='radio', id='cvePortalTab', value="6")
+          label.lbl(for='cvePortalTab') CVE Portal
+          .wht.fil.rnd.bor#port
+
+block logolink

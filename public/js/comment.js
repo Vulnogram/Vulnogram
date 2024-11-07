@@ -3,7 +3,8 @@
 async function sendComment(f) {
     var comment = {
         id: f.id.value,
-        text: f.commentarea.innerHTML
+        text: f.commentarea.innerHTML,
+        plainText: domhtml(f.commentarea.innerHTML)
     };
     if (f.slug && f.slug.value) {
         comment.slug = f.slug.value;

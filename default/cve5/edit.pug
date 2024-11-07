@@ -19,7 +19,7 @@ block append scripts
         include cve.js
         //include csaf.js
         include portal.js
-    - var compileScript = pugLib.compileFileClient('default/cve5/cvelist.pug', {name: "cveRender", basedir: '', compileDebug: false,inlineRuntimeFunctions: true})
+    - var compileScript = pugLib.compileFileClient('custom/cve5/cvelist.pug', {name: "cveRender", basedir: '', compileDebug: false,inlineRuntimeFunctions: true})
             script !{compileScript}
 
 block prepend loadEditor
@@ -37,6 +37,7 @@ block openButton
     a.fbn.vgi-folder(type="file",onclick='importFile(event, this);') Open
 
 block prepend bannerItemsRight
+  block bannerItemsRightLoad
     form.indent.out.nobr(onsubmit="cveSelectLoad(event);return false;")
         input.txt.lbl#cveEditable(type="search",name="id",list="editablelist",placeholder="CVE-yyyy-nnnn..",title="Load CVE for editing",required)
         datalist#editablelist

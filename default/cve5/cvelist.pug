@@ -56,6 +56,7 @@ mixin portal
             label.vgi-globe.lbl Portal: 
                 =portalType
             span.btg.rnd
+              block portalreserve
                         button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve One CVE
                         details.popup
                             summary.btn.t9 ▼
@@ -264,56 +265,62 @@ mixin listIds
 
 mixin autoText
   if con
-    if con.problemTypes
-        - var pts = [];
-        for t in con.problemTypes
-            if t.descriptions
-                - var prob = t.descriptions.map(x=>x.description).join(', ').replaceAll(/CWE-\d+/g,"").trim().replaceAll(/\s+/g, ' ');
-                if prob
-                    - pts.push(prob);
-        if pts.length > 0
-            = pts.join(', ')
-        else
-            | A
-    |  vulnerability
-    - var codelist = [];
-    - var relevantList = [];
-    if con.affected
-        - var plist = [];
-        for p in con.affected
-            - var pd = [p.vendor, p.vendor != p.product ? p.product : '', p.packageName != p.product ? p.packageName : '', (p.platforms ? 'on ' + p.platforms.join(', ') : ''), p.modules ? '(' + p.modules.join(', ') + ' modules)':''].join(' ').trim().replaceAll(/\s+/g, ' ')
-            - var pn = p.product ? p.product : p.packageName;
-            if pd
-                - plist.push(pd);
-            if p.versions
-                - var vlist = [];
-                for v in p.versions
-                    if v.status == 'affected'
-                        if v.lessThan
-                            - vlist.push ( (v.version != '0' ? ' from ' + v.version: '') + (v.lessThan != '*' ? ' before ' + v.lessThan:''));
-                        else if v.lessThanOrEqual
-                            - vlist.push ( (v.version != '0' ? ' from ' + v.version: '') + (v.lessThanOrEqual != '*' ? ' through ' + v.lessThanOrEqual:''));
-                        else if v.version != '0'
-                                - vlist.push (' ' + v.version)
-                if (vlist && vlist.length > 0)
-                    - relevantList.push(pn + ':' + vlist.join(','));
-                else if p.defaultStatus == 'affected'
-                    - relevantList.push(pn);
-        - var ptext = plist.join(', ');
-        if ptext
-            |  in 
-            = ptext
-    if con.impacts
-        - var ips = [];
-        for t in con.impacts
-            if t.descriptions
-                - var impact = t.descriptions.map(x=>x.value).join(', ').replaceAll(/CAPEC-\d+/g, "").trim().replaceAll(/\s+/g, ' ')
-                if impact
-                    - ips.push(impact);
-        if ips.length > 0
-            |  allows 
-            = ips.join(', ')
-    |.
+    p
+      - var unsupported = con.tags && con.tags.includes("unsupported-when-assigned");
+      if unsupported
+          | ** UNSUPPORTED WHEN ASSIGNED ** 
+      if con.problemTypes
+          - var pts = [];
+          for t in con.problemTypes
+              if t.descriptions
+                  - var prob = t.descriptions.map(x=>x.description).join(', ').replaceAll(/CWE-\d+/g,"").trim().replaceAll(/\s+/g, ' ');
+                  if prob
+                      - pts.push(prob);
+          if pts.length > 0
+              = pts.join(', ')
+          else
+              | A
+      |  vulnerability
+      - var codelist = [];
+      - var relevantList = [];
+      - var fixedVersion = '[FIXED_VERSION]';
+      if con.affected
+          - var plist = [];
+          for p in con.affected
+              - var pn = p.product ? p.product : p.packageName;
+              - plist.push(pn);
+              if p.versions
+                  - var vlist = [];
+                  for v in p.versions
+                      if v.status == 'affected'
+                          if v.version == '0' && ( v.lessThan == '*' || v.lessThanOrEqual == '*')
+                              - vlist.push ( 'all versions' )
+                          else if v.lessThan
+                              - vlist.push ( (v.version != '0' ? ' from ' + v.version: '') + (v.lessThan != '*' ? ' before ' + v.lessThan:''));
+                              - fixedVersion = v.lessThan
+                          else if v.lessThanOrEqual
+                              - vlist.push ( (v.version != '0' ? ' from ' + v.version: '') + (v.lessThanOrEqual != '*' ? ' through ' + v.lessThanOrEqual:''));
+                          else if v.version != '0'
+                              - vlist.push (' ' + v.version)
+                  if (vlist && vlist.length > 0)
+                      - relevantList.push(pn + ': ' + vlist.join(','));
+                  else if p.defaultStatus == 'affected'
+                      - relevantList.push(pn);
+          - var ptext = plist.join(', ');
+          if ptext
+              |  in 
+              = ptext
+      if con.impacts
+          - var ips = [];
+          for t in con.impacts
+              if t.descriptions
+                  - var impact = t.descriptions.map(x=>x.value).join(', ').replaceAll(/CAPEC-\d+/g, "").trim().replaceAll(/\s+/g, ' ')
+                  if impact
+                      - ips.push(impact);
+          if ips.length > 0
+              |  allows 
+              = ips.join(', ')
+      |.
     if con.affected
         - var fileSet = {};
         - var funcSet = {};
@@ -352,6 +359,13 @@ mixin autoText
             p This issue affects 
                 = relevantList.join('; ')
                 |.
+        if unsupported
+            p As this project is retired, we do not plan to release a version that fixes this issue. Users are recommended to find an alternative or restrict access to the instance to trusted users.
+            p NOTE: This vulnerability only affects products that are no longer supported by the maintainer.
+        else if fixedVersion
+            p Users are recommended to upgrade to version 
+                = fixedVersion
+                |, which fixes the issue.
 
 block red
     if ctemplate != undefined

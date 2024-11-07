@@ -1,31 +1,44 @@
 const fs = require("fs");
 var package = require('../package.json');
+var secrets = require('./customsecrets.js');
 
 module.exports = {
+    // CVE automation configuration and CNA name
+    cveorgid: "'f0158376-9dc2-43b6-827c-5f631a4d8d09'",
+    cveapiheaders: secrets.cveapiheaders,
+    cveapiurl: "https://cveawg.mitre.org/api",
+    cveapishortname: "apache",
+    cveapiliveservice: true,
+    // which PMC is admin group?
+    admingroupname: "security",
+    // which PMC have a security@ address?
+    pmcswithsecurityemails: ["airflow","ambari","commons","couchdb","dolphinscheduler","dubbo","fineract","geronimo","guacamole","hadoop","hive","httpd","ignite","jackrabbit","kafka","libcloud","logging","lucene","metron","milagro","nifi","ofbiz","openmeetings","openoffice","orc","ozone","sentry","shiro","singa","sling","solr","spamassassin","spark","struts","tomcat","trafficcontrol","trafficserver","trafodion","zeppelin","zookeeper"],
+    // which PMC are allowed to live allocate a CNA name from CVE Project
+    pmcstrustedascna: ["*","-zeppelin"],
 
     // The Mongodb URL where CVE entries and users are stored.
     // WARNING! Configure MongoDB authentication and use a strong password
     // WARNING! Ensure MongoDB is not reachable from the network.
-    database: `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME || "admin"}:${process.env.MONGO_INITDB_ROOT_PASSWORD || "admin"}@${process.env.MONGO_HOST || "127.0.0.1"}:${process.env.MONGO_PORT || "27017"}`,
+    database: secrets.database,
     //database: `mongodb://vulnogram:StrongLongPass@127.0.0.1:27017/vulnogram`,
     // Name of the organization that should be used in page titles etc.,
-    //orgName: 'Example Org',
+    orgName: ' ',
 
     // Name of the group that should be used in page titles etc.,
-    groupName: 'Security Incident Response Team',
+    groupName: ' ',
 
     //CNA contact address
-    //contact: 'sirt@example.net',
+    contact: 'security@apache.org',
 
-    classification: 'Confidential INTERNAL USE ONLY',
-    copyright: '© Example Org. Made with ' + package.name + ' ' + package.version,
+    classification: 'This tool is based on Vulnogram, contact security@apache.org with any queries or problems',
+    copyright : 'v0.1.0-rc1-141-g23c5bf3',
 
     // Uncomment this line and set a random string to allow unauthenticated access to draft CVE entries that are in review-ready or publish-ready state via /review/<token>/ or /review/<token>/CVE-ID
     // This may be useful to share a link to the draft for internal reviews and only those with the link have access to the drafts.
    //reviewToken: 'randomtoken',
 
     // port where this tool is running
-    serverHost: process.env.VULNOGRAM_HOST || '127.0.0.1',
+    serverHost: process.env.VULNOGRAM_HOST || '0.0.0.0',
     serverPort: process.env.VULNOGRAM_PORT || 3555,
     basedir: '/',
 
@@ -33,17 +46,17 @@ module.exports = {
     // Either get them from your favorite Certificate Authority or generate self signed:
     // Keep these safe and secured and readable only by account running vulnogram process!
     // $ openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out cert.pem
-/*
+
     httpsOptions: {
-        key: fs.readFileSync("./config/key.pem"),
-        cert: fs.readFileSync("./config/cert.pem"),
+        key: fs.readFileSync('/etc/letsencrypt/live/security-vm-he-fi.apache.org/privkey.pem', 'utf8'),
+        cert: fs.readFileSync('/etc/letsencrypt/live/security-vm-he-fi.apache.org/cert.pem', 'utf8'),
+        ca: fs.readFileSync('/etc/letsencrypt/live/security-vm-he-fi.apache.org/chain.pem', 'utf8'),
         minVersion: 'TLSv1.2'
     },
-*/
 
     mitreURL: 'https://www.cve.org/CVERecord?id=',
-    defectURL: 'https://example.net/internal/bugs/',
-    publicDefectURL: 'https://example.net/bugs/',
+    defectURL: '',
+    publicDefectURL: '',
 
     // ACE editor
     ace: 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/ace.js',
@@ -69,11 +82,10 @@ module.exports = {
 
     usernameRegex: '[a-zA-Z0-9]{3,}',
     sections: [
+        'cve5',
         'cve',
-        'nvd',
-        'home'
     ],
-    homepage: '/home',
+    homepage: '/cve5',
 
     // Configure addional custom ExpressJS routes.
 /*

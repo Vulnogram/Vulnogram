@@ -82,7 +82,7 @@ mixin commentBox
         .wysihtml5-editor.fil.txt(style="min-height:10em")
         //, onkeyup="this.form.button.disabled=this.value ? false : true",onblur="this.form.button.disabled=this.value ? false : true")
         //#addCommentText.wysDiv(onkeyup="setCommentButton(this, this.form.button)",onblur="setCommentButton(this, this.form.button)")
-        button.btn.gap.sml(type="submit",name="button",disabled=true) Add comment
+        button.btn.gap.sml(type="submit",name="button",disabled=true) Add comment (optional and internal only, sends email)
 
 mixin comments
   if docs

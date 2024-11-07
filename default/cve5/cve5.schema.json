@@ -425,7 +425,7 @@
             "https://registry.npmjs.org",
             "https://registry.terraform.io",
             "https://repo.hex.pm",
-            "https://repo.maven.apache.org/maven2",
+            "https://repo.maven.khulnasoft.com/maven2",
             "https://rubygems.org",
             "https://search.nixos.org/packages",
             "https://sourceforge.net",
@@ -679,8 +679,8 @@
               }
             },
             "required": [
-              "version",
-              "status"
+                "version",
+                "status"
             ]            
           }
         },
@@ -1486,7 +1486,7 @@
       "items": {
         "$ref": "#/definitions/reference"
       },
-      "minItems": 1,
+      "minItems": 0,
       "maxItems": 512,
       "uniqueItems": true
     },
@@ -1599,107 +1599,6 @@
         "oneOf": [
           { "required": ["format", "scenarios", "cvssV4_0"], "title": "CVSS 4.0" },
           { "required": ["format", "scenarios", "cvssV3_1"], "title": "CVSS 3.1 (Obsolete)" },
-          { "required": ["format", "scenarios", "cvssV2_0"], "title": "CVSS 2 (Obsolete)"},
-          { "required": ["other", "SSVCv2.0"], "title": "SSVCv2.0",
-            "default": {
-              "other": {
-                "type": "SSVCv2.0",
-                "content": {
-                  "version":"2.0",
-                  "Exploitation": "Active",
-                  "Automatable": "Yes",
-                  "Value Density": "Concentrated",
-                  "Technical Impact": "Total"
-                }
-              }
-            },
-            "noAdditionalProperties":"true",
-            "properties": {
-              "other": {
-                "type": "object",
-                "required": ["type","content"],
-                "description": "A non-standard impact description, may be prose or JSON block.",
-                "properties": {
-                  "type": {
-                    "description": "Name of the non-standard impact metrics format used.",
-                    "type": "string",
-                    "enum": ["SSVCv2.0"],
-                    "default":"SSVCv2.0",
-                    "minLength": 1,
-                    "maxLength": 128,
-                    "options": {
-                      "hidden":"true"
-                    }
-                  },
-                  "content": {
-                    "title": "Stakeholder Specific Vulnerability Categorization",
-                    "format": "object",
-                    "type": "object",
-                    "required": ["Exploitation"],
-                    "description": "JSON object not covered by another metrics format.",
-                    "minProperties": 0,
-                    "properties": {
-                      "version": {
-                        "format": "string",
-                        "options": {
-                          "hidden": true
-                        }
-                      },
-                      "Exploitation": {
-                        "format": "radio",
-                        "type":"string",
-                        "enum":["None", "PoC", "Active"],
-                        "options": {
-                          "icons": {
-                            "None": "safe",
-                            "PoC": "text",
-                            "Active": "bomb"
-                          }
-                        }
-                      },
-                      "Automatable": {
-                        "format": "radio",
-                        "type":"string",
-                        "enum":["No","Yes"],
-                        "options": {
-                          "icons": {
-                            "Yes": "cog",
-                            "No": "no"
-                          }
-                        }
-                      },
-                      "Technical Impact": {
-                        "format": "radio",
-                        "type":"string",
-                        "enum":["None", "Partial", "Total"],
-                        "options": {
-                          "icons": {
-                            "None": "signal",
-                            "Partial": "signal-2",
-                            "Total": "signal-1"
-                          }
-                        }
-                      },
-                      "Value Density": {
-                        "format": "radio",
-                        "type":"string",
-                        "enum":["Diffused","Concentrated"],
-                        "options": {
-                          "icons": {
-                            "Diffused": "diffuse",
-                            "Concentrated": "box"
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              },
-              "format": {
-                "type":"string"
-              }
-            }
-          },
           { "required": ["other"], "title": "Other" }
         ],
         "description": "This is impact type information (e.g. a text description, CVSSv2, CVSSv3, etc.). Must contain: At least one entry, can be text, CVSSv2, CVSSv3, others may be added.",
@@ -3313,16 +3212,6 @@
         "containers"
       ],
       "links": [
-        {
-          "place": "container",
-          "class": "btn sfe vgi-put gap2",
-          "id": "post2",
-          "style": "",
-          "target": false,
-          "href": "'javascript:cvePost()'",
-          "title": "'Publish this record to CVE.org'",
-          "rel": "'Post to CVE.org'"
-        },
         {
           "place": "container",
           "class": "lbl gap2 tred fbn vgi-no flr",

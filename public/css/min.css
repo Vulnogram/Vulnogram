@@ -456,7 +456,8 @@ box-shadow: 0 0 0 0.2em rgba(147, 147, 147, 0.3);
     background-color: var(--wht);
 }
 ::placeholder {
-    color: var(--bor2);
+    color: #111;
+    font-style: italic;
 }
 .txt:disabled {
     background-color: var(--wht);

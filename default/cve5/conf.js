@@ -279,7 +279,9 @@ module.exports = {
                         errors.push({
                             path: path,
                             property: 'format',
-                            message: 'Enter a vendor and product OR a package and a collection'
+                            // KSF
+                            message: 'Enter a product name'
+                            // END KSF
                         });
                     }
                 }

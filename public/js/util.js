@@ -122,6 +122,14 @@ reduceJSON: function (cve) {
     if(c.impact && c.impact.cvss && c.impact.cvss.baseScore === 0) {
         delete c.impact;    
     }
+    // KSF
+    if(c.who) { delete c.who; }
+    if(c.containers && c.containers.cna && c.containers.cna.title) {
+        if (!(c.containers.cna.title.substring(0,40).includes("Khulnasoft"))) {
+            c.containers.cna.title = getProductListNoVendor(c) + ": " + c.containers.cna.title
+	}
+    }
+    // END KSF
     return(orderKeys(c));
 },
 
@@ -194,10 +202,12 @@ getAffectedProductString: function (cve) {
                 if (!status[cat]) {
                     status[cat] = {};
                 }
-                if(!status[cat][vendor_name + ' ' + product.product_name]) {
-                    status[cat][vendor_name + ' ' + product.product_name] = [];
+                // KSF
+                if(!status[cat][product.product_name]) {
+                    status[cat][product.product_name] = [];
                 }
-                status[cat][vendor_name + ' ' + product.product_name].push(vv);
+                status[cat][product.product_name].push(vv);
+                // END KSF
             }
         }
     }
@@ -280,7 +290,6 @@ affectedTable: function (cve) {
                 if(!status[vendor_name][product_name][vn]) {
                     status[vendor_name][product_name][vn] = {};
                 }
-                
                 if (!status[vendor_name][product_name][vn][cat]) {
                     status[vendor_name][product_name][vn][cat] = [];
                 }
@@ -593,13 +602,13 @@ var cvssjs = {
         "SC": "subConfidentialityImpact",
         "SI": "subIntegrityImpact",
         "SA": "subAvailabilityImpact",
-        "E": "exploitMaturity",
         "S": "Safety",
         "AU": "Automatable",
         "R": "Recovery",
         "V": "valueDensity",
         "RE": "vulnerabilityResponseEffort",
         "U": "providerUrgency",
+        "E": "exploitMaturity"
     },
     vectorMap3: {
         "attackVector": "AV",

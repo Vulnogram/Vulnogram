@@ -1,5 +1,8 @@
 const express = require('express');
 const csurf = require('csurf');
+// KSF
+const ksf =  require('../custom/ksf.js');
+// END KSF
 var csrfProtection = csurf();
 const textUtil = require('../public/js/util.js');
 var jsonpatch = require('json-patch-extended');
@@ -42,6 +45,12 @@ module.exports = function (Document, opts) {
             } else {
                 ucomments = doc.comments;
             }
+            // KSF
+            if (!ksf.ksfhookshowcveacl(doc, req, res)) {
+                module.router = router;
+                return module;                                
+            }
+            // END KSF
             res.locals.renderStartTime = Date.now();
             if (opts.conf.readonly) {
                 if (doc && doc._doc) {
@@ -126,6 +135,9 @@ module.exports = function (Document, opts) {
 
 
     module.addModelHistory = function (model, oldDoc, newDoc) {
+        // KSF
+        ksf.ksfhookaddhistory(oldDoc, newDoc);
+        // END KSF
         if (oldDoc === null) {
             oldDoc = {
                 __v: -1,
@@ -233,6 +245,9 @@ module.exports = function (Document, opts) {
         queryNewID[opts.idpath] = inputID;
         queryOldID[opts.idpath] = req.params.id;
         var renaming = (req.params.id != inputID);
+        // KSF
+        var dorefresh = false;
+        // END KSF
         Document.findOne(queryNewID).then((existingDoc) => {
             if (existingDoc) {
                 // check Document ID is being renamed.
@@ -244,6 +259,9 @@ module.exports = function (Document, opts) {
                     return;
                 }
             }
+            // KSF
+            ksf.ksfhookupsertdoc(req,dorefresh);
+            // END KSF
             var d = new Date();
             newDoc = {
                 body: req.body,
@@ -275,7 +293,9 @@ module.exports = function (Document, opts) {
                             msg: 'Error! Document not Updated, ' + err
                         });
                     } else {
-                        if (renaming) {
+                        // KSF
+                        if (renaming || dorefresh) {
+                        // END KSF
                             res.json({
                                 type: 'go',
                                 to: inputID
@@ -297,6 +317,14 @@ module.exports = function (Document, opts) {
         let query = {};
         query[opts.idpath] = req.params.id;
 
+        // KSF
+        console.log("KSF1 remove document",query);
+        if (!ksf.ksfallowedtodelete(req)) {
+            console.log("KSF1 no delete as "+req.user.pmcs + " is not in "+ opts.conf.admingroupname)
+            res.send('not authorized');                                                   
+            return;                                                                       
+        }     
+        // END KSF
         Document.deleteOne(query, function (err) {
             if (err) {
                 res.send('Error Deleting');
@@ -307,12 +335,19 @@ module.exports = function (Document, opts) {
         });
     });
 
+    // KSF
     // fetch either logs or comments
-    var getSubDocs = async function (subSchema, doc_id) {
+    var getSubDocs = async function (subSchema, doc_id, mypmcs) {
+    // END KSF
         var q = {}
         q[opts.idpath] = doc_id;
         parentDoc = await Document.findOne(q).exec();
         if (parentDoc) {
+            // KSF
+            if (parentDoc.body && parentDoc.body.CNA_private && !ksf.ksfgroupacls(parentDoc.body.CNA_private.owner, mypmcs)) {
+                return { 'message': 'Access Denied' };
+            }
+            // END KSF
             var subq = {
                 parent_id: parentDoc._id
             }
@@ -332,16 +367,21 @@ module.exports = function (Document, opts) {
 
     // Get document chage history (JSON patches)
     router.get('/log/:id', [checkID], function (req, res) {
-        getSubDocs(History, req.params.id).then(r => {
+        // KSF
+        console.log(History, opts.schemaName);
+        getSubDocs(History, req.params.id, req.user.pmcs).then(r => {
             res.json(r);
         });
+        // END KSF
     });
 
     // Get document comments
     router.get('/comment/:id', [checkID], function (req, res) {
-        getSubDocs(History, req.params.id).then(r => {
+        // KSF
+        getSubDocs(History, req.params.id, req.user.pmcs).then(r => {
             res.json(r);
         });
+        // END KSF
     });
 
     return module;

@@ -54,6 +54,7 @@ function showPortalLogin(message) {
     }
     window.localStorage.removeItem('cveApi');
 
+    if (document.getElementById('port'))
     document.getElementById('port').innerHTML = cveRender({
         ctemplate: 'cveLoginBox',
         message: message,
@@ -77,6 +78,7 @@ async function showPortalView(orgInfo, userInfo) {
         if (!userInfo) {
             userInfo = await csClient.getOrgUser(csCache.user);
         }
+        if (document.getElementById('port'))        
         document.getElementById('port').innerHTML = cveRender({
             portalType: csCache.portalType,
             portalURL: csCache.url,
@@ -279,6 +281,7 @@ async function cveUpdateUser(f) {
                     portalLogout();
                     return;
                 }
+                if (document.getElementById('cveUser'))
                 document.getElementById("cveUser").innerHTML =
                     cveRender({
                         ctemplate: 'userstats',
@@ -654,6 +657,24 @@ function transatePath(p) {
     return p;
 }
 async function cvePost() {
+    // KSF
+    var j = await mainTabGroup.getValue();
+    res = await fetch('/publishcve', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Accept': 'application/json, text/plain, */*',
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken,
+        },
+        redirect: 'error',
+        body: JSON.stringify({cve:j.cveMetadata.cveId})
+    });
+    const out = await res.json();
+    cveShowError(out.body);
+    return;
+    // END KSF
+
     if (docEditor.validation_results && docEditor.validation_results.length == 0) {
         /*if (save != undefined) {
             await save();

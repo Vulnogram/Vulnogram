@@ -7,6 +7,11 @@ const mongoose = require('mongoose');
 const flash = require('connect-flash');
 const https = require('https');
 const pug = require('pug');
+
+// KSF
+const ksf = require('./custom/ksf.js')
+// END KSF
+
 // TODO: don't use express-session for large-scale production use
 const session = require('express-session');
 
@@ -87,7 +92,9 @@ app.use(session({
     resave: true,
     saveUninitialized: true,
     cookie: {
-      httpOnly: true
+      secure: process.env.NODE_ENV == "production",
+      httpOnly: true,
+      sameSite: 'lax',
     }
 }));
 
@@ -97,12 +104,18 @@ require('./config/passport')(passport);
 app.use(passport.initialize());
 app.use(passport.session());
 
+// KSF
+ksf.ksfinit(app);
+// END KSF
+
 // Express Messages Middleware
 // This shows error messages on the client
 app.use(require('connect-flash')());
 app.use(function (req, res, next) {
     res.locals.user = req.user || null;
-    res.locals.startTime = Date.now();
+    // KSF
+    // res.locals.startTime = Date.now();
+    // END KSF
     res.locals.messages = require('express-messages')(req, res);
     next();
 });
@@ -136,8 +149,19 @@ app.use(ensureConnected);
 app.use(function (req, res, next) {
     res.setHeader('X-Frame-Options', 'SAMEORIGIN');
     res.setHeader('X-XSS-Protection', '1; mode=block');
-    res.setHeader("Access-Control-Allow-Origin", "*");// XXX investigate
-    res.setHeader("Access-Control-Request-Headers", "cve-api-cna,cve-api-secret,cve-api-submitter");
+    // KSF
+    // we don't use web integrations that need CORS, so safer to disable:
+    //res.setHeader("Access-Control-Allow-Origin", "*");// XXX investigate
+    //res.setHeader("Access-Control-Request-Headers", "cve-api-cna,cve-api-secret,cve-api-submitter");
+    // END KSF
+
+    // Based on INFRA-25518
+    res.setHeader('Content-Security-Policy', "default-src 'self' data: 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://whimsy.khulnasoft.com; frame-ancestors 'self';");
+
+    if (process.env.NODE_ENV == "production") {
+        // Have the browser remember to use https for a year:
+        res.setHeader('Strict-Transport-Security', 'max-age=31536000');
+    }
 
     if (req.path != '/users/login' && req.session.returnTo) {
         delete req.session.returnTo
@@ -145,6 +169,9 @@ app.use(function (req, res, next) {
     next()
 })
 
+// KSF
+ksf.ksfroutes(ensureAuthenticated, app);
+// END KSF
 // set up routes
 let users = require('./routes/users');
 app.use('/users', users.public);
@@ -153,6 +180,9 @@ app.use('/users', ensureAuthenticated, users.protected);
 let docs = require('./routes/doc');
 
 app.locals.confOpts = {};
+// KSF
+app.locals.docs = {};
+// END KSF
 
 var sections = require('./models/sections.js')();
 
@@ -160,8 +190,13 @@ for(section of sections) {
     var s = optSet(section, ['default', 'custom']);
     //var s = conf.sections[section];
     if(s.facet && s.facet.ID) {
-        app.locals.confOpts[section] = s;
-        let r = docs(section, app.locals.confOpts[section]);
+        // KSF
+        if (conf.sections.includes(section)){
+            app.locals.confOpts[section] = s;
+        }
+        let r = docs(section, s);
+        app.locals.docs[section] = r;
+        // END KSF
         app.use('/' + section, ensureAuthenticated, r.router);
     }
 }

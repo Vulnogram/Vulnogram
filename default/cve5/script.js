@@ -196,7 +196,15 @@ var additionalTabs = {
         setValue: function () {
 
         }
+    },
+    // KSF
+    jsonTab: {
+        title: 'CVE-JSON',
+        setValue: function(j){
+            document.getElementById("outjson").textContent = textUtil.getMITREJSON(textUtil.reduceJSON(j)); 
+        }
     }
+    // END KSF
 }
 
 /* fullname = vendor . product . platforms . module .others . default status 
@@ -354,7 +362,7 @@ function htmltoText(html) {
         //text = text.replace(/\n/gi, "");
         text = text.replace(/<style([\s\S]*?)<\/style[^>]*?>/gi, "");
         text = text.replace(/<script([\s\S]*?)<\/script[^>]*?>/gi, "");
-        text = text.replace(/<a.*?href="(.*?)[\?\"].*?>\1<\/a.*?>/gi, " $1 ");
+        text = text.replace(/<a[^>]*?href="(.*?)[\?\"][^>]*?>\1(<br>)?<\/a.*?>/gi, " $1$2 ");
         text = text.replace(/<a.*?href="(.*?)[\?\"].*?>(.*?)<\/a.*?>/gi, " $2 $1 ");
         text = text.replace(/<\/div[^>]*?>/gi, "\n\n");
         text = text.replace(/<\/li[^>]*?>/gi, "\n");
@@ -559,4 +567,8 @@ function cveFixForVulnogram(j) {
         j.containers.cna.metrics = [];
     }
     return j;
+}
+
+if (typeof exports !== 'undefined') {
+    exports.htmltoText = htmltoText
 }
