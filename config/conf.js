@@ -31,7 +31,7 @@ module.exports = {
     contact: 'security@apache.org',
 
     classification: 'This tool is based on Vulnogram, contact security@apache.org with any queries or problems',
-    copyright : 'v0.1.0-rc1-141-g23c5bf3',
+    copyright : 'v0.1.0-rc1-142-g1b76b57',
 
     // Uncomment this line and set a random string to allow unauthenticated access to draft CVE entries that are in review-ready or publish-ready state via /review/<token>/ or /review/<token>/CVE-ID
     // This may be useful to share a link to the draft for internal reviews and only those with the link have access to the drafts.
