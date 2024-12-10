@@ -1,5 +1,6 @@
 var currentYear = new Date().getFullYear();
 const defaultTimeout = 1000 * 60 * 60; // one hour timeout
+let isUpdating = false;
 
 function hidepopups() {
     document.getElementById("userListPopup").open = false;
@@ -559,4 +560,74 @@ function cveFixForVulnogram(j) {
         j.containers.cna.metrics = [];
     }
     return j;
+}
+
+let previousVersions = null;
+
+document.addEventListener("DOMContentLoaded", function () {
+    docEditor.on('ready', function () {
+        let isUpdating = false;
+        let previousVersions = JSON.stringify(docEditor.getValue().containers.cna.affected.map(a => a.versions));
+
+        function checkForChanges() {
+            if (!isUpdating) {
+                const currentVersions = JSON.stringify(docEditor.getValue().containers.cna.affected.map(a => a.versions));
+                if (currentVersions !== previousVersions) {
+                    isUpdating = true;
+                    setCpes();
+                    previousVersions = currentVersions;
+                    // hack to prevent infinite loop
+                    setTimeout(() => { isUpdating = false; }, 0);
+                }
+            }
+        }
+
+        docEditor.on('change', checkForChanges);
+    });
+});
+
+function setCpes() {
+    const affected = docEditor.getValue().containers.cna.affected;
+
+
+    for (const a of affected) {
+        if (!a.vendor || !a.product) {
+            continue;
+        }
+
+        if (a.versions && a.versions.length > 0) {
+            a.cpes = [];
+            for (const v of a.versions) {
+                if (v.status === "unaffected") {
+                    continue
+                }
+                a.cpes.push(generateCpe(a.vendor, a.product, v));
+            }
+        }
+    }
+    docEditor.getEditor('root.containers.cna.affected').setValue(affected);
+}
+
+function generateCpe(vendor, product, versions) {
+    vendor = vendor.replace(/\s/g, '_');
+    product = product.replace(/\s/g, '_');
+    const version = parseVersion(versions);
+
+    if (version.includes('versions from')) {
+        return `cpe:2.3:a:${vendor}:${product}:*:*:*:*:*:*:*:* ${version}`;
+    }
+    else {
+        return `cpe:2.3:a:${vendor}:${product}:${version}:*:*:*:*:*:*:*`;
+    }
+}
+
+function parseVersion(version) {
+    if (version.lessThan) {
+        return `versions from (including) ${version.version} up to (excluding) ${version.lessThan}`;
+    }
+    else if (version.lessThanOrEqual) {
+        return `versions from (including) ${version.version} up to (including) ${version.lessThanOrEqual}`;
+    }
+    else
+        return version.version
 }
