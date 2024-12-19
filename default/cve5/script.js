@@ -565,59 +565,76 @@ function cveFixForVulnogram(j) {
 let previousVersions = null;
 
 document.addEventListener("DOMContentLoaded", function () {
-    docEditor.on('ready', function () {
-        let isUpdating = false;
-        let previousVersions = JSON.stringify(docEditor.getValue().containers.cna.affected.map(a => a.versions));
-
-        function checkForChanges() {
-            if (!isUpdating) {
-                const currentVersions = JSON.stringify(docEditor.getValue().containers.cna.affected.map(a => a.versions));
-                if (currentVersions !== previousVersions) {
-                    isUpdating = true;
-                    setCpes();
-                    previousVersions = currentVersions;
-                    // hack to prevent infinite loop
-                    setTimeout(() => { isUpdating = false; }, 0);
-                }
-            }
-        }
-
-        docEditor.on('change', checkForChanges);
-    });
+    docEditor.on('ready', function () { 
+        docEditor.watch('root.containers.cna.affected', function () {
+            //without setTimeout the affected accessed in setCpeApplicability is the value before the change
+            setTimeout(setCpeApplicability, 0);
+        });
+    })
 });
 
-function setCpes() {
+function setCpeApplicability() {
     const affected = docEditor.getValue().containers.cna.affected;
+    const cpeApplicability = generateCpeApplicability(affected);
+    docEditor.getEditor('root.containers.cna.cpeApplicability').setValue(cpeApplicability);
+}
 
+function generateCpeApplicability(affected) {
+    let cpeApplicabilityNodes = [];
 
-    for (const a of affected) {
-        if (!a.vendor || !a.product) {
-            continue;
+    for (const affectedProduct of affected) {
+        const cpeApplicabilityNode = generateCpeApplicabilityNode(affectedProduct);
+        if (cpeApplicabilityNode) {
+            cpeApplicabilityNodes.push(cpeApplicabilityNode);
         }
+    }
 
-        if (a.versions && a.versions.length > 0) {
-            a.cpes = [];
-            for (const v of a.versions) {
-                if (v.status === "unaffected") {
-                    continue
-                }
-                a.cpes.push(generateCpe(a.vendor, a.product, v));
+    return {
+        "operator": "AND",
+        "nodes": cpeApplicabilityNodes
+    };
+}
+
+function generateCpeApplicabilityNode(affectedProduct) {
+    let cpeMatch = [];
+
+    if (!affectedProduct.vendor || !affectedProduct.product) {
+        return null;
+    }
+
+    if (affectedProduct.versions && affectedProduct.versions.length > 0) {
+        for (const v of affectedProduct.versions) {
+            if (v.status === "unaffected") {
+                continue;
+            }
+            if (v.lessThan) {
+                cpeMatch.push({
+                    "vulnerable": true,
+                    "criteria": `cpe:2.3:a:${affectedProduct.vendor}:${affectedProduct.product}:*:*:*:*:*:*:*:*`,
+                    "versionStartIncluding": v.version,
+                    "versionEndExcluding": v.lessThan
+                });
+            }
+            else if (v.lessThanOrEqual) {
+                cpeMatch.push({
+                    "vulnerable": true,
+                    "criteria": `cpe:2.3:a:${affectedProduct.vendor}:${affectedProduct.product}:*:*:*:*:*:*:*:${v.version}`,
+                    "versionStartIncluding": v.version,
+                    "versionEndIncluding": v.lessThanOrEqual
+                });
             }
         }
     }
-    docEditor.getEditor('root.containers.cna.affected').setValue(affected);
-}
+    if (cpeMatch.length > 0) {
+        let cpeApplicabilityNode = {
+            "operator": "OR",
+            "negate": false,
+            "cpeMatch": cpeMatch
+        };
 
-function generateCpe(vendor, product, versions) {
-    vendor = vendor.replace(/\s/g, '_');
-    product = product.replace(/\s/g, '_');
-    const version = parseVersion(versions);
-
-    if (version.includes('versions from')) {
-        return `cpe:2.3:a:${vendor}:${product}:*:*:*:*:*:*:*:* ${version}`;
-    }
-    else {
-        return `cpe:2.3:a:${vendor}:${product}:${version}:*:*:*:*:*:*:*`;
+        return cpeApplicabilityNode;
+    } else {
+        return null;
     }
 }
 

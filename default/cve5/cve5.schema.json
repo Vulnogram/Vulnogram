@@ -995,6 +995,13 @@
         "affected": {
           "$ref": "#/definitions/affected"
         },
+        "cpeApplicability": {
+          "title": "CPE Applicability",
+          "items": {
+            "$ref": "#/definitions/cpeApplicabilityElement"
+          },
+          "type": "array"
+        },
         "descriptions": {
           "id": "description",
           "$ref": "#/definitions/descriptions",
@@ -1241,6 +1248,94 @@
       "items": {
         "$ref": "#/definitions/product"
       }
+    },
+    "cpeApplicabilityElement": {
+      "description": "Affected products defined using an implementation of the CPE Applicability Language, mostly copied/forked from the NIST NVD CVE API v2.0 schema (optional). An operator property allows AND or OR logic between CPEs or combinations of CPEs. The negate and vulnerable Boolean properties allow CPEs to be inverted and/or defined as vulnerable or not. Multiple version fields are provided for capturing ranges of products when defining a CPE Match String Range. NOTE: When defining a cpeApplicability block, it is recommended that it align with (as much as possible) the product data provided within the affected block.",
+      "properties": {
+        "negate": {
+          "type": "boolean"
+        },
+        "nodes": {
+          "items": {
+            "$ref": "#/definitions/cpe_node"
+          },
+          "type": "array"
+        },
+        "operator": {
+          "enum": [
+            "AND",
+            "OR"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "nodes"
+      ]
+    },
+    "cpe_node": {
+      "description": "Defines a CPE configuration node in an applicability statement.",
+      "properties": {
+        "operator": {
+          "type": "string",
+          "enum": [
+            "AND",
+            "OR"
+          ]
+        },
+        "negate": {
+          "type": "boolean"
+        },
+        "cpeMatch": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cpe_match"
+          }
+        }
+      },
+      "required": [
+        "operator",
+        "cpeMatch"
+      ]
+    },
+    "cpe_match": {
+      "description": "CPE match string or range",
+      "type": "object",
+      "properties": {
+        "vulnerable": {
+          "type": "boolean"
+        },
+        "criteria": {
+          "$ref": "#/definitions/cpe23"
+        },
+        "matchCriteriaId": {
+          "$ref": "#/definitions/uuidType"
+        },
+        "versionStartExcluding": {
+          "$ref": "#/definitions/version"
+        },
+        "versionStartIncluding": {
+          "$ref": "#/definitions/version"
+        },
+        "versionEndExcluding": {
+          "$ref": "#/definitions/version"
+        },
+        "versionEndIncluding": {
+          "$ref": "#/definitions/version"
+        }
+      },
+      "required": [
+        "vulnerable",
+        "criteria"
+      ],
+      "additionalProperties": false
+    },
+    "cpe23": {
+      "type": "string",
+      "description": "Common Platform Enumeration (CPE) Name in 2.3 format",
+      "pattern": "(cpe:2\\.3:[aho*\\-](:(((\\?*|\\*?)([a-zA-Z0-9\\-._]|(\\\\[\\\\*?!\"#$%&'()+,/:;<=>@\\[\\]\\^`{|}~]))+(\\?*|\\*?))|[*\\-])){5}(:(([a-zA-Z]{2,3}(-([a-zA-Z]{2}|[0-9]{3}))?)|[*\\-]))(:(((\\?*|\\*?)([a-zA-Z0-9\\-._]|(\\\\[\\\\*?!\"#$%&'()+,/:;<=>@\\[\\]\\^`{|}~]))+(\\?*|\\*?))|[*\\-])){4})",
+      "minLength": 1,
+      "maxLength": 2048
     },
     "description": {
       "type": "object",
