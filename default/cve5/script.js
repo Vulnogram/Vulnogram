@@ -1,6 +1,5 @@
 var currentYear = new Date().getFullYear();
 const defaultTimeout = 1000 * 60 * 60; // one hour timeout
-let isUpdating = false;
 
 function hidepopups() {
     document.getElementById("userListPopup").open = false;
@@ -636,15 +635,4 @@ function generateCpeApplicabilityNode(affectedProduct) {
     } else {
         return null;
     }
-}
-
-function parseVersion(version) {
-    if (version.lessThan) {
-        return `versions from (including) ${version.version} up to (excluding) ${version.lessThan}`;
-    }
-    else if (version.lessThanOrEqual) {
-        return `versions from (including) ${version.version} up to (including) ${version.lessThanOrEqual}`;
-    }
-    else
-        return version.version
 }
