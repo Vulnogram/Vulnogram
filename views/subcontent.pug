@@ -87,7 +87,7 @@ mixin commentBox
 mixin comments
   if docs
     each c, i in docs
-      .shd.rnd.bor.pad.gap(class=c._id? 'lyel': 'wht')
+      .shd.rnd.bor.pad.gap(class=c._id? 'lyel': 'wht', id=c.slug)
         dt 
             - var cd = new Date(c.createdAt);
             - var ud = new Date(c.updatedAt);
@@ -101,8 +101,8 @@ mixin comments
                     = ud.toLocaleDateString("en-US",{year: 'numeric', month: 'short', day: 'numeric'})
                     | )
                 |  
-            if(c.author == username)
-                button.btn.sml(onclick="editPost(this.parentNode)") update
+            if c.author == username
+                button.btn.sml(onclick='editPost("' + c.slug + '")') update
             |  -  
             b.lbl=c.title
             if c._id
