@@ -560,3 +560,79 @@ function cveFixForVulnogram(j) {
     }
     return j;
 }
+
+let previousVersions = null;
+
+document.addEventListener("DOMContentLoaded", function () {
+    docEditor.on('ready', function () { 
+        docEditor.watch('root.containers.cna.affected', function () {
+            //without setTimeout the affected accessed in setCpeApplicability is the value before the change
+            setTimeout(setCpeApplicability, 0);
+        });
+    })
+});
+
+function setCpeApplicability() {
+    const affected = docEditor.getValue().containers.cna.affected;
+    const cpeApplicability = generateCpeApplicability(affected);
+    docEditor.getEditor('root.containers.cna.cpeApplicability').setValue(cpeApplicability);
+}
+
+function generateCpeApplicability(affected) {
+    let cpeApplicabilityNodes = [];
+
+    for (const affectedProduct of affected) {
+        const cpeApplicabilityNode = generateCpeApplicabilityNode(affectedProduct);
+        if (cpeApplicabilityNode) {
+            cpeApplicabilityNodes.push(cpeApplicabilityNode);
+        }
+    }
+
+    return {
+        "operator": "AND",
+        "nodes": cpeApplicabilityNodes
+    };
+}
+
+function generateCpeApplicabilityNode(affectedProduct) {
+    let cpeMatch = [];
+
+    if (!affectedProduct.vendor || !affectedProduct.product) {
+        return null;
+    }
+
+    if (affectedProduct.versions && affectedProduct.versions.length > 0) {
+        for (const v of affectedProduct.versions) {
+            if (v.status === "unaffected") {
+                continue;
+            }
+            if (v.lessThan) {
+                cpeMatch.push({
+                    "vulnerable": true,
+                    "criteria": `cpe:2.3:a:${affectedProduct.vendor}:${affectedProduct.product}:*:*:*:*:*:*:*:*`,
+                    "versionStartIncluding": v.version,
+                    "versionEndExcluding": v.lessThan
+                });
+            }
+            else if (v.lessThanOrEqual) {
+                cpeMatch.push({
+                    "vulnerable": true,
+                    "criteria": `cpe:2.3:a:${affectedProduct.vendor}:${affectedProduct.product}:*:*:*:*:*:*:*:${v.version}`,
+                    "versionStartIncluding": v.version,
+                    "versionEndIncluding": v.lessThanOrEqual
+                });
+            }
+        }
+    }
+    if (cpeMatch.length > 0) {
+        let cpeApplicabilityNode = {
+            "operator": "OR",
+            "negate": false,
+            "cpeMatch": cpeMatch
+        };
+
+        return cpeApplicabilityNode;
+    } else {
+        return null;
+    }
+}
