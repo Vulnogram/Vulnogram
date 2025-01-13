@@ -123,17 +123,17 @@ async function getSubDocs(docType, id) {
     }
 }
 
-function editPost(c) {
-    var text = c.nextSibling; // the div tag following dt tag
-    var slug = text.nextSibling;
-    var date = slug.nextSibling;
+function editPost(slugValue) {
+    let post = document.getElementById(slugValue);
+    let text = post.querySelector("div");
+    let slug = post.querySelector("input[name='slug']");
+    let date = post.querySelector("input[name='date']");
 
     var nf = newCommentBox(text);
     nf.appendChild(slug);
     nf.appendChild(date);
     nf.button.textContent = "Update";
-    var page = c.parentNode;
-    page.parentNode.replaceChild(nf, page);
+    post.parentNode.replaceChild(nf, post);
 
 }
 
