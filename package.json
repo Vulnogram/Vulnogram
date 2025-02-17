@@ -33,7 +33,7 @@
     "json-patch-extended": "^0.1.2",
     "linkifyjs": "^4.1.1",
     "mongodb": "^3.7.3",
-    "mongoose": "^6.12.2",
+    "mongoose": "^8.8.3",
     "node-fetch": "^2.6.7",
     "nodemailer": "^6.4.17",
     "nodemon": "^3.0.1",
