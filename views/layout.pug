@@ -47,8 +47,10 @@ html
                                         - var href=(shortcut.href instanceof Function ? shortcut.href(locals) : shortcut.href)
                                         a.fbn(class=shortcut.class,href=href,target=shortcut.target)=(shortcut.label instanceof Function ? shortcut.label(locals) : shortcut.label)
                                 if (schemaName) 
-                                    form.indent.out.nobr(action='/' + schemaName,method="GET",style="flex-grow:1")
-                                        input.txt(size=20,style="flex-grow:1",type="text",name="q",placeholder=" Search all "+schemaName,value=query ? (Array.isArray(query.q) ? query.q.join(' ') : query.q) :'',results="10",required)
+                                    form.indent.out.nobr(action='/' + encodeURIComponent(schemaName),method="GET",style="flex-grow:1")
+                                        - var placeholderText = " Search all " + schemaName
+                                        - var searchValue = query ? (Array.isArray(query.q) ? query.q.join(' ') : query.q) : ''
+                                        input.txt(size=20,style="flex-grow:1",type="text",name="q",placeholder=placeholderText,value=searchValue,results="10",required,maxlength="100")
                                         button.vgi-search.sbn(type="submit")
     block facetBanner
     if user && !min

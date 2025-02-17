@@ -31,7 +31,7 @@ block loadEditor
         |   if (t.id == "emailTab") {
         |     t.addEventListener('change',async function() {
         |         var j = docEditor.getValue();
-        |         var emailto = "oss-security@lists.openwall.com"
+        |         var emailto = config.ossSecurityEmail
         |         var replyto = j.CNA_private.userslist;
         |         if (!replyto) {
         |            replyto = await loadEmailLists( j.CNA_private.owner );
@@ -95,7 +95,7 @@ block loadEditor
         |         document.getElementById("emailsubject").value = subject
         |         document.getElementById("emailreplyto").value = replyto
         |         document.getElementById("emailto1").value = emailto
-        |         emailto = "announce@khulnasoft.com, "+replyto
+        |         emailto = config.announceEmail + ", " + replyto
         |         jmt = "To: "+emailto+"\nBcc: security@khulnasoft.com\nReply-To: "+replyto+"\nSubject: "+subject+"\n\n"
         |         document.getElementById("ksfemail").innerHTML = "<pre>"+jmt+mt+"</pre>\n"
         |         document.getElementById("emailto2").value = emailto

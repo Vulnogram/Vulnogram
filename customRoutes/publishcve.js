@@ -1,5 +1,5 @@
 const express = require('express');
-const protected = express.Router();
+const protectedRouter = express.Router();
 const conf = require('../config/conf');
 const csurf = require('csurf');
 var request = require('request');
@@ -28,15 +28,12 @@ function allowedtopushlive(pmcsiamin, specificpmc) {
     if (!pmcsiamin.includes(specificpmc)) {
         return false; // they're messing with the form
     }
-    return false;
-    // This isn't implemented yet
-    //
     if (conf.pmcstrustedascna.includes("*")) {
-        if (conf.pmcstrustedascna.includes("-"+specificpmc)) {
+        if (conf.pmcstrustedascna.includes("-" + specificpmc)) {
             return false;
-        }        
+        }
         return true;
-    }    
+    }
     if (conf.pmcstrustedascna.includes(specificpmc)) {
         return true;
     }
@@ -141,14 +138,14 @@ protected.post('/', csrfProtection, async function(req,res) {
         if (!result) {
             res.json({"body":"Push to cve.org success."});
             
-            var s2 = email.sendemail({"to":"security@khulnasoft.com",
+            let s2 = email.sendemail({"to":"security@khulnasoft.com",
                                       "subject":j.cveMetadata.cveId+" was pushed to cve.org",
                                       "text":"push by "+req.user.username+" success",
                                      }).then( (x) => {  console.log("sent CVE push mail "+x);});
         } else {
             res.json({"body":"Push to cve.org failed. "+result});
 
-            var s2 = email.sendemail({"to":"security@khulnasoft.com",
+            let s2 = email.sendemail({"to":"security@khulnasoft.com",
                                       "subject":j.cveMetadata.cveId+" failed push to cve.org",
                                       "text":"push by "+req.user.username+" failed "+result,
                                      }).then( (x) => {  console.log("sent CVE push failed mail "+x);});
@@ -164,5 +161,5 @@ protected.post('/', csrfProtection, async function(req,res) {
 });
 
 module.exports = {
-    protected: protected
+    protected: protectedRouter
 };

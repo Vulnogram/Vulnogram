@@ -115,10 +115,18 @@ module.exports = function (Document, opts) {
     router = express.Router();
     router.post('/comment', csrfProtection, async function (req, res) {
         // KSF we need to load the document so we can get the PMC
-        var q = {};
-        q[opts.idpath] = req.body.id;
-        var ret = await Document.findOne(q).exec();
-        ksf.ksfhookaddcomment(ret,req);
+        try {
+            var q = {};
+            q[opts.idpath] = req.body.id;
+            var ret = await Document.findOne(q).exec();
+            if (!ret) {
+                return res.status(404).json({ msg: 'Document not found' });
+            }
+            await ksf.ksfhookaddcomment(ret, req);
+        } catch (error) {
+            console.error('Error in comment hook:', error);
+            return res.status(500).json({ msg: 'Internal server error' });
+        }
         // END KSF
         if (req.body.slug) {
             var r = await updateComment(req.body.id, req.user.username, req.body.text, req.body.slug, new Date());

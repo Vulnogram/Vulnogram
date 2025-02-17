@@ -1,5 +1,5 @@
 const express = require('express');
-const protected = express.Router();
+const protectedRouter = express.Router();
 const conf = require('../config/conf');
 const csurf = require('csurf');
 var request = require('request');
@@ -199,5 +199,5 @@ protected.post('/', csrfProtection, async function(req,res) {
 
 
 module.exports = {
-    protected: protected
+    protected: protectedRouter
 };

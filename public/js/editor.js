@@ -437,6 +437,11 @@ JSONEditor.defaults.editors.radio = class radio extends JSONEditor.AbstractEdito
 JSONEditor.defaults.editors.dateTime = class dateTime extends JSONEditor.defaults.editors.string{
     getValue() {
         if (this.value) {
+            // Validate date-time format
+            const dateTimeRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
+            if (!dateTimeRegex.test(this.value)) {
+                throw new Error('Invalid date-time format');
+            }
             return this.value + ":00.000Z";
         } else {
             return "";
@@ -444,6 +449,10 @@ JSONEditor.defaults.editors.dateTime = class dateTime extends JSONEditor.default
     }
     setValue(val) {
         if (val) {
+            // Validate input
+            if (typeof val !== 'string') {
+                throw new Error('Date-time value must be a string');
+            }
             // Drop the :00.000Z, if any
             this.value = this.input.value = val.substring(0, 16);
         } else {
@@ -456,27 +465,13 @@ JSONEditor.defaults.editors.dateTime = class dateTime extends JSONEditor.default
         super.build();
         this.input.className = "txt";
         this.input.setAttribute("tz", "UTC");
-    }
-};
-// END KSF
-
-
-JSONEditor.defaults.editors.taglist = class taglist extends JSONEditor.defaults.editors.string {
-    getValue() {
-        if(this.tagify && this.tagify.value) {
-            return this.tagify.value.map(item => item.value);
-        } else {
-            return [];
+        // Add min/max date constraints if specified in schema
+        if (this.schema.minimum) {
+            this.input.setAttribute("min", this.schema.minimum);
         }
-    }
-    setValue(val) {
-        if (val instanceof Array) {
-            this.tagify.removeAllTags();
-            this.tagify.addTags(val);
-        } else {
-            this.tagify.addTags(val.split(','));
+        if (this.schema.maximum) {
+            this.input.setAttribute("max", this.schema.maximum);
         }
-        this.onChange(true);
     }
     build() {
         this.schema.format = "taglist";

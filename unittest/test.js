@@ -1,5 +1,6 @@
+
 // Mock
-document = {
+const mockDocument = {
   addEventListener: function() {
   }
 }

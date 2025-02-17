@@ -32,8 +32,14 @@ block prepend loadEditor
 
     script 
         | var loadEditorWithProducts = async function() {
-        |   docSchema.definitions.product.properties.product.examples = await loadProductNames();
-        |   loadJSON(initJSON)
+        |   try {
+        |     docSchema.definitions.product.properties.product.examples = await loadProductNames();
+        |     loadJSON(initJSON)
+        |   } catch (error) {
+        |     console.error('Failed to load product names:', error);
+        |     // Show user-friendly error message
+        |     document.getElementById('infoMsg').textContent = 'Failed to load product list. Please try again.';
+        |   }
         | };
         | loadEditorWithProducts();
 
@@ -44,7 +50,7 @@ block prepend loadEditor
         |   if (t.id == "emailTab") {
         |     t.addEventListener('change',async function() {
         |         var j = docEditor.getValue();
-        |         var emailto = "oss-security@lists.openwall.com";
+        |         var emailto = config.ossSecurityEmail;
         |         var projectannounce = j.CNA_private.userslist;
         |         if (!projectannounce) {
         |            projectannounce = await loadEmailLists( j.CNA_private.owner );

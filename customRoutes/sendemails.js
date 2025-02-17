@@ -1,5 +1,5 @@
 const express = require('express');
-const protected = express.Router();
+const protectedRouter = express.Router();
 const conf = require('../config/conf');
 const csurf = require('csurf');
 var request = require('request');
@@ -16,16 +16,37 @@ protected.get('/', csrfProtection, async function(req,res) {
     res.end();
 });
 
-protected.post('/', csrfProtection, async function(req,res) {
-    var to1 = req.body.emailto1;
-    var to2 = req.body.emailto2;
-    var se1 = await email.sendemail({"from":"\""+req.user.name+"\" <"+req.user.email+">","to":to1,"replyTo":req.body.emailreplyto,"subject":req.body.emailsubject,"text":req.body.emailtext}).then( (x) => {  console.log("sent OSS notification mail "+x);});
-    var se2 = await email.sendemail({"from":"\""+req.user.name+"\" <"+req.user.email+">","to":to2,"bcc":"security@khulnasoft.com","replyTo":req.body.emailreplyto,"subject":req.body.emailsubject,"text":req.body.emailtext}).then( (x) => {  console.log("sent KSF notification mail "+x);});    
-    req.flash('error','Sent the emails!');
+protectedRouter.post('/', csrfProtection, async function(req, res) {
+    try {
+        // Validate input
+        const { emailto1, emailto2, emailreplyto, emailsubject, emailtext } = req.body;
+        if (!emailto1 || !emailto2 || !emailsubject || !emailtext) {
+            throw new Error('Missing required fields');
+        }
+        const config = require('../config/conf');
+        const baseEmailInfo = {
+            from: `"${req.user.name}" <${req.user.email}>`,
+            replyTo: emailreplyto,
+            subject: emailsubject,
+            text: emailtext
+        };
+        // Send emails
+        await Promise.all([
+            email.sendemail({ ...baseEmailInfo, to: emailto1 }),
+            email.sendemail({
+                ...baseEmailInfo,
+                to: emailto2,
+                bcc: config.securityEmail || 'security@khulnasoft.com'
+            })
+        ]);
+        req.flash('success', 'Emails sent successfully!');
+    } catch (error) {
+        console.error('Failed to send emails:', error);
+        req.flash('error', 'Failed to send emails: ' + error.message);
+    }
     res.render('blank');
-    res.end();
 });
 
 module.exports = {
-    protected: protected
+    protectedRouter: protectedRouter
 };

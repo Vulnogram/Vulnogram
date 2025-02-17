@@ -4,7 +4,7 @@ Contributions to this KSF fork of Vulnogram are welcome.
 
 Submitting a contribution without prior coordination is fine, but for larger
 changes first discussing it in a [GitHub issue](https://github.com/khulnasoft/security-vulnogram)
-or on the [security-discuss@community.khulnasoft.com mailinglist](https://www.khulnasoft.com/foundation/mailinglists.html)
+or on the [security-discuss@khulnasoft.com mailinglist](https://www.khulnasoft.com/foundation/mailinglists.html)
 might be good to avoid disappointment.
 
 # Testing
@@ -21,7 +21,7 @@ Anyone may review changes. After an approval by a Security Team member, the
 reviewer may choose to merge the change immediately, or leave the PR to be
 merged after the contributor has considered any optional comments.
 
-A reviewer may ask for specific functionality/scenario's to be tested before
+A reviewer may ask for specific functionality/scenarios to be tested before
 promoting the feature from the test to the prod environment. 
 
 # Deploying

@@ -1,43 +1,49 @@
 function getProductListNoVendor(cve) {
-    var lines = [];
-    for (var vendor of cve.affects.vendor.vendor_data) {
-        var pstring = [];
-        for (var product of vendor.product.product_data) {
-            pstring.push(product.product_name);
-        }
-        lines.push(pstring.join(", "));
+    if (!cve || !cve.affects || !cve.affects.vendor || !cve.affects.vendor.vendor_data) {
+        return '';
     }
+    var lines = cve.affects.vendor.vendor_data.map(vendor => 
+        (vendor.product.product_data || [])
+            .map(product => product.product_name)
+            .join(", ")
+    );
     return lines.join("; ");
 }
 
+const KSF_API_URL = 'https://whimsy.khulnasoft.com/public/committee-info.json';
 async function loadProductNames() {
     var projects = []
     try {
-	var pmcs = userPMCS.split(',');
-	var response = await fetch('https://whimsy.khulnasoft.com/public/committee-info.json', {
-	    method: 'GET',
-	    credentials: 'omit',
-	    headers: {
-		'Accept': 'application/json, text/plain, */*'
-	    },
-	    redirect: 'error'
-	});
-	if (!response.ok) {
-	    errMsg.textContent = "Failed Khulnasoft project list";
-	    infoMsg.textContent = "";
-	    throw Error(id + ' ' + response.statusText);
-	} else {
-	    var res = await response.json();
-	    if (res.committees) {
-		for (var committee in res.committees)
-		    if (pmcs.includes(committee) || pmcs.includes('security')) {
-			res.committees[committee].display_name &&
-			    projects.push('Khulnasoft ' + res.committees[committee].display_name);
-		    }
-	    }
-	}
+        if (!userPMCS) {
+            throw new Error('User PMCs not available');
+        }
+        var pmcs = userPMCS.split(',');
+        var response = await fetch(KSF_API_URL, {
+            method: 'GET',
+            credentials: 'omit',
+            headers: {
+                'Accept': 'application/json, text/plain, */*'
+            },
+            redirect: 'error'
+        });
+        if (!response.ok) {
+            const error = `Failed to fetch Khulnasoft project list: ${response.status} ${response.statusText}`;
+            errMsg.textContent = error;
+            infoMsg.textContent = "";
+            throw new Error(error);
+        } else {
+            var res = await response.json();
+            if (res.committees) {
+                for (var committee in res.committees)
+                    if (pmcs.includes(committee) || pmcs.includes('security')) {
+                        res.committees[committee].display_name &&
+                            projects.push('Khulnasoft ' + res.committees[committee].display_name);
+                    }
+            }
+        }
     } catch (error) {
-	errMsg.textContent = error;
+        errMsg.textContent = `Error loading product names: ${error.message}`;
+        console.error('Error in loadProductNames:', error);
     }
     return (projects);
 }

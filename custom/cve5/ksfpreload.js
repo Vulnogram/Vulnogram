@@ -40,36 +40,36 @@ async function loadProductNames() {
 	errMsg.textContent = error;
     }
     try {
-	    const abortController = new AbortController()
-	    setTimeout(() => abortController.abort(), 5000)
-	var response = await fetch('https://whimsy.khulnasoft.com/public/public_podlings.json', {
-	    method: 'GET',
-	    credentials: 'omit',
-	    headers: {
-		'Accept': 'application/json, text/plain, */*'
-	    },
-	    redirect: 'error',
-	    signal: abortController.signal
-	});
-	if (!response.ok) {
-	    errMsg.textContent = "Failed Khulnasoft podling list";
-	    infoMsg.textContent = "";
-	    throw Error(id + ' ' + response.statusText);
-	} else {
-	    var resp = await response.json();
-	    if (resp.podling) {
-		for (var committee in resp.podling) {
-		    if (pmcs.includes(committee) || pmcs.includes('security')) {
+        const podlingAbortController = new AbortController()
+        setTimeout(() => podlingAbortController.abort(), 5000)
+        const podlingResponse = await fetch('https://whimsy.khulnasoft.com/public/public_podlings.json', {
+            method: 'GET',
+            credentials: 'omit',
+            headers: {
+                'Accept': 'application/json, text/plain, */*'
+            },
+            redirect: 'error',
+            signal: podlingAbortController.signal
+        });
+        if (!podlingResponse.ok) {
+            errMsg.textContent = "Failed Khulnasoft podling list";
+            infoMsg.textContent = "";
+            throw Error(`Failed to fetch podling list: ${podlingResponse.status} ${podlingResponse.statusText}`);
+        } else {
+            const resp = await podlingResponse.json();
+            if (resp.podling) {
+                for (var committee in resp.podling) {
+                    if (pmcs.includes(committee) || pmcs.includes('security')) {
                         if (resp.podling[committee].status && resp.podling[committee].status == "current") {
-			    if (resp.podling[committee].name && !res.committees[committee])
-			        projects.push('Khulnasoft ' + resp.podling[committee].name + " (incubating)");
+                            if (resp.podling[committee].name && !res.committees[committee])
+                                projects.push('Khulnasoft ' + resp.podling[committee].name + " (incubating)");
                         }
-		    }
+                    }
                 }
-	    }
-	}
+            }
+        }
     } catch (error) {
-	errMsg.textContent = error;
+        errMsg.textContent = error;
     }
     return (projects);
 }

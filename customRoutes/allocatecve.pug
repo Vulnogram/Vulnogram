@@ -32,7 +32,7 @@ block content
               option(value=p) #{p}
     .row
       label.lbl.icn Short one line description/title (you can change this later):
-      input.txt(name='cvetitle', type='text', style="width:40em", value=cvetitle)      
+      input.txt(name='cvetitle', type='text', style="width:40em", value=cvetitle, required, maxlength="150", pattern="[A-Za-z0-9\s\-_\.]+")      
     .row
       p
       button.btn.sfe(type='submit', value='Request a CVE') Request a CVE
