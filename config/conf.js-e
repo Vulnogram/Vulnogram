@@ -7,7 +7,7 @@ module.exports = {
     cveorgid: "'f0158376-9dc2-43b6-827c-5f631a4d8d09'",
     cveapiheaders: secrets.cveapiheaders,
     cveapiurl: "https://cveawg.mitre.org/api",
-    cveapishortname: "apache",
+    cveapishortname: "khulnasoft",
     cveapiliveservice: true,
     // which PMC is admin group?
     admingroupname: "security",
@@ -28,9 +28,9 @@ module.exports = {
     groupName: ' ',
 
     //CNA contact address
-    contact: 'security@apache.org',
+    contact: 'security@khulnasoft.org',
 
-    classification: 'This tool is based on Vulnogram, contact security@apache.org with any queries or problems',
+    classification: 'This tool is based on Vulnogram, contact security@khulnasoft.org with any queries or problems',
     copyright : 'v0.1.0-rc1-145-g5bf973b',
 
     // Uncomment this line and set a random string to allow unauthenticated access to draft CVE entries that are in review-ready or publish-ready state via /review/<token>/ or /review/<token>/CVE-ID
@@ -48,9 +48,9 @@ module.exports = {
     // $ openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out cert.pem
 
     httpsOptions: {
-        key: fs.readFileSync('/etc/letsencrypt/live/security-vm-he-fi.apache.org/privkey.pem', 'utf8'),
-        cert: fs.readFileSync('/etc/letsencrypt/live/security-vm-he-fi.apache.org/cert.pem', 'utf8'),
-        ca: fs.readFileSync('/etc/letsencrypt/live/security-vm-he-fi.apache.org/chain.pem', 'utf8'),
+        key: fs.readFileSync('/etc/letsencrypt/live/security-vm-he-fi.khulnasoft.org/privkey.pem', 'utf8'),
+        cert: fs.readFileSync('/etc/letsencrypt/live/security-vm-he-fi.khulnasoft.org/cert.pem', 'utf8'),
+        ca: fs.readFileSync('/etc/letsencrypt/live/security-vm-he-fi.khulnasoft.org/chain.pem', 'utf8'),
         minVersion: 'TLSv1.2'
     },
 

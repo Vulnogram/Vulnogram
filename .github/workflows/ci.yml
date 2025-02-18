@@ -1,0 +1,31 @@
+name: C++ CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up CMake
+        uses: jwlawson/actions-setup-cmake@v1
+        with:
+          cmake-version: '3.19.0'
+
+      - name: Configure the project
+        run: cmake -S . -B build
+
+      - name: Build the project
+        run: cmake --build build
+
+      - name: Run tests
+        run: ctest --test-dir build

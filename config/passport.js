@@ -1,4 +1,4 @@
-// Copyright (c) 2017 Chandan B N. All rights reserved.
+e // Copyright (c) 2017 Chandan B N. All rights reserved.
 
 const LocalStrategy = require('passport-local').Strategy;
 const User = require('../models/user');
