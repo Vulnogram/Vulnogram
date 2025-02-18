@@ -117,7 +117,7 @@ module.exports = function (Document, opts) {
         // KSF we need to load the document so we can get the PMC
         try {
             var q = {};
-            q[opts.idpath] = req.body.id;
+            q[opts.idpath] = { $eq: req.body.id };
             var ret = await Document.findOne(q).exec();
             if (!ret) {
                 return res.status(404).json({ msg: 'Document not found' });
