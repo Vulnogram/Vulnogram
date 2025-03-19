@@ -588,10 +588,13 @@ function generateCpeApplicability(affected) {
         }
     }
 
-    return {
-        "operator": "AND",
+    return [{
+        "operator": "OR",
         "nodes": cpeApplicabilityNodes
-    };
+    }];
+}
+function normalizeCPEtoken(x) {
+    return x.trim().toLowerCase().replaceAll(/[\s:]+/g,'_').replaceAll(/([*?])/g,'\$1');
 }
 
 function generateCpeApplicabilityNode(affectedProduct) {
@@ -609,17 +612,17 @@ function generateCpeApplicabilityNode(affectedProduct) {
             if (v.lessThan) {
                 cpeMatch.push({
                     "vulnerable": true,
-                    "criteria": `cpe:2.3:a:${affectedProduct.vendor}:${affectedProduct.product}:*:*:*:*:*:*:*:*`,
-                    "versionStartIncluding": v.version,
-                    "versionEndExcluding": v.lessThan
+                    "criteria": `cpe:2.3:a:${normalizeCPEtoken(affectedProduct.vendor)}:${normalizeCPEtoken(affectedProduct.product)}:*:*:*:*:*:*:*:*`,
+                    "versionStartIncluding": normalizeCPEtoken(v.version),
+                    "versionEndExcluding": normalizeCPEtoken(v.lessThan)
                 });
             }
             else if (v.lessThanOrEqual) {
                 cpeMatch.push({
                     "vulnerable": true,
-                    "criteria": `cpe:2.3:a:${affectedProduct.vendor}:${affectedProduct.product}:*:*:*:*:*:*:*:${v.version}`,
-                    "versionStartIncluding": v.version,
-                    "versionEndIncluding": v.lessThanOrEqual
+                    "criteria": `cpe:2.3:a:${normalizeCPEtoken(affectedProduct.vendor)}:${normalizeCPEtoken(affectedProduct.product)}:*:*:*:*:*:*:*:${v.version}`,
+                    "versionStartIncluding": normalizeCPEtoken(v.version),
+                    "versionEndIncluding": normalizeCPEtoken(v.lessThanOrEqual)
                 });
             }
         }

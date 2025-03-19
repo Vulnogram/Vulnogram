@@ -342,7 +342,7 @@ JSONEditor.defaults.editors.radio = class radio extends JSONEditor.AbstractEdito
             }
         }
 
-        if (this.schema.options.infoText) {
+        if (this.schema.options && this.schema.options.infoText) {
             this.label.setAttribute('title', this.schema.options.infoText);
         }
         if (this.schema.description) this.description = this.theme.getFormInputDescription(this.schema.description);

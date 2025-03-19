@@ -1000,7 +1000,8 @@
           "items": {
             "$ref": "#/definitions/cpeApplicabilityElement"
           },
-          "type": "array"
+          "type": "array",
+          "format": "CPEA"
         },
         "descriptions": {
           "id": "description",
@@ -1252,23 +1253,35 @@
     "cpeApplicabilityElement": {
       "description": "Affected products defined using an implementation of the CPE Applicability Language, mostly copied/forked from the NIST NVD CVE API v2.0 schema (optional). An operator property allows AND or OR logic between CPEs or combinations of CPEs. The negate and vulnerable Boolean properties allow CPEs to be inverted and/or defined as vulnerable or not. Multiple version fields are provided for capturing ranges of products when defining a CPE Match String Range. NOTE: When defining a cpeApplicability block, it is recommended that it align with (as much as possible) the product data provided within the affected block.",
       "properties": {
-        "negate": {
-          "type": "boolean"
-        },
-        "nodes": {
-          "items": {
-            "$ref": "#/definitions/cpe_node"
-          },
-          "type": "array"
-        },
         "operator": {
           "enum": [
             "AND",
             "OR"
           ],
-          "type": "string"
+          "type": "string",
+          "format": "radio",
+          "options": {
+            "grid_columns": 1
+          }
+        },
+        "negate": {
+          "type": "boolean",
+          "format" : "checkbox",
+          "options": {
+            "grid_columns": 1
+          }
+        },
+        "nodes": {
+          "items": {
+            "$ref": "#/definitions/cpe_node"
+          },
+          "type": "array",
+          "options": {
+            "grid_columns": 10
+          }      
         }
       },
+      "format": "grid",
       "required": [
         "nodes"
       ]
@@ -1281,18 +1294,30 @@
           "enum": [
             "AND",
             "OR"
-          ]
+          ],
+          "format": "radio",
+          "options": {
+            "grid_columns": 1
+          }
         },
         "negate": {
-          "type": "boolean"
+          "type": "boolean",
+          "format": "checkbox",
+          "options": {
+            "grid_columns": 1
+          }
         },
         "cpeMatch": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/cpe_match"
+          },
+          "options": {
+            "grid_columns": 9
           }
         }
       },
+      "format": "grid",
       "required": [
         "operator",
         "cpeMatch"
@@ -1301,27 +1326,43 @@
     "cpe_match": {
       "description": "CPE match string or range",
       "type": "object",
+      "format": "grid",
       "properties": {
         "vulnerable": {
-          "type": "boolean"
+          "type": "boolean",
+          "options": {
+            "grid_columns": 3
+          }
         },
         "criteria": {
-          "$ref": "#/definitions/cpe23"
-        },
-        "matchCriteriaId": {
-          "$ref": "#/definitions/uuidType"
+          "$ref": "#/definitions/cpe23",
+          "options": {
+              "grid_columns": 9
+          }
         },
         "versionStartExcluding": {
-          "$ref": "#/definitions/version"
+          "$ref": "#/definitions/version",
+          "options": {
+            "grid_columns": 3
+          }
         },
         "versionStartIncluding": {
-          "$ref": "#/definitions/version"
+          "$ref": "#/definitions/version",
+          "options": {
+            "grid_columns": 3
+          }
         },
         "versionEndExcluding": {
-          "$ref": "#/definitions/version"
+          "$ref": "#/definitions/version",
+          "options": {
+            "grid_columns": 3
+          }
         },
         "versionEndIncluding": {
-          "$ref": "#/definitions/version"
+          "$ref": "#/definitions/version",
+          "options": {
+            "grid_columns": 3
+          }
         }
       },
       "required": [
@@ -1335,7 +1376,10 @@
       "description": "Common Platform Enumeration (CPE) Name in 2.3 format",
       "pattern": "(cpe:2\\.3:[aho*\\-](:(((\\?*|\\*?)([a-zA-Z0-9\\-._]|(\\\\[\\\\*?!\"#$%&'()+,/:;<=>@\\[\\]\\^`{|}~]))+(\\?*|\\*?))|[*\\-])){5}(:(([a-zA-Z]{2,3}(-([a-zA-Z]{2}|[0-9]{3}))?)|[*\\-]))(:(((\\?*|\\*?)([a-zA-Z0-9\\-._]|(\\\\[\\\\*?!\"#$%&'()+,/:;<=>@\\[\\]\\^`{|}~]))+(\\?*|\\*?))|[*\\-])){4})",
       "minLength": 1,
-      "maxLength": 2048
+      "maxLength": 2048,
+      "options": {
+        "patternmessage": "Enter a valid CPE"
+      }
     },
     "description": {
       "type": "object",
