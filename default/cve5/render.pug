@@ -54,6 +54,55 @@ block prepend content
                     span.text
                         +spara(cve.solution)
 
+mixin cpeApplicability(cpeAs)
+    if cpeAs && cpeAs.length > 0
+      .indent.bor.rnd.pad.bck
+        b CPE Applicability (based on Affected products section)
+        each cpeA, k in cpeAs
+            p
+                if k > 0
+                    b= cpeA.operator.toLowerCase()
+                    |  
+                if cpeA.negate
+                    b  not 
+                if cpeA.nodes
+                    ul
+                        each cpeNode, i in cpeA.nodes
+                            li 
+                                if i > 0
+                                    b= cpeA.operator.toLowerCase()
+                                    |  
+                                if cpeA.negate
+                                    b  not 
+                                if cpeNode.cpeMatch
+                                    ul
+                                        each cpeM, j in cpeNode.cpeMatch
+                                            li(title=JSON.stringify(cpeM,2,2))
+                                                if j > 0
+                                                    b= cpeNode.operator
+                                                    |  
+                                                if cpeNode.negate
+                                                    b  not
+                                                = cpeM.criteria
+                                                if cpeM.vulnerable
+                                                    b  is vulnerable 
+                                                else 
+                                                    b  is not vulnerable 
+                                                if cpeM.versionStartIncluding
+                                                    |  from (including) 
+                                                    = cpeM.versionStartIncluding
+                                                if cpeM.versionStartExcluding
+                                                    |  after (excluding) 
+                                                    = cpeM.versionStartExcluding
+                                                if (cpeM.versionStartIncluding || cpeM.versionStartExcluding) && (cpeM.versionEndIncluding || cpeM.versionEndExcluding)
+                                                    b  and 
+                                                if cpeM.versionEndIncluding
+                                                    |  up to (including) 
+                                                    = cpeM.versionEndIncluding
+                                                if cpeM.versionEndExcluding
+                                                    |  up to (excluding) 
+                                                    = cpeM.versionEndExcluding
+
 mixin cvssList(cvssList)
     if cvssList
         - var nonSpec = ['baseScore', 'version', 'vectorString', 'baseSeverity', 'scenarios']
@@ -268,7 +317,11 @@ mixin container(con)
             h2 Product Status:
             +statusTable(con.pvstatus)
             br(style="font-size:0;")
-
+    if con.cpeApplicability
+        #CPE
+            h2 CPE Applicability:
+            +cpeApplicability(con.cpeApplicability)
+            br(style="font-size:0;")
 
     if con.solutions
         #solution
