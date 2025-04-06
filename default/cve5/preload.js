@@ -32,7 +32,6 @@ JSONEditor.defaults.editors.string.prototype.sanitize = function(value) {
   JSONEditor.defaults.editors.CPEA = class CPEA extends JSONEditor.AbstractEditor {
     setValue(value, initial) {
         super.setValue(value, initial);
-        console.log(JSON.stringify(value,2,2));
         if (this.container) {
             this.container.innerHTML = pugRender({
                 renderTemplate: 'cpeApplicability',
@@ -66,12 +65,19 @@ JSONEditor.defaults.editors.string.prototype.sanitize = function(value) {
             this.label.setAttribute('title', this.schema.options.infoText);
         }
         if (this.schema.description) this.description = this.theme.getFormInputDescription(this.schema.description);
-        console.log(JSON.stringify(this.value,2,2));
         if (this.value) {
             this.container.innerHTML = pugRender({
                 renderTemplate: 'cpeApplicability',
                 doc: this.value
             })
+        }
+        if (this.schema.template) {
+            const callback = this.expandCallbacks('template', { template: this.schema.template })
+            if (typeof callback.template === 'function') this.template = callback.template
+            else this.template = this.jsoneditor.compileTemplate(this.schema.template, this.template_engine)
+            this.refreshValue()
+        } else {
+            this.refreshValue()
         }
     }
     enable() {
@@ -81,9 +87,20 @@ JSONEditor.defaults.editors.string.prototype.sanitize = function(value) {
         super.disable();
     }
     destroy() {
-        if (this.label) this.label.parentNode.removeChild(this.label);
-        if (this.description) this.description.parentNode.removeChild(this.description);
+        /*if (this.label) this.label.parentNode.removeChild(this.label);
+        if (this.description) this.description.parentNode.removeChild(this.description);*/
         super.destroy();
+    }
+    onWatchedFieldChange () {
+        let vars
+        /* If this editor needs to be rendered by a macro template */
+        if (this.template) {
+          vars = this.getWatchedFieldValues()
+          var val = this.template(vars);
+          this.setValue(val, false, true)
+        }
+    
+        super.onWatchedFieldChange()
     }
 };
 

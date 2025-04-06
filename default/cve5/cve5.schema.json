@@ -944,6 +944,7 @@
       ]
     },
     "cnaPublishedContainer": {
+      "id": "cntr",
       "description": "An object containing the vulnerability information provided by a CVE Numbering Authority (CNA) for a published CVE ID. There can only be one CNA container per CVE record since there can only be one assigning CNA. The CNA container must include the required information defined in the CVE Rules, which includes a product, version, problem type, prose description, and a reference.",
       "type": "object",
       "format": "grid",
@@ -993,12 +994,17 @@
           "$ref": "#/definitions/impacts"
         },
         "affected": {
+          
           "$ref": "#/definitions/affected"
         },
         "cpeApplicability": {
           "title": "CPE Applicability",
+          "template": "generateCpeApplicability(context.x)",
           "items": {
             "$ref": "#/definitions/cpeApplicabilityElement"
+          },
+          "watch": {
+            "x": "cntr.affected"
           },
           "type": "array",
           "format": "CPEA"
@@ -1198,7 +1204,8 @@
           "$ref": "#/definitions/references"
         },
         "metrics": {
-          "$ref": "#/definitions/metrics"
+          "$ref": "#/definitions/metrics",
+          "default": []
         },
         "configurations": {
           "$ref": "#/definitions/configurations"
@@ -1235,7 +1242,10 @@
       "patternProperties": {
         "^x_": {}
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "options": {
+        "display_required_only": true
+      }
     },
     "affected": {
       "type": "array",
