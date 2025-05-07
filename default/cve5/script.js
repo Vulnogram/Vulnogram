@@ -13,17 +13,11 @@ function tweetJSON(event, link) {
         return;
     }
     var id = j.cveMetadata.cveId;
-    /* var cvelist = textUtil.deep_value(j, 'CNA_private.CVE_list');
-     if (cvelist && cvelist.length > 0) {
-         id = '';
-     }*/
     var text = id + ' ' + getBestTitle(j.containers.cna);
     text = text.replace(/ +(?= )/g, '');
     link.href = 'https://twitter.com/intent/tweet?&text='
         + encodeURI(text)
         + '&url=' + encodeURI(textUtil.deep_value(j, 'containers.cna.references.0.url'));
-    //    + '&hashtags=' + encodeURI(id)
-    //via=vulnogram&hashtags=CVE
 }
 
 function loadCVE(value) {
@@ -199,7 +193,7 @@ var additionalTabs = {
     }
 }
 
-/* fullname = vendor . product . platforms . module .others . default status 
+/* fullname = vendor . product . platforms . module .others . default status
 /* table --> [ fullname ][version][affected|unaffected|unknown] = [ list of ranges ] */
 function versionStatusTable5(affected) {
     var t = {}; // resulting table structure
@@ -253,7 +247,7 @@ function versionStatusTable5(affected) {
                 var major = undefined; //major ? major[1] : '';
                 if (v.version) {
                     showCols[v.status] = true;
-                    if (!v.changes) {  // simple range versions 
+                    if (!v.changes) {  // simple range versions
                         var rangeStart = '';
                         if (v.version != 'unspecified' && v.version != 0)
                             rangeStart = 'from ' + v.version;
@@ -431,7 +425,7 @@ async function autoText(event) {
     if (event) {
         event.preventDefault();
     }
-    if (docEditor.validation_results 
+    if (docEditor.validation_results
         && (docEditor.validation_results.length == 0 || enoughAutoTextFields(docEditor.validation_results)))
          {
         var doc = docEditor.getValue();
@@ -561,21 +555,210 @@ function cveFixForVulnogram(j) {
     return j;
 }
 
-let previousVersions = null;
+
+function toggleCpeApplicability() {
+  const toggleSwitch = document.getElementById("toggleSwitch");
+  const cpeInputSection = document.getElementById("cpeInputSection");
+  const cpeBodySection = document.getElementById("cpeBodySection");
+  const cpeManualNote = document.getElementById("cpeManualNote");
+
+  if (toggleSwitch.checked) {
+    if (cpeInputSection) cpeInputSection.style.display = "block";
+    if (cpeBodySection) cpeBodySection.style.display = "none";
+    if (cpeManualNote) cpeManualNote.style.display = "block";
+  } else {
+    if (cpeBodySection) cpeBodySection.style.display = "block";
+    if (cpeInputSection) cpeInputSection.style.display = "none";
+    if (cpeManualNote) cpeManualNote.style.display = "none";
+  }
+}
+
+function resetCpeInput() {
+  const currentJson = docEditor.getValue();
+
+  // Populate the CPE Applicability block from the affected products section
+  const affected = docEditor.getValue().containers.cna.affected;
+  const cpeApplicability = generateCpeApplicability(affected);
+
+  // Update the cpeApplicability section with cpeApplicabilityNodes
+  currentJson.containers.cna.cpeApplicability = cpeApplicability;
+
+  // Set the updated JSON model back to the docEditor
+  docEditor.setValue(currentJson);
+
+  // Clear the JSON text input and error message
+  const textInput = document.getElementById("jsonTextInput");
+  const errorMessageElement = document.getElementById("jsonErrorMessage");
+  textInput.value = "";
+  errorMessageElement.style.display = "none";
+  errorMessageElement.textContent = "";
+}
+
+// Function to process manually-entered CPE Applicability block
+function processCpeInput() {
+  const validatedCpeaJson = validateJsonInput();
+  validateCpeApplicabilitySchema(validatedCpeaJson);
+}
+
+// Function to validate JSON-formatted input
+function validateJsonInput() {
+  const textInput = document.getElementById("jsonTextInput");
+  const errorMessageElement = document.getElementById("jsonErrorMessage");
+  errorMessageElement.style.color = "red";
+
+  // Check if input is empty
+  const inputValue = textInput.value.trim();
+  if (!inputValue) {
+    errorMessageElement.textContent = "Input cannot be empty.";
+    errorMessageElement.style.display = "block";
+    return;
+  }
+
+  // Maximum length for the input
+  const MAX_LENGTH = 10000;
+  // Check if input exceeds maximum length
+  if (inputValue.length > MAX_LENGTH) {
+    errorMessageElement.textContent = `Input is too long. Maximum allowed length is ${MAX_LENGTH} characters.`;
+    errorMessageElement.style.display = "block";
+    return;
+  }
+
+  // Validate JSON format of input
+  let cpeaBlock;
+  try {
+    cpeaBlock = JSON.parse(textInput.value);
+    errorMessageElement.style.display = "none";
+  } catch (e) {
+    errorMessageElement.textContent = "Invalid JSON format: " + e.message;
+    errorMessageElement.style.display = "block";
+    return;
+  }
+
+  return cpeaBlock;
+}
+
+async function validateCpeApplicabilitySchema(validatedCpeaJson) {
+  const errorMessageElement = document.getElementById("jsonErrorMessage");
+  let cpeApplicabilityNodes;
+
+  // Check if the validatedCpeaJson is valid
+  if (Array.isArray(validatedCpeaJson)) {
+    cpeApplicabilityNodes = validatedCpeaJson;
+  } else if (
+    validatedCpeaJson &&
+    typeof validatedCpeaJson === "object" &&
+    Array.isArray(validatedCpeaJson.cpeApplicability)
+  ) {
+    cpeApplicabilityNodes = validatedCpeaJson.cpeApplicability;
+  } else {
+    errorMessageElement.style.color = "red";
+    errorMessageElement.innerHTML =
+      "Invalid CPE Applicability JSON input:<br>" +
+      "Input must be an array or an object with a 'cpeApplicability' array property.";
+    errorMessageElement.style.display = "block";
+    return;
+  }
+
+  // Read and update the doc editor's JSON.
+  const currentJson = docEditor.getValue();
+  currentJson.containers.cna.cpeApplicability = cpeApplicabilityNodes;
+  docEditor.setValue(currentJson);
+
+  const customValidator = (schema, value, path) => {
+    const ajv = new Ajv({ allErrors: true, strict: false });
+    const validate = ajv.compile(schema);
+    const valid = validate(value);
+
+    if (!valid) {
+      console.error("Validation errors for path:", path, validate.errors);
+      return validate.errors;
+    }
+
+    // Skip validation for other paths
+    return [];
+  };
+
+  // Add a custom validator, use it to validate the CPE Applicability statement,
+  // and then remove the custom validator.
+  JSONEditor.defaults.custom_validators.push(customValidator);
+  const validationResults = docEditor.validate();
+  JSONEditor.defaults.custom_validators.pop();
+
+  // If there are no validation results, we're done.
+  if (validationResults.length == 0) return;
+
+  // Get the validation errors we care about.
+  const cpeApplicabilityErrors = validationResults.filter((error) =>
+    error.path.startsWith("root.containers.cna.cpeApplicability")
+  );
+
+  // Where to put the errors or success message.
+  const schemaErrorMessage = document.getElementById("schemaErrorMessage");
+
+  // If there are no errors, report success and stop!
+  if (cpeApplicabilityErrors.length == 0) {
+    schemaErrorMessage.innerHTML =
+      "Valid: CPE Applicability block conforms to CVE 5.0 schema";
+    schemaErrorMessage.style.display = "block";
+    schemaErrorMessage.style.color = "#24b23b";
+    return;
+  }
+
+  // If there are errors, report them,
+  const errorMessage = cpeApplicabilityErrors
+    .map((error) => `${error.path}: ${error.message}`)
+    .join("\n");
+  schemaErrorMessage.style.color = "red";
+  schemaErrorMessage.innerHTML =
+    "Invalid CPE Applicability block, does not conform to cpeApplicability CVE 5.0 schema:<br>" +
+    errorMessage.replace(/\n/g, "<br>");
+  schemaErrorMessage.style.display = "block";
+}
 
 document.addEventListener("DOMContentLoaded", function () {
-    docEditor.on('ready', function () { 
-        docEditor.watch('root.containers.cna.affected', function () {
-            //without setTimeout the affected accessed in setCpeApplicability is the value before the change
-            setTimeout(setCpeApplicability, 0);
-        });
-    })
+  docEditor.on("ready", function () {
+    docEditor.watch("root.containers.cna.affected", function () {
+      // Only update derived CPE Applicability if manual input is not present or nodes is empty
+      const jsonTextInput = document.getElementById("jsonTextInput");
+      let nodesIsEmpty = true;
+      if (jsonTextInput && jsonTextInput.value.trim().length > 0) {
+        try {
+          const parsed = JSON.parse(jsonTextInput.value);
+          // If the root is an array, check the first element for nodes
+          if (
+            Array.isArray(parsed) &&
+            parsed.length > 0 &&
+            Array.isArray(parsed[0].nodes)
+          ) {
+            nodesIsEmpty = parsed[0].nodes.length === 0;
+          }
+          // If the root is an object with cpeApplicability array
+          else if (
+            parsed &&
+            Array.isArray(parsed.cpeApplicability) &&
+            parsed.cpeApplicability.length > 0 &&
+            Array.isArray(parsed.cpeApplicability[0].nodes)
+          ) {
+            nodesIsEmpty = parsed.cpeApplicability[0].nodes.length === 0;
+          }
+        } catch (e) {
+          // Invalid JSON, treat as empty nodes (allow overwrite)
+          nodesIsEmpty = true;
+        }
+      }
+      if (nodesIsEmpty) {
+        setTimeout(setCpeApplicability, 0);
+      }
+    });
+  });
 });
 
 function setCpeApplicability() {
-    const affected = docEditor.getValue().containers.cna.affected;
-    const cpeApplicability = generateCpeApplicability(affected);
-    docEditor.getEditor('root.containers.cna.cpeApplicability').setValue(cpeApplicability);
+  const affected = docEditor.getValue().containers.cna.affected;
+  const cpeApplicability = generateCpeApplicability(affected);
+  docEditor
+    .getEditor("root.containers.cna.cpeApplicability")
+    .setValue(cpeApplicability);
 }
 
 function generateCpeApplicability(affected) {

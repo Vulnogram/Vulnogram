@@ -240,3 +240,99 @@ label[for="cvePortalTab"] {
   margin-bottom: 0.3em;
   margin-top: .3em;
 }
+
+/* Toggle Switch Container */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+/* Hide the default checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+
+input:checked + .slider {
+  background-color: #24b23b;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  gap: 10px;
+}
+
+
+.toggle-container .toggle-label {
+  display: inline-block;
+  margin-bottom: 2px;
+}
+
+.btn-validate {
+  width: auto;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  background-color: var(--hig);
+  cursor: pointer;
+}
+
+.btn-validate:hover {
+  background-color:var(--bck);
+}
+
+.btn-clear {
+  width: auto;
+  margin-left: 10px;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  background-color: var(--hig);
+  cursor: pointer;
+}
+
+.btn-clear:hover {
+  background-color:var(--bck);
+}
+
+.hidden {
+  display: none;
+}
