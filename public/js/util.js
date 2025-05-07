@@ -126,7 +126,7 @@ reduceJSON: function (cve) {
 },
 
 getMITREJSON: function(cve) {
-    return JSON.stringify(cve, null, "    ");
+    return JSON.stringify(cve, null, "  ");
 },
 getPR: function(cve) {
     var matches = [];
