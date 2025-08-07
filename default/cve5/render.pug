@@ -54,55 +54,106 @@ block prepend content
                     span.text
                         +spara(cve.solution)
 
-mixin cpeApplicability(cpeAs)
-    if cpeAs && cpeAs.length > 0
-      .indent.bor.rnd.pad.bck
-        b CPE Applicability (based on Affected products section)
-        each cpeA, k in cpeAs
-            p
-                if k > 0
-                    b= cpeA.operator.toLowerCase()
-                    |  
-                if cpeA.negate
-                    b  not 
-                if cpeA.nodes
-                    ul
-                        each cpeNode, i in cpeA.nodes
-                            li 
-                                if i > 0
-                                    b= cpeA.operator.toLowerCase()
-                                    |  
-                                if cpeA.negate
-                                    b  not 
-                                if cpeNode.cpeMatch
-                                    ul
-                                        each cpeM, j in cpeNode.cpeMatch
-                                            li(title=JSON.stringify(cpeM,2,2))
-                                                if j > 0
-                                                    b= cpeNode.operator
-                                                    |  
-                                                if cpeNode.negate
-                                                    b  not
-                                                = cpeM.criteria
-                                                if cpeM.vulnerable
-                                                    b  is vulnerable 
-                                                else 
-                                                    b  is not vulnerable 
-                                                if cpeM.versionStartIncluding
-                                                    |  from (including) 
-                                                    = cpeM.versionStartIncluding
-                                                if cpeM.versionStartExcluding
-                                                    |  after (excluding) 
-                                                    = cpeM.versionStartExcluding
-                                                if (cpeM.versionStartIncluding || cpeM.versionStartExcluding) && (cpeM.versionEndIncluding || cpeM.versionEndExcluding)
-                                                    b  and 
-                                                if cpeM.versionEndIncluding
-                                                    |  up to (including) 
-                                                    = cpeM.versionEndIncluding
-                                                if cpeM.versionEndExcluding
-                                                    |  up to (excluding) 
-                                                    = cpeM.versionEndExcluding
+mixin cpeApplicabilityManualInput(cpeAs, isToggleChecked)
+    // Toggle switch for derived CPE Applicability Block or manual entry
+    .toggle-container
+        span Manually Enter CPE Applicability:
+        label.switch
+            input#toggleSwitch(type="checkbox" onchange="toggleCpeApplicability()" checked=isToggleChecked)
+            span.slider
+    // NOTE about manual entry
+    em#cpeManualNote(
+    style=(isToggleChecked ? "display:block;" : "display:none;") + " margin-bottom:10px; margin-top: 10px; color:#333; background:#fffbe6; border-left:4px solid #ffe066; padding:12px 16px; border-radius:4px; font-style:normal; font-size:1em;"
+    )
+        b(style="color:#b58900; margin-right:6px;") NOTE:
+        | No validation is performed to ensure the manually-entered 'CPE Applicability' block
+        | below aligns with the user-provided data in the 'Affected products' section above.
+        | If the Version (or start of range) field in the 'Affected products' section is 0.0.0,
+        | and the versionStartIncluding field in the 'CPE Applicability' block is 1.1.1,
+        | then the 'Affected products' section and 'CPE Applicability' block will have divergent data.
+    
+    // Layout for CPE Applicability manual entry block
+    .cpe-entry(id="cpeInputSection", style=isToggleChecked ? "display:block;" : "display:none;")
+        .vertical-container(style="display: flex; flex-direction: column;")
+            if cpeAs && cpeAs.length
+                textarea#jsonTextInput(
+                rows="22"
+                cols="50"
+                style="white-space: pre-wrap; background: #f9f9f9; padding: 10px; border: 1px solid #ccc; color: green;"
+                )= typeof cpeAs === 'string' ? cpeAs : JSON.stringify(cpeAs, null, 2)
+            else
+                textarea#jsonTextInput(
+                placeholder="// Enter JSON-formatted CPE Applicability block here:\n\n{\"cpeApplicability\": [\n  {\n    \"operator\": \"OR\",\n    \"nodes\": [\n      {\n        \"operator\": \"OR\",\n        \"negate\": false,\n        \"cpeMatch\": [\n          {\n            \"vulnerable\": true,\n            \"criteria\": \"cpe:2.3:a:example:example_product:*:*:*:*:*:*:*:0.0.0\",\n            \"versionStartIncluding\": \"0.0.0\",\n            \"versionEndIncluding\": \"9.9.9\"\n          }\n        ]\n      }\n    ]\n  }\n]}"
+                rows="22"
+                cols="50"
+                style="white-space: pre-wrap; background: #f9f9f9; padding: 10px; border: 1px solid #ccc; color: green;"
+                )
+        p#jsonErrorMessage(style="display: none; font-style: italic;")
+        p#schemaErrorMessage(style="display: none; font-style: italic;")
+        button.btn-validate(onclick="processCpeInput()") Validate CPE Data
+        button.btn-clear(onclick="resetCpeInput()") Reset
 
+
+mixin cpeApplicability(args)
+    - var cpeAs = args[0];
+    - var showToggleSwitch = args[1];
+    - var isToggleChecked = args[2];
+    // Only render manual input if showManualInput is true
+    if showToggleSwitch
+        +cpeApplicabilityManualInput(cpeAs, isToggleChecked)
+    // Layout for derived CPE Applicability block
+    if !isToggleChecked
+        // If toggle is unchecked, show the CPE Applicability section
+        // This section will be hidden if the toggle is checked
+        // and will only show the manual input section
+        .cpe-body(id="cpeBodySection")
+            if cpeAs && cpeAs.length > 0
+                .indent.bor.rnd.pad.bck
+                    b CPE Applicability
+                    each cpeA, k in cpeAs
+                        p
+                            if k > 0
+                                b= cpeA.operator.toLowerCase()
+                                |  
+                            if cpeA.negate
+                                b  not 
+                            if cpeA.nodes
+                                ul
+                                    each cpeNode, i in cpeA.nodes
+                                        li 
+                                            if i > 0
+                                                b= cpeA.operator.toLowerCase()
+                                                |  
+                                            if cpeA.negate
+                                                b  not 
+                                            if cpeNode.cpeMatch
+                                                ul
+                                                    each cpeM, j in cpeNode.cpeMatch
+                                                        li(title=JSON.stringify(cpeM,2,2))
+                                                            if j > 0
+                                                                b= cpeNode.operator
+                                                                |  
+                                                            if cpeNode.negate
+                                                                b  not
+                                                            = cpeM.criteria
+                                                            if cpeM.vulnerable
+                                                                b  is vulnerable 
+                                                            else 
+                                                                b  is not vulnerable 
+                                                            if cpeM.versionStartIncluding
+                                                                |  from (including) 
+                                                                = cpeM.versionStartIncluding
+                                                            if cpeM.versionStartExcluding
+                                                                |  after (excluding) 
+                                                                = cpeM.versionStartExcluding
+                                                            if (cpeM.versionStartIncluding || cpeM.versionStartExcluding) && (cpeM.versionEndIncluding || cpeM.versionEndExcluding)
+                                                                b  and 
+                                                            if cpeM.versionEndIncluding
+                                                                |  up to (including) 
+                                                                = cpeM.versionEndIncluding
+                                                            if cpeM.versionEndExcluding
+                                                                |  up to (excluding) 
+                                                                = cpeM.versionEndExcluding
 mixin cvssList(cvssList)
     if cvssList
         - var nonSpec = ['baseScore', 'version', 'vectorString', 'baseSeverity', 'scenarios']
@@ -320,7 +371,7 @@ mixin container(con)
     if con.cpeApplicability
         #CPE
             h2 CPE Applicability:
-            +cpeApplicability(con.cpeApplicability)
+            +cpeApplicability([con.cpeApplicability, false, false])
             br(style="font-size:0;")
 
     if con.solutions
