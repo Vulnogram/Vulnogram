@@ -56,8 +56,8 @@ block prepend content
 
 mixin cpeApplicability(cpeAs)
     if cpeAs && cpeAs.length > 0
-      .indent.bor.rnd.pad.bck
-        b CPE Applicability (based on Affected products section)
+      .indent.rnd.pad2.bck.sec
+        b CPE Applicability (based on the Affected products section)
         each cpeA, k in cpeAs
             p
                 if k > 0
