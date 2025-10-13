@@ -20,7 +20,14 @@ var editTemplate = fs.existsSync('custom/cve5/edit.pug') ? 'custom/cve5/edit.pug
 var cveEdit = pug.compileFile(editTemplate, {compileDebug: false});
 confOpts = {
     cve: optSet('cve5', ['default'].concat(process.argv.slice(2))),
-    cvss4: optSet('cvss4', ['default'].concat(process.argv.slice(2)))
+    cvss4: optSet('cvss4', ['default'].concat(process.argv.slice(2))),
+    seaview: {conf:{
+        url:'/seaview',
+        class:'vgi-search',
+        title: 'Display CVEs found in text',
+        name: 'Seaview - CVE Viewer',
+
+    }}
 }
 confOpts.cve.conf.uri = '/';
 confOpts.cve.conf.name = 'CVE';
