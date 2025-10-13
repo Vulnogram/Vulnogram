@@ -498,28 +498,35 @@ function addRichTextCVE(j) {
 }
 
 function cvssImport(j) {
-    if (j && j.containers && j.containers.cna && j.containers.cna.metrics) {
-        j.containers.cna.metrics.forEach(m => {
-            if ((m.cvssV2 || m.cvssV3_0 || m.cvssV3_1 || m.cvssV4_0) && m.format == undefined) {
-                m.format = "CVSS"
-            }
-            if (m.scenarios == undefined) {
-                m.scenarios = [
-                    {
-                        "lang": "en",
-                        "value": "GENERAL"
+    var containers = []
+    if (j && j.containers && j.containers.cna) {
+        containers = containers.concat([j.containers.cna], j.containers.adp);
+        console.log(containers);
+        containers.forEach(c => {
+            if (c.metrics) {
+                c.metrics.forEach(m => {
+                    if ((m.cvssV2_0 || m.cvssV3_0 || m.cvssV3_1 || m.cvssV4_0) && m.format == undefined) {
+                        m.format = "CVSS"
                     }
-                ]
+                    if (m.scenarios == undefined) {
+                        m.scenarios = [
+                            {
+                                "lang": "en",
+                                "value": "GENERAL"
+                            }
+                        ]
+                    }
+                    if (m.cvssV3_0) {
+                        m.cvssV3_1 = m.cvssV3_0;
+                        m.cvssV3_1.version = "3.1";
+                        if (m.cvssV3_1.vectorString) {
+                            m.cvssV3_1.vectorString = m.cvssV3_1.vectorString.replace('CVSS:3.0', 'CVSS:3.1');
+                        }
+                        delete m.cvssV3_0;
+                    }
+                });
             }
-            if (m.cvssV3_0) {
-                m.cvssV3_1 = m.cvssV3_0;
-                m.cvssV3_1.version = "3.1";
-                if (m.cvssV3_1.vectorString) {
-                    m.cvssV3_1.vectorString = m.cvssV3_1.vectorString.replace('CVSS:3.0', 'CVSS:3.1');
-                }
-                delete m.cvssV3_0;
-            }
-        });
+        })
     }
     return j
 }
