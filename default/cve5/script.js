@@ -49,7 +49,7 @@ function loadCVE(value) {
                 return response.json();
             })
             .then(function (res) {
-                if (res.dataVersion && (res.dataVersion == '5.0' || res.dataVersion == '5.1')) {
+                if (res.dataVersion && (res.dataVersion.match(/^5\.[0-9]+(\.[0-9]+)?/))) {
                     if (res.containers.cna.x_legacyV4Record) {
                         delete res.containers.cna.x_legacyV4Record;
                     }
@@ -60,7 +60,7 @@ function loadCVE(value) {
                     mainTabGroup.change(0);
                     loadJSON(res, id, "Loaded " + id + " from GIT!", edOpts);
                 } else {
-                    errMsg.textContent = "Failed to load valid CVE JSON v 5.0 record";
+                    errMsg.textContent = "Failed to load valid CVE JSON v 5 record";
                     infoMsg.textContent = "";
                 }
             })
@@ -500,8 +500,8 @@ function addRichTextCVE(j) {
 function cvssImport(j) {
     var containers = []
     if (j && j.containers && j.containers.cna) {
-        containers = containers.concat([j.containers.cna], j.containers.adp);
-        console.log(containers);
+        containers = containers.concat([j.containers.cna], j.containers.adp ? j.containers.adp : []);
+        //console.log(containers);
         containers.forEach(c => {
             if (c.metrics) {
                 c.metrics.forEach(m => {
@@ -540,7 +540,7 @@ async function loadCVEFile(event, elem) {
             reader.onload = function (evt) {
                 try {
                     res = JSON.parse(evt.target.result);
-                    if (res && res.dataVersion == "5.0" || res.dataVersion == "5.1") {
+                    if (res && res.dataVersion && res.dataVersion.match(/^5\.[0-9]+(\.[0-9]+)?/)) {
                         res = cveFixForVulnogram(res);
                         //docEditor.setValue(res);
                         var edOpts = (res.cveMetadata.state == 'REJECTED') ? rejectEditorOption : publicEditorOption;
