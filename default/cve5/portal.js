@@ -598,7 +598,7 @@ async function cveLoad(cveId) {
                 if (response.ok) {
                     const data = await response.json();
                     if (data && data.cveMetadata) {
-                        loadJSON(data, cveId, "Loaded " + cveId + " from public API");
+                        loadJSON(cveFixForVulnogram(data), cveId, "Loaded " + cveId + " from public API");
                         mainTabGroup.change(0);
                         return data;
                     }
@@ -643,7 +643,7 @@ async function cveLoad(cveId) {
                 if (response.ok) {
                     const data = await response.json();
                     if (data && data.cveMetadata) {
-                        loadJSON(data, cveId, "Loaded " + cveId + " from public API");
+                        loadJSON(cveFixForVulnogram(data), cveId, "Loaded " + cveId + " from public API");
                         mainTabGroup.change(0);
                         return data;
                     }

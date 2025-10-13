@@ -367,8 +367,8 @@ function htmltoText(html) {
         //text = text.replace(/ ,/gi, ",");
         //text = text.replace(/ +/gi, " ");
         //text = text.replace(/\n\n/gi, "\n");
-        text = text.replace(/^\s+/,"");
-        text = text.replace(/\s+$/,"");
+        text = text.replace(/^\s+/, "");
+        text = text.replace(/\s+$/, "");
         return text;
     }
 };
@@ -417,8 +417,8 @@ var autoTextRequired = [
     'root.containers.cna.impacts',
 ]
 function enoughAutoTextFields(res) {
-    for(s of res) {
-        for(p of autoTextRequired) {
+    for (s of res) {
+        for (p of autoTextRequired) {
             if (s.path.startsWith(p)) {
                 return false;
             }
@@ -431,9 +431,8 @@ async function autoText(event) {
     if (event) {
         event.preventDefault();
     }
-    if (docEditor.validation_results 
-        && (docEditor.validation_results.length == 0 || enoughAutoTextFields(docEditor.validation_results)))
-         {
+    if (docEditor.validation_results
+        && (docEditor.validation_results.length == 0 || enoughAutoTextFields(docEditor.validation_results))) {
         var doc = docEditor.getValue();
         var text = cveRender({
             ctemplate: 'autoText',
@@ -498,9 +497,20 @@ function addRichTextCVE(j) {
     return j;
 }
 
-function cvssv3_0_to_cvss3_1(j) {
+function cvssImport(j) {
     if (j && j.containers && j.containers.cna && j.containers.cna.metrics) {
         j.containers.cna.metrics.forEach(m => {
+            if ((m.cvssV2 || m.cvssV3_0 || m.cvssV3_1 || m.cvssV4_0) && m.format == undefined) {
+                m.format = "CVSS"
+            }
+            if (m.scenarios == undefined) {
+                m.scenarios = [
+                    {
+                        "lang": "en",
+                        "value": "GENERAL"
+                    }
+                ]
+            }
             if (m.cvssV3_0) {
                 m.cvssV3_1 = m.cvssV3_0;
                 m.cvssV3_1.version = "3.1";
@@ -548,7 +558,7 @@ async function loadCVEFile(event, elem) {
 
 function cveFixForVulnogram(j) {
     j = addRichTextCVE(j);
-    j = cvssv3_0_to_cvss3_1(j);
+    j = cvssImport(j);
     if (j.containers && j.containers.cna && j.containers.cna.problemTypes == undefined) {
         j.containers.cna.problemTypes = [];
     }
@@ -580,10 +590,10 @@ function generateCpeApplicability(affected) {
     }];
 }
 function normalizeCPEtoken(x) {
-    if(x === undefined || x === null) {
+    if (x === undefined || x === null) {
         return '-';
     }
-    return x.trim().toLowerCase().replaceAll(/[\s:]+/g,'_').replaceAll(/([*?])/g,'\$1');
+    return x.trim().toLowerCase().replaceAll(/[\s:]+/g, '_').replaceAll(/([*?])/g, '\$1');
 }
 
 function generateCpeApplicabilityNode(affectedProduct) {
@@ -596,15 +606,15 @@ function generateCpeApplicabilityNode(affectedProduct) {
     if (affectedProduct.versions && affectedProduct.versions.length > 0) {
         for (const v of affectedProduct.versions) {
             var vulnerable = undefined;
-            if(v.status === "affected" || v.status === "unaffected") {
+            if (v.status === "affected" || v.status === "unaffected") {
                 vulnerable = (v.status === "affected");
 
                 var platforms = ['*']
-                if(affectedProduct.platforms && affectedProduct.platforms.length > 0) {
+                if (affectedProduct.platforms && affectedProduct.platforms.length > 0) {
                     platforms = affectedProduct.platforms;
                     console.log("platforms: " + platforms);
                 }
-                for(const p of platforms) {
+                for (const p of platforms) {
                     if (v.lessThan) {
                         cpeMatch.push({
                             "vulnerable": vulnerable,
