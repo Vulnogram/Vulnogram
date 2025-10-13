@@ -248,28 +248,30 @@ module.exports = {
                 }
             }
             if(schema.id == "pE") {
-                if((value.vendor != undefined && value.product != undefined) || (value.collectionURL != undefined && value.packageName != undefined)) {
+                var notMissing = function(a){return (a != undefined && a != 'n/a')};
+                var missing = function(a){return (a == undefined || a == 'n/a')};
+                if ((notMissing(value.vendor) && notMissing(value.product)) || (notMissing(value.collectionURL) && notMissing(value.packageName))) {
                     // it is valid 
                 } else {
-                    if (value.vendor == undefined && value.product != undefined) {
+                    if (missing(value.vendor) && notMissing(value.product)) {
                         errors.push({
                             path: path+'.vendor',
                             property: 'format',
                             message: 'Enter vendor name'
                         });
-                    } else if (value.product == undefined && value.vendor != undefined) {
+                    } else if (missing(value.product) && notMissing(value.vendor)) {
                         errors.push({
                             path: path+'.product',
                             property: 'format',
                             message: 'Enter product name'
                         });
-                    } else if (value.collectionURL == undefined && value.packageName != undefined) {
+                    } else if (missing(value.collectionURL) && notMissing(value.packageName)) {
                         errors.push({
                             path: path+'.collectionURL',
                             property: 'format',
                             message: 'Enter a URL for the package collection'
                         });
-                    } else if (value.packageName == undefined && value.collectionURL != undefined) {
+                    } else if (missing(value.packageName) && notMissing(value.collectionURL)) {
                         errors.push({
                             path: path+'.packageName',
                             property: 'format',
