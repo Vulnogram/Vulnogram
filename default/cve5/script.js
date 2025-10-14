@@ -524,6 +524,11 @@ function cvssImport(j) {
                         }
                         delete m.cvssV3_0;
                     }
+                    ["cvssV2_0", "cvssV3_0", "cvssV3_1", "cvssV4_0"].forEach(cvssObj => {
+                        if(m[cvssObj]) {
+                            fillCvssMetrics(m[cvssObj]);
+                        }
+                    });
                 });
             }
         })
@@ -658,4 +663,189 @@ function generateCpeApplicabilityNode(affectedProduct) {
     } else {
         return null;
     }
+}
+
+/**
+ * Fill missing CVSS metric fields from vectorString; otherwise:
+ * - Base metrics -> "worst-case" value
+ * - Threat/Supplemental (v4) -> "NOT_DEFINED"
+ * 
+ * Supports CVSS v2.0, v3.0/v3.1, and v4.0(.1) JSON schema shapes as published by FIRST.
+ * Mutates and returns the same object.
+ */
+function fillCvssMetrics(cvss) {
+  const isMissing = v => v === undefined || v === null || v === "";
+
+  // --- version detection -----------------------------------------------------
+  const inferVersionFromVector = (vs) => {
+    if (!vs || typeof vs !== "string") return null;
+    const m = vs.match(/^CVSS:(\d(?:\.\d)?)/); // "CVSS:4.0", "CVSS:3.1", "CVSS:3.0"
+    if (m) return m[1];
+    // no "CVSS:x" prefix → likely v2
+    return "2.0";
+  };
+
+  let version = String(cvss.version || inferVersionFromVector(cvss.vectorString) || "").trim();
+  if (!version) {
+    // Heuristic: pick by presence of distinctive keys if no version & no vector
+    if ("attackRequirements" in cvss || "vulnConfidentialityImpact" in cvss) version = "4.0";
+    else if ("scope" in cvss || "privilegesRequired" in cvss) version = "3.1";
+    else version = "2.0";
+  }
+  // Normalize v3.0 → 3.1 handling
+  if (version === "3.0") version = "3.1";
+
+  // --- vector parsing --------------------------------------------------------
+  const parseVector = (vs) => {
+    if (!vs || typeof vs !== "string") return {};
+    const out = {};
+    for (const part of vs.split("/")) {
+      if (!part || part.startsWith("CVSS:")) continue;
+      const idx = part.indexOf(":");
+      if (idx < 0) continue;
+      const k = part.slice(0, idx).toUpperCase();       // e.g., "AV", "AC", "AU", "RE"
+      const raw = part.slice(idx + 1);                  // e.g., "N", "L", "Red"
+      out[k] = raw;
+    }
+    return out;
+  };
+
+  const vec = parseVector(cvss.vectorString);
+
+  // --- mapping tables --------------------------------------------------------
+  // v2.0 (Base only)
+  const v2 = {
+    base: {
+      AV: { prop: "accessVector",         map: { N: "NETWORK", A: "ADJACENT_NETWORK", L: "LOCAL" } },
+      AC: { prop: "accessComplexity",     map: { L: "LOW", M: "MEDIUM", H: "HIGH" } },
+      AU: { prop: "authentication",       map: { N: "NONE", S: "SINGLE", M: "MULTIPLE" } }, // "Au" in the vector; parser uppercased to "AU"
+      C:  { prop: "confidentialityImpact",map: { N: "NONE", P: "PARTIAL", C: "COMPLETE" } },
+      I:  { prop: "integrityImpact",      map: { N: "NONE", P: "PARTIAL", C: "COMPLETE" } },
+      A:  { prop: "availabilityImpact",   map: { N: "NONE", P: "PARTIAL", C: "COMPLETE" } },
+    },
+    worst: {
+      accessVector: "NETWORK",
+      accessComplexity: "LOW",
+      authentication: "NONE",
+      confidentialityImpact: "COMPLETE",
+      integrityImpact: "COMPLETE",
+      availabilityImpact: "COMPLETE",
+    }
+  };
+
+  // v3.1 (Base only)
+  const v31 = {
+    base: {
+      AV: { prop: "attackVector",        map: { N: "NETWORK", A: "ADJACENT_NETWORK", L: "LOCAL", P: "PHYSICAL" } },
+      AC: { prop: "attackComplexity",    map: { L: "LOW", H: "HIGH" } },
+      PR: { prop: "privilegesRequired",  map: { N: "NONE", L: "LOW", H: "HIGH" } },
+      UI: { prop: "userInteraction",     map: { N: "NONE", R: "REQUIRED" } },
+      S:  { prop: "scope",               map: { U: "UNCHANGED", C: "CHANGED" } },
+      C:  { prop: "confidentialityImpact", map: { N: "NONE", L: "LOW", H: "HIGH" } },
+      I:  { prop: "integrityImpact",       map: { N: "NONE", L: "LOW", H: "HIGH" } },
+      A:  { prop: "availabilityImpact",    map: { N: "NONE", L: "LOW", H: "HIGH" } },
+    },
+    worst: {
+      attackVector: "NETWORK",
+      attackComplexity: "LOW",
+      privilegesRequired: "NONE",
+      userInteraction: "NONE",
+      scope: "CHANGED",
+      confidentialityImpact: "HIGH",
+      integrityImpact: "HIGH",
+      availabilityImpact: "HIGH",
+    }
+  };
+
+  // v4.0 (.1) Base + Threat + Supplemental
+  const v40 = {
+    base: {
+      AV: { prop: "attackVector",               map: { N: "NETWORK", A: "ADJACENT", L: "LOCAL", P: "PHYSICAL" } },
+      AC: { prop: "attackComplexity",           map: { L: "LOW", H: "HIGH" } },
+      AT: { prop: "attackRequirements",         map: { N: "NONE", P: "PRESENT" } },
+      PR: { prop: "privilegesRequired",         map: { N: "NONE", L: "LOW", H: "HIGH" } },
+      UI: { prop: "userInteraction",            map: { N: "NONE", P: "PASSIVE", A: "ACTIVE" } },
+      VC: { prop: "vulnConfidentialityImpact",  map: { H: "HIGH", L: "LOW", N: "NONE" } },
+      VI: { prop: "vulnIntegrityImpact",        map: { H: "HIGH", L: "LOW", N: "NONE" } },
+      VA: { prop: "vulnAvailabilityImpact",     map: { H: "HIGH", L: "LOW", N: "NONE" } },
+      SC: { prop: "subConfidentialityImpact",   map: { H: "HIGH", L: "LOW", N: "NONE" } },
+      SI: { prop: "subIntegrityImpact",         map: { H: "HIGH", L: "LOW", N: "NONE" } },
+      SA: { prop: "subAvailabilityImpact",      map: { H: "HIGH", L: "LOW", N: "NONE" } },
+    },
+    threat: {
+      // E values in vector are single letters; JSON value we'll use: "ATTACKED" | "POC" | "UNREPORTED" | "NOT_DEFINED"
+      E:  { prop: "exploitMaturity", map: { X: "NOT_DEFINED", A: "ATTACKED", P: "POC", U: "UNREPORTED" } },
+    },
+    supplemental: {
+      S:  { prop: "safety",                    map: { X: "NOT_DEFINED", N: "NEGLIGIBLE", P: "PRESENT" } },
+      AU: { prop: "automatable",               map: { X: "NOT_DEFINED", N: "NO", Y: "YES" } },
+      R:  { prop: "recovery",                  map: { X: "NOT_DEFINED", A: "AUTOMATIC", U: "USER", I: "IRRECOVERABLE" } },
+      V:  { prop: "valueDensity",              map: { X: "NOT_DEFINED", D: "DIFFUSE", C: "CONCENTRATED" } },
+      RE: { prop: "vulnerabilityResponseEffort", map: { X: "NOT_DEFINED", L: "LOW", M: "MODERATE", H: "HIGH" } },
+      // U uses words in the vector (Clear/Green/Amber/Red). Normalize to upper-case JSON forms.
+      U:  { prop: "providerUrgency",           map: { X: "NOT_DEFINED", CLEAR: "CLEAR", GREEN: "GREEN", AMBER: "AMBER", RED: "RED" } },
+    },
+    worst: {
+      attackVector: "NETWORK",
+      attackComplexity: "LOW",
+      attackRequirements: "NONE",
+      privilegesRequired: "NONE",
+      userInteraction: "NONE",
+      vulnConfidentialityImpact: "HIGH",
+      vulnIntegrityImpact: "HIGH",
+      vulnAvailabilityImpact: "HIGH",
+      subConfidentialityImpact: "HIGH",
+      subIntegrityImpact: "HIGH",
+      subAvailabilityImpact: "HIGH",
+    }
+  };
+
+  // --- helpers to apply values ----------------------------------------------
+  const fromVectorOr = (abbr, entry) => {
+    if (!(abbr in vec)) return null;
+    let raw = vec[abbr];
+    // Provider Urgency: words like "Red/Amber/Green/Clear" → map by upper-case key
+    if (abbr === "U") raw = String(raw).toUpperCase();
+    return entry.map.hasOwnProperty(raw) ? entry.map[raw] : null;
+  };
+
+  const fillGroup = (obj, table, worst) => {
+    for (const [abbr, entry] of Object.entries(table)) {
+      const prop = entry.prop;
+      if (isMissing(obj[prop])) {
+        const v = fromVectorOr(abbr, entry);
+        obj[prop] = v != null ? v : (worst ? worst[prop] : obj[prop]);
+      }
+    }
+  };
+
+  // --- apply per version -----------------------------------------------------
+  if (version === "4.0") {
+    fillGroup(cvss, v40.base, v40.worst);
+    // Threat metrics -> vector or NOT_DEFINED
+    for (const [abbr, entry] of Object.entries(v40.threat)) {
+      const prop = entry.prop;
+      if (isMissing(cvss[prop])) {
+        cvss[prop] = fromVectorOr(abbr, entry) ?? "NOT_DEFINED";
+      }
+    }
+    // Supplemental metrics -> vector or NOT_DEFINED
+    for (const [abbr, entry] of Object.entries(v40.supplemental)) {
+      const prop = entry.prop;
+      if (isMissing(cvss[prop])) {
+        cvss[prop] = fromVectorOr(abbr, entry) ?? "NOT_DEFINED";
+      }
+    }
+  } else if (version === "3.1") {
+    fillGroup(cvss, v31.base, v31.worst);
+  } else if (version === "2.0") {
+    fillGroup(cvss, v2.base, v2.worst);
+  } else {
+    // Fallback: treat unknown as v3.1
+    fillGroup(cvss, v31.base, v31.worst);
+  }
+
+  // ensure version is set back
+  if (isMissing(cvss.version)) cvss.version = version;
+  return cvss;
 }
