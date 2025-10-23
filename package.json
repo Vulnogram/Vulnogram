@@ -1,6 +1,6 @@
 {
   "name": "vulnogram",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Making the world safer one CVE at a time, since 2017. Tool for creating Security Advisories and CVE ID information. With customizable plugins it can be used for tracking anything that can be expressed with a JSON-Schema. plugins are available for tracking security incidents, tickets, contacts, NVD entries and CVE assignments.",
   "main": "app.js",
   "scripts": {
