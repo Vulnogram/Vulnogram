@@ -5,9 +5,14 @@
 extends ../../views/edit
 block banner 
     header.ban.pad.ht4.wht.shd
-        .left.flx
+        #cvssSummary.left.flx
             include cvss.svg
-            h2.indent CVSS 4.0 Pocket Calc
+            #finalScore.CVSS 
+            #finalSeverity.CVSS
+            #finalUrgency.CVSS
+
+block prepend content
+    h2.indent CVSS 4.0 Pocket Calc
 
 block editorLabel
     | Calculator
@@ -16,6 +21,14 @@ block sourceLabel
     | JSON
 
 block append scripts
-    script(type="module")
-        | import {CVSS40} from './static/cvss40.js';
+    script
+        include static/cvss40.js
         | window.CVSS40 = CVSS40;
+
+block prepend loadEditor
+    script 
+        include preload.js
+
+block append loadEditor
+    script 
+        include postload.js

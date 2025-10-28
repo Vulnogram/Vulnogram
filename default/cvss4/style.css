@@ -36,10 +36,83 @@ div[data-schemaid="cvss4"] .je-indented-panel div div div.row:nth-child(9)
   border-radius: 5px;
     padding: 3px;
 }
-div[data-schemaid="cvss4"] .je-indented-panel div div div.row:last-child
+div[data-schemaid="cvss4"] .je-indented-panel div div div.row:last-child,
+div[data-schemaid="cvss4"] .je-indented-panel div div div.row:nth-last-child(2)
 {
   background-color: var(--sec);
   border-radius: 5px;
   padding: 10px;
   margin: 10px;
+}
+
+#needle {
+  transition-duration: 0.3s;
+  animation: rotate 500ms ease 50ms forwards;
+}
+#wig {
+    transform-origin: 196.626px 38.181px;
+}
+header:hover #wig{
+  animation: 0.6s wiggle;
+}
+
+
+@keyframes wiggle {
+    0% {
+        transform: rotate(4deg)
+    }
+
+    25% {
+        transform: rotate(-4deg)
+    }
+
+    50% {
+        transform: rotate(3deg)
+    }
+    75% {
+        transform: rotate(-2deg)
+    }
+    100% {
+        transform: rotate(0)
+    }
+}
+
+#cvssSummary {
+  gap: 2px 2px;
+}
+
+#finalScore {
+font-weight:900; font-family:'Verdana';line-height:96px; font-size:67px;
+min-width: 140px;
+text-align: center;
+border-radius: 7px;
+transition: 500ms;
+}
+#finalSeverity, #finalUrgency {
+min-width: 200px;
+font-weight:100; font-family:'Verdana';line-height:48px; font-size:30px;
+text-align: center;
+border-radius: 7px;
+transition: 500ms;
+}
+
+.CVSS.NA {
+  background-color: rgb(184, 184, 184);
+}
+ 
+.CVSS.NONE {
+  background-color: rgb(162, 213, 114);
+}
+.CVSS.LOW {
+  background-color: gold;
+}
+.CVSS.MEDIUM {
+  background-color: orange;
+}
+.CVSS.HIGH {
+  background-color: salmon;
+}
+.CVSS.CRITICAL {
+  color: white;
+  background-color: orangered;
 }

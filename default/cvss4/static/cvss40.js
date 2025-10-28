@@ -24,7 +24,7 @@ const re = /^CVSS:4[.]0(\/AV:[NALP])(\/AC:[LH])(\/AT:[NP])(\/PR:[NLH])(\/UI:[NPA
 /**
  * Implementation of the CVSS v4.0 specification (https://www.first.org/cvss/v4.0/specification-document).
  */
-export class CVSS40 {
+class CVSS40 {
     /**
      * Construct a CVSS v4.0 object, and parse the vector if provided.
      * If not, the Base metrics is set to the default values (score = 0).
