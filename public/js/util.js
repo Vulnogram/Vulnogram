@@ -579,8 +579,7 @@ var cvssjs = {
         "Recovery": "R",
         "valueDensity": "V",
         "vulnerabilityResponseEffort": "RE",
-        "providerUrgency": "U",
-        "exploitMaturity": "E"
+        "providerUrgency": "U"
     },
     metricMap4: {
         "AV": "attackVector",
