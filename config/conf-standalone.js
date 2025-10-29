@@ -23,5 +23,5 @@ module.exports = {
         'cve5',
 //        'cvss4'
     ],
-    homepage: 'https://vulnogram.github.io'
+    homepage: 'https://vulnogram.org'
 };

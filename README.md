@@ -18,7 +18,7 @@ Vulnogram can be deployed in two modes:
 
 | Browser mode                  | Server mode |
 |------------------------------|------------|
-| Frontend web UI only, as seen on [vulnogram.github.io](https://vulnogram.github.io). | A NodeJS web application serves frontend web UI for a backend Mongodb. |
+| Frontend web UI only, as seen on [vulnogram.org(https://vulnogram.org). | A NodeJS web application serves frontend web UI for a backend Mongodb. |
 | It is a Javascript based tool to open, import, edit, preview and save JSON documents which conform to a given [JSON-Schema](https://json-schema.org). | It is a modern scalable issue tracker similar to JIRA or bugtrack but using [JSON-Schemas](https://json-schema.org) as data models and a NoSQL database as a backend. Along with customizable [plugins](https://github.com/Vulnogram/plugins) it can be used for tracking anything that can be expressed with a [JSON-Schema](https://json-schema.org). [plugins](https://github.com/Vulnogram/plugins) are available for tracking security incidents, tickets, contacts, NVD entries and CVE assignments. |
 | Can't save CVE JSON drafts.  | JSON documents are saved to a NoSQL (Mongodb) backend. |
 | No login required.           | Users are authenticated. |
