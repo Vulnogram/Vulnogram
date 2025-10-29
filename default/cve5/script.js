@@ -585,9 +585,37 @@ function cveFixForVulnogram(j) {
 
 let previousVersions = null;
 
+async function clearCPE() {
+        localStorage.setItem('autoCPEChk', false);
+        document.getElementById('autoCPEChk').checked = false;
+        var cpeEditor = await docEditor.getEditor('root.containers.cna.cpeApplicability');
+        cpeEditor.setValue([],'',true);
+        return;
+}
+async function setCPEstatus() {
+    document.getElementById('autoCPEChk').checked = (localStorage.getItem('autoCPEChk') === 'true');
+}
+async function autoCPE() {
+    let newState = document.getElementById('autoCPEChk').checked;
+    localStorage.setItem('autoCPEChk', newState);
+    if (newState) {
+        //docEditor.getEditor('root.containers.cna.cpeApplicability').watch('cntr.affected');
+        var affectedEditor = await docEditor.getEditor('root.containers.cna.affected');
+        var affected = await affectedEditor.getValue();
+
+        var cpeEditor = await docEditor.getEditor('root.containers.cna.cpeApplicability');
+        var cpe = generateCpeApplicability(affected);
+        //console.log(cpe);
+        cpeEditor.setValue(cpe,'',true);
+    } else {
+        //docEditor.getEditor('root.containers.cna.cpeApplicability').disable();
+        //docEditor.getEditor('root.containers.cna.cpeApplicability').unwatch('cntr.affected');
+    }
+}
+
 function generateCpeApplicability(affected) {
     let cpeApplicabilityNodes = [];
-    if (!affected || affected.length === 0) {
+    if (!affected || affected.length === 0 || !(localStorage.getItem('autoCPEChk') === 'true')) {
         return [];
     }
     for (const affectedProduct of affected) {
@@ -624,7 +652,6 @@ function generateCpeApplicabilityNode(affectedProduct) {
                 var platforms = ['*']
                 if (affectedProduct.platforms && affectedProduct.platforms.length > 0) {
                     platforms = affectedProduct.platforms;
-                    console.log("platforms: " + platforms);
                 }
                 for (const p of platforms) {
                     if (v.lessThan) {

@@ -30,13 +30,18 @@ JSONEditor.defaults.editors.string.prototype.sanitize = function(value) {
   }; 
 
   JSONEditor.defaults.editors.CPEA = class CPEA extends JSONEditor.AbstractEditor {
-    setValue(value, initial) {
-        super.setValue(value, initial);
-        if (this.container) {
-            this.container.innerHTML = pugRender({
-                renderTemplate: 'cpeApplicability',
-                doc: value
-            })
+    setValue(value, initial, notify) {
+        var changed = (this.getValue() !== value);
+        if (changed) {
+            super.setValue(value, initial);
+            if (this.container) {
+                this.container.innerHTML = pugRender({
+                    renderTemplate: 'cpeApplicability',
+                    doc: value
+                })
+            }
+            if(notify)
+                this.onChange(true);
         }
     }
     register() {
@@ -71,7 +76,7 @@ JSONEditor.defaults.editors.string.prototype.sanitize = function(value) {
                 doc: this.value
             })
         }
-        if (this.schema.template) {
+        if (this.schema.template && (localStorage.getItem('autoCPEChk') === 'true')) {
             const callback = this.expandCallbacks('template', { template: this.schema.template })
             if (typeof callback.template === 'function') this.template = callback.template
             else this.template = this.jsoneditor.compileTemplate(this.schema.template, this.template_engine)
@@ -93,13 +98,12 @@ JSONEditor.defaults.editors.string.prototype.sanitize = function(value) {
     }
     onWatchedFieldChange () {
         let vars
-        /* If this editor needs to be rendered by a macro template */
-        if (this.template) {
+        // If this editor needs to be rendered by a macro template 
+        if (this.template && ((localStorage.getItem('autoCPEChk') === 'true'))) {
           vars = this.getWatchedFieldValues()
           var val = this.template(vars);
-          this.setValue(val, false, true)
+          this.setValue(val, false, false)
         }
-    
         super.onWatchedFieldChange()
     }
 };
