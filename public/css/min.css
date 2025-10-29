@@ -379,6 +379,43 @@ select.btn {
     outline: none;
 }
 
+
+.chk{
+  --w:52px; --h:25px; --p:2px;                  /* size & padding */
+  display:inline-block; 
+  width:var(--w); 
+  height:var(--h);
+  border-radius:999px; cursor:pointer; vertical-align:middle;
+  background:var(--bor);                              /* OFF track */
+  box-shadow:inset 0 0 0 1px var(--bor2);
+  transition:background-color .18s ease, background-position .18s ease;
+  /* Knob drawn with a radial-gradient; we move it with background-position */
+  background-image:
+    radial-gradient(circle, #fff 64%, #fff 65%, var(--bor2) 66%, var(--bor2) 67%, transparent 68%);
+  background-repeat:no-repeat;
+  background-size:calc(var(--h) - var(--p)*2) calc(var(--h) - var(--p)*2);
+  background-position:var(--sx, var(--p)) 50%;
+  outline:0; -webkit-tap-highlight-color:transparent;
+  text-decoration:none; color:inherit;             /* for <a> */
+}
+
+input.chk{
+  -webkit-appearance:none; appearance:none; border:0; padding:0; margin:0;
+}
+
+input.chk:checked,
+a.chk[aria-checked="true"]{
+  background-color:var(--sfe);                        /* iOS green track */
+  --sx:calc(var(--w) - var(--h) + var(--p));       /* move knob to the right */
+}
+
+/* Focus ring (keyboard-friendly) */
+.chk:focus-visible{
+  box-shadow:
+    0 0 0 2px var(--lnk) inset,
+    inset 0 0 0 1px rgba(0,0,0,.05);
+}
+
 .btn:focus,
 .btn:active,
 .btn:hover {
