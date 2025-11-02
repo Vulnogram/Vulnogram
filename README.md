@@ -4,7 +4,7 @@ _Making the world safer one CVE ID at a time, since 2017._
 
 ## Introduction
 
-Vulnogram is the tool for reserving, managing, and publishing CVEs. Get started at vulnogram.org or deploy Docker edition for full enterprise features.
+Vulnogram is the tool for reserving, managing, and publishing CVEs. Get started at [vulnogram.org](https://vulnogram.org) or deploy a Server or Docker edition for full enterprise features.
 
 The name Vulnogram is inspired from Greek origin suffix '-gram' which is used for denoting something written or recorded especially in a certain way. Vulnerability related information when recorded in a standard format can help in aggregation, curation, dissemination, analysis and remediation. This enables automation and efficiency in response activities.
 
