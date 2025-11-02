@@ -24,8 +24,8 @@ confOpts = {
     seaview: {conf:{
         url:'/seaview',
         class:'vgi-search',
-        title: 'Display CVEs found in text',
-        name: 'Seaview - CVE Viewer',
+        title: 'Search and Display CVEs',
+        name: 'Seaview - CVE Search',
 
     }}
 }

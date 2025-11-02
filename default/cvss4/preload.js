@@ -149,7 +149,7 @@ var urgencyUI = {
   "NOT_DEFINED": ["Undefined", "NA"],
   "CLEAR": ["Info", "NA"],
   "GREEN": ["Reduced", "NONE"],
-  "AMBER": ["Moderate", "MEDIUM"],
+  "AMBER": ["Normal", "MEDIUM"],
   "RED": ["Highest", "CRITICAL"]
 }
 

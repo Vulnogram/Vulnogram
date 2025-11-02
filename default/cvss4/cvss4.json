@@ -564,7 +564,7 @@
           "Not defined",
           "Informational",
           "Reduced",
-          "Moderate",
+          "Normal",
           "Highest"
         ],
         "icons": {
@@ -646,7 +646,7 @@
         {
           "place": "header",
           "class": "vgi-ext indent",
-          "href": "'https://www.first.org/cvss/calculator/4.0#' + context.self",
+          "href": "'https://www.first.org/cvss/calculator/4.0#' + cvssjs.vector4(context)",
           "title": "CVSS Calculator",
           "rel": "' First.org Calc'"
         },
@@ -654,7 +654,7 @@
           "place": "header",
           "target": "_self",
           "class": "vgi-out",
-          "href": "'javascript:copyToClipboard(\"' + context.self + '\");void(0);'",
+          "href": "'javascript:copyToClipboard(\"' +cvssjs.vector4(context) + '\");void(0);'",
           "title": "Copy Vector",
           "rel": "' Copy'"
         },{

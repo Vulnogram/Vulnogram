@@ -1764,13 +1764,13 @@
                   "role": "CNA",
                   "options": [
                     {
-                      "Exploitation": "active"
+                      "Exploitation": "none"
                     },
                     {
-                      "Automatable": "yes"
+                      "Automatable": "no"
                     },
                     {
-                      "Technical Impact": "none"
+                      "Technical Impact": "partial"
                     }
                   ]
                 }
@@ -1869,6 +1869,11 @@
                                         "none": "safe",
                                         "poc": "text",
                                         "active": "bomb"
+                                      },
+                                      "tooltips": {
+                                        "none": "There is no evidence of active exploitation and no public proof of concept (PoC) of how to exploit the vulnerability.",
+                                        "poc": "A public proof of concept (PoC) is available, which may include exploit code from sources like Metasploit or ExploitDB.",
+                                        "active": "Shared, observable, and reliable evidence that cyber threat actors have used the exploit in the wild."
                                       }
                                     }
                                   },
@@ -1883,6 +1888,10 @@
                                       "icons": {
                                         "yes": "cog",
                                         "no": "no"
+                                      },
+                                      "tooltips": {
+                                        "no": "Attackers cannot reliably automate steps 1-4 of the kill chain (reconnaissance, weaponization, delivery, and exploitation) for this vulnerability.",
+                                        "yes": "Attackers can reliably automate steps 1-4 of the kill chain (reconnaissance, weaponization, delivery, and exploitation)."
                                       }
                                     }
                                   },
@@ -1899,6 +1908,11 @@
                                         "none": "signal",
                                         "partial": "signal-2",
                                         "total": "signal-1"
+                                      },
+                                      "tooltips": {
+                                        "none": "No technical impact. Note: The official SSVC specification assumes a vulnerability always has at least 'Partial' technical impact.",
+                                        "partial": "The exploit gives the adversary limited control over, or information exposure about, the behavior of the software that contains the vulnerability. Or the exploit gives the adversary an importantly low stochastic opportunity for total control.",
+                                        "total": "The exploit gives the adversary total control over the behavior of the software, or it gives total disclosure of all information on the system that contains the vulnerability."
                                       }
                                     }
                                   }
@@ -2370,7 +2384,7 @@
                   "grid_columns": 12,
                   "enum_titles": [
                     "Unreported",
-                    "Proof of Concept",
+                    "Published Proof-of-Concept",
                     "Attacked",
                     "Not Defined"
                   ],
@@ -2538,7 +2552,7 @@
           "Not defined",
           "Informational",
           "Reduced",
-          "Moderate",
+          "Normal",
           "Highest"
         ],
         "icons": {
@@ -2612,7 +2626,7 @@
                   {
                     "place": "header",
                     "class": "vgi-ext indent",
-                    "href": "'https://www.first.org/cvss/calculator/4.0#' + context.self",
+                    "href": "'https://www.first.org/cvss/calculator/4.0#' + cvssjs.vector4(context)",
                     "title": "CVSS Calculator",
                     "rel": "' First.org Calc'"
                   },
@@ -2620,7 +2634,7 @@
                     "place": "header",
                     "target": "_self",
                     "class": "vgi-out",
-                    "href": "'javascript:copyToClipboard(\"' + context.self + '\");void(0);'",
+                    "href": "'javascript:copyToClipboard(\"' + cvssjs.vector4(context) + '\");void(0);'",
                     "title": "Copy Vector",
                     "rel": "' Copy'"
                   }
