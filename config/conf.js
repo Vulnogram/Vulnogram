@@ -54,8 +54,8 @@ module.exports = {
 
 
     // JSON Editor
-    jsoneditor: 'https://cdnjs.cloudflare.com/ajax/libs/json-editor/2.8.0/jsoneditor.min.js',
-    jsoneditorHash: 'sha512-8y8kuGFzNGSgACEMNnXJGhOQaLAd4P9MdCXnJ37QjGTBPRrD5FCEVEKj/93xNihQehkO3yVKnOECFWGxxBsveQ==',
+    jsoneditor: 'https://cdnjs.cloudflare.com/ajax/libs/json-editor/2.15.2/jsoneditor.js',
+    jsoneditorHash: 'sha512-Odi69X/i28s3GR3ZQyE+g4ieU30AMOovH50wJbehVMWxVChGa1KCUzyvOXkHfYr/2AQizFRNWI1R6oifT16ouQ==',
     // if you want this served locally, download above jsoneditor editor to /public/js/ directory and point to that:
     //jsoneditor: '/js/jsoneditor.min.js',
 
