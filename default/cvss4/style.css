@@ -36,8 +36,7 @@ div[data-schemaid="cvss4"] .je-indented-panel div div div.row:nth-child(9)
   border-radius: 5px;
     padding: 3px;
 }
-div[data-schemaid="cvss4"] .je-indented-panel div div div.row:last-child,
-div[data-schemaid="cvss4"] .je-indented-panel div div div.row:nth-last-child(2)
+div[data-schemaid="cvss4"] .je-indented-panel div div div.row:last-child
 {
   background-color: var(--sec);
   border-radius: 5px;

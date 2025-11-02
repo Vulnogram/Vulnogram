@@ -39,8 +39,6 @@ function cvssFromHash(hashText) {
         "version": "4.0",
         "baseScore": 10,
         "baseSeverity": "CRITICAL",
-        "threatSeverity": "CRITICAL",
-        "threatScore": 10,
         "vectorString": hashText
     };
     //console.log(hashText);
@@ -169,8 +167,7 @@ function cvssFromHash(hashText) {
 
   // Fill Base metrics (mandatory in the spec, but we still guard)
   ["AV","AC","AT","PR","UI","VC","VI","VA","SC","SI","SA", "E","S","AU","R","V","RE","U"].forEach(setMetric);
-  cvss.baseScore = (new window.CVSS40(cvss.vectorString.replace(/\/E:./,''))).Score();
-  cvss.threatScore = (new window.CVSS40(cvss.vectorString)).Score();
+  cvss.baseScore = (new window.CVSS40(cvss.vectorString)).Score();
   return cvss;
 }
 
@@ -219,7 +216,6 @@ function loadVector(v,init=true) {
           docEditor.setValue(cvssJSON)
         }
       }
-    //  setNeedle(hashJSON.threatScore);
     }
   }
 }
