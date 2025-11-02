@@ -586,13 +586,14 @@
         "HIGH",
         "CRITICAL"
       ],
-      "template": "cvssjs.severity(context.sc).name",
+      "template": "context.sc && (setNeedle(context.sc, context.pu) || cvssjs.severity(context.sc).name)",
       "format": "string",
       "watch": {
-        "sc": "cvss4.baseScore"
+        "sc": "cvss4.baseScore",
+        "pu": "cvss4.providerUrgency"
       },
       "options": {
-        "grid_columns": 4,
+        "grid_columns": 2,
         "class": "vgi-dial",
         "input_width": "5em"
       }
@@ -603,49 +604,12 @@
       "minimum": 0,
       "maximum": 10,
       "default": 0,
-      "template": "context.vs && window.CVSS40 && (new window.CVSS40(context.vs.replace(/\\/E:./,''))).Score()",
-      "watch": {
-        "vs": "cvss4.vectorString"
-      },
-      "options": {
-        "grid_columns": 2,
-        "input_width": "3em"
-      }
-    },
-    "threatSeverity": {
-      "title": "Threat Severity",
-      "type": "string",
-      "test_enum": [
-        "NONE",
-        "LOW",
-        "MEDIUM",
-        "HIGH",
-        "CRITICAL"
-      ],
-      "template": "context.sc && (setNeedle(context.sc, context.pu) || cvssjs.severity(context.sc).name)",
-      "format": "string",
-      "watch": {
-        "sc": "cvss4.threatScore",
-        "pu": "cvss4.providerUrgency"
-      },
-      "options": {
-        "grid_columns": 4,
-        "class": "vgi-dial",
-        "input_width": "5em"
-      }
-    },
-    "threatScore": {
-      "title": "CVSS-BT",
-      "type": "number",
-      "minimum": 0,
-      "maximum": 10,
-      "default": 0,
       "template": "context.vs && window.CVSS40 && (setHash(context.vs) || new window.CVSS40(context.vs).Score())",
       "watch": {
         "vs": "cvss4.vectorString"
       },
       "options": {
-        "grid_columns": 2,
+        "grid_columns": 1,
         "input_width": "3em"
       }
     },
