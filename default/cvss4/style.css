@@ -96,22 +96,22 @@ transition: 500ms;
 }
 
 .CVSS.NA {
-  background-color: rgb(184, 184, 184);
+  background-color: rgb(220, 220, 220);
 }
  
 .CVSS.NONE {
-  background-color: rgb(162, 213, 114);
+  background-color: rgb(102, 153, 0);
 }
 .CVSS.LOW {
-  background-color: gold;
+  background-color: rgb(202,211,29);
 }
 .CVSS.MEDIUM {
-  background-color: orange;
+  background-color: rgb(255,213,28);
 }
 .CVSS.HIGH {
-  background-color: salmon;
+  background-color: rgb(242,145,0);
 }
 .CVSS.CRITICAL {
   color: white;
-  background-color: orangered;
+  background-color: rgb(204,1,25);
 }
