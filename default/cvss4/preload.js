@@ -1,47 +1,20 @@
 
-/**
- * Fill a CVSS v4.0 JSON object from its vectorString.
- * - Base + Threat: if a metric is missing from the vector, fill with MAX severity.
- * - Supplemental: if a metric is missing from the vector, set to `undefined`.
- *
- * Property names & enum values align with FIRST's CVSS v4.0 schema.
- * Spec references for Supplemental metrics and vector forms:
- *  - S, AU, U, R, V, RE abbreviations & values (Tables 16–21, 23). 
- *
- * @param {object} cvss - e.g. { version:"4.0", vectorString:"CVSS:4.0/AV:N/AC:L/...", ... }
- * @returns {object} the same object reference, mutated
- */
-/*
-window.addEventListener('hashchange', function(event) {
-        console.log('Hash changed!');
-        console.log('Old URL:', event.oldURL);
-        console.log('New URL:', event.newURL);
-        console.log('Current hash:', window.location.hash);
-        var cvss = cvssFromHash(window.location.hash);
-        if(cvss) {
-            console.log(cvss);
-            docEditor.setValue(cvss);
-        }
-        // Perform actions based on the new hash
-        // For example, update content or navigate to a new section
-});
-*/
-function cvssFromHash(hashText) {
-    if (!hashText) return null;
-    // Support "vector=" inside hash (e.g., #vector=CVSS:4.0/...)
-    const m = hashText.match(/(CVSS:\d\.\d[A-Za-z\:\/]+)/i);
-    if (m) {
-        hashText = m[1];
-    } else {
-        return false;
-    }
-    var cvss={
-        "version": "4.0",
-        "baseScore": 10,
-        "baseSeverity": "CRITICAL",
-        "vectorString": hashText
-    };
-    //console.log(hashText);
+function cvssFromURL(text) {
+  if (!text) return null;
+  // Support "vector=" inside hash (e.g., #vector=CVSS:4.0/...)
+  const m = text.match(/(CVSS:\d\.\d[A-Za-z\:\/]+)/i);
+  if (m) {
+    text = m[1];
+  } else {
+    return false;
+  }
+  var cvss = {
+    "version": "4.0",
+    "baseScore": 10,
+    "baseSeverity": "CRITICAL",
+    "vectorString": text
+  };
+  //console.log(hashText);
   // ----- Abbrev → schema enum maps (Base + Threat) -----
   const MAP = {
     AV: { N: "NETWORK", A: "ADJACENT", L: "LOCAL", P: "PHYSICAL" },
@@ -59,28 +32,28 @@ function cvssFromHash(hashText) {
     SA: { H: "HIGH", L: "LOW", N: "NONE" },
 
     // Threat (Exploit Maturity)
-    E:  { A: "ATTACKED", P: "PROOF_OF_CONCEPT", U: "UNREPORTED", X: "NOT_DEFINED" },
+    E: { A: "ATTACKED", P: "PROOF_OF_CONCEPT", U: "UNREPORTED", X: "NOT_DEFINED" },
 
-        // Safety (S) [X,N,P]
-    S:  { X: "NOT_DEFINED", N: "NEGLIGIBLE", P: "PRESENT" },
+    // Safety (S) [X,N,P]
+    S: { X: "NOT_DEFINED", N: "NEGLIGIBLE", P: "PRESENT" },
 
     // Automatable (AU) [X,N,Y]
     AU: { X: "NOT_DEFINED", N: "NO", Y: "YES" },
 
     // Recovery (R) [X,A,U,I]
-    R:  { X: "NOT_DEFINED", A: "AUTOMATIC", U: "USER", I: "IRRECOVERABLE" },
+    R: { X: "NOT_DEFINED", A: "AUTOMATIC", U: "USER", I: "IRRECOVERABLE" },
 
     // Value Density (V) [X,D,C]
-    V:  { X: "NOT_DEFINED", D: "DIFFUSE", C: "CONCENTRATED" },
+    V: { X: "NOT_DEFINED", D: "DIFFUSE", C: "CONCENTRATED" },
 
     // Vulnerability Response Effort (RE) [X,L,M,H]
     RE: { X: "NOT_DEFINED", L: "LOW", M: "MODERATE", H: "HIGH" },
 
     // Provider Urgency (U) [X,Clear,Green,Amber,Red]
     // Vector uses words (e.g., U:Red). Accept both one-letter and word forms.
-    U:  {
+    U: {
       X: "NOT_DEFINED",
-      C: "CLEAR",   G: "GREEN",  A: "AMBER",   R: "RED",
+      C: "CLEAR", G: "GREEN", A: "AMBER", R: "RED",
       Clear: "CLEAR", Green: "GREEN", Amber: "AMBER", Red: "RED",
       CLEAR: "CLEAR", GREEN: "GREEN", AMBER: "AMBER", RED: "RED"
     }
@@ -102,14 +75,14 @@ function cvssFromHash(hashText) {
     SI: "subIntegrityImpact",
     SA: "subAvailabilityImpact",
 
-    E:  "exploitMaturity",
+    E: "exploitMaturity",
 
-    S:  "Safety",
+    S: "Safety",
     AU: "Automatable",
-    R:  "Recovery",
-    V:  "valueDensity",
+    R: "Recovery",
+    V: "valueDensity",
     RE: "vulnerabilityResponseEffort",
-    U:  "providerUrgency"
+    U: "providerUrgency"
   };
 
   // ----- “Maximum severity” defaults when absent (Base + Threat) -----
@@ -125,19 +98,19 @@ function cvssFromHash(hashText) {
     SC: "HIGH",
     SI: "HIGH",
     SA: "HIGH",
-    E:  "ATTACKED",
+    E: "NOT_DEFINED",
     S: "NOT_DEFINED",
     AU: "NOT_DEFINED",
-    R:  "NOT_DEFINED",
+    R: "NOT_DEFINED",
     V: "NOT_DEFINED",
     RE: "NOT_DEFINED",
-    U:  "NOT_DEFINED"
+    U: "NOT_DEFINED"
   };
 
 
   // ----- Parse the vector into a dict like { AV:"N", AC:"L", ..., AU:"Y", U:"Red" } -----
   const vec = {};
-  hashText.split("/").slice(1).forEach(p => {
+  text.split("/").slice(1).forEach(p => {
     const i = p.indexOf(":");
     if (i === -1) return;
     const k = p.slice(0, i);
@@ -148,17 +121,17 @@ function cvssFromHash(hashText) {
   // ----- Base & Threat: set from vector or use MAX if key exists (or vector supplies it) -----
   function setMetric(abbrev) {
     const prop = PROP[abbrev];
-    const map  = MAP[abbrev];
+    const map = MAP[abbrev];
     if (!prop || !map) return;
 
     if (abbrev in vec) {
       const code = vec[abbrev];
       const val = map[code];
-        //console.log(prop +' = '+ code + '->' + val);
+      //console.log(prop +' = '+ code + '->' + val);
       if (!val) throw new Error(`Unknown value '${code}' for ${abbrev}`);
       cvss[prop] = val;
     } else {
-        //console.log(prop +' = (default) '+DEFAULT[abbrev]);
+      //console.log(prop +' = (default) '+DEFAULT[abbrev]);
 
       // Absent in vector; fill with maximum severity (per requirement)
       cvss[prop] = DEFAULT[abbrev];
@@ -166,53 +139,51 @@ function cvssFromHash(hashText) {
   }
 
   // Fill Base metrics (mandatory in the spec, but we still guard)
-  ["AV","AC","AT","PR","UI","VC","VI","VA","SC","SI","SA", "E","S","AU","R","V","RE","U"].forEach(setMetric);
+  ["AV", "AC", "AT", "PR", "UI", "VC", "VI", "VA", "SC", "SI", "SA", "E", "S", "AU", "R", "V", "RE", "U"].forEach(setMetric);
   cvss.baseScore = (new window.CVSS40(cvss.vectorString)).Score();
   return cvss;
 }
 
-function setHash(v) {    
-window.location.hash = v;
-return false;
-}
+
 var urgencyUI = {
-  "NOT_DEFINED" : ["Undefined","NA"],
-  "CLEAR": ["Informational", "NONE"],
-  "GREEN":["Reduced","NONE"],
+  "NOT_DEFINED": ["Undefined", "NA"],
+  "CLEAR": ["Info", "NA"],
+  "GREEN": ["Reduced", "NONE"],
   "AMBER": ["Moderate", "MEDIUM"],
-  "RED":["Highest","CRITICAL"]
-}
-function setNeedle(s,u) {
-    var sev = cvssjs.severityLevel(s);
-    document.getElementById('needle').setAttribute('transform', `rotate(${6.5*s} 196.626 38.181)`);
-    var iscore = document.getElementById('finalScore');
-    iscore.innerText = s;
-    iscore.setAttribute('class','CVSS '+sev);
-    var isev = document.getElementById('finalSeverity');
-    isev.innerHTML = 'severity<br><b>'+sev+'</b>';
-    isev.setAttribute('class', 'CVSS '+sev);
-    if (u) {
-      var iUrgency = document.getElementById('finalUrgency');
-      iUrgency.innerHTML = 'urgency<br><b>'+urgencyUI[u][0]+'</b>';
-      iUrgency.setAttribute('class', 'CVSS '+urgencyUI[u][1]);
-    }
-    document.getElementById('wig').animate({
-      rotate: ['4deg', '-3deg', '2deg', '-1deg']
-    }, {
-  duration: 300,
-  iterations: 1,
-});
-    return false;
+  "RED": ["Highest", "CRITICAL"]
 }
 
-function loadVector(v,init=true) {
-  if(v) {
-    var cvssJSON = cvssFromHash(v);
-    if(cvssJSON){
+function setNeedle(s, u) {
+  var sev = cvssjs.severityLevel(s);
+  document.getElementById('needle').setAttribute('transform', `rotate(${6.5 * s + (s > 0 ? 3 : 0)} 196.626 38.181)`);
+  var iscore = document.getElementById('finalScore');
+  iscore.innerText = s;
+  iscore.setAttribute('class', 'CVSS ' + sev);
+  var isev = document.getElementById('finalSeverity');
+  isev.innerHTML = 'severity<br><b>' + sev + '</b>';
+  isev.setAttribute('class', 'CVSS ' + sev);
+  if (u) {
+    var iUrgency = document.getElementById('finalUrgency');
+    iUrgency.innerHTML = 'urgency<br><b>' + urgencyUI[u][0] + '</b>';
+    iUrgency.setAttribute('class', 'CVSS ' + urgencyUI[u][1]);
+  }
+  document.getElementById('wig').animate({
+    rotate: ['4deg', '-3deg', '2deg', '-1deg']
+  }, {
+    duration: 300,
+    iterations: 1,
+  });
+  return false;
+}
+
+function loadVector(v, init = true) {
+  if (v) {
+    var cvssJSON = cvssFromURL(v);
+    if (cvssJSON) {
       if (init) {
         initJSON = cvssJSON;
       } else {
-        if (docEditor){
+        if (docEditor) {
           docEditor.setValue(cvssJSON)
         }
       }
@@ -220,6 +191,25 @@ function loadVector(v,init=true) {
   }
 }
 
-if(window.location.hash) {
-  loadVector(window.location.hash);
+function onCalcChange(vector, score) {
+  document.title = score + ' ' + vector;
+  const currentURLVector = window.location.search.substring(1);
+  if (currentURLVector !== vector) {
+    const newSearch = vector ? `?${vector}` : '';
+    const newUrl = window.location.pathname + newSearch;
+    history.pushState({ vector: vector }, '', newUrl);
+  }
+  return false;
+}
+
+function onURLChange(event) {
+  const vectorFromURL = window.location.search.substring(1);
+  loadVector(vectorFromURL, false);
+}
+
+window.addEventListener('popstate', onURLChange);
+
+const initialVector = window.location.search.substring(1);
+if (initialVector) {
+  loadVector(initialVector, true);
 }

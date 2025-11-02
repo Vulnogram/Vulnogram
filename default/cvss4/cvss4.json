@@ -586,7 +586,7 @@
         "HIGH",
         "CRITICAL"
       ],
-      "template": "context.sc && (setNeedle(context.sc, context.pu) || cvssjs.severity(context.sc).name)",
+      "template": "context.sc != undefined && (setNeedle(context.sc, context.pu) || cvssjs.severity(context.sc).name)",
       "format": "string",
       "watch": {
         "sc": "cvss4.baseScore",
@@ -604,7 +604,7 @@
       "minimum": 0,
       "maximum": 10,
       "default": 0,
-      "template": "context.vs && window.CVSS40 && (setHash(context.vs) || new window.CVSS40(context.vs).Score())",
+      "template": "context.vs && window.CVSS40 && (onCalcChange(context.vs, scr = new window.CVSS40(context.vs).Score()) || scr)",
       "watch": {
         "vs": "cvss4.vectorString"
       },
