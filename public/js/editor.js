@@ -134,6 +134,9 @@ JSONEditor.defaults.editors.array = class mystring extends JSONEditor.defaults.e
 JSONEditor.defaults.editors.table = class mystring extends JSONEditor.defaults.editors.table {
     build() {
         super.build();
+        if(this.options.hide_header) {
+            this.thead.style.display = 'none';
+        }
         if (this.header) {
             if(this.options.class) {
                 this.header.className = 'lbl ' + this.options.class;
@@ -142,6 +145,8 @@ JSONEditor.defaults.editors.table = class mystring extends JSONEditor.defaults.e
                 this.header.className = this.header.className + ' req'; 
             } 
         }
+        if(this.hide_delete_last_row_buttons) { this.delete_last_row_button.style.display = 'none'; }
+        if(this.hide_delete_all_rows_buttons) { this.remove_all_rows_button.style.display = 'none'; }        
     }
 }
 
