@@ -28,6 +28,19 @@ body{
   background-color: rgb(202, 202, 202);
 }
 
+ .rdg .form-control:first-child input[value="NOT_DEFINED"]:checked+label.lbl {
+  background-color: rgb(202, 202, 202);
+}
+ .rdg .form-control input[type="radio"][value="AMBER"]:checked+label.lbl {
+  background-color: rgb(255,213,28);
+}
+ .rdg .form-control input[value="GREEN"]:checked+label {
+  background-color: rgb(102, 153, 0);
+}
+ .rdg .form-control input[value="CLEAR"]:checked+label {
+  background-color: rgb(220, 220, 220);
+}
+
 div[data-schemaid="cvss4"] .je-indented-panel div div div.row:nth-child(7),
 div[data-schemaid="cvss4"] .je-indented-panel div div div.row:nth-child(8),
 div[data-schemaid="cvss4"] .je-indented-panel div div div.row:nth-child(9)
@@ -43,11 +56,11 @@ div[data-schemaid="cvss4"] .je-indented-panel div div div.row:last-child
   padding: 10px;
   margin: 10px;
 }
-
+/*
 #needle {
   transition-duration: 0.3s;
-  animation: rotate 500ms ease 50ms forwards;
-}
+  animation: rotate 500ms 50ms forwards;
+}*/
 #wig {
     transform-origin: 196.626px 38.181px;
 }
@@ -58,10 +71,14 @@ header:hover #wig{
 
 @keyframes wiggle {
     0% {
+        transform: rotate(0deg)
+    }
+
+    15% {
         transform: rotate(4deg)
     }
 
-    25% {
+    30% {
         transform: rotate(-4deg)
     }
 

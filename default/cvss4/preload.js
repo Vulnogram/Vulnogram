@@ -155,7 +155,21 @@ var urgencyUI = {
 
 function setNeedle(s, u) {
   var sev = cvssjs.severityLevel(s);
-  document.getElementById('needle').setAttribute('transform', `rotate(${6.5 * s + (s > 0 ? 3 : 0)} 196.626 38.181)`);
+  //document.getElementById('needle').setAttribute('transform', `rotate(${6.5 * s + (s > 0 ? 3 : 0)} 196.626 38.181)`);
+  const needle = document.getElementById('needle');
+  const angle = 6.5 * s + (s > 0 ? 3 : 0);
+  //needle.setAttribute('transform-origin', '196.626px 38.181px');
+  needle.animate([{
+    rotate: `${angle}deg`// 196.626px 38.181px`
+  }], {
+    duration: 600,        // Animation speed in ms (e.g., 300ms)
+    delay: 50,
+    easing: 'ease-in-out',   // A nice, smooth easing
+    fill: 'forwards'      // IMPORTANT: This makes the needle stay at its
+    // final position after the animation finishes.
+    // Without it, it would snap back to the start.
+  });
+
   var iscore = document.getElementById('finalScore');
   iscore.innerText = s;
   iscore.setAttribute('class', 'CVSS ' + sev);
@@ -168,10 +182,13 @@ function setNeedle(s, u) {
     iUrgency.setAttribute('class', 'CVSS ' + urgencyUI[u][1]);
   }
   document.getElementById('wig').animate({
-    rotate: ['4deg', '-3deg', '2deg', '-1deg']
+    rotate: ['0deg', '7deg', '-4deg', '2deg', '0deg'],
   }, {
-    duration: 300,
+    duration: 700,
+    delay: 650,
+    easing: 'ease',
     iterations: 1,
+    fill: 'forwards'
   });
   return false;
 }
