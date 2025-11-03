@@ -347,6 +347,8 @@ select.btn {
     text-decoration: none;
     border-radius: 2px;
     color: var(--txt);
+    transition: background-color 0.3s ease;
+
 }
 .sbn {
     width: 30px; height: 30px;

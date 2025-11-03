@@ -56,11 +56,6 @@ div[data-schemaid="cvss4"] .je-indented-panel div div div.row:last-child
   padding: 10px;
   margin: 10px;
 }
-/*
-#needle {
-  transition-duration: 0.3s;
-  animation: rotate 500ms 50ms forwards;
-}*/
 #wig {
     transform-origin: 196.626px 38.181px;
 }
