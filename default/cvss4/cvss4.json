@@ -590,7 +590,8 @@
       "format": "string",
       "watch": {
         "sc": "cvss4.baseScore",
-        "pu": "cvss4.providerUrgency"
+        "pu": "cvss4.providerUrgency",
+        "vs": "cvss4.vectorString"
       },
       "options": {
         "grid_columns": 2,
