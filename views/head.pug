@@ -1,21 +1,26 @@
-//- Copyright (c) 2017 Chandan B N. All rights reserved.
+//- Copyright (c) 2017-2025 Chandan B N. All rights reserved.
 
 meta(charset='utf-8')
 meta(http-equiv='X-UA-Compatible', content='IE=edge')
 meta(name='viewport', content='width=device-width, initial-scale=1.0')
-meta(name='description', content='Vulnogram is a tool for creating and editing CVE information in CVE JSON format, and for generating advisories. It can be used for tracking and managing anything that can be expressed with a JSON-Schema.')
+if (opts && opts.conf.description)
+    meta(name='description', content=opts.conf.description)
+else
+    meta(name='description', content='Vulnogram is the tool for reserving, managing, and publishing CVEs. It can be used for tracking and managing anything that can be expressed with a JSON-Schema.')
 meta(name='keywords' content='psirt, sirt, advisory, CVRF, CSAF, CVE, vulnogram, CVE, JSON')
 meta(name='csrf-token', content=_csrf)
 meta(name='theme-color', content='#f0f8ff')
 meta(property="og:type", content="website")
-meta(property='og:image', content=conf.basedir + 'css/logo.png')
+if (opts && opts.conf.ogImage)
+    meta(property='og:image', content=opts.conf.ogImage)
+else
+    meta(property='og:image', content=conf.basedir + 'css/logo.png')
 link(rel='apple-touch-icon', sizes='256x256', href=conf.basedir + 'css/logo.png')
 if (opts && opts.conf.favicon)
     link(rel='icon' href=opts.conf.favicon)
 else
     link(rel='icon' type='image/png', href= conf.basedir + 'css/logo.png', sizes='256x256')
 link(rel='stylesheet', href= conf.basedir + 'css/min.css')
-//-link(rel='stylesheet', href= conf.basedir + 'css/icns.css')
 link(rel='stylesheet', href= conf.basedir + 'css/vg-icons.css')
 if (opts && opts.style)
     style !{opts.style}

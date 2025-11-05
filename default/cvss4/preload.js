@@ -209,13 +209,15 @@ function loadVector(v, init = true) {
 }
 
 function onCalcChange(vector, score) {
-  document.title = score + ' ' + vector;
   const currentURLVector = window.location.search.substring(1);
   if (currentURLVector !== vector) {
     const newSearch = vector ? `?${vector}` : '';
     const newUrl = window.location.pathname + newSearch;
     history.pushState({ vector: vector }, '', newUrl);
   }
+  setTimeout(() => {
+    document.title = score + ' ' + vector;
+  }, 100);
   return false;
 }
 
