@@ -8,12 +8,12 @@ var cvss = require('./cvss4.json');
 module.exports = {
     conf: {
         title: 'Common Vulnerability Scoring System',
-        description: 'CVSS 4 Calculator',
+        description: 'Intuitive and interactive CVSS 4.0 scoring calculator. Generate accurate vulnerability severity score and ratings, vector string, and JSON exchange file for CVSS v4.0 Base, Threat, and Supplemental metrics.',
         name: 'CVSS 4.0',
         uri: '/cvss4/',
         class: 'vgi-cvss-logo',
         favicon: 'https://raw.githubusercontent.com/Vulnogram/vg-icons/refs/heads/main/src/cvss.svg',
-        ogImage: 'https://www.first.org/cvss/identity/cvssv4_web.png',
+        ogImage: 'https://vulnogram.org/screenshots/cvssog.png',
         order: 0.12, //Where to place the section on heading?
     },
     /*
