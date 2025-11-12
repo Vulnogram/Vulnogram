@@ -209,7 +209,7 @@ function loadVector(v, init = true) {
 }
 
 function onCalcChange(vector, score) {
-  const currentURLVector = window.location.search.substring(1);
+  const currentURLVector = getVectorFromURL();
   if (currentURLVector !== vector) {
     const newSearch = vector ? `?${vector}` : '';
     const newUrl = window.location.pathname + newSearch;
@@ -221,14 +221,30 @@ function onCalcChange(vector, score) {
   return false;
 }
 
-function onURLChange(event) {
-  const vectorFromURL = window.location.search.substring(1);
-  loadVector(vectorFromURL, false);
+function getVectorFromURL() {
+    const rawSearch = window.location.search;
+  if (rawSearch.length <= 1 || rawSearch[0] !== '?') {
+    // If empty or doesn't start with '?', treat as no input.
+    return;
+  }
+  // Get the string *without* the leading '?'
+  let vectorFromURL='';
+  try {
+    //console.log(rawSearch);
+    vectorFromURL = decodeURIComponent(rawSearch.substring(1)).trim();
+  } catch (e) {
+    return; 
+  }
+  return vectorFromURL;
+}
+
+function onURLChange(event,init = false) {
+  let v = getVectorFromURL();
+  if (v) {
+    loadVector(v, init);
+  }
 }
 
 window.addEventListener('popstate', onURLChange);
-
-const initialVector = window.location.search.substring(1);
-if (initialVector) {
-  loadVector(initialVector, true);
-}
+//initialize calc on load use the search text
+onURLChange(null, true);
