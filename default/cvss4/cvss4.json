@@ -605,7 +605,7 @@
       "minimum": 0,
       "maximum": 10,
       "default": 0,
-      "template": "context.vs && window.CVSS40 && (onCalcChange(context.vs, scr = new window.CVSS40(context.vs).Score()) || scr)",
+      "template": "context.vs && window.CVSS40 && (new window.CVSS40(context.vs).Score())",
       "watch": {
         "vs": "cvss4.vectorString"
       },
