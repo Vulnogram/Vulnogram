@@ -307,7 +307,9 @@ function addError(el) {
 
 function validateForm(f) {
     let isvalid = true;
-    f.elements.forEach(x => {
+    const controls = f.elements;
+    for (let i = 0; i < controls.length; i++) {
+        const x = controls[i];
         if (!isvalid)
             return;
         /* Needed is an alias for required to avoid showing
@@ -321,7 +323,7 @@ function validateForm(f) {
                     addError(x);
             }
         }
-    });
+    };
     return isvalid;
 }
 
