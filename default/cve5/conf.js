@@ -16,7 +16,7 @@ module.exports = {
             {
                 label: 'My CVEs',
                 href: function (g) {
-                    return ('/cve/?state=RESERVED,DRAFT,REVIEW,READY&owner=' + g.user.username);
+                    return ('/cve5/?state=draft,new,open,review,waiting,pending&owner=' + g.user.username);
                 },
                 class: 'vgi-folder'
             },
@@ -155,7 +155,7 @@ module.exports = {
         cveState: {
             path: 'body.cveMetadata.state',
             //chart: true,
-            tabs: true,
+            tabs: false,
             enum: ["RESERVED", "PUBLISHED", "REJECTED"],
             class: 'nobr ',
             icons: {
@@ -165,10 +165,10 @@ module.exports = {
             }
         },
         cvss: {
-            path: 'body.containers.cna.metrics.cvssV3_1.baseScore',
+            path: 'body.containers.cna.metrics.cvssV4_0.baseScore',
         },
         severity: {
-            path: 'body.containers.cna.metrics.cvssV3_1.baseSeverity',
+            path: 'body.containers.cna.metrics.cvssV4_0.baseSeverity',
             chart: true,
             hideColumn: true
         },
@@ -224,13 +224,7 @@ module.exports = {
             bulk: true,
             enum: ['example', 'team', 'memebers', 'change', 'in', 'conf.js'],
             class: 'nobr '
-        },
-        /*  'state!': {
-              path: 'body.CVE_data_meta.STATE',
-              chart: false,
-              bulk: false,
-              queryOperator: '$ne'
-          }*/
+        }
     },
     schema: cve5,
     validators: [

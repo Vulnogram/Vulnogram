@@ -207,16 +207,6 @@ app.use(function (req, res, next) {
     next();
 });
 
-//Configuring a reviewToken in conf file allows sharing drafts with 'people who have a link containing the configurable token'
-let review = require('./routes/review');
-
-if (review.public) {
-    app.use('/review', express.static('public'));
-    app.use('/review', review.public);
-}
-
-app.use('/review', ensureAuthenticated, review.protected);
-
 if(conf.customRoutes) {
     for(r of conf.customRoutes) {
         app.use(r.path, require(r.route));
