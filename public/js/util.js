@@ -573,13 +573,13 @@ var cvssjs = {
         "subConfidentialityImpact": "SC",
         "subIntegrityImpact": "SI",
         "subAvailabilityImpact": "SA",
+        "exploitMaturity": "E",
         "Safety": "S",
         "Automatable": "AU",
         "Recovery": "R",
         "valueDensity": "V",
         "vulnerabilityResponseEffort": "RE",
-        "providerUrgency": "U",
-        "exploitMaturity": "E"
+        "providerUrgency": "U"
     },
     metricMap4: {
         "AV": "attackVector",
@@ -867,4 +867,11 @@ var cvssjs = {
 
         return ((0.6*impact + 0.4*exploitability - 1.5)*1.176).toFixed(1);
     }
+}
+
+function copyToClipboard(text){
+        navigator.clipboard.writeText(text).catch(err => {
+        console.error('Failed to copy text: ', err);
+    });
+    return false;
 }

@@ -540,6 +540,7 @@
           "description": "A list of the affected source code functions, methods, subroutines, or procedures (optional).",
           "uniqueItems": true,
           "options": {
+            "hide_header": true,
             "infoText": "A list of the affected source code functions, methods, subroutines, or procedures (optional).",
             "grid_columns": 4,
             "class": "vgi-edit"
@@ -1076,7 +1077,7 @@
           "properties": {
             "engine": {
               "type": "string",
-              "default": "Vulnogram 0.4.0"
+              "default": "Vulnogram 0.5.0"
             }
           },
           "options": {
@@ -1531,6 +1532,7 @@
         }
       ],
       "options": {
+        "hide_header": true,
         "class": "vgi-bug",
         "grid_columns": 6,
         "formClass": "lni"
@@ -1656,6 +1658,7 @@
       ],
       "uniqueItems": true,
       "options": {
+        "hide_header": true,
         "class": "vgi-impact",
         "grid_columns": 6,
         "formClass": "lni"
@@ -1748,107 +1751,229 @@
           { "required": ["format", "scenarios", "cvssV4_0"], "title": "CVSS 4.0" },
           { "required": ["format", "scenarios", "cvssV3_1"], "title": "CVSS 3.1 (Obsolete)" },
           { "required": ["format", "scenarios", "cvssV2_0"], "title": "CVSS 2 (Obsolete)"},
-          { "required": ["other", "SSVCv2.0"], "title": "SSVCv2.0",
+          {
+            "required": [
+              "other"
+            ],
+            "title": "SSVC",
             "default": {
               "other": {
-                "type": "SSVCv2.0",
+                "type": "ssvc",
                 "content": {
-                  "version":"2.0",
-                  "Exploitation": "Active",
-                  "Automatable": "Yes",
-                  "Value Density": "Concentrated",
-                  "Technical Impact": "Total"
+                  "version": "2.0.3",
+                  "role": "CNA",
+                  "options": [
+                    {
+                      "Exploitation": "none"
+                    },
+                    {
+                      "Automatable": "no"
+                    },
+                    {
+                      "Technical Impact": "partial"
+                    }
+                  ]
                 }
               }
             },
-            "noAdditionalProperties":"true",
             "properties": {
               "other": {
                 "type": "object",
-                "required": ["type","content"],
                 "description": "A non-standard impact description, may be prose or JSON block.",
                 "properties": {
                   "type": {
                     "description": "Name of the non-standard impact metrics format used.",
                     "type": "string",
-                    "enum": ["SSVCv2.0"],
-                    "default":"SSVCv2.0",
                     "minLength": 1,
                     "maxLength": 128,
+                    "default": "text",
                     "options": {
-                      "hidden":"true"
+                      "formClass": "lni"
                     }
-                  },
-                  "content": {
-                    "title": "Stakeholder Specific Vulnerability Categorization",
-                    "format": "object",
-                    "type": "object",
-                    "required": ["Exploitation"],
-                    "description": "JSON object not covered by another metrics format.",
-                    "minProperties": 0,
-                    "properties": {
-                      "version": {
-                        "format": "string",
-                        "options": {
-                          "hidden": true
+                  }
+                },
+                "required": [
+                  "type",
+                  "content"
+                ],
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "type": {
+                          "const": "ssvc"
                         }
                       },
-                      "Exploitation": {
-                        "format": "radio",
-                        "type":"string",
-                        "enum":["None", "PoC", "Active"],
-                        "options": {
-                          "icons": {
-                            "None": "safe",
-                            "PoC": "text",
-                            "Active": "bomb"
+                      "required": [
+                        "type"
+                      ]
+                    },
+                    "then": {
+                      "properties": {
+                        "type": {
+                          "description": "Name of the non-standard impact metrics format used.",
+                          "type": "string",
+                          "enum": [
+                            "ssvc"
+                          ],
+                          "default": "ssvc",
+                          "minLength": 1,
+                          "maxLength": 128,
+                          "options": {
+                            "hidden": "true"
+                          }
+                        },
+                        "content": {
+                          "title": "Stakeholder Specific Vulnerability Categorization",
+                          "format": "object",
+                          "type": "object",
+                          "description": "JSON object not covered by another metrics format.",
+                          "properties": {
+                            "timestamp": {
+                              "format": "string",
+                              "options": {
+                                "hidden": true
+                              },
+                              "default": ""
+                            },
+                            "id": {
+                              "format": "string",
+                              "options": {
+                                "hidden": true
+                              },
+                              "default": ""
+                            },
+                            "options": {
+                              "format": "ssvcOpts",
+                              "type": "array",
+                              "options": {
+                                "disable_array_add": true,
+                                "disable_array_delete": true,
+                                "disable_array_delete_all_rows": true,
+                                "disable_array_delete_last_row": true
+                              },
+                              "items": {
+                                "type": "object",
+                                "maxProperties": 1,
+                                "properties": {
+                                  "Exploitation": {
+                                    "format": "radio",
+                                    "type": "string",
+                                    "enum": [
+                                      "none",
+                                      "poc",
+                                      "active"
+                                    ],
+                                    "options": {
+                                      "icons": {
+                                        "none": "safe",
+                                        "poc": "text",
+                                        "active": "bomb"
+                                      },
+                                      "tooltips": {
+                                        "none": "There is no evidence of active exploitation and no public proof of concept (PoC) of how to exploit the vulnerability.",
+                                        "poc": "A public proof of concept (PoC) is available, which may include exploit code from sources like Metasploit or ExploitDB.",
+                                        "active": "Shared, observable, and reliable evidence that cyber threat actors have used the exploit in the wild."
+                                      }
+                                    }
+                                  },
+                                  "Automatable": {
+                                    "format": "radio",
+                                    "type": "string",
+                                    "enum": [
+                                      "no",
+                                      "yes"
+                                    ],
+                                    "options": {
+                                      "icons": {
+                                        "yes": "cog",
+                                        "no": "no"
+                                      },
+                                      "tooltips": {
+                                        "no": "Attackers cannot reliably automate steps 1-4 of the kill chain (reconnaissance, weaponization, delivery, and exploitation) for this vulnerability.",
+                                        "yes": "Attackers can reliably automate steps 1-4 of the kill chain (reconnaissance, weaponization, delivery, and exploitation)."
+                                      }
+                                    }
+                                  },
+                                  "Technical Impact": {
+                                    "format": "radio",
+                                    "type": "string",
+                                    "enum": [
+                                      "none",
+                                      "partial",
+                                      "total"
+                                    ],
+                                    "options": {
+                                      "icons": {
+                                        "none": "signal",
+                                        "partial": "signal-2",
+                                        "total": "signal-1"
+                                      },
+                                      "tooltips": {
+                                        "none": "No technical impact. Note: The official SSVC specification assumes a vulnerability always has at least 'Partial' technical impact.",
+                                        "partial": "The exploit gives the adversary limited control over, or information exposure about, the behavior of the software that contains the vulnerability. Or the exploit gives the adversary an importantly low stochastic opportunity for total control.",
+                                        "total": "The exploit gives the adversary total control over the behavior of the software, or it gives total disclosure of all information on the system that contains the vulnerability."
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "role": {
+                              "format": "string",
+                              "options": {
+                                "hidden": true
+                              },
+                              "default": "CNA"
+                            },
+                            "version": {
+                              "format": "string",
+                              "options": {
+                                "hidden": true
+                              },
+                              "default": "2.0.3"
+                            }
                           }
                         }
-                      },
-                      "Automatable": {
-                        "format": "radio",
-                        "type":"string",
-                        "enum":["No","Yes"],
-                        "options": {
-                          "icons": {
-                            "Yes": "cog",
-                            "No": "no"
-                          }
-                        }
-                      },
-                      "Technical Impact": {
-                        "format": "radio",
-                        "type":"string",
-                        "enum":["None", "Partial", "Total"],
-                        "options": {
-                          "icons": {
-                            "None": "signal",
-                            "Partial": "signal-2",
-                            "Total": "signal-1"
-                          }
-                        }
-                      },
-                      "Value Density": {
-                        "format": "radio",
-                        "type":"string",
-                        "enum":["Diffused","Concentrated"],
-                        "options": {
-                          "icons": {
-                            "Diffused": "diffuse",
-                            "Concentrated": "box"
-                          }
+                      }
+                    },
+                    "else": {
+                      "properties": {
+                        "content": {
+                          "type": "object"
                         }
                       }
                     }
                   }
-                }
-              },
-              "format": {
-                "type":"string"
+                ]
               }
             }
           },
-          { "required": ["other"], "title": "Other" }
+          {
+            "required": [
+              "other"
+            ],
+            "title": "Other",
+            "default": {
+              "other": {
+                "type": "text",
+                "content": {
+                  "text": ""
+                }
+              }
+            },
+            "properties": {
+              "other": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "pattern": "^(?!ssvc$).*"
+                  }
+                }
+              }
+            }
+          }
         ],
         "description": "This is impact type information (e.g. a text description, CVSSv2, CVSSv3, etc.). Must contain: At least one entry, can be text, CVSSv2, CVSSv3, others may be added.",
         "minimumProperties": 1,
@@ -2237,6 +2362,40 @@
                   }
                 }
               },
+              "exploitMaturity": {
+                "title": "Exploit Maturity",
+                "type": "string",
+                "format": "radio",
+                "default": "NOT_DEFINED",
+                "enum": [
+                  "UNREPORTED",
+                  "PROOF_OF_CONCEPT",
+                  "ATTACKED",
+                  "NOT_DEFINED"
+                ],
+                "options": {
+                  "infoText": "This metric measures the likelihood of the vulnerability being attacked, and is based on the current state of exploit techniques, exploit code availability, or active, “in-the-wild” exploitation.",
+                  "tooltips": {
+                    "NOT_DEFINED": "Reliable threat intelligence is not available to determine Exploit Maturity characteristics.",
+                    "UNREPORTED": "Based on available threat intelligence each of the following must apply:\nNo knowledge of publicly available proof-of-concept exploit code No knowledge of reported attempts to exploit this vulnerability\nNo knowledge of publicly available solutions used to simplify attempts to exploit the vulnerability (i.e., neither the “POC” nor “Attacked” values apply)",
+                    "PROOF_OF_CONCEPT": "Based on available threat intelligence each of the following must apply:\nProof-of-concept exploit code is publicly available\nNo knowledge of reported attempts to exploit this vulnerability\nNo knowledge of publicly available solutions used to simplify attempts to exploit the vulnerability",
+                    "ATTACKED": "Based on available threat intelligence each of the following must apply:\nNo knowledge of publicly available proof-of-concept exploit code No knowledge of reported attempts to exploit this vulnerability\nNo knowledge of publicly available solutions used to simplify attempts to exploit the vulnerability (i.e., neither the “POC” nor “Attacked” values apply)"
+                  },
+                  "grid_columns": 12,
+                  "enum_titles": [
+                    "Unreported",
+                    "Published Proof-of-Concept",
+                    "Attacked",
+                    "Not Defined"
+                  ],
+                  "icons": {
+                    "NOT_DEFINED": "what",
+                    "UNREPORTED": "what",
+                    "PROOF_OF_CONCEPT": "text",
+                    "ATTACKED": "bomb"
+                  }
+                }
+              },
               "Safety": {
                 "title": "Safety Impact",
                 "type": "string",
@@ -2393,7 +2552,7 @@
           "Not defined",
           "Informational",
           "Reduced",
-          "Moderate",
+          "Normal",
           "Highest"
         ],
         "icons": {
@@ -2409,27 +2568,28 @@
                 "title": "Base Severity",
                 "type": "string",
                 "format": "string",
-                "template": "cvssjs.severity(context.sc).name",
+                "template": "context.sc && (cvssjs.severity(context.sc).name)",
                 "watch": {
                   "sc": "cvss4.baseScore"
                 },
                 "options": {
-                  "grid_columns": 2,
-                  "class": "vgi-dial"
+                  "grid_columns": 4,
+                  "class": "vgi-dial",
+                  "input_width": "5em"
                 }
               },
               "baseScore": {
-                "title": "Score (TBD)",
+                "title": "CVSS-B",
                 "type": "number",
                 "minimum": 0,
                 "maximum": 10,
                 "default":0,
-                "template": "context.vs && (new window.CVSS40(context.vs)).Score()",
+                "template": "context.vs && window.CVSS40 && (new window.CVSS40(context.vs).Score())",
                 "watch": {
                   "vs": "cvss4.vectorString"
                  },                
                 "options": {
-                  "grid_columns": 1,
+                  "grid_columns": 2,
                   "input_width": "3em"
                 }
               },
@@ -2454,6 +2614,7 @@
                   "subIntegrityImpact": "cvss4.subIntegrityImpact",
                   "vulnAvailabilityImpact": "cvss4.vulnAvailabilityImpact",
                   "subAvailabilityImpact": "cvss4.subAvailabilityImpact",
+                  "exploitMaturity": "cvss4.exploitMaturity",
                   "Safety": "cvss4.Safety",
                   "Automatable": "cvss4.Automatable",
                   "Recovery": "cvss4.Recovery",
@@ -2465,9 +2626,17 @@
                   {
                     "place": "header",
                     "class": "vgi-ext indent",
-                    "href": "'https://www.first.org/cvss/calculator/4.0#' + context.self",
+                    "href": "'https://www.first.org/cvss/calculator/4.0#' + cvssjs.vector4(context)",
                     "title": "CVSS Calculator",
-                    "rel": "' Open in CVSS Calculator'"
+                    "rel": "' First.org Calc'"
+                  },
+                  {
+                    "place": "header",
+                    "target": "_self",
+                    "class": "vgi-out",
+                    "href": "'javascript:copyToClipboard(\"' + cvssjs.vector4(context) + '\");void(0);'",
+                    "title": "Copy Vector",
+                    "rel": "' Copy'"
                   }
                 ]
               }
@@ -3018,7 +3187,8 @@
       "uniqueItems": true,
       "options": {
         "class": "vgi-safe tgap",
-        "disable_array_add": false
+        "disable_array_add": false,
+        "hide_header": true
       },
       "items": {
         "title": "Solution",
@@ -3036,9 +3206,8 @@
       "description": "Workarounds and mitigations for this vulnerability.",
       "uniqueItems": true,
       "options": {
-        "class": "vgi-avoid tgap",
-        "disable_array_delete": false,
-        "disable_array_delete_last_row": false
+        "hide_header": true,
+        "class": "vgi-avoid tgap"
       },
       "items": {
         "title": "Workaround",
@@ -3053,6 +3222,7 @@
       "type": "array",
       "format": "table",
       "options": {
+        "hide_header": true,
         "class": "vgi-cog tgap"
       },
       "title": "Required Configuration for Exposure (optional)",
@@ -3070,6 +3240,7 @@
     "exploits": {
       "title": "Exploit Status (optional)",
       "options": {
+        "hide_header": true,
         "class": "vgi-bomb tgap"
       },
       "type": "array",

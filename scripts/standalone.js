@@ -24,8 +24,8 @@ confOpts = {
     seaview: {conf:{
         url:'/seaview',
         class:'vgi-search',
-        title: 'Display CVEs found in text',
-        name: 'Seaview - CVE Viewer',
+        title: 'Search and Display CVEs',
+        name: 'Seaview - CVE Search',
 
     }}
 }
@@ -56,7 +56,7 @@ fs.writeFileSync("standalone/index.html", cveEdit({
 }));
 
 fs.writeFileSync("standalone/cvss4.html", pug.compileFile('default/cvss4/edit.pug', {compileDebug: false})({
-    title: 'Vulnogram CVSS Calculator',
+    title: 'Common Vulnerability Scoring System CVSS 4',
     idpath: 'vectorString',
     min: true,
     doc: null,

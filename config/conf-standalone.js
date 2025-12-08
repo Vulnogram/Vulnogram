@@ -11,9 +11,10 @@ module.exports = {
     aceHash: "sha512-OMjy8oWtPbx9rJmoprdaQdS2rRovgTetHjiBf7RL7LvRSouoMLks5aIcgqHb6vGEAduuPdBTDCoztxLR+nv45g==",
 
     // JSON Editor
-    jsoneditor: 'https://cdnjs.cloudflare.com/ajax/libs/json-editor/2.8.0/jsoneditor.min.js',
-    jsoneditorHash: 'sha512-8y8kuGFzNGSgACEMNnXJGhOQaLAd4P9MdCXnJ37QjGTBPRrD5FCEVEKj/93xNihQehkO3yVKnOECFWGxxBsveQ==',
-
+    jsoneditor: 'https://cdnjs.cloudflare.com/ajax/libs/json-editor/2.15.2/jsoneditor.js',
+    jsoneditorHash: 'sha512-Odi69X/i28s3GR3ZQyE+g4ieU30AMOovH50wJbehVMWxVChGa1KCUzyvOXkHfYr/2AQizFRNWI1R6oifT16ouQ==',
+    //jsoneditor: 'https://cdn.jsdelivr.net/npm/@json-editor/json-editor@latest/dist/nonmin/jsoneditor.js',
+    //jsoneditor: '/js/jsoneditor.js',
     // ajv - JSON schema draft-07 validation
     // NOTE -- including ajv is experimental and can be excluded if desired by commenting out the next two lines
     //ajv: 'https://cdnjs.cloudflare.com/ajax/libs/ajv/8.12.0/ajv7.min.js',
@@ -23,5 +24,5 @@ module.exports = {
         'cve5',
 //        'cvss4'
     ],
-    homepage: 'https://vulnogram.github.io'
+    homepage: 'https://vulnogram.org'
 };

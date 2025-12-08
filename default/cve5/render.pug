@@ -54,10 +54,18 @@ block prepend content
                     span.text
                         +spara(cve.solution)
 
-mixin cpeApplicability(cpeAs)
+mixin cpeApplicability(cpeAs,readonly)
+  .indent.rnd.pad2.bck.sec
+    div.flx 
+        b CPE Applicability (based on the Affected products section) 
+        if !readonly
+            .right
+                - var cpestate = (localStorage.getItem('autoCPEChk')==='true');
+                input#autoCPEChk.chk(type='checkbox',checked=cpestate,onclick='autoCPE()')
+                label.lbl(for="autoCPEChk") Auto Update
+                | 
+                button.fbn.vgi-cancel(type="button",onclick='clearCPE()') Remove
     if cpeAs && cpeAs.length > 0
-      .indent.rnd.pad2.bck.sec
-        b CPE Applicability (based on the Affected products section)
         each cpeA, k in cpeAs
             p
                 if k > 0
@@ -320,7 +328,7 @@ mixin container(con)
     if con.cpeApplicability
         #CPE
             h2 CPE Applicability:
-            +cpeApplicability(con.cpeApplicability)
+            +cpeApplicability(con.cpeApplicability,true)
             br(style="font-size:0;")
 
     if con.solutions
