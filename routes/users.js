@@ -249,7 +249,7 @@ public.get('/login', csrfProtection, function (req, res) {
 // Login process
 public.post('/login', csrfProtection, function (req, res, next) {
     passport.authenticate('local', {
-        successRedirect: req.session.returnTo || '/cve',
+        successRedirect: req.session.returnTo || '/home',
         failureRedirect: '/users/login',
         failureFlash: true
     })(req, res, next);
