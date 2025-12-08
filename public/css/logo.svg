@@ -54,25 +54,84 @@
        spacingx="100"
        spacingy="100" />
   </sodipodi:namedview>
-    <g id="whl">
-        <g id="two">
-  <path
-    fill="darkslategray"
-     style="fill-opacity:0.67940551;fill-rule:evenodd"
-     d="M 100,100 100,0 200,0 Z"
-     id="tri1"
-     />
-  <path
-    fill="darkslategray"
-     id="tri2"
-     d="m 0,0 0,100 100,0 z"
-     style="fill-opacity:0.67940551;fill-rule:evenodd" />
-        </g>
-  <path
-    fill="darkslategray"
-     style="fill-opacity:0.67940551;fill-rule:evenodd"
-     d="M 100,200 100,100 0,100 Z"
-     id="tri3"
-     />
+  <g id="whl">
+    <g id="two">
+      <animateTransform
+         attributeName="transform"
+         type="translate"
+         dur="10s"
+         begin="0.5s"
+         repeatCount="indefinite"
+         keyTimes="0;0.3;0.35;0.38;0.42;0.44;0.5;0.55;1"
+         values="0 0;0 0; -10 10; 200 -200; -200 -200; -200 300;5 -5;0 0;0 0"
+         />
+      <path
+        fill="darkslategray"
+        style="fill-opacity:0.67940551;fill-rule:evenodd"
+        d="M 100,100 100,0 200,0 Z"
+        id="tri1">
+        <animateTransform
+           attributeName="transform"
+           type="translate"
+           dur="10s"
+           begin="0.3s"
+           repeatCount="indefinite"
+           keyTimes="0.0;0.2;0.25;0.65;0.7;1.0"
+           values="0 0;0 0;-25 25;-25 25;0 0;0 0"
+           />
+        <animateTransform
+           attributeName="transform"
+           type="rotate"
+           dur="10s"
+           begin="0.3s"
+           repeatCount="indefinite"
+           keyTimes="0.0;0.2;0.25;0.65;0.7;1.0"
+           values="0 0 0;0 0 0;-45 200 0;-45 200 0;0 0 0;0 0 0"
+           additive="sum"
+           />
+
+      </path>
+      <path
+        fill="darkslategray"
+        id="tri2"
+        d="M 0,0 0,100 100,100 z"
+        style="fill-opacity:0.67940551;fill-rule:evenodd">
+        <animateTransform
+           attributeName="transform"
+           type="translate"
+           dur="10s"
+           begin="0.3s"
+           repeatCount="indefinite"
+           keyTimes="0;0.25;0.30;0.6;0.65;1"
+           values="0 0;0 0;33.58 25;33.58 25;0 0;0 0"
+           additive="sum"/>
+         <animateTransform
+           attributeName="transform"
+           type="rotate"
+           dur="10s"
+           begin="0.3s"
+           repeatCount="indefinite"
+           keyTimes="0;0.25;0.30;0.6;0.65;1"
+           values="0 0 0;0 0 0;-45 0 0;-45 0 0;0 0 0;0 0 0"
+           additive="sum"
+           />
+
+      </path>
     </g>
+    <path
+      fill="darkslategray"
+      style="fill-opacity:0.67940551;fill-rule:evenodd"
+      d="M 100,200 100,100 0,100 Z"
+      id="tri3">
+      <animateTransform
+         attributeName="transform"
+         type="translate"
+         dur="10s"
+         begin="0s"
+         repeatCount="indefinite"
+         keyTimes="0;0.3;0.35;0.38;0.42;0.44;0.5;0.55;1"
+         values="0 0; 0 0; -10 10; 200 -200; -200 -200; -200 300;-5 5;0 0; 0 0"
+         />
+    </path>
+  </g>
 </svg>
