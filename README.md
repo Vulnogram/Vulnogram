@@ -4,7 +4,7 @@ _Making the world safer one CVE ID at a time, since 2017._
 
 ## Introduction
 
-Vulnogram is a tool for creating and editing CVE information in CVE JSON format, and for generating advisories.
+Vulnogram is the tool for reserving, managing, and publishing CVEs. Get started at [vulnogram.org](https://vulnogram.org) or deploy a Server or Docker edition for full enterprise features.
 
 The name Vulnogram is inspired from Greek origin suffix '-gram' which is used for denoting something written or recorded especially in a certain way. Vulnerability related information when recorded in a standard format can help in aggregation, curation, dissemination, analysis and remediation. This enables automation and efficiency in response activities.
 
@@ -16,9 +16,9 @@ Vulnogram project aims to make it easier for vendors and security researchers to
 
 Vulnogram can be deployed in two modes:
 
-| Browser mode                  | Server mode |
+| Browser mode                  | Enterprise Server or Docker mode |
 |------------------------------|------------|
-| Frontend web UI only, as seen on [vulnogram.org(https://vulnogram.org). | A NodeJS web application serves frontend web UI for a backend Mongodb. |
+| Frontend web UI only, as seen on [vulnogram.org](https://vulnogram.org). | A NodeJS web application serves frontend web UI for a backend Mongodb. |
 | It is a Javascript based tool to open, import, edit, preview and save JSON documents which conform to a given [JSON-Schema](https://json-schema.org). | It is a modern scalable issue tracker similar to JIRA or bugtrack but using [JSON-Schemas](https://json-schema.org) as data models and a NoSQL database as a backend. Along with customizable [plugins](https://github.com/Vulnogram/plugins) it can be used for tracking anything that can be expressed with a [JSON-Schema](https://json-schema.org). [plugins](https://github.com/Vulnogram/plugins) are available for tracking security incidents, tickets, contacts, NVD entries and CVE assignments. |
 | Can't save CVE JSON drafts.  | JSON documents are saved to a NoSQL (Mongodb) backend. |
 | No login required.           | Users are authenticated. |
@@ -174,6 +174,6 @@ This project uses or depends on software from:
 - linkifyjs
 - pptxGenJS
 
-Copyright (c) 2017-2022 Chandan B N.
+Copyright (c) 2017-2025 Chandan B N.
 
 SPDX-License-Identifier: MIT
