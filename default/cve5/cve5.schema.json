@@ -3,7 +3,7 @@
   "$id": "https://cve.org/cve/record/v5_00/",
   "type": "object",
   "title": "CVE JSON record format",
-  "description": "cve-schema specifies the CVE JSON record format. This is the blueprint for a rich set of JSON data that can be submitted by CVE Numbering Authorities (CNAs) and Authorized Data Publishers (ADPs) to describe a CVE Record. Some examples of CVE record data include CVE ID number, affected product(s), affected version(s), and public references. While those specific items are required when assigning a CVE, there are many other optional data in the schema that can be used to enrich CVE Records for community benefit. Learn more about the CVE program at [the official website](https://cve.mitre.org). This CVE JSON record format is defined using JSON Schema. Learn more about JSON Schema [here](https://json-schema.org/).",
+  "description": "cve-schema specifies the CVE JSON record format. This is the blueprint for a rich set of JSON data that can be submitted by CVE Numbering Authorities (CNAs) and Authorized Data Publishers (ADPs) to describe a CVE Record. Some examples of CVE record data include CVE ID number, affected product(s), affected version(s), and public references. While those specific items are required when assigning a CVE, there are many other optional data in the schema that can be used to enrich CVE Records for community benefit. Learn more about the CVE program at [the official website](https://www.cve.org). This CVE JSON record format is defined using JSON Schema. Learn more about JSON Schema [here](https://json-schema.org/).",
   "options": {
     "class": "hid",
     "keep_oneof_values": true
@@ -197,6 +197,7 @@
     "cveId": {
       "type": "string",
       "title": "CVE ID",
+      "description": "The official CVE identifier contains the string 'CVE', followed by the year, followed by a 4 to 19 digit number. Note that the year-part of the identifier should indicate either the year the vulnerability was discovered, or the year the CVE ID is published in. CVE IDs must be unique.",
       "pattern": "^CVE-[0-9]{4}-[0-9]{4,19}$",
       "options": {
         "class": "vgi-tag",
@@ -212,6 +213,23 @@
       "examples": [
         "CVE-yyyy-nnnn"
       ]
+    },
+    "cpe22and23": {
+      "type": "string",
+      "description":"Common Platform Enumeration (CPE) Name in either 2.2 or 2.3 format",
+      "pattern": "([c][pP][eE]:/[AHOaho]?(:[A-Za-z0-9._\\-~%]*){0,6})|(cpe:2\\.3:[aho*\\-](:(((\\?*|\\*?)([a-zA-Z0-9\\-._]|(\\\\[\\\\*?!\"#$%&'()+,/:;<=>@\\[\\]\\^`{|}~]))+(\\?*|\\*?))|[*\\-])){5}(:(([a-zA-Z]{2,3}(-([a-zA-Z]{2}|[0-9]{3}))?)|[*\\-]))(:(((\\?*|\\*?)([a-zA-Z0-9\\-._]|(\\\\[\\\\*?!\"#$%&'()+,/:;<=>@\\[\\]\\^`{|}~]))+(\\?*|\\*?))|[*\\-])){4})",
+      "minLength": 1,
+      "maxLength": 2048,
+      "options": {
+        "patternmessage": "Enter a valid CPE"
+      }
+    },
+    "cpe23": {
+      "type": "string",
+      "description":"Common Platform Enumeration (CPE) Name in 2.3 format",
+      "pattern": "(cpe:2\\.3:[aho*\\-](:(((\\?*|\\*?)([a-zA-Z0-9\\-._]|(\\\\[\\\\*?!\"#$%&'()+,/:;<=>@\\[\\]\\^`{|}~]))+(\\?*|\\*?))|[*\\-])){5}(:(([a-zA-Z]{2,3}(-([a-zA-Z]{2}|[0-9]{3}))?)|[*\\-]))(:(((\\?*|\\*?)([a-zA-Z0-9\\-._]|(\\\\[\\\\*?!\"#$%&'()+,/:;<=>@\\[\\]\\^`{|}~]))+(\\?*|\\*?))|[*\\-])){4})",
+      "minLength": 1,
+      "maxLength": 2048
     },
     "orgId": {
       "description": "A UUID for an organization participating in the CVE program. This UUID can be used to lookup the organization record in the user registry service.",
@@ -294,7 +312,7 @@
       },
       "description": "Provides information about the set of products and services affected by this vulnerability.",
 
-
+      "additionalProperties": false,
       "properties": {
         "vendor": {
           "type": "string",
@@ -477,18 +495,13 @@
           "options": {
             "hidden": true
           },
-          "description": "Affected products defined by CPE. This is an array of CPE values (vulnerable and not), we use an array so that we can make multiple statements about the same version and they are separate (if we used a JSON object we'd essentially be keying on the CPE name and they would have to overlap). Also this allows things like cveDataVersion or cveDescription to be applied directly to the product entry. This also allows more complex statements such as \"Product X between versions 10.2 and 10.8\" to be put in a machine-readable format. As well since multiple statements can be used multiple branches of the same product can be defined here.",
+          "description": "Affected products defined by CPE. This is an array of CPE values (vulnerable and not), we use an array so that we can make multiple statements about the same version and they are separate (if we used a JSON object we'd essentially be keying on the CPE name and they would have to overlap). Also, this allows things like cveDataVersion or cveDescription to be applied directly to the product entry. This also allows more complex statements such as \"Product X between versions 10.2 and 10.8\" to be put in a machine-readable format. As well since multiple statements can be used multiple branches of the same product can be defined here. NOTE: Consider using the newer cpeApplicability block for defining CPE data using the CPE Applicability Language which includes more options for defining CPE Names.",
           "uniqueItems": true,
           "items": {
             "title": "CPE Name",
             "type": "string",
             "description": "Common Platform Enumeration (CPE) Name in either 2.2 or 2.3 format",
-            "pattern": "([c][pP][eE]:/[AHOaho]?(:[A-Za-z0-9._\\-~%]*){0,6})|(cpe:2\\.3:[aho*\\-](:(((\\?*|\\*?)([a-zA-Z0-9\\-._]|(\\\\[\\\\*?!\"#$%&'()+,/:;<=>@\\[\\]\\^`{|}~]))+(\\?*|\\*?))|[*\\-])){5}(:(([a-zA-Z]{2,3}(-([a-zA-Z]{2}|[0-9]{3}))?)|[*\\-]))(:(((\\?*|\\*?)([a-zA-Z0-9\\-._]|(\\\\[\\\\*?!\"#$%&'()+,/:;<=>@\\[\\]\\^`{|}~]))+(\\?*|\\*?))|[*\\-])){4})",
-            "minLength": 1,
-            "maxLength": 2048,
-            "options": {
-              "patternmessage": "Enter a valid CPE"
-            }
+	    "$ref": "#/definitions/cpe22and23"
           }
         },
         "modules": {
@@ -567,13 +580,36 @@
             }
           }
         },
+	"packageURL": {
+          "title": "Package URL",
+          "description": "A Package URL, a unified URL specification for identifying packages hosted by known package hosts. The Package URL MUST NOT include a version.",
+          "$ref": "#/definitions/uriType",
+          "examples": [
+            "pkg:bitbucket/birkenfeld/pygments-main",
+            "pkg:deb/debian/curl?arch=i386&distro=jessie",
+            "pkg:docker/cassandra",
+            "pkg:docker/customer/dockerimage?repository_url=gcr.io",
+            "pkg:gem/jruby-launcher?platform=java",
+            "pkg:gem/ruby-advisory-db-check",
+            "pkg:github/package-url/purl-spec",
+            "pkg:golang/google.golang.org/genproto#googleapis/api/annotations",
+            "pkg:maven/org.apache.xmlgraphics/batik-anim?packaging=sources",
+            "pkg:maven/org.apache.xmlgraphics/batik-anim?repository_url=repo.spring.io/release",
+            "pkg:npm/%40angular/animation",
+            "pkg:npm/foobar",
+            "pkg:nuget/EnterpriseLibrary.Common",
+            "pkg:pypi/django",
+            "pkg:rpm/fedora/curl?arch=i386&distro=fedora-25",
+            "pkg:rpm/opensuse/curl?arch=i386&distro=opensuse-tumbleweed"
+          ]
+        },
         "versions": {
           "type": "array",
           "title": "Versions (exact versions or ranges)",
           "options": {
             "class": "vgi-versions"
           },
-          "description": "Set of product versions or version ranges related to the vulnerability. The versions satisfy the CNA Rules [8.1.2 requirement](https://cve.mitre.org/cve/cna/rules.html#section_8-1_cve_entry_information_requirements). Versions or defaultStatus may be omitted, but not both.",
+          "description": "Set of product versions or version ranges related to the vulnerability. The versions help satisfy the CNA Rules [5.1.3 requirement](https://www.cve.org/ResourcesSupport/AllResources/CNARules#section_5-1_Required_CVE_Record_Content). Versions or defaultStatus may be omitted, but not both.",
           "minItems": 1,
           "uniqueItems": true,
           "format": "table",
@@ -719,7 +755,7 @@
     "dataVersion": {
       "description": "The version of the schema being used. Used to support multiple versions of this format.",
       "type": "string",
-      "default": "5.1",
+      "default": "5.2.0",
       "pattern": "^5\\.[0-9]+(\\.[0-9]+)?$",
       "options": {
         "hidden": "true"
@@ -1199,7 +1235,13 @@
         "affected": {
           "$ref": "#/definitions/affected"
         },
-
+        "cpeApplicability": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/cpeApplicabilityElement"
+          }
+        },
+                 
         "references": {
           "$ref": "#/definitions/references"
         },
