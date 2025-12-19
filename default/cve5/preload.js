@@ -22,6 +22,74 @@ if (initJSON && initJSON.cveMetadata && initJSON.cveMetadata.state == 'REJECTED'
     docEditorOptions = publicEditorOption;
 }
 
+function setProductExamples(schema, field, examples) {
+    if (!schema || !schema.definitions || !schema.definitions.product || !schema.definitions.product.properties || !schema.definitions.product.properties[field]) {
+        return;
+    }
+    schema.definitions.product.properties[field].examples = examples;
+}
+
+var ensureAssignerExamplesFromCache = null;
+async function ensureAssignerExamples(assignerShortName) {
+    if (!assignerShortName || typeof normalizeShortName !== 'function' || typeof loadExamples !== 'function') {
+        return;
+    }
+    var orgName = normalizeShortName(assignerShortName);
+    if (!orgName) {
+        return;
+    }
+    window.vgExamples = window.vgExamples || {};
+    var fields = ['vendor', 'product'];
+    var schemas = [docSchema, publicEditorOption.schema];
+    await Promise.all(fields.map(async function (field) {
+        try {
+            var examples = null;
+            if (typeof vgExamples !== 'undefined' && vgExamples[field] && vgExamples[field][orgName]) {
+                examples = vgExamples[field][orgName];
+            }
+            if (!examples) {
+                examples = await loadExamples(field, orgName);
+            }
+            if (examples) {
+                schemas.forEach(function (schema) {
+                    setProductExamples(schema, field, examples);
+                });
+            }
+        } catch (e) {
+            //console.error('Failed to load examples for ' + field + '/' + orgName, e);
+        }
+    }));
+}
+
+if (!initJSON && csCache && csCache.org) {
+    try {
+        ensureAssignerExamplesFromCache = ensureAssignerExamples(csCache.org);
+    } catch (e) {
+        console.error('Failed to start loading examples for ' + csCache.org, e);
+    }
+}
+
+if (typeof loadJSON === 'function') {
+    var originalLoadJSON = loadJSON;
+    loadJSON = async function (res) {
+        if (ensureAssignerExamplesFromCache) {
+            try {
+                await ensureAssignerExamplesFromCache;
+            } catch (e) {
+                console.error('Continuing without cached assigner examples', e);
+            }
+        }
+        if (res && res.cveMetadata && res.cveMetadata.assignerShortName) {
+            try {
+                await ensureAssignerExamples(res.cveMetadata.assignerShortName);
+            } catch (e) {
+                console.error('Continuing without assigner examples', e);
+            }
+        }
+        return originalLoadJSON.apply(this, arguments);
+    }
+}
+
 // make sure all starting and ending spaces in strings are trimmed 
 JSONEditor.defaults.editors.string.prototype.sanitize = function(value) {
     if(value)
@@ -125,11 +193,9 @@ class ssvcOpts extends JSONEditor.defaults.editors.array {
                 }
             });
         }
-        console.log(value);
     }
 
     getValue() {
-        console.log('called getValue');
         var ret = [];
         if (this.editorMap) {
             for (const key in this.editorMap) {
@@ -144,7 +210,6 @@ class ssvcOpts extends JSONEditor.defaults.editors.array {
 
     build() {
         super.build();
-        console.log(this.schema);
         // Clear any existing editor containers to rebuild subeditors
         if (this.editors && this.editors.length) {
             this.editors.forEach(editor => editor.destroy());
@@ -180,7 +245,6 @@ class ssvcOpts extends JSONEditor.defaults.editors.array {
             editor.preBuild();
             editor.build();
             editor.postBuild();
-            console.log(editor);
             // Append editor container to this container
             if (this.container) {
                 this.container.appendChild(row);

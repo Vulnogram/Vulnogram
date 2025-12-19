@@ -1,5 +1,33 @@
 var currentYear = new Date().getFullYear();
 const defaultTimeout = 1000 * 60 * 60; // one hour timeout
+var vgExamples = window.vgExamples || {};
+window.vgExamples = vgExamples;
+
+async function loadExamples(field, orgName) {
+    if (!field || !orgName) {
+        return;
+    }
+    if (!vgExamples[field]) {
+        vgExamples[field] = {};
+    } else if (vgExamples[field][orgName]) {
+        return vgExamples[field][orgName];
+    }
+
+    var url = 'https://raw.githubusercontent.com/Vulnogram/cve-index/refs/heads/main/' + field + 's/' + orgName + '.json';
+    var response = await fetch(url, {
+        method: 'GET',
+        credentials: 'omit',
+        headers: {
+            'Accept': 'application/json, text/plain, */*'
+        }
+    });
+    if (!response.ok) {
+        //throw new Error('Failed to load examples for ' + field + '/' + orgName + ': ' + response.statusText);
+    }
+    var data = await response.json();
+    vgExamples[field][orgName] = data;
+    return data;
+}
 
 function hidepopups() {
     document.getElementById("userListPopup").open = false;

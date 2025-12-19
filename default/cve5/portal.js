@@ -119,7 +119,10 @@ function listenforLogouts() {
         showPortalLogin(a.message);
     }
 }
-
+function normalizeShortName(shortName) {
+    if (!shortName) return null;
+    return String(shortName).trim().toLowerCase().replace(/\s+/g, '_');
+}
 async function portalLogin(elem, credForm) {
     try {
         if (!'serviceWorker' in navigator) {
