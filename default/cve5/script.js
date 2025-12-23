@@ -13,7 +13,7 @@ async function loadExamples(field, orgName) {
         return vgExamples[field][orgName];
     }
 
-    var url = 'https://raw.githubusercontent.com/Vulnogram/cve-index/refs/heads/main/' + field + 's/' + orgName + '.json';
+    var url = 'https://raw.githubusercontent.com/Vulnogram/cve-index/refs/heads/main/data/' + field + '/' + orgName + '.json';
     var response = await fetch(url, {
         method: 'GET',
         credentials: 'omit',
