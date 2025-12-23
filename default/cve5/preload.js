@@ -39,7 +39,7 @@ async function ensureAssignerExamples(assignerShortName) {
         return;
     }
     window.vgExamples = window.vgExamples || {};
-    var fields = ['vendor', 'product'];
+    var fields = ['vendor', 'product', 'collectionURL', 'packageName'];
     var schemas = [docSchema, publicEditorOption.schema];
     await Promise.all(fields.map(async function (field) {
         try {
@@ -54,9 +54,17 @@ async function ensureAssignerExamples(assignerShortName) {
                 schemas.forEach(function (schema) {
                     setProductExamples(schema, field, examples);
                 });
+            } else { //clear 
+                schemas.forEach(function (schema) {
+                    setProductExamples(schema, field, []);
+                });
+
             }
         } catch (e) {
-            //console.error('Failed to load examples for ' + field + '/' + orgName, e);
+            console.error('Failed to load examples for ' + field + '/' + orgName, e);
+            schemas.forEach(function (schema) {
+                setProductExamples(schema, field, []);
+            });            
         }
     }));
 }

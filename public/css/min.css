@@ -1016,95 +1016,16 @@ div[data-schematype="array"] td:focus-within {
     outline-offset: 0px;
 }
 
-textarea,
-.wysihtml5-editor {
+textarea {
     font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
     margin-top: 5px;
 }
 
-.wysihtml5-commands-disabled .sbn {
-    opacity: 0.2;
-}
-
-.wysihtml5-commands-disabled .wysihtml5-action-active {
-    opacity: 1;
-}
-
-.toolbar div[data-wysihtml5-dialog] {
-    background-color: var(--wht);
-    margin: 5px 0 0;
-    padding: 5px;
-    border: 1px solid var(--bor);
-    top: 2em;
-    box-shadow: 1px 2px 3px #99999955;
-}
-
-.toolbar {
-    top: 66px;
-    z-index: 0;
-}
-.form-control .toolbar {
-    opacity: 0.5;
-    box-shadow: 0px 2px 2px rgb(0 0 0 / 5%);;
-    transition-duration: 0.5s;
-    transition-property: opacity;
-}
-.form-control:hover .toolbar {
-    opacity: 1;
-}
-.wysihtml5-action-active,
-.wysihtml5-command-active,
-.toolbar .sbn:hover {
-    color: #999999;
-    background-color: var(--bor);
-}
-
-.wysihtml5-editor {
-    outline: none;
-    margin-top: 5px;
-    padding: 6px;
-}
 .simplehtml:hover {
     border: 1px solid var(--lnk) !important;
     box-shadow: 0 0 0 0.2em rgba(3, 102, 214, 0.3) !important;
 }
 
-.wysihtml5-editor table {
-    border-collapse: collapse;
-    border: 1px solid var(--bor2);
-}
-
-.wysihtml5-editor td {
-    padding: 4px 8px !important;
-    border: 1px solid var(--bor) !important;
-    width: auto !important;
-}
-
-.toolbar .txt {
-    border: 1px solid var(--bor) !important;
-}
-
-.toolbar .txt:focus,
-.toolbar .txt:active,
-.toolbar .txt:hover {
-    /*border: 1px solid var(--lnk);
-    outline: 3px solid rgba(114, 162, 217, 0.33);
-    outline-offset: -1px;*/
-    border: 1px solid var(--lnk) !important;
-    box-shadow: 0 0 0 0.2em rgba(3, 102, 214, 0.3) !important;
-}
-
-.wysihtml5-editor th {
-    background-color: var(--hig) !important;
-}
-
-.wysihtml5-editor blockquote,
-.wysihtml5-editor pre {
-    background-color: var(--hig);
-    word-wrap: break-word;
-    white-space: pre-wrap;
-    padding: 4px 8px;
-}
 /*
 div[data-schematype="array"] td>.form-control {
     height: 100%;
@@ -1119,14 +1040,6 @@ div[data-schematype="array"] td>.form-control:first-child select {
     height: 100%;
     box-sizing: border-box;
 }
-
-div[data-schematype="array"] td>.form-control:first-child .wysihtml5-editor {
-    outline: none;
-    padding: 0.5em 0.5em;
-    border: none;
-    box-shadow: none;
-}
-
 
 div[data-schematype="array"] input[type="text"]:hover {
     background-color: var(--pur);

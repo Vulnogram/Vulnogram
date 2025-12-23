@@ -8,9 +8,7 @@
 /* globals pugRender */
 /* globals textUtil */
 /* globals schemaName */
-/* globals wysihtml5 */
-/* globals wysihtml5ParserRules */
-/* globals wysihtml5ParserRules */
+/* globals SimpleHtml */
 /* globals allowAjax */
 /* globals docSchema */
 /* globals custom_validators */
@@ -527,32 +525,25 @@ JSONEditor.defaults.editors.taglist = class taglist extends JSONEditor.defaults.
 JSONEditor.defaults.editors.simplehtml = class simplehtml extends JSONEditor.defaults.editors.string {
     getValue() {
         var ret = super.getValue();
-        if(this.wysLoaded) {
-            ret = this.wys.getValue();
+        if (this.simpleHtml) {
+            ret = this.simpleHtml.getValue();
         }
         return ret;
     }
 
     setValue (value,initial,from_template) {
         super.setValue(value,initial,from_template);
-        if (this.wysLoaded) {
-            // get current value from HTML editor
-            var priorVal = this.wys.getValue();
-
-            // set the new value (and let HTML editor perform DOM sanitization)
-            this.wys.setValue(value);
-
-            // get the new value from the HTML editor
-            var currentVal = this.wys.getValue();
-
-            // if they are different trigger a change event.
-            if(priorVal != currentVal) {
-                this.input.value = currentVal;
+        if (this.simpleHtml) {
+            var nextValue = value == null ? '' : value;
+            var priorVal = this.simpleHtml.getValue();
+            this.simpleHtml.setValue(nextValue);
+            var currentVal = this.simpleHtml.getValue();
+            if (priorVal !== currentVal) {
+                this.value = this.input.value = currentVal;
                 this.onChange(true);
             }
-        } else {
         }
-   }
+    }
     build() {
         this.schema.format = this.format = 'hidden';
         super.build();
@@ -563,74 +554,40 @@ JSONEditor.defaults.editors.simplehtml = class simplehtml extends JSONEditor.def
             }
         }
         this.control.className = 'simplehtml form-control bor';
-        this.toolbar = document.createElement('div');
-        this.toolbar.innerHTML = '<div class="toolbar"><div><span class="btg indent"><a class="sbn vgi-bold" data-wysihtml5-command="bold" title="Bold CTRL+B" href="javascript:;" unselectable="on"></a><a class="sbn vgi-italic" data-wysihtml5-command="italic" title="Italic CTRL+I" href="javascript:;" unselectable="on"></a><a class="sbn vgi-underline" data-wysihtml5-command="underline" title="Underline CTRL+U" href="javascript:;" unselectable="on"></a><a class="sbn vgi-highlight" data-wysihtml5-command="bgColorStyle" title="highlight" color="#666699" data-wysihtml5-command-value="#effa66" href="javascript:;" unselectable="on"></a><!-- <a class="fbn icn strikethrough" data-wysihtml5-command="strike" title="Strike"></a>--></span><span class="btg indent"><a class="sbn vgi-p" data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="p" title="paragraph style" href="javascript:;" unselectable="on"></a><a class="sbn vgi-h1" data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="h1" title="Heading 1" href="javascript:;" unselectable="on"></a><a class="sbn vgi-h2" data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="h2" title="Heading 2" href="javascript:;" unselectable="on"></a><a class="sbn vgi-h3" data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="h3" title="Heading 3" href="javascript:;" unselectable="on"></a><a class="sbn vgi-noformat" data-wysihtml5-command="formatBlock" data-wysihtml5-command-blank-value="true" unselectable="on" title="Clear styles" href="javascript:;"></a></span><span class="btg indent"><a class="sbn vgi-link" data-wysihtml5-command="createLink" title="Hyperlink" href="javascript:;" unselectable="on"></a><a class="sbn vgi-unlink" data-wysihtml5-command="removeLink" title="Unlink" href="javascript:;" unselectable="on"></a><a class="sbn vgi-pic" data-wysihtml5-command="insertImage" title="Insert image" href="javascript:;" unselectable="on"></a><a class="sbn vgi-console" data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="code" title="Code text" href="javascript:;" unselectable="on"></a><a class="sbn vgi-quote" data-wysihtml5-command="formatBlock" data-wysihtml5-command-value="blockquote" title="Block quote" href="javascript:;" unselectable="on"></a><a class="sbn vgi-table" data-wysihtml5-command="createTable" title="Insert Table" href="javascript:;" unselectable="on"></a></span><span class="btg indent"><a class="sbn vgi-bullet" data-wysihtml5-command="insertUnorderedList" title="Bulletted list" href="javascript:;" unselectable="on"></a><a class="sbn vgi-numbered" data-wysihtml5-command="insertOrderedList" title="Numbered list" href="javascript:;" unselectable="on"></a></span><span class="btg indent"><a class="sbn vgi-undo" data-wysihtml5-command="undo" title="Undo" href="javascript:;" unselectable="on"></a><a class="sbn vgi-redo" data-wysihtml5-command="redo" title="Redo" href="javascript:;" unselectable="on"></a><a class="sbn vgi-markup" data-wysihtml5-action="change_view" title="HTML source view" href="javascript:;" unselectable="on"></a></span><span class="btg indent" data-wysihtml5-hiddentools="table" style="display: none;"><a class="sbn vgi-add-row-top" data-wysihtml5-command="addTableCells" data-wysihtml5-command-value="above" title="Insert row above" href="javascript:;" unselectable="on"></a><a class="sbn vgi-add-row-down" data-wysihtml5-command="addTableCells" data-wysihtml5-command-value="below" title="Insert row below" href="javascript:;" unselectable="on"></a><a class="sbn vgi-add-col-left" data-wysihtml5-command="addTableCells" data-wysihtml5-command-value="before" title="Insert column before" href="javascript:;" unselectable="on"></a><a class="sbn vgi-add-col-right" data-wysihtml5-command="addTableCells" data-wysihtml5-command-value="after" title="Insert column after" href="javascript:;" unselectable="on"></a><a class="sbn vgi-row-red" data-wysihtml5-command="deleteTableCells" data-wysihtml5-command-value="row" title="Delete row" href="javascript:;" unselectable="on"></a><a class="sbn vgi-col-red" data-wysihtml5-command="deleteTableCells" data-wysihtml5-command-value="column" title="Delete column" href="javascript:;" unselectable="on"></a></span></div><div data-wysihtml5-dialog="createLink" style="display: none;"><label class="lbl sml vgi-link">Link: </label><input class="vgi-text" size="90" data-wysihtml5-dialog-field="href" value="https://" title="URL"><a class="btn vgi-ext" onclick="window.open(this.previousElementSibling.value)">Open</a><a class="btn indent vgi-ok" data-wysihtml5-dialog-action="save">OK</a><a class="btn vgi-cancel" data-wysihtml5-dialog-action="cancel">Cancel</a></div><div data-wysihtml5-dialog="insertImage" style="display: none;"><label class="lbl vgi-link">URL</label><input class="vgi-txt" data-wysihtml5-dialog-field="src" size="50" value="https://"><label class="lbl">or</label><label class="btn vgi-folder" title="Browse for local images to insert">Insert Image ..<input class="hid" type="file" onchange="loadimg.call(this, event)" accept="image/*"></label><a class="btn indent vgi-ok" data-wysihtml5-dialog-action="save">OK</a><a class="btn vgi-cancel" data-wysihtml5-dialog-action="cancel">Cancel</a></div><div data-wysihtml5-dialog="createTable" style="display: none;"><label class="vgi-table lbl">Rows: </label><input class="txt" type="text" data-wysihtml5-dialog-field="rows"><label class="lbl">Cols: </label><input class="txt" type="text" data-wysihtml5-dialog-field="cols"><a class="btn vgi-ok indent" data-wysihtml5-dialog-action="save">OK</a><a class="btn vgi-cancel" data-wysihtml5-dialog-action="cancel">Cancel</a></div></div>'
-        //document.getElementById('commentTemplate')?.getElementsByClassName('toolbar')[0].cloneNode(true);
-        this.contentDiv = document.createElement('div');
-        this.contentDiv.className = 'pur ht4 fil';
-        if (this.toolbar) {
-            this.toolbar.className = 'fil shd wht stk toolbar';
-            this.input.parentNode.insertBefore(this.toolbar, this.input);
-        }
-        this.input.parentNode.appendChild(this.contentDiv);
+        this.simpleHtmlHost = document.createElement('div');
+        this.simpleHtmlHost.className = 'simplehtml-editor fil';
+        this.input.parentNode.appendChild(this.simpleHtmlHost);
     }
     afterInputReady () {
-        var self = this, options;
-        //console.log('called after input ready' +  this.input.value); 
-        var WYS = this.wys = new wysihtml5.Editor(this.contentDiv, {
-            toolbar: this.toolbar,
-            parserRules: wysihtml5ParserRules,
-            showToolbarAfterInit: false,
-        });
-            
-        this.wys.on('load', function() {
-            self.wys.setValue(self.input.value);
-            var sa = self.wys.getValue();
-            if(sa != self.input.value) {
-                self.input.value = sa;
-                //console.log('Changed on setting input');
-                //self.is_dirty = true;
-                //self.onChange(true);
+        var self = this;
+        var placeholder = (this.options && this.options.inputAttributes && this.options.inputAttributes.placeholder) ||
+            (this.schema && this.schema.placeholder) || '';
+        var options = {
+            content: this.input.value || ''
+        };
+        if (placeholder) {
+            options.placeholder = placeholder;
+        }
+        this.simpleHtml = new SimpleHtml(this.simpleHtmlHost, options);
+
+        var syncValue = function () {
+            var current = self.simpleHtml.getValue();
+            if (current !== self.input.value) {
+                self.value = self.input.value = current;
+                self.is_dirty = true;
+                self.onChange(true);
             }
-            //console.log('Loaded');
-            self.wysLoaded = true;            
-        });
-            
-        this.wys.on('change', function() {
-            self.value = self.input.value = self.wys.getValue();
-            self.is_dirty = true;
-            self.onChange(true);
-            //console.log('Changed' + JSON.stringify(this))
-        });
-            
-        this.wys.on("dragleave", function(event) {
-              event.preventDefault();  
-              event.stopPropagation();
-        });
+        };
 
-        this.wys.on("drop", function(event) {
-              event.preventDefault();  
-              event.stopPropagation();
-              var dt = event.dataTransfer;
-                        var files = dt.files;
+        this.simpleHtml.contentArea.addEventListener('input', syncValue);
+        this.simpleHtml.sourceArea.addEventListener('input', syncValue);
+        this.simpleHtml.contentArea.addEventListener('blur', syncValue);
+        this.simpleHtml.sourceArea.addEventListener('blur', syncValue);
 
-              var reader = new FileReader();
-              reader.onload = function (e) {
-                  //var data = this.result;
-                  self.wys.composer.commands.exec('insertImage',e.target.result);
-                  self.value = self.input.value = self.wys.getValue();
-                    self.is_dirty = true;
-                    self.onChange(true);
-                  
-              };
-              reader.readAsDataURL( files[0] );
-          });
-            
-        this.wys.on("dragover", function(event) {
-                  event.preventDefault();  
-                  event.stopPropagation();
-                  this.addClass('dragging');
-        });
+        var cleaned = this.simpleHtml.getValue();
+        if (cleaned !== this.input.value) {
+            this.value = this.input.value = cleaned;
+        }
     }
     showValidationErrors(errs) {
         var self = this;
