@@ -1,0 +1,150 @@
+.vgh-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    padding: 6px;
+    border-bottom: 1px solid var(--bor);
+    background: var(--wht);
+}
+
+.vgh-toolbar button.active {
+    background-color: var(--hig);
+}
+.simplehtml-editor {
+    background: var(--wht);
+}
+
+.simplehtml-url-form {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 8px;
+    border-bottom: 1px solid var(--bor);
+    background: var(--wht);
+    flex-wrap: wrap;
+}
+
+.simplehtml-url-form .simplehtml-url-input {
+    flex: 1 1 220px;
+    min-width: 0;
+}
+
+.simplehtml-url-form .btn {
+    margin-right: 0;
+}
+
+.simplehtml-url-file {
+    display: none;
+}
+
+.vgh-content p,
+.simplehtml-view p {
+    margin-bottom: 1rem;
+    margin-top: 0;
+}
+
+.vgh-content,
+.simplehtml-view {
+    padding: 12px;
+    outline: none;
+    font-family: inherit;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.vgh-content {
+    min-height: 4rem;
+    overflow-y: auto;
+}
+
+.simplehtml-editor--compact .vgh-content {
+    min-height: 10em;
+}
+
+.vgh-content blockquote,
+.simplehtml-view blockquote {
+    border-left: 3px solid var(--bor);
+    margin: 0 0 1rem 0;
+    padding-left: 1rem;
+}
+
+.vgh-content code,
+.simplehtml-view code {
+    font-family: monospace;
+}
+
+.vgh-content table,
+.simplehtml-view table {
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+
+}
+.vgh-content a {
+    cursor: text;
+}
+.vgh-content img,
+.simplehtml-view img {
+    max-width: 100%;
+    height: auto; 
+}
+.vgh-content th,
+.vgh-content td,
+.simplehtml-view th,
+.simplehtml-view td {
+    border: 1px solid var(--bor);
+    padding: .25rem;
+    text-align: left;
+    min-width: 1.5rem;
+    height: 1.5rem;
+}
+
+.vgh-markup {
+    padding: 12px;
+    min-height: 12rem;
+    width: 100%;
+    box-sizing: border-box;
+    border: none;
+    font-family: monospace;
+    font-size: 14px;
+    outline: none;
+    resize: vertical;
+    display: none; /* Hidden by default */
+}
+
+.simplehtml-table-picker {
+    position: absolute;
+    padding: 8px;
+    background: var(--wht);
+    border: 1px solid var(--bor);
+    border-radius: 4px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+    z-index: 20;
+    user-select: none;
+}
+
+.simplehtml-table-picker-label {
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+.simplehtml-table-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 14px);
+    grid-template-rows: repeat(12, 14px);
+    gap: 2px;
+}
+
+.simplehtml-table-picker-cell {
+    width: 14px;
+    height: 14px;
+    background: var(--sel);
+    border: 1px solid var(--bor);
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.simplehtml-table-picker-cell.active {
+    background: var(--sec);
+    border-color: var(--pri);
+}

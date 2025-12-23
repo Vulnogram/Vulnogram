@@ -10,6 +10,7 @@ block append head
     if !min
         link(rel='stylesheet', href= '/users/list/css')
     link(href=conf.basedir + "css/tagify.css",rel="stylesheet",type="text/css")
+    link(rel='stylesheet', href=conf.basedir + 'css/simplehtml.css')
 
 block prepend bannerItemsLeft
     if !min
@@ -25,6 +26,7 @@ block append bannerItemsLeft
         a.fbn.vgi-download(type="button",oncontextmenu='downloadFile(event, this);',onclick='downloadFile(event, this);',value="Download") Download
 
 block scripts
+    script(src=conf.basedir + 'js/simplehtml.js')
     if opts
         script
             | var iconMap = 
@@ -114,8 +116,6 @@ block content
 
 
     script(src=conf.basedir + 'js/util.js')
-    script(src=conf.basedir + "js/wy/simple.js")
-    script(src=conf.basedir + "js/wy/wysihtml-toolbar.min.js")
     if !min && opts && opts.schema
         script(src=conf.basedir + schemaName + '/schema.js')
     if conf.ajv && conf.ajvHash

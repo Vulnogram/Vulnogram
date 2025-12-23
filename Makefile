@@ -5,7 +5,7 @@ JS = $(OUT)/js
 CSSO = ./node_modules/.bin/csso
 UJS = ./node_modules/.bin/uglifyjs
 
-TARGETS := $(OUT) $(OUT)/static $(OUT)/index.html $(CSS)/min.css $(CSS)/vg-icons.css $(CSS)/tagify.css $(CSS)/logo.png $(CSS)/logo.gif $(JS)/util.js $(JS)/editor.js $(JS)/mode-json.js $(JS)/cvss.json $(JS)/cwe-frequent.json $(JS)/capec.json $(JS)/wy/ $(JS)/tablesort.min.js $(JS)/tagify.min.js $(OUT)/static/CVE.svg $(OUT)/static/cve5sw.js $(OUT)/static/cvss40.js
+TARGETS := $(OUT) $(OUT)/static $(OUT)/index.html $(CSS)/min.css $(CSS)/simplehtml.css $(CSS)/vg-icons.css $(CSS)/tagify.css $(CSS)/logo.png $(CSS)/logo.gif $(JS)/util.js $(JS)/editor.js $(JS)/mode-json.js $(JS)/cvss.json $(JS)/cwe-frequent.json $(JS)/capec.json $(JS)/simplehtml.js $(JS)/tablesort.min.js $(JS)/tagify.min.js $(OUT)/static/CVE.svg $(OUT)/static/cve5sw.js $(OUT)/static/cvss40.js
 
 $(OUT):
 	mkdir $(OUT)
@@ -18,9 +18,6 @@ $(OUT)/index.html: ./scripts/standalone.js ./config/conf-standalone.js ./[cd][ue
 
 $(OUT)/js:
 	mkdir -p $(OUT)/js
-
-$(OUT)/js/wy:
-	mkdir -p $(OUT)/js/wy
 
 $(OUT)/css:
 	mkdir -p $(OUT)/css
@@ -36,9 +33,6 @@ $(CSS)/%.png: ./public/css/%.png
 
 $(CSS)/%.gif: ./public/css/%.gif
 	cp -f $< $@
-
-$(OUT)/js/wy/: ./public/js/wy/
-	cp -pr $< $@
     
 $(JS)/%.js: ./public/js/%.js
 	$(UJS) $< -c -o $@
