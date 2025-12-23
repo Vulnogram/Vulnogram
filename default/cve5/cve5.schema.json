@@ -142,7 +142,7 @@
           "options": {
             "patternmessage": "Enter a valid URL",
             "inputAttributes": {
-                "placeholder": "eg., https://example.org/CVE-yyyy-nnnn"
+              "placeholder": "eg., https://example.org/CVE-yyyy-nnnn"
             }
           },
           "default": "https://"
@@ -157,7 +157,7 @@
           }
         },
         "tags": {
-          "id":"xtag",
+          "id": "xtag",
           "description": "An array of one or more tags that describe the resource referenced by 'url'.",
           "type": "array",
           "minItems": 1,
@@ -293,8 +293,6 @@
         "class": "hid"
       },
       "description": "Provides information about the set of products and services affected by this vulnerability.",
-
-
       "properties": {
         "vendor": {
           "type": "string",
@@ -439,7 +437,7 @@
             "patternmessage": "Enter a valid URL",
             "inputAttributes": {
               "placeholder": "eg., https://wordpress.org/plugins"
-            }            
+            }
           }
         },
         "packageName": {
@@ -603,7 +601,7 @@
                 "description": "The non-inclusive upper limit of the range. This is the least version NOT in the range. The usual version syntax is expanded to allow a pattern to end in an asterisk `(*)`, indicating an arbitrarily large number in the version ordering. For example, `{version: 1.0 lessThan: 1.*}` would describe the entire 1.X branch for most range kinds, and `{version: 2.0, lessThan: *}` describes all versions starting at 2.0, including 3.0, 5.1, and so on. Only one of lessThan and lessThanOrEqual should be specified.",
                 "$ref": "#/definitions/version",
                 "options": {
-                  "infoText":"Usually fixed version. Use * to indicate no upper bounds, or 1.2.* to indicate rest of 1.2 branch.",
+                  "infoText": "Usually fixed version. Use * to indicate no upper bounds, or 1.2.* to indicate rest of 1.2 branch.",
                   "inputAttributes": {
                     "placeholder": "eg., 1.2.8, 1.2.*",
                     "size": 4
@@ -643,13 +641,13 @@
                         "inputAttributes": {
                           "placeholder": "eg., patch 10, 1.2.5a, 1.2.6"
                         }
-                      }                      
+                      }
                     },
                     "status": {
                       "title": "Affected status changes to",
                       "description": "The new status in the range starting at the given version.",
                       "$ref": "#/definitions/status",
-                      "default":"unaffected"
+                      "default": "unaffected"
                     }
                   }
                 }
@@ -662,7 +660,7 @@
                   "inputAttributes": {
                     "placeholder": "eg. semver, maven, custom, python",
                     "size": "5"
-                  }                  
+                  }
                 },
                 "maxLength": 128,
                 "examples": [
@@ -682,7 +680,7 @@
             "required": [
               "version",
               "status"
-            ]            
+            ]
           }
         },
         "defaultStatus": {
@@ -949,7 +947,7 @@
       "type": "object",
       "format": "grid",
       "options": {
-          "class": "hid"
+        "class": "hid"
       },
       "properties": {
         "providerMetadata": {
@@ -994,7 +992,6 @@
           "$ref": "#/definitions/impacts"
         },
         "affected": {
-          
           "$ref": "#/definitions/affected"
         },
         "cpeApplicability": {
@@ -1033,7 +1030,7 @@
               "title": "Auto Generate CVE description based on other input",
               "rel": "'Auto Generate'"
             }
-          ]        
+          ]
         },
         "tags": {
           "$ref": "#/definitions/cnaTags",
@@ -1070,8 +1067,7 @@
         },
         "taxonomyMappings": {
           "$ref": "#/definitions/taxonomyMappings"
-        }
-        ,
+        },
         "x_generator": {
           "type": "object",
           "properties": {
@@ -1126,7 +1122,6 @@
               }
             ]
           }
-
         },
         "replacedBy": {
           "title": "Replaced by CVE IDs",
@@ -1199,7 +1194,6 @@
         "affected": {
           "$ref": "#/definitions/affected"
         },
-
         "references": {
           "$ref": "#/definitions/references"
         },
@@ -1276,7 +1270,7 @@
         },
         "negate": {
           "type": "boolean",
-          "format" : "checkbox",
+          "format": "checkbox",
           "options": {
             "grid_columns": 1
           }
@@ -1288,7 +1282,7 @@
           "type": "array",
           "options": {
             "grid_columns": 10
-          }      
+          }
         }
       },
       "format": "grid",
@@ -1347,7 +1341,7 @@
         "criteria": {
           "$ref": "#/definitions/cpe23",
           "options": {
-              "grid_columns": 9
+            "grid_columns": 9
           }
         },
         "versionStartExcluding": {
@@ -1592,7 +1586,7 @@
                       "placeholder": "eg., CWE-20 Improper Input Validation"
                     }
                   },
-                  "$ref": "js/cwe-frequent.json"
+                  "$ref": "js/cwe-all.json"
                 },
                 "type": {
                   "type": "string",
@@ -1716,7 +1710,7 @@
                   "options": {
                     "inputAttributes": {
                       "placeholder": "eg., CAPEC-130 Excessive Allocation"
-                    }                    
+                    }
                   }
                 }
               },
@@ -1734,7 +1728,7 @@
       "title": "Metrics",
       "description": "Collection of impact scores with attribution.",
       "uniqueItems": true,
-      "minItems":0,
+      "minItems": 0,
       "options": {
         "class": "vgi-dial tgap"
       },
@@ -1748,9 +1742,30 @@
           "keep_oneof_values": false
         },
         "oneOf": [
-          { "required": ["format", "scenarios", "cvssV4_0"], "title": "CVSS 4.0" },
-          { "required": ["format", "scenarios", "cvssV3_1"], "title": "CVSS 3.1 (Obsolete)" },
-          { "required": ["format", "scenarios", "cvssV2_0"], "title": "CVSS 2 (Obsolete)"},
+          {
+            "required": [
+              "format",
+              "scenarios",
+              "cvssV4_0"
+            ],
+            "title": "CVSS 4.0"
+          },
+          {
+            "required": [
+              "format",
+              "scenarios",
+              "cvssV3_1"
+            ],
+            "title": "CVSS 3.1 (Obsolete)"
+          },
+          {
+            "required": [
+              "format",
+              "scenarios",
+              "cvssV2_0"
+            ],
+            "title": "CVSS 2 (Obsolete)"
+          },
           {
             "required": [
               "other"
@@ -2061,7 +2076,7 @@
                     "ADJACENT": "The vulnerable system is bound to a protocol stack, but the attack is limited at the protocol level to a logically adjacent topology. This can mean an attack must be launched from the same shared proximity (e.g., Bluetooth, NFC, or IEEE 802.11) or logical network (e.g., local IP subnet), or from within a secure or otherwise limited administrative domain (e.g., MPLS, secure VPN within an administrative network zone).",
                     "LOCAL": "The vulnerable system is not bound to the network stack and the attacker’s path is via read/write/execute capabilities. Either the attacker exploits the vulnerability by accessing the target system locally (e.g., keyboard, console), or through terminal emulation (e.g., SSH); or the attacker relies on User Interaction by another person to perform actions required to exploit the vulnerability (e.g., using social engineering techniques to trick a legitimate user into opening a malicious document).",
                     "PHYSICAL": "The attack requires the attacker to physically touch or manipulate the vulnerable system. Physical interaction may be brief (e.g., evil maid attack) or persistent."
-                   },
+                  },
                   "icons": {
                     "PHYSICAL": "cvss-physical",
                     "LOCAL": "cvss-user",
@@ -2081,10 +2096,10 @@
                 ],
                 "options": {
                   "infoText": "This metric captures measurable actions that must be taken by the attacker to actively evade or circumvent existing built-in security-enhancing conditions in order to obtain a working exploit. These are conditions whose primary purpose is to increase security and/or increase exploit engineering complexity. A vulnerability exploitable without a target-specific variable has a lower complexity than a vulnerability that would require non-trivial customization. This metric is meant to capture security mechanisms utilized by the vulnerable system.",
-                "tooltips": {
-                 "LOW": "The attacker must take no measurable action to exploit the vulnerability. The attack requires no target-specific circumvention to exploit the vulnerability. An attacker can expect repeatable success against the vulnerable system.",
-                 "HIGH": "The successful attack depends on the evasion or circumvention of security-enhancing techniques in place that would otherwise hinder the attack. These include: Evasion of exploit mitigation techniques, for example, circumvention of address space randomization (ASLR) or data execution prevention (DEP) must be performed for the attack to be successful; Obtaining target-specific secrets. The attacker must gather some target-specific secret before the attack can be successful. A secret is any piece of information that cannot be obtained through any amount of reconnaissance. To obtain the secret the attacker must perform additional attacks or break otherwise secure measures (e.g. knowledge of a secret key may be needed to break a crypto channel). This operation must be performed for each attacked target."
-                },
+                  "tooltips": {
+                    "LOW": "The attacker must take no measurable action to exploit the vulnerability. The attack requires no target-specific circumvention to exploit the vulnerability. An attacker can expect repeatable success against the vulnerable system.",
+                    "HIGH": "The successful attack depends on the evasion or circumvention of security-enhancing techniques in place that would otherwise hinder the attack. These include: Evasion of exploit mitigation techniques, for example, circumvention of address space randomization (ASLR) or data execution prevention (DEP) must be performed for the attack to be successful; Obtaining target-specific secrets. The attacker must gather some target-specific secret before the attack can be successful. A secret is any piece of information that cannot be obtained through any amount of reconnaissance. To obtain the secret the attacker must perform additional attacks or break otherwise secure measures (e.g. knowledge of a secret key may be needed to break a crypto channel). This operation must be performed for each attacked target."
+                  },
                   "grid_columns": 12,
                   "enum_titles": [
                     "High",
@@ -2107,10 +2122,10 @@
                 ],
                 "options": {
                   "infoText": "This metric captures the prerequisite deployment and execution conditions or variables of the vulnerable system that enable the attack. These differ from security-enhancing techniques/technologies (ref Attack Complexity) as the primary purpose of these conditions is not to explicitly mitigate attacks, but rather, emerge naturally as a consequence of the deployment and execution of the vulnerable system.",
-      "tooltips": {
-       "NONE": "The successful attack does not depend on the deployment and execution conditions of the vulnerable system. The attacker can expect to be able to reach the vulnerability and execute the exploit under all or most instances of the vulnerability.",
-       "PRESENT": "The successful attack depends on the presence of specific deployment and execution conditions of the vulnerable system that enable the attack. These include: a race condition must be won to successfully exploit the vulnerability (the successfulness of the attack is conditioned on execution conditions that are not under full control of the attacker, or the attack may need to be launched multiple times against a single target before being successful); the attacker must inject themselves into the logical network path between the target and the resource requested by the victim (e.g. vulnerabilities requiring an on-path attacker)."
-      },
+                  "tooltips": {
+                    "NONE": "The successful attack does not depend on the deployment and execution conditions of the vulnerable system. The attacker can expect to be able to reach the vulnerability and execute the exploit under all or most instances of the vulnerability.",
+                    "PRESENT": "The successful attack depends on the presence of specific deployment and execution conditions of the vulnerable system that enable the attack. These include: a race condition must be won to successfully exploit the vulnerability (the successfulness of the attack is conditioned on execution conditions that are not under full control of the attacker, or the attack may need to be launched multiple times against a single target before being successful); the attacker must inject themselves into the logical network path between the target and the resource requested by the victim (e.g. vulnerabilities requiring an on-path attacker)."
+                  },
                   "grid_columns": 12,
                   "enum_titles": [
                     "Present",
@@ -2134,11 +2149,11 @@
                 ],
                 "options": {
                   "infoText": "This metric describes the level of privileges an attacker must possess prior to successfully exploiting the vulnerability. The method by which the attacker obtains privileged credentials prior to the attack (e.g., free trial accounts), is outside the scope of this metric. Generally, self-service provisioned accounts do not constitute a privilege requirement if the attacker can grant themselves privileges as part of the attack.",
-                "tooltips": {
-                 "NONE": "The attacker is unauthorized prior to attack, and therefore does not require any access to settings or files of the vulnerable system to carry out an attack.",
-                 "LOW": "The attacker requires privileges that provide basic capabilities that are typically limited to settings and resources owned by a single low-privileged user. Alternatively, an attacker with Low privileges has the ability to access only non-sensitive resources.",
-                 "HIGH": "The attacker requires privileges that provide significant (e.g., administrative) control over the vulnerable system allowing full access to the vulnerable system’s settings and files."
-                },
+                  "tooltips": {
+                    "NONE": "The attacker is unauthorized prior to attack, and therefore does not require any access to settings or files of the vulnerable system to carry out an attack.",
+                    "LOW": "The attacker requires privileges that provide basic capabilities that are typically limited to settings and resources owned by a single low-privileged user. Alternatively, an attacker with Low privileges has the ability to access only non-sensitive resources.",
+                    "HIGH": "The attacker requires privileges that provide significant (e.g., administrative) control over the vulnerable system allowing full access to the vulnerable system’s settings and files."
+                  },
                   "grid_columns": 12,
                   "enum_titles": [
                     "High",
@@ -2156,7 +2171,7 @@
                 "title": "User Interaction",
                 "type": "string",
                 "format": "radio",
-                "default":"NONE",
+                "default": "NONE",
                 "enum": [
                   "ACTIVE",
                   "PASSIVE",
@@ -2165,11 +2180,11 @@
                 "options": {
                   "grid_columns": 12,
                   "infoText": "This metric captures the requirement for a human user, other than the attacker, to participate in the successful compromise of the vulnerable system. This metric determines whether the vulnerability can be exploited solely at the will of the attacker, or whether a separate user (or user-initiated process) must participate in some manner.",
-      "tooltips": {
-       "NONE": "The vulnerable system can be exploited without interaction from any human user, other than the attacker.",
-       "PASSIVE": "Successful exploitation of this vulnerability requires limited interaction by the targeted user with the vulnerable system and the attacker’s payload. These interactions would be considered involuntary and do not require that the user actively subvert protections built into the vulnerable system.",
-       "ACTIVE": "Successful exploitation of this vulnerability requires a targeted user to perform specific, conscious interactions with the vulnerable system and the attacker’s payload, or the user’s interactions would actively subvert protection mechanisms which would lead to exploitation of the vulnerability."
-      },
+                  "tooltips": {
+                    "NONE": "The vulnerable system can be exploited without interaction from any human user, other than the attacker.",
+                    "PASSIVE": "Successful exploitation of this vulnerability requires limited interaction by the targeted user with the vulnerable system and the attacker’s payload. These interactions would be considered involuntary and do not require that the user actively subvert protections built into the vulnerable system.",
+                    "ACTIVE": "Successful exploitation of this vulnerability requires a targeted user to perform specific, conscious interactions with the vulnerable system and the attacker’s payload, or the user’s interactions would actively subvert protection mechanisms which would lead to exploitation of the vulnerability."
+                  },
                   "enum_titles": [
                     "Active",
                     "Passive",
@@ -2194,11 +2209,11 @@
                 ],
                 "options": {
                   "infoText": "This metric measures the impact to the confidentiality of the information managed by the VULNERABLE SYSTEM due to a successfully exploited vulnerability. Confidentiality refers to limiting information access and disclosure to only authorized users, as well as preventing access by, or disclosure to, unauthorized ones.",
-      "tooltips": {
-       "HIGH": "There is a total loss of confidentiality, resulting in all information within the Vulnerable System being divulged to the attacker. Alternatively, access to only some restricted information is obtained, but the disclosed information presents a direct, serious impact. For example, an attacker steals the administrator's password, or private encryption keys of a web server.",
-       "LOW": "There is some loss of confidentiality. Access to some restricted information is obtained, but the attacker does not have control over what information is obtained, or the amount or kind of loss is limited. The information disclosure does not cause a direct, serious loss to the Vulnerable System.",
-       "NONE": "There is no loss of confidentiality within the Vulnerable System."
-      },
+                  "tooltips": {
+                    "HIGH": "There is a total loss of confidentiality, resulting in all information within the Vulnerable System being divulged to the attacker. Alternatively, access to only some restricted information is obtained, but the disclosed information presents a direct, serious impact. For example, an attacker steals the administrator's password, or private encryption keys of a web server.",
+                    "LOW": "There is some loss of confidentiality. Access to some restricted information is obtained, but the attacker does not have control over what information is obtained, or the amount or kind of loss is limited. The information disclosure does not cause a direct, serious loss to the Vulnerable System.",
+                    "NONE": "There is no loss of confidentiality within the Vulnerable System."
+                  },
                   "grid_columns": 6,
                   "enum_titles": [
                     "None",
@@ -2224,11 +2239,11 @@
                 ],
                 "options": {
                   "infoText": "This metric measures the impact to the confidentiality of the information managed by the SUBSEQUENT SYSTEM due to a successfully exploited vulnerability. Confidentiality refers to limiting information access and disclosure to only authorized users, as well as preventing access by, or disclosure to, unauthorized ones.",
-      "tooltips": {
-       "HIGH": "There is a total loss of confidentiality, resulting in all resources within the Subsequent System being divulged to the attacker. Alternatively, access to only some restricted information is obtained, but the disclosed information presents a direct, serious impact. For example, an attacker steals the administrator's password, or private encryption keys of a web server.",
-       "LOW": "There is some loss of confidentiality. Access to some restricted information is obtained, but the attacker does not have control over what information is obtained, or the amount or kind of loss is limited. The information disclosure does not cause a direct, serious loss to the Subsequent System.",
-       "NONE": "There is no loss of confidentiality within the Subsequent System or all confidentiality impact is constrained to the Vulnerable System."
-      },
+                  "tooltips": {
+                    "HIGH": "There is a total loss of confidentiality, resulting in all resources within the Subsequent System being divulged to the attacker. Alternatively, access to only some restricted information is obtained, but the disclosed information presents a direct, serious impact. For example, an attacker steals the administrator's password, or private encryption keys of a web server.",
+                    "LOW": "There is some loss of confidentiality. Access to some restricted information is obtained, but the attacker does not have control over what information is obtained, or the amount or kind of loss is limited. The information disclosure does not cause a direct, serious loss to the Subsequent System.",
+                    "NONE": "There is no loss of confidentiality within the Subsequent System or all confidentiality impact is constrained to the Vulnerable System."
+                  },
                   "grid_columns": 6,
                   "enum_titles": [
                     "None",
@@ -2254,11 +2269,11 @@
                 ],
                 "options": {
                   "infoText": "This metric measures the impact to integrity of a successfully exploited vulnerability. Integrity refers to the trustworthiness and veracity of information. Integrity of the VULNERABLE SYSTEM is impacted when an attacker makes unauthorized modification of system data. Integrity is also impacted when a system user can repudiate critical actions taken in the context of the system (e.g. due to insufficient logging).",
-      "tooltips": {
-       "HIGH": "There is a total loss of integrity, or a complete loss of protection. For example, the attacker is able to modify any/all files protected by the vulnerable system. Alternatively, only some files can be modified, but malicious modification would present a direct, serious consequence to the vulnerable system.",
-       "LOW": "Modification of data is possible, but the attacker does not have control over the consequence of a modification, or the amount of modification is limited. The data modification does not have a direct, serious impact to the Vulnerable System.",
-       "NONE": "There is no loss of integrity within the Vulnerable System."
-      },
+                  "tooltips": {
+                    "HIGH": "There is a total loss of integrity, or a complete loss of protection. For example, the attacker is able to modify any/all files protected by the vulnerable system. Alternatively, only some files can be modified, but malicious modification would present a direct, serious consequence to the vulnerable system.",
+                    "LOW": "Modification of data is possible, but the attacker does not have control over the consequence of a modification, or the amount of modification is limited. The data modification does not have a direct, serious impact to the Vulnerable System.",
+                    "NONE": "There is no loss of integrity within the Vulnerable System."
+                  },
                   "grid_columns": 6,
                   "enum_titles": [
                     "None",
@@ -2284,11 +2299,11 @@
                 ],
                 "options": {
                   "infoText": "This metric measures the impact to integrity of a successfully exploited vulnerability. Integrity refers to the trustworthiness and veracity of information. Integrity of the SUBSEQUENT SYSTEM is impacted when an attacker makes unauthorized modification of system data. Integrity is also impacted when a system user can repudiate critical actions taken in the context of the system (e.g. due to insufficient logging).",
-      "tooltips": {
-       "HIGH": "There is a total loss of integrity, or a complete loss of protection. For example, the attacker is able to modify any/all files protected by the Subsequent System. Alternatively, only some files can be modified, but malicious modification would present a direct, serious consequence to the Subsequent System.",
-       "LOW": "Modification of data is possible, but the attacker does not have control over the consequence of a modification, or the amount of modification is limited. The data modification does not have a direct, serious impact to the Subsequent System.",
-       "NONE": "There is no loss of integrity within the Subsequent System or all integrity impact is constrained to the Vulnerable System."
-      },
+                  "tooltips": {
+                    "HIGH": "There is a total loss of integrity, or a complete loss of protection. For example, the attacker is able to modify any/all files protected by the Subsequent System. Alternatively, only some files can be modified, but malicious modification would present a direct, serious consequence to the Subsequent System.",
+                    "LOW": "Modification of data is possible, but the attacker does not have control over the consequence of a modification, or the amount of modification is limited. The data modification does not have a direct, serious impact to the Subsequent System.",
+                    "NONE": "There is no loss of integrity within the Subsequent System or all integrity impact is constrained to the Vulnerable System."
+                  },
                   "grid_columns": 6,
                   "enum_titles": [
                     "None",
@@ -2314,11 +2329,11 @@
                 ],
                 "options": {
                   "infoText": "This metric measures the impact to the availability of the VULNERABLE SYSTEM resulting from a successfully exploited vulnerability. While the Confidentiality and Integrity impact metrics apply to the loss of confidentiality or integrity of data (e.g., information, files) used by the system, this metric refers to the loss of availability of the impacted system itself, such as a networked service (e.g., web, database, email). Since availability refers to the accessibility of information resources, attacks that consume network bandwidth, processor cycles, or disk space all impact the availability of a system.",
-      "tooltips": {
-       "HIGH": "There is a total loss of availability, resulting in the attacker being able to fully deny access to resources in the Vulnerable System; this loss is either sustained (while the attacker continues to deliver the attack) or persistent (the condition persists even after the attack has completed). Alternatively, the attacker has the ability to deny some availability, but the loss of availability presents a direct, serious consequence to the Vulnerable System (e.g., the attacker cannot disrupt existing connections, but can prevent new connections; the attacker can repeatedly exploit a vulnerability that, in each instance of a successful attack, leaks a only small amount of memory, but after repeated exploitation causes a service to become completely unavailable).",
-       "LOW": "Performance is reduced or there are interruptions in resource availability. Even if repeated exploitation of the vulnerability is possible, the attacker does not have the ability to completely deny service to legitimate users. The resources in the Vulnerable System are either partially available all of the time, or fully available only some of the time, but overall there is no direct, serious consequence to the Vulnerable System.",
-       "NONE": "There is no impact to availability within the Vulnerable System."
-      },
+                  "tooltips": {
+                    "HIGH": "There is a total loss of availability, resulting in the attacker being able to fully deny access to resources in the Vulnerable System; this loss is either sustained (while the attacker continues to deliver the attack) or persistent (the condition persists even after the attack has completed). Alternatively, the attacker has the ability to deny some availability, but the loss of availability presents a direct, serious consequence to the Vulnerable System (e.g., the attacker cannot disrupt existing connections, but can prevent new connections; the attacker can repeatedly exploit a vulnerability that, in each instance of a successful attack, leaks a only small amount of memory, but after repeated exploitation causes a service to become completely unavailable).",
+                    "LOW": "Performance is reduced or there are interruptions in resource availability. Even if repeated exploitation of the vulnerability is possible, the attacker does not have the ability to completely deny service to legitimate users. The resources in the Vulnerable System are either partially available all of the time, or fully available only some of the time, but overall there is no direct, serious consequence to the Vulnerable System.",
+                    "NONE": "There is no impact to availability within the Vulnerable System."
+                  },
                   "grid_columns": 6,
                   "enum_titles": [
                     "None",
@@ -2344,11 +2359,11 @@
                 ],
                 "options": {
                   "infoText": "This metric measures the impact to the availability of the SUBSEQUENT SYSTEM resulting from a successfully exploited vulnerability. While the Confidentiality and Integrity impact metrics apply to the loss of confidentiality or integrity of data (e.g., information, files) used by the system, this metric refers to the loss of availability of the impacted system itself, such as a networked service (e.g., web, database, email). Since availability refers to the accessibility of information resources, attacks that consume network bandwidth, processor cycles, or disk space all impact the availability of a system.",
-      "tooltips": {
-       "HIGH": "There is a total loss of availability, resulting in the attacker being able to fully deny access to resources in the Subsequent System; this loss is either sustained (while the attacker continues to deliver the attack) or persistent (the condition persists even after the attack has completed). Alternatively, the attacker has the ability to deny some availability, but the loss of availability presents a direct, serious consequence to the Subsequent System (e.g., the attacker cannot disrupt existing connections, but can prevent new connections; the attacker can repeatedly exploit a vulnerability that, in each instance of a successful attack, leaks a only small amount of memory, but after repeated exploitation causes a service to become completely unavailable).",
-       "LOW": "Performance is reduced or there are interruptions in resource availability. Even if repeated exploitation of the vulnerability is possible, the attacker does not have the ability to completely deny service to legitimate users. The resources in the Subsequent System are either partially available all of the time, or fully available only some of the time, but overall there is no direct, serious consequence to the Subsequent System.",
-       "NONE": "There is no impact to availability within the Subsequent System or all availability impact is constrained to the Vulnerable System."
-      },
+                  "tooltips": {
+                    "HIGH": "There is a total loss of availability, resulting in the attacker being able to fully deny access to resources in the Subsequent System; this loss is either sustained (while the attacker continues to deliver the attack) or persistent (the condition persists even after the attack has completed). Alternatively, the attacker has the ability to deny some availability, but the loss of availability presents a direct, serious consequence to the Subsequent System (e.g., the attacker cannot disrupt existing connections, but can prevent new connections; the attacker can repeatedly exploit a vulnerability that, in each instance of a successful attack, leaks a only small amount of memory, but after repeated exploitation causes a service to become completely unavailable).",
+                    "LOW": "Performance is reduced or there are interruptions in resource availability. Even if repeated exploitation of the vulnerability is possible, the attacker does not have the ability to completely deny service to legitimate users. The resources in the Subsequent System are either partially available all of the time, or fully available only some of the time, but overall there is no direct, serious consequence to the Subsequent System.",
+                    "NONE": "There is no impact to availability within the Subsequent System or all availability impact is constrained to the Vulnerable System."
+                  },
                   "grid_columns": 6,
                   "enum_titles": [
                     "None",
@@ -2400,15 +2415,19 @@
                 "title": "Safety Impact",
                 "type": "string",
                 "format": "radio",
-                "enum": [ "NOT_DEFINED", "NEGLIGIBLE", "PRESENT" ],
+                "enum": [
+                  "NOT_DEFINED",
+                  "NEGLIGIBLE",
+                  "PRESENT"
+                ],
                 "default": "NOT_DEFINED",
                 "options": {
                   "infoText": "When a system does have an intended use or fitness of purpose aligned to safety, it is possible that exploiting a vulnerability within that system may have Safety impact which can be represented in the Supplemental Metrics group. Lack of a Safety metric value being supplied does NOT mean that there may not be any Safety-related impacts.",
-      "tooltips": {
-       "NOT_DEFINED": "The metric has not been evaluated.",
-       "NEGLIGIBLE": "Consequences of the vulnerability meet definition of IEC 61508 consequence category \"negligible.\"",
-       "PRESENT": "Consequences of the vulnerability meet definition of IEC 61508 consequence categories of \"marginal,\" \"critical,\" or \"catastrophic.\""
-      },
+                  "tooltips": {
+                    "NOT_DEFINED": "The metric has not been evaluated.",
+                    "NEGLIGIBLE": "Consequences of the vulnerability meet definition of IEC 61508 consequence category \"negligible.\"",
+                    "PRESENT": "Consequences of the vulnerability meet definition of IEC 61508 consequence categories of \"marginal,\" \"critical,\" or \"catastrophic.\""
+                  },
                   "grid_columns": 12,
                   "enum_titles": [
                     "Not defined",
@@ -2421,149 +2440,173 @@
                     "PRESENT": "ambulance"
                   }
                 }
-             },
-             "Automatable": {
-              "title": "Automatable attack",
-              "type": "string",
-              "format": "radio",
-              "enum": [ "NOT_DEFINED", "NO", "YES"],
-              "default": "NOT_DEFINED",
-              "options": {
-                "infoText": "The “ The “Automatable” metric captures the answer to the question ”Can an attacker automate exploitation events for this vulnerability across multiple targets?” based on steps 1-4 of the kill chain [Hutchins et al., 2011]. These steps are reconnaissance, weaponization, delivery, and exploitation.",
-      "tooltips": {
-       "NOT_DEFINED": "The metric has not been evaluated.",
-       "NO": "Attackers cannot reliably automate all 4 steps of the kill chain for this vulnerability for some reason. These steps are reconnaissance, weaponization, delivery, and exploitation.",
-       "YES": "Attackers can reliably automate all 4 steps of the kill chain. These steps are reconnaissance, weaponization, delivery, and exploitation (e.g., the vulnerability is “wormable”)."
-      },
-                "grid_columns": 12,
-                "enum_titles": [
-                  "Not defined",
-                  "No",
-                  "Yes"
+              },
+              "Automatable": {
+                "title": "Automatable attack",
+                "type": "string",
+                "format": "radio",
+                "enum": [
+                  "NOT_DEFINED",
+                  "NO",
+                  "YES"
                 ],
-                "icons": {
-                  "NOT_DEFINED": "what",
-                  "NO": "manual",
-                  "YES": "cog"
+                "default": "NOT_DEFINED",
+                "options": {
+                  "infoText": "The “ The “Automatable” metric captures the answer to the question ”Can an attacker automate exploitation events for this vulnerability across multiple targets?” based on steps 1-4 of the kill chain [Hutchins et al., 2011]. These steps are reconnaissance, weaponization, delivery, and exploitation.",
+                  "tooltips": {
+                    "NOT_DEFINED": "The metric has not been evaluated.",
+                    "NO": "Attackers cannot reliably automate all 4 steps of the kill chain for this vulnerability for some reason. These steps are reconnaissance, weaponization, delivery, and exploitation.",
+                    "YES": "Attackers can reliably automate all 4 steps of the kill chain. These steps are reconnaissance, weaponization, delivery, and exploitation (e.g., the vulnerability is “wormable”)."
+                  },
+                  "grid_columns": 12,
+                  "enum_titles": [
+                    "Not defined",
+                    "No",
+                    "Yes"
+                  ],
+                  "icons": {
+                    "NOT_DEFINED": "what",
+                    "NO": "manual",
+                    "YES": "cog"
+                  }
                 }
-              }
-           },
-           "Recovery": {
-            "title": "Recovery",
-            "type": "string",
-            "format": "radio",
-            "enum": [ "NOT_DEFINED", "AUTOMATIC", "USER", "IRRECOVERABLE"],
-            "default": "NOT_DEFINED",
-            "options": {
-              "infoText": "Recovery describes the resilience of a system to recover services, in terms of performance and availability, after an attack has been performed.",
-      "tooltips": {
-       "NOT_DEFINED": "The metric has not been evaluated.",
-       "AUTOMATIC": "The system recovers services automatically after an attack has been performed.",
-       "USER": "The system requires manual intervention by the user to recover services, after an attack has been performed.",
-       "IRRECOVERABLE": "The system services are irrecoverable by the user, after an attack has been performed."
-      },
-              "grid_columns": 12,
-              "enum_titles": [
-                "Not defined",
-                "Automatic",
-                "User",
-                "Irrecoverable"
-              ],
-              "icons": {
-                "NOT_DEFINED": "what",
-                "AUTOMATIC": "reuse",
-                "USER": "manual",
-                "IRRECOVERABLE": "bomb"
-              }
-            }
-         },
-         "valueDensity": {
-          "title": "Value Density",
-          "type": "string",
-          "format": "radio",
-          "enum": [ "NOT_DEFINED", "DIFFUSE", "CONCENTRATED"],
-          "default": "NOT_DEFINED",
-          "options": {
-            "infoText": "Value Density describes the resources that the attacker will gain control over with a single exploitation event.",
-      "tooltips": {
-       "NOT_DEFINED": "The metric has not been evaluated.",
-       "DIFFUSE": "The vulnerable system has limited resources. That is, the resources that the attacker will gain control over with a single exploitation event are relatively small. An example of Diffuse (think: limited) Value Density would be an attack on a single email client vulnerability.",
-       "CONCENTRATED": "The vulnerable system is rich in resources. Heuristically, such systems are often the direct responsibility of “system operators” rather than users. An example of Concentrated (think: broad) Value Density would be an attack on a central email server."
-      },
-            "grid_columns": 12,
-            "enum_titles": [
-              "Not defined",
-              "Diffuse",
-              "Concentrated"
-            ],
-            "icons": {
-              "NOT_DEFINED": "what",
-              "DIFFUSE": "diffuse",
-              "CONCENTRATED": "box"
-            }
-          }
-       },
-       "vulnerabilityResponseEffort": {
-        "title": "Vulnerability Response Effort",
-        "type": "string",
-        "format": "radio",
-        "enum": [ "NOT_DEFINED", "LOW", "MODERATE", "HIGH"],
-        "default": "NOT_DEFINED",
-        "options": {
-          "infoText": "The intention of the Vulnerability Response Effort metric is to provide supplemental information on how difficult it is for consumers to provide an initial response to the impact of vulnerabilities for deployed products and services in their infrastructure. The consumer can then take this additional information on effort required into consideration when applying mitigations and/or scheduling remediation.",
-      "tooltips": {
-       "NOT_DEFINED": "The metric has not been evaluated.",
-       "LOW": "The effort required to respond to a vulnerability is low/trivial. Examples include: communication on better documentation, configuration workarounds, or guidance from the vendor that does not require an immediate update, upgrade, or replacement by the consuming entity, such as firewall filter configuration.",
-       "MODERATE": "The actions required to respond to a vulnerability require some effort on behalf of the consumer and could cause minimal service impact to implement. Examples include: simple remote update, disabling of a subsystem, or a low-touch software upgrade such as a driver update.",
-       "HIGH": "The actions required to respond to a vulnerability are significant and/or difficult, and may possibly lead to an extended, scheduled service impact.  This would need to be considered for scheduling purposes including honoring any embargo on deployment of the selected response. Alternatively, response to the vulnerability in the field is not possible remotely. The only resolution to the vulnerability involves physical replacement (e.g. units deployed would have to be recalled for a depot level repair or replacement). Examples include: a highly privileged driver update, microcode or UEFI BIOS updates, or software upgrades requiring careful analysis and understanding of any potential infrastructure impact before implementation. A UEFI BIOS update that impacts Trusted Platform Module (TPM) attestation without impacting disk encryption software such as Bit locker is a good recent example. Irreparable failures such as non-bootable flash subsystems, failed disks or solid-state drives (SSD), bad memory modules, network devices, or other non-recoverable under warranty hardware, should also be scored as having a High effort."
-      },
-          "grid_columns": 12,
-          "enum_titles": [
-            "Not defined",
-            "Low",
-            "Moderate",
-            "High"
-          ],
-          "icons": {
-            "NOT_DEFINED": "what",
-            "LOW": "feather",
-            "MODERATE": "mop",
-            "HIGH": "tanker"
-          }
-        }
-     },
-     "providerUrgency": {
-      "title": "Urgency",
-      "type": "string",
-      "format": "radio",
-      "enum": [ "NOT_DEFINED", "CLEAR", "GREEN", "AMBER", "RED"],
-      "default": "NOT_DEFINED",
-      "options": {
-        "infoText": "To facilitate a standardized method to incorporate additional provider-supplied assessment, an optional “pass-through” Supplemental Metric called Provider Urgency is available. Note: While any assessment provider along the product supply chain may provide a Provider Urgency rating. The Penultimate Product Provider (PPP) is best positioned to provide a direct assessment of Provider Urgency.",
-      "tooltips": {
-       "NOT_DEFINED": "The metric has not been evaluated.",
-       "CLEAR": "Provider has assessed the impact of this vulnerability as having no urgency (Informational).",
-       "GREEN": "Provider has assessed the impact of this vulnerability as having a reduced urgency.",
-       "AMBER": "Provider has assessed the impact of this vulnerability as having a moderate urgency.",
-       "RED": "Provider has assessed the impact of this vulnerability as having the highest urgency."
-      },
-        "grid_columns": 12,
-        "enum_titles": [
-          "Not defined",
-          "Informational",
-          "Reduced",
-          "Normal",
-          "Highest"
-        ],
-        "icons": {
-          "NOT_DEFINED": "what",
-          "CLEAR": "info",
-          "GREEN": "sit",
-          "AMBER": "walk",
-          "RED": "run"
-        }
-      }
-   },
+              },
+              "Recovery": {
+                "title": "Recovery",
+                "type": "string",
+                "format": "radio",
+                "enum": [
+                  "NOT_DEFINED",
+                  "AUTOMATIC",
+                  "USER",
+                  "IRRECOVERABLE"
+                ],
+                "default": "NOT_DEFINED",
+                "options": {
+                  "infoText": "Recovery describes the resilience of a system to recover services, in terms of performance and availability, after an attack has been performed.",
+                  "tooltips": {
+                    "NOT_DEFINED": "The metric has not been evaluated.",
+                    "AUTOMATIC": "The system recovers services automatically after an attack has been performed.",
+                    "USER": "The system requires manual intervention by the user to recover services, after an attack has been performed.",
+                    "IRRECOVERABLE": "The system services are irrecoverable by the user, after an attack has been performed."
+                  },
+                  "grid_columns": 12,
+                  "enum_titles": [
+                    "Not defined",
+                    "Automatic",
+                    "User",
+                    "Irrecoverable"
+                  ],
+                  "icons": {
+                    "NOT_DEFINED": "what",
+                    "AUTOMATIC": "reuse",
+                    "USER": "manual",
+                    "IRRECOVERABLE": "bomb"
+                  }
+                }
+              },
+              "valueDensity": {
+                "title": "Value Density",
+                "type": "string",
+                "format": "radio",
+                "enum": [
+                  "NOT_DEFINED",
+                  "DIFFUSE",
+                  "CONCENTRATED"
+                ],
+                "default": "NOT_DEFINED",
+                "options": {
+                  "infoText": "Value Density describes the resources that the attacker will gain control over with a single exploitation event.",
+                  "tooltips": {
+                    "NOT_DEFINED": "The metric has not been evaluated.",
+                    "DIFFUSE": "The vulnerable system has limited resources. That is, the resources that the attacker will gain control over with a single exploitation event are relatively small. An example of Diffuse (think: limited) Value Density would be an attack on a single email client vulnerability.",
+                    "CONCENTRATED": "The vulnerable system is rich in resources. Heuristically, such systems are often the direct responsibility of “system operators” rather than users. An example of Concentrated (think: broad) Value Density would be an attack on a central email server."
+                  },
+                  "grid_columns": 12,
+                  "enum_titles": [
+                    "Not defined",
+                    "Diffuse",
+                    "Concentrated"
+                  ],
+                  "icons": {
+                    "NOT_DEFINED": "what",
+                    "DIFFUSE": "diffuse",
+                    "CONCENTRATED": "box"
+                  }
+                }
+              },
+              "vulnerabilityResponseEffort": {
+                "title": "Vulnerability Response Effort",
+                "type": "string",
+                "format": "radio",
+                "enum": [
+                  "NOT_DEFINED",
+                  "LOW",
+                  "MODERATE",
+                  "HIGH"
+                ],
+                "default": "NOT_DEFINED",
+                "options": {
+                  "infoText": "The intention of the Vulnerability Response Effort metric is to provide supplemental information on how difficult it is for consumers to provide an initial response to the impact of vulnerabilities for deployed products and services in their infrastructure. The consumer can then take this additional information on effort required into consideration when applying mitigations and/or scheduling remediation.",
+                  "tooltips": {
+                    "NOT_DEFINED": "The metric has not been evaluated.",
+                    "LOW": "The effort required to respond to a vulnerability is low/trivial. Examples include: communication on better documentation, configuration workarounds, or guidance from the vendor that does not require an immediate update, upgrade, or replacement by the consuming entity, such as firewall filter configuration.",
+                    "MODERATE": "The actions required to respond to a vulnerability require some effort on behalf of the consumer and could cause minimal service impact to implement. Examples include: simple remote update, disabling of a subsystem, or a low-touch software upgrade such as a driver update.",
+                    "HIGH": "The actions required to respond to a vulnerability are significant and/or difficult, and may possibly lead to an extended, scheduled service impact.  This would need to be considered for scheduling purposes including honoring any embargo on deployment of the selected response. Alternatively, response to the vulnerability in the field is not possible remotely. The only resolution to the vulnerability involves physical replacement (e.g. units deployed would have to be recalled for a depot level repair or replacement). Examples include: a highly privileged driver update, microcode or UEFI BIOS updates, or software upgrades requiring careful analysis and understanding of any potential infrastructure impact before implementation. A UEFI BIOS update that impacts Trusted Platform Module (TPM) attestation without impacting disk encryption software such as Bit locker is a good recent example. Irreparable failures such as non-bootable flash subsystems, failed disks or solid-state drives (SSD), bad memory modules, network devices, or other non-recoverable under warranty hardware, should also be scored as having a High effort."
+                  },
+                  "grid_columns": 12,
+                  "enum_titles": [
+                    "Not defined",
+                    "Low",
+                    "Moderate",
+                    "High"
+                  ],
+                  "icons": {
+                    "NOT_DEFINED": "what",
+                    "LOW": "feather",
+                    "MODERATE": "mop",
+                    "HIGH": "tanker"
+                  }
+                }
+              },
+              "providerUrgency": {
+                "title": "Urgency",
+                "type": "string",
+                "format": "radio",
+                "enum": [
+                  "NOT_DEFINED",
+                  "CLEAR",
+                  "GREEN",
+                  "AMBER",
+                  "RED"
+                ],
+                "default": "NOT_DEFINED",
+                "options": {
+                  "infoText": "To facilitate a standardized method to incorporate additional provider-supplied assessment, an optional “pass-through” Supplemental Metric called Provider Urgency is available. Note: While any assessment provider along the product supply chain may provide a Provider Urgency rating. The Penultimate Product Provider (PPP) is best positioned to provide a direct assessment of Provider Urgency.",
+                  "tooltips": {
+                    "NOT_DEFINED": "The metric has not been evaluated.",
+                    "CLEAR": "Provider has assessed the impact of this vulnerability as having no urgency (Informational).",
+                    "GREEN": "Provider has assessed the impact of this vulnerability as having a reduced urgency.",
+                    "AMBER": "Provider has assessed the impact of this vulnerability as having a moderate urgency.",
+                    "RED": "Provider has assessed the impact of this vulnerability as having the highest urgency."
+                  },
+                  "grid_columns": 12,
+                  "enum_titles": [
+                    "Not defined",
+                    "Informational",
+                    "Reduced",
+                    "Normal",
+                    "Highest"
+                  ],
+                  "icons": {
+                    "NOT_DEFINED": "what",
+                    "CLEAR": "info",
+                    "GREEN": "sit",
+                    "AMBER": "walk",
+                    "RED": "run"
+                  }
+                }
+              },
               "baseSeverity": {
                 "title": "Base Severity",
                 "type": "string",
@@ -2583,11 +2626,11 @@
                 "type": "number",
                 "minimum": 0,
                 "maximum": 10,
-                "default":0,
+                "default": 0,
                 "template": "context.vs && window.CVSS40 && (new window.CVSS40(context.vs).Score())",
                 "watch": {
                   "vs": "cvss4.vectorString"
-                 },                
+                },
                 "options": {
                   "grid_columns": 2,
                   "input_width": "3em"
@@ -2743,7 +2786,7 @@
                 "title": "User Interaction",
                 "type": "string",
                 "format": "radio",
-                "default":"NONE",
+                "default": "NONE",
                 "enum": [
                   "REQUIRED",
                   "NONE"
@@ -2764,7 +2807,7 @@
                 "title": "Scope",
                 "type": "string",
                 "format": "radio",
-                "default":"CHANGED",
+                "default": "CHANGED",
                 "enum": [
                   "UNCHANGED",
                   "CHANGED"
@@ -3311,7 +3354,7 @@
         "type": "object",
         "title": "Credit",
         "options": {
-          "remove_empty_properties":true
+          "remove_empty_properties": true
         },
         "properties": {
           "lang": {
@@ -3418,11 +3461,11 @@
               "undefined"
             ],
             "icons": {
-              "INTERNAL":"hardhat",
+              "INTERNAL": "hardhat",
               "EXTERNAL": "hat",
-              "USER":"cap",
-              "UPSTREAM":"in",
-              "UNKNOWN":"what"
+              "USER": "cap",
+              "UPSTREAM": "in",
+              "UNKNOWN": "what"
             }
           }
         }
@@ -3609,7 +3652,7 @@
             "adp": {
               "title": "Information from Authorized Data Providers (ADP) - experimental!",
               "options": {
-                "class":"vgi-alert"
+                "class": "vgi-alert"
               },
               "type": "array",
               "items": {
@@ -3672,7 +3715,7 @@
           "type": "object",
           "options": {
             "class": "hid"
-          },          
+          },
           "properties": {
             "cna": {
               "$ref": "#/definitions/cnaRejectedContainer"
@@ -3691,7 +3734,7 @@
         "containers"
       ],
       "additionalProperties": false,
-      "links" : [
+      "links": [
         {
           "place": "container",
           "class": "btn sfe vgi-put gap2",
