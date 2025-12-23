@@ -258,13 +258,13 @@ mixin container(con)
         = cveShowId + ' ' + (con.title ?  con.title : '')
     p
         if con.shortName || con.datePublic
-            span Published
+            span Published 
         if con.shortName
             | by 
             b=con.shortName
             |   
         if con.datePublic
-            | on 
+            |  on 
             +renderDate(con.datePublic)
         if con.dateUpdated && con.dateUpdated != con.datePublic
             |  (updated 
