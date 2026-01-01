@@ -2608,7 +2608,7 @@
                 }
               },
               "baseSeverity": {
-                "title": "Base Severity",
+                "title": "Severity",
                 "type": "string",
                 "format": "string",
                 "template": "context.sc && (cvssjs.severity(context.sc).name)",
@@ -2616,13 +2616,13 @@
                   "sc": "cvss4.baseScore"
                 },
                 "options": {
-                  "grid_columns": 4,
+                  "grid_columns": 2,
                   "class": "vgi-dial",
                   "input_width": "5em"
                 }
               },
               "baseScore": {
-                "title": "CVSS-B",
+                "title": "Score",
                 "type": "number",
                 "minimum": 0,
                 "maximum": 10,
@@ -2632,7 +2632,7 @@
                   "vs": "cvss4.vectorString"
                 },
                 "options": {
-                  "grid_columns": 2,
+                  "grid_columns": 1,
                   "input_width": "3em"
                 }
               },
