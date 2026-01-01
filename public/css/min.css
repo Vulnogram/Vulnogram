@@ -60,6 +60,8 @@ dialog {
     min-width: 100px;
     width: 70vw;
     max-width: 80vw ;
+    color:var(--txt);
+    background-color: var(--bg1);
 }
 .wlp {
     background-image: url('back.png');
@@ -86,12 +88,6 @@ hr.bort {
 .shd {
     box-shadow: 0px 2px 4px rgba(0,0,0,0.2);   
 }
-.shd1 {
-    box-shadow: 0px 1px 1px rgba(0,0,0,0.2);   
-}
-.shd2 {
-    box-shadow: 2px 3px 5px rgba(0,0,0,0.4);   
-}
 .btm {
     border-bottom: 1px solid rgba(0,0,0,0.05);   
 }
@@ -105,11 +101,6 @@ hr.bort {
 .flx {
     display: flex;
 }
-
-.gap0 {
-    margin: 0 !important;
-}
-
 .tgap {
     margin-top: 0.5em;
 }
@@ -137,10 +128,6 @@ hr.bort {
     margin-left: none;
     gap: 0.5em;
 }
-.mgt {
-    margin-top: .5em;
-}
-
 @media (min-width: 600px) {
     .tgap {
         margin-top: 1em;
@@ -165,16 +152,10 @@ hr.bort {
         margin-left: none;
         gap: 1em;
     }
-    .mgt {
-        margin-top: 1em;
-    }
 }
 
 .brk {
     page-break-before: always;
-}
-.ht2 {
-    min-height: 2em;
 }
 .ht4 {
     min-height: 4em;
@@ -281,10 +262,6 @@ hr.bort {
 }
 .pointer {
     cursor: pointer;
-}
-.invis {
-  color: rgba(0,0,0,0); 
-  font-size: 0;
 }
 .pop {
     position:absolute;
@@ -717,9 +694,6 @@ input.tab[type="radio"] + .lbl:focus
     color: var(--bg1);
     border-color: var(--acc);
 }
-.pri {
-    background-color: #fde172;
-}
 .sec {
     background-color: var(--bg2);
 }
@@ -1088,12 +1062,6 @@ div[data-schemaid="root"]>h3 {
 div[data-schematype="object"]>h3>span:before {
     color: "red";
 }
-.editor-statusbar,
-.editor-preview-side,
-.CodeMirror,
-.editor-toolbar {
-    flex-basis: 100%;
-}
 .editor .je-object__controls {
     display: none;
 }
@@ -1233,7 +1201,6 @@ td > span:first-child > .json-editor-btn-delete{
         column-gap: 1em;
         min-height: 1px;
       }
-
   .row .col.s1 {
     width: 8.3333333333%;
     left: auto;
@@ -1307,11 +1274,8 @@ td > span:first-child > .json-editor-btn-delete{
   }
 }
 
- .CodeMirror,
-.CodeMirror-scroll {
-    /*height: 100px !important;*/
-    min-height: 100px !important;
-}
+
+
 td.compact {
     height: 1px;
 }
@@ -1400,7 +1364,7 @@ div[data-schemapath*=".cvss"] .rdg .form-control:first-child input[type="radio"]
     background-color: var(--dis);
   }
   .spinner {
-    background-image: url(logo.gif);
+    background-image: url(logo.svg);
     content: "";
     display: block;
     width: 120px;
