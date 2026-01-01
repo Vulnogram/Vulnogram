@@ -22,7 +22,6 @@
 var infoMsg = document.getElementById('infoMsg');
 var errMsg = document.getElementById('errMsg');
 var save1 = document.getElementById('save1');
-var save2 = document.getElementById('save2');
 var editorLabel = document.getElementById('editorLabel');
 var iconTheme = 'vgi-';
 var starting_value = {};
@@ -1081,7 +1080,6 @@ function Tabs(tabGroupId, tabOpts, primary) {
             var nid = getDocID();
             document.title = '• ' + (nid ? nid : 'Vulnogram');
             if (document.getElementById("save1")) {
-                save2.className = "btn sfe gap save";
                 save1.className = "fbn sfe save";
             }
             //console.log('Inc '+ tg.tabId[index] + ' is ' + tg.changeIndex[index]);
@@ -1119,10 +1117,8 @@ if (document.getElementById('remove')) {
     });
 }
 
-if (document.getElementById('save1') && document.getElementById('save2')) {
+if (document.getElementById('save1')) {
     document.getElementById('save1').addEventListener('click', save);
-    document.getElementById('save2').addEventListener('click', save);
-    document.getElementById('save2').removeAttribute("style");
 }
 
 function scroll2Err(x) {
@@ -1169,7 +1165,7 @@ function showJSONerrors(errors) {
     errCount.className = 'indent bdg';
     errPop.className = 'popup';
     errCount.innerText = errors.length;
-    editorLabel.className = "red lbl";
+    //editorLabel.className = "lbl";
 }
 
 function hideJSONerrors() {
@@ -1289,7 +1285,6 @@ function loadJSON(res, id, message, editorOptions) {
             document.title = nid ? nid : 'Vulnogram';
         }
         if (document.getElementById("save1")) {
-            save2.className = "btn sfe gap";
             save1.className = "fbn sfe";
         }
         if (message) {
@@ -1362,7 +1357,6 @@ function save(e, onSuccess) {
                 // turn button to normal, indicate nothing to save,
                 // but do not disable it.
                 if (document.getElementById("save1")) {
-                    save2.className = "btn sfe gap";
                     save1.className = "fbn sfe";
                 }
                 getChanges(getDocID());

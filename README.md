@@ -174,6 +174,6 @@ This project uses or depends on software from:
 - linkifyjs
 - pptxGenJS
 
-Copyright (c) 2017-2025 Chandan B N.
+Copyright (c) 2017-2026 Chandan B N.
 
 SPDX-License-Identifier: MIT

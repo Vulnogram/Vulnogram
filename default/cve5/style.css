@@ -1,18 +1,22 @@
-body{
- /*--hig:#f6f6f7;*/
- --hig: #e5ebec;
- --bck:#fafafc;
-}   
+:root {
+  --cve: #fcf0c0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --cve: #534408;
+  }
+}
 
 #cveUser .pop {
   right: 2em !important;
 }
 table#vgListTable td.cvss span {
-  background-color: #CCC;
+  background-color: var(--shd1);
   display: inline-block;
   min-width: 2.4em;
   padding: 0.3em 0.5em;
-  color: #fff;
+  color: var(--bg1);
   line-height: normal;
   text-align: center;
   border-radius: 0.5em;
@@ -63,7 +67,7 @@ div[data-schemaid="cvss4"] .je-indented-panel div div div.row:nth-child(9)
 }
 div[data-schemaid="cvss4"] .je-indented-panel div div div.row:last-child
 {
-  background-color: var(--sec);
+  background-color: var(--bg1);
   border-radius: 5px;
   padding: 10px;
   margin: 10px;
@@ -92,7 +96,7 @@ div[data-schemaid="cvss4"] .je-indented-panel div div div.row:last-child
 
 
 div[data-schemapath="root.containers.adp"] > div > div > [vg="array-obj"] {
-  background-color: #f5f3e8;
+  background-color: var(--bg2);
 }
 
 
@@ -105,16 +109,16 @@ button.json-editor-btn-delete {
   display: inline-block;
   border-radius: 3px;
   padding: .3em .5em;
-  border: 1px solid #CCC;
-  background: #F3F3F3;
+  border: 1px solid var(--bor);
+  background: var(--bg1);
   margin: .2em;
   font-size: .85em;
-  color: black;
+  color: var(--txt);
   transition: 0s;
 }
 
 .tags-look .tagify__dropdown__item--active{
-  color: black;
+  color: var(--txt);
 }
 
 .tags-look .tagify__dropdown__item:hover{
@@ -146,9 +150,10 @@ button.json-editor-btn-delete {
 }
 
 .t9 {
-  color: gray;
+  color: var(--acc);
   padding: 8px;
   font-size: small;
+  height: 22px;
 }
 
 .formError {
@@ -161,8 +166,8 @@ button.json-editor-btn-delete {
     pointer-events: none;
 }
 
-label[for="cvePortalTab"] {
-  background-color: var(--sec) !important;
+label[for="cvePortalTab"], #port header, #cpBox {
+  background-color: var(--cve) !important;
 }
 
 /* cveLogin box */

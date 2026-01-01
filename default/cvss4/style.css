@@ -51,10 +51,12 @@ div[data-schemaid="cvss4"] .je-indented-panel div div div.row:nth-child(9)
 }
 div[data-schemaid="cvss4"] .je-indented-panel div div div.row:last-child
 {
-  background-color: var(--sec);
+  background-color: var(--bg2);
   border-radius: 5px;
   padding: 10px;
   margin: 10px;
+  border:1px solid var(--acc);
+
 }
 #wig {
     transform-origin: 196.626px 38.181px;
@@ -62,7 +64,6 @@ div[data-schemaid="cvss4"] .je-indented-panel div div div.row:last-child
 header:hover #wig{
   animation: 0.6s wiggle;
 }
-
 
 @keyframes wiggle {
     0% {

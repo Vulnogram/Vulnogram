@@ -20,15 +20,15 @@ mixin fileList
 
 mixin commentBox
     #commentTemplate.hid
-      form.wht.bor.shd.rnd.gap.pad(onsubmit="sendComment(this);return false;")
+      form.bor.shd.rnd.gap.pad(onsubmit="sendComment(this);return false;")
         input(type="hidden",name="id",value=id)
         .simplehtml.simplehtml-editor.simplehtml-editor--compact.fil
-        button.btn.gap.sml(type="submit",name="button",disabled=true) Add comment
+        button.btn.gap(type="submit",name="button",disabled=true) Add comment
 
 mixin comments
   if docs
     each c, i in docs
-      .shd.rnd.bor.pad.gap(class=c._id? 'lyel': 'wht', id=c.slug)
+      .rnd.bor.pad.gap(class=c._id? 'hig': 'wht', id=c.slug)
         dt 
             - var cd = new Date(c.createdAt);
             - var ud = new Date(c.updatedAt);

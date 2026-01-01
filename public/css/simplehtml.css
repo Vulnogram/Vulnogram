@@ -5,14 +5,19 @@
     align-items: center;
     padding: 6px;
     border-bottom: 1px solid var(--bor);
-    background: var(--wht);
+    background: var(--bg1);
 }
 
 .vgh-toolbar button.active {
-    background-color: var(--hig);
+    background-color: var(--bg2);
+}
+@media (prefers-color-scheme: dark) {
+    .vgh-toolbar button.active {
+        background-color: var(--txt);
+    }
 }
 .simplehtml-editor {
-    background: var(--wht);
+    background: var(--bg1);
 }
 
 .simplehtml-url-form {
@@ -21,7 +26,7 @@
     gap: 6px;
     padding: 8px;
     border-bottom: 1px solid var(--bor);
-    background: var(--wht);
+    background: var(--bg1);
     flex-wrap: wrap;
 }
 
@@ -115,7 +120,7 @@
 .simplehtml-table-picker {
     position: absolute;
     padding: 8px;
-    background: var(--wht);
+    background: var(--bg1);
     border: 1px solid var(--bor);
     border-radius: 4px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
@@ -138,13 +143,13 @@
 .simplehtml-table-picker-cell {
     width: 14px;
     height: 14px;
-    background: var(--sel);
+    background: var(--bg1);
     border: 1px solid var(--bor);
     box-sizing: border-box;
     cursor: pointer;
 }
 
 .simplehtml-table-picker-cell.active {
-    background: var(--sec);
-    border-color: var(--pri);
+    background: var(--bg2);
+    border-color: var(--acc);
 }

@@ -3,7 +3,7 @@ table#vgListTable td.cvss span {
     display: inline-block;
     min-width: 2.4em;
     padding: 0.3em 0.5em;
-    color: #fff;
+    color: var(--bg1);
     line-height: normal;
     text-align: center;
     border-radius: 0.5em;

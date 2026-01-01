@@ -58,7 +58,7 @@
     }
     a.icn:after {
         content: attr(count);
-        color: black;
+        color: var(--txt);
     }
     a.icn:hover {
         color: transparent;

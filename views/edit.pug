@@ -68,7 +68,7 @@ block content
                     details.popup#errPop
                         summary.sml.hid#errCount
                         div.wht.pop.pad.bor.shd#errList
-            .wht.fil.bor.pad
+            .wht.fil.bort.pad
                 block editorArea
                     iframe(name="x",style="display:none",src="about:blank")
                     form.editor(target="x",action="",id="docEditor")
@@ -79,7 +79,7 @@ block content
             label.lbl(for='sourceTab')
                 block sourceLabel 
                     | Source
-            .wht.fil.bor.pad
+            .wht.fil.bort
                 div(id="output",rows="40",cols="100%")
                     p
 
@@ -88,14 +88,9 @@ block content
         if !min
             input.tab(name='tabs', type='radio', id='changesTab', value="6")
             label.lbl(for='changesTab') Changes
-            .wht.fil.bor.pad
+            .wht.fil.bort
                 div#unSavedChanges
                 div#changelog
-
-        
-    if !min
-        div(style="clear:both")
-            button.gap.btn.save(id="save2",style="visibility:hidden") SAVE
     
     block initGlobals
         script
@@ -154,7 +149,7 @@ block subcontent
 
 block logolink
     br
-    a.logo(href="https://github.com/Vulnogram/Vulnogram") Vulnogram Project
+    a.vgi-logo(href="https://github.com/Vulnogram/Vulnogram") Vulnogram Project
 
 mixin alertDialog
     dialog.bor.rnd.shd.pad2#alertDialog
