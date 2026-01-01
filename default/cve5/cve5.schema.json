@@ -2568,7 +2568,7 @@
                 "title": "Base Severity",
                 "type": "string",
                 "format": "string",
-                "template": "context.sc && (cvssjs.severity(context.sc).name)",
+                "template": "context.sc != undefined && (cvssjs.severity(context.sc).name)",
                 "watch": {
                   "sc": "cvss4.baseScore"
                 },
