@@ -64,7 +64,7 @@ function plotCharts(container, charts) {
             } else {
                 barChart(d);
             }
-            return '<a class="vgi-bar" href="/home/' + encodeURI(d.ID) + '#chart" class="center icn ' + encodeURI(d.key) + '">' + (d.title ? ' ' + d.title : '')
+            return '<a class="fbn vgi-bar" href="/home/' + encodeURI(d.ID) + '#chart" class="center icn ' + encodeURI(d.key) + '">' + (d.title ? ' ' + d.title : '')
                 + '</a>'
              +'<a class="fbn vgi-download" onclick="downloadElement(\''+encodeURI(d.ID)+'\',this)">download</a>'
              //+ '<a class="fbn vgi-pic" onclick="downloadPNG(\''+encodeURI(d.ID)+'\',this)">download PNG</a>';

@@ -169,7 +169,7 @@ mixin prodDetails(p)
             =p[4]
 
 mixin statusTable(st)
-    table.striped
+    table
         colgroup
             col
             col.affectedCol
@@ -493,9 +493,10 @@ block pageDef
     mixin page(d)
         style 
             | .affectedCol {border: 4px solid #fa582d}
-            | table.striped {border-spacing: 0; border: 1px solid #c1c1c1; border-collapse: collapse;}
-            | table.striped th { text-align:center;background-color: #f0f0f0;}{}
-            | table.striped td {padding:5px;border: 1px solid #aaa}
+            | table {border-spacing: 0; border: 1px solid #888; border-collapse: collapse;}
+            | table th { text-align:center;background-color:#88888822;}
+            | table td { padding:5px;border: 1px solid #888}
+
         div.pad
             -
                 var cve = {}, con = {};

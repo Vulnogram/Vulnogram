@@ -101,8 +101,8 @@ hr.bort {
 .flx {
     display: flex;
 }
-.tgap {
-    margin-top: 0.5em;
+.tpad {
+    padding-top: 0.5em;
 }
 .vgap {
     margin: 1em 0em;

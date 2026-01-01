@@ -822,12 +822,12 @@ JSONEditor.defaults.themes.customTheme = class customTheme extends JSONEditor.Ab
             } else {
                 input.errmsg.style.display = 'block';
             }
-            input.errmsg.setAttribute('class', 'lbl tred indent');
+            input.errmsg.setAttribute('class', 'lbl tred');
             input.errmsg.textContent = '';
             input.errmsg.appendChild(document.createTextNode(' ' + text));
         }
         if(input.errmsg) {
-            input.errmsg.setAttribute('class', 'lbl tred indent');
+            input.errmsg.setAttribute('class', 'lbl tred');
         }
     }
     removeInputError(input) {
