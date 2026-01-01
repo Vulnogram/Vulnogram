@@ -577,7 +577,7 @@
       }
     },
     "baseSeverity": {
-      "title": "Base Severity",
+      "title": "Severity",
       "type": "string",
       "test_enum": [
         "NONE",
@@ -600,7 +600,7 @@
       }
     },
     "baseScore": {
-      "title": "CVSS-B",
+      "title": "Score",
       "type": "number",
       "minimum": 0,
       "maximum": 10,
