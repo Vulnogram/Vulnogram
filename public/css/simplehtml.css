@@ -11,11 +11,7 @@
 .vgh-toolbar button.active {
     background-color: var(--bg2);
 }
-@media (prefers-color-scheme: dark) {
-    .vgh-toolbar button.active {
-        background-color: var(--txt);
-    }
-}
+
 .simplehtml-editor {
     background: var(--bg1);
 }
