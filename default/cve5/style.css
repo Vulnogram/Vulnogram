@@ -162,6 +162,7 @@ label[for="cvePortalTab"], #port header, #cpBox {
 /* cveLogin box */
 
 #cpBox {
+  background: linear-gradient(135deg, var(--cve) 0%, var(--sev-med) 100%);
   padding: 2em 0px;
   display: grid; 
   grid-template-columns: auto; 
@@ -234,3 +235,6 @@ label[for="cvePortalTab"], #port header, #cpBox {
   margin-bottom: 0.3em;
   margin-top: .3em;
 }
+#render.render table {border-spacing: 0; border: 1px solid #888; border-collapse: collapse;}
+#render.render table th { text-align:center;background-color:#88888822;}
+#render.render table td { padding:5px;border: 1px solid #888}

@@ -5,7 +5,7 @@
   --bor: #dadce0;
   --bg1: #f5f5f5;
   --bg2: #e5ebec;
-  --acc: #708584;
+  --acc: #469090;
   --wht: #fff;
   --red: #ff7372;
   /* Severity scale: NONE → CRITICAL (green → red) [web:6][web:18] */
@@ -713,6 +713,9 @@ input.tab[type="radio"] + .lbl:focus
 .tred ,.editor p[style="color: red;"]{
    color: var(--acc) !important;
 }
+.txt::placeholder {
+    text-align: right;
+}
 .editor .form-control div.tred::before,
 .editor p[style="color: red;"]::before {
     content: '✱';
@@ -1125,7 +1128,7 @@ div[data-schematype="object"]>h3>span:before {
 
 .je-infobutton-tooltip {
     z-index: 10 !important;
-    background-color: color-mix(in srgb, var(--bg2) 95%, transparent) !important;
+    background-color: color-mix(in srgb, var(--bg1) 95%, transparent) !important;
     color: var(--txt) !important;
     position: absolute;
     left: -6rem;

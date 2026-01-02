@@ -1455,7 +1455,9 @@ function downloadHtml(title, element, link) {
     var file = new File([
             '<html><head><title>'
             + title
-            + '</title><style>body{font-family:"Helvetica"; margin:3em}</style><body>'
+            + '</title><style>body{font-family:"Helvetica"; margin:3em}table {border-spacing: 0; border: 1px solid #888; border-collapse: collapse;}'+
+'table th { text-align:center;background-color:#88888822;}'+
+'table td { padding:5px;border: 1px solid #888}</style><body>'
             + element.innerHTML
             + '</body></html>'
         ], getDocID() + '.html', {
