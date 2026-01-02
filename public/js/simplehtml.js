@@ -189,9 +189,11 @@ class SimpleHtml {
         Object.assign(this.urlInput, { type: 'url', className: 'txt simplehtml-url-input', placeholder: 'Enter URL' });
         this.urlInput.setAttribute('aria-label', 'URL');
 
-        this.urlUploadButton = document.createElement('button');
-        Object.assign(this.urlUploadButton, { type: 'button', className: 'btn vgi-open', textContent: 'Upload' });
-        this.urlUploadButton.style.display = 'none';
+        this.urlUploadButton = document.createElement('span');
+        var b = document.createElement('button');
+        Object.assign(b, { type: 'button', className: 'btn vgi-folder', textContent: 'Import File' });
+        //b.style.display = 'none';
+        this.urlUploadButton.append(document.createTextNode(' or '), b);
 
         this.urlFileInput = document.createElement('input');
         Object.assign(this.urlFileInput, { type: 'file', accept: 'image/*', className: 'simplehtml-url-file' });
@@ -234,6 +236,7 @@ class SimpleHtml {
                 this.urlInput.value = dataUrl;
                 this.applyUrl();
                 resetFileInput();
+                closeUrlForm();
             };
             reader.onerror = resetFileInput;
             reader.readAsDataURL(file);
