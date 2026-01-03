@@ -547,6 +547,31 @@ async function cveGetList() {
         return ([]);
     }
 }
+async function cveReserveForm() {
+    document.getElementById('cveReserveForm').reset();
+    document.getElementById('cveReserveDialog').show();
+    document.getElementById('cveReservePopup').removeAttribute('open');
+}
+async function cveReserveGeneric(f) {
+    if (validateForm(f)) {
+	let cy = (new Date()).getFullYear();
+	let fy = parseInt(f.cve_year.value);
+	let ydiff = fy - cy;
+	let count = parseInt(f.count.value);
+	if((fy < 1999) || (fy > cy + 1)) {
+	    cveShowError("Year should be between 1999 and " + String(cy + 1));
+	    return;
+	}
+	if (count < 1 || count > 99) {
+	    cveShowError("Count should be between 1 and 99");
+	    return;
+	}
+	let af = await cveReserve(ydiff, count);
+	document.getElementById('cvePortalFilter').y.value = f.cve_year.value;
+	cveGetList();
+	document.getElementById('cveReserveDialog').close();
+    }
+}
 
 async function cveReserve(yearOffset, number) {
     var year = currentYear + (yearOffset ? yearOffset : 0);

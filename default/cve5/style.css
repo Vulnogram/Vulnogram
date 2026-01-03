@@ -3,7 +3,13 @@ body{
  --hig: #e5ebec;
  --bck:#fafafc;
 }   
-
+#cveReserveDialog {
+    z-index: 5;
+    max-width: 500px;
+}
+#cveReserveDialog form {
+    text-align: center;
+}
 #cveUser .pop {
   right: 2em !important;
 }
