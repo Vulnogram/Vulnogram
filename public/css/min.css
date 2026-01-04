@@ -499,12 +499,14 @@ box-shadow: 0 0 0 0.2em color-mix(in srgb, var(--dis) 30%, transparent);
     background-color: var(--wht);
 }
 
-.txt:focus {
+.txt:focus, .txt:active, .txt:hover {
     background-color: var(--wht);
 }
+
 .txt:-webkit-autofill,
 .txt:-webkit-autofill:focus {
     transition: background-color 0s 600000s, color 0s 600000s !important;
+    background-color: var(--wht);
 }
 
 ::placeholder {
@@ -1049,10 +1051,6 @@ div[data-schematype="array"] td>.form-control:first-child select {
     box-shadow: none;
     height: 100%;
     box-sizing: border-box;
-}
-
-div[data-schematype="array"] input[type="text"]:hover {
-    background-color: var(--bg1);
 }
 
 div[data-schematype="array"] textarea {
