@@ -66,7 +66,7 @@
          values="0 0;0 0; -10 10; 200 -200; -200 -200; -200 300;5 -5;0 0;0 0"
          />
       <path
-        fill="darkslategray"
+        fill="#469090"
         style="fill-opacity:0.67940551;fill-rule:evenodd"
         d="M 100,100 100,0 200,0 Z"
         id="tri1">
@@ -92,7 +92,7 @@
 
       </path>
       <path
-        fill="darkslategray"
+        fill="#469090"
         id="tri2"
         d="M 0,0 0,100 100,100 z"
         style="fill-opacity:0.67940551;fill-rule:evenodd">
@@ -119,7 +119,7 @@
       </path>
     </g>
     <path
-      fill="darkslategray"
+      fill="#469090"
       style="fill-opacity:0.67940551;fill-rule:evenodd"
       d="M 100,200 100,100 0,100 Z"
       id="tri3">
