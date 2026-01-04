@@ -61,7 +61,7 @@ div[data-schemaid="cvss4"] .je-indented-panel div div div.row:nth-child(7),
 div[data-schemaid="cvss4"] .je-indented-panel div div div.row:nth-child(8),
 div[data-schemaid="cvss4"] .je-indented-panel div div div.row:nth-child(9)
 {
-  background-color: var(--hig);
+  background-color: var(--bg1);
   border-radius: 5px;
     padding: 3px;
 }

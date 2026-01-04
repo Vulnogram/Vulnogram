@@ -1,3 +1,5 @@
+loadCpeNameOverrides();
+
 async function preloadCve() {
     try {
         await initCsClient();

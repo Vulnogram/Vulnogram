@@ -63,6 +63,7 @@ block prepend content
     +showSecret
     +userAddDialog
     +userEditDialog
+    +cpeNameOverrideDialog
 
 mixin userAddDialog
     dialog.dlg.bor.rnd.shd#userAddDialog
@@ -112,6 +113,27 @@ mixin showSecret
             label.vgi-eye.lbl.sbn(for="showpass")
             center.gap
                 input.btn.sfe(type="reset" onclick="this.closest('dialog').close()" value="OK")
+
+mixin cpeNameOverrideDialog
+    dialog.dlg.bor.rnd.shd#cpeNameOverrideDialog
+        +dlgHeader('vgi-cog','CPE Name Mappings')
+        form.gap(onsubmit="event.preventDefault();return false;")
+            table#cpeNameOverrideTable
+                thead
+                    tr
+                        th Normal Name
+                        th CPE Name
+                        th CPE Type
+                        th
+                tbody#cpeNameOverrideRows
+
+                tfoot
+                    tr(colspan=4)
+                        td
+                            button.btn.sfe(type="button",onclick="cpeOverrideAddRow()") Add
+            center.gap
+                | 
+                button.btn(type="button",onclick="this.closest('dialog').close();autoCPE()") Close
 
 mixin dlgHeader(icon, msg)
     header.ban.sec.pad

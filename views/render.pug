@@ -91,7 +91,6 @@ block content
     block pageDef
         mixin page(obj)
             +jsondump(obj)
-    .big=doc_id
     if doc
         if renderTemplate == 'default'
             - delete doc._id;

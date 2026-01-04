@@ -65,6 +65,8 @@ mixin cpeApplicability(cpeAs,readonly)
                 label.lbl(for="autoCPEChk") Auto Update
                 | 
                 button.fbn.vgi-cancel(type="button",onclick='clearCPE()') Remove
+                | 
+                button.fbn.vgi-cog(type="button",onclick='showCpeNameOverridesDialog()') Name Mapings 
     if cpeAs && cpeAs.length > 0
         each cpeA, k in cpeAs
             p
@@ -110,6 +112,22 @@ mixin cpeApplicability(cpeAs,readonly)
                                                 if cpeM.versionEndExcluding
                                                     |  up to (excluding) 
                                                     = cpeM.versionEndExcluding
+
+mixin cpeNameOverrideRow(entry)
+    - var normalName = (entry && entry.normalName) ? entry.normalName : ''
+    - var cpeName = (entry && entry.cpeName) ? entry.cpeName : ''
+    - var cpeType = (entry && entry.cpeType) ? entry.cpeType : ''
+    td
+        input.txt(name="normalName",value=normalName,placeholder="Normal name")
+    td
+        input.txt(name="cpeName",value=cpeName,placeholder="CPE name",pattern="^[a-zA-Z0-9\\-\\._]+$")
+    td
+        select.txt(name="cpeType")
+            option(value="app" selected=(cpeType == 'app')) app
+            option(value="os" selected=(cpeType == 'os')) os
+            option(value="hardware" selected=(cpeType == 'hardware')) hardware
+    td
+        button.fbn.vgi-cancel(type="button",onclick="cpeOverrideDeleteRow(this)") Delete
 
 mixin cvssList(cvssList)
     if cvssList
@@ -571,4 +589,3 @@ mixin mitre(cve)
                     td
                         b YYYYMMDD
                     td.ltgreybackground Disclaimer: The entry creation date may reflect when the CVE-ID was allocated or reserved, and does not necessarily indicate when this vulnerability was discovered, shared with the affected vendor, publicly disclosed, or updated in CVE.
-

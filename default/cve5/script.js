@@ -613,6 +613,356 @@ function cveFixForVulnogram(j) {
 
 let previousVersions = null;
 
+const cpeOverrideDbName = 'vulnogram-settings';
+const cpeOverrideStoreName = 'cpeNameOverrides';
+const cpeOverrideStoreKey = 'list';
+var cpeNameOverrideCache = null;
+var cpeOverrideSaveTimer = null;
+var cpeOverrideDialogReady = false;
+
+function openCpeOverrideDb() {
+    return new Promise(function (resolve, reject) {
+        if (!('indexedDB' in window)) {
+            resolve(null);
+            return;
+        }
+        var request = indexedDB.open(cpeOverrideDbName, 1);
+        request.onupgradeneeded = function () {
+            var db = request.result;
+            if (!db.objectStoreNames.contains(cpeOverrideStoreName)) {
+                db.createObjectStore(cpeOverrideStoreName, { keyPath: "id" });
+            }
+        };
+        request.onsuccess = function () {
+            resolve(request.result);
+        };
+        request.onerror = function () {
+            reject(request.error);
+        };
+    });
+}
+
+function normalizeCpeOverrideType(value) {
+    if (value === 'app' || value === 'os' || value === 'hardware') {
+        return value;
+    }
+    return '';
+}
+
+function normalizeCpeOverrideKey(value) {
+    if (!value) {
+        return '';
+    }
+    return String(value).trim().toLowerCase();
+}
+
+function normalizeCpeOverrideList(list) {
+    if (list instanceof Map) {
+        list = Array.from(list.values());
+    }
+    if (!Array.isArray(list)) {
+        return [];
+    }
+    var unique = [];
+    var seen = Object.create(null);
+    for (var i = list.length - 1; i >= 0; i--) {
+        var entry = list[i];
+        var normalName = entry && entry.normalName ? String(entry.normalName).trim() : '';
+        var cpeName = entry && entry.cpeName ? String(entry.cpeName).trim() : '';
+        var cpeType = normalizeCpeOverrideType(entry && entry.cpeType ? String(entry.cpeType).trim() : '');
+        if (!normalName) {
+            continue;
+        }
+        var key = normalizeCpeOverrideKey(normalName);
+        if (key && seen[key]) {
+            continue;
+        }
+        if (key) {
+            seen[key] = true;
+        }
+        unique.push({ normalName: normalName, cpeName: cpeName, cpeType: cpeType });
+    }
+    unique.reverse();
+    return unique;
+}
+
+function cpeOverrideListToMap(list) {
+    if (!Array.isArray(list)) {
+        return new Map();
+    }
+    var map = new Map();
+    for (var i = 0; i < list.length; i++) {
+        var entry = list[i];
+        if (!entry || !entry.normalName) {
+            continue;
+        }
+        var key = normalizeCpeOverrideKey(entry.normalName);
+        if (!key) {
+            continue;
+        }
+        map.set(key, entry);
+    }
+    return map;
+}
+
+function normalizeCpeOverrideMap(list) {
+    return cpeOverrideListToMap(normalizeCpeOverrideList(list));
+}
+
+async function loadCpeNameOverrides() {
+    if (cpeNameOverrideCache instanceof Map) {
+        return cpeNameOverrideCache;
+    }
+    try {
+        var db = await openCpeOverrideDb();
+        if (!db) {
+            cpeNameOverrideCache = new Map();
+            return cpeNameOverrideCache;
+        }
+        return await new Promise(function (resolve, reject) {
+            var tx = db.transaction(cpeOverrideStoreName, "readonly");
+            var store = tx.objectStore(cpeOverrideStoreName);
+            var getReq = store.getAll();
+            getReq.onsuccess = function () {
+                var result = Array.isArray(getReq.result) ? getReq.result : [];
+                var entries = [];
+                for (var i = 0; i < result.length; i++) {
+                    var item = result[i];
+                    if (!item) {
+                        continue;
+                    }
+                    entries.push(item);
+                }
+                var rawList = entries.length ? entries : [];
+                var map = normalizeCpeOverrideMap(rawList);
+                cpeNameOverrideCache = map;
+                resolve(map);
+            };
+            getReq.onerror = function () {
+                reject(getReq.error);
+            };
+            tx.oncomplete = function () {
+                db.close();
+            };
+            tx.onerror = function () {
+                db.close();
+            };
+        });
+    } catch (e) {
+        console.error('Failed to load CPE name overrides', e);
+        cpeNameOverrideCache = new Map();
+        return cpeNameOverrideCache;
+    }
+}
+
+async function saveCpeNameOverrides(list) {
+    var cleaned = normalizeCpeOverrideList(list);
+    var cpeNamePattern = /^[a-zA-Z0-9._-]+$/;
+    for (var i = 0; i < cleaned.length; i++) {
+        var entry = cleaned[i];
+        if (entry.cpeName && !cpeNamePattern.test(entry.cpeName)) {
+            entry.cpeName = '';
+        }
+    }
+    var map = cpeOverrideListToMap(cleaned);
+    cpeNameOverrideCache = map;
+    try {
+        var db = await openCpeOverrideDb();
+        if (!db) {
+            return map;
+        }
+        await new Promise(function (resolve, reject) {
+            var tx = db.transaction(cpeOverrideStoreName, "readwrite");
+            var store = tx.objectStore(cpeOverrideStoreName);
+            store.clear();
+            cleaned.forEach(function (entry) {
+                store.put({
+                    id: entry.normalName,
+                    normalName: entry.normalName,
+                    cpeName: entry.cpeName,
+                    cpeType: entry.cpeType
+                });
+            });
+            tx.oncomplete = function () {
+                db.close();
+                resolve();
+            };
+            tx.onerror = function () {
+                db.close();
+                reject(tx.error);
+            };
+        });
+    } catch (e) {
+        console.error('Failed to save CPE name overrides', e);
+    }
+    return map;
+}
+
+function findCpeNameOverride(name, overrides) {
+    if (!name) {
+        return null;
+    }
+    var needle = normalizeCpeOverrideKey(name);
+    if (!needle) {
+        return null;
+    }
+    if (overrides instanceof Map) {
+        return overrides.get(needle) || null;
+    }
+    if (!Array.isArray(overrides)) {
+        return null;
+    }
+    for (var i = 0; i < overrides.length; i++) {
+        var entry = overrides[i];
+        if (!entry || !entry.normalName) {
+            continue;
+        }
+        if (normalizeCpeOverrideKey(entry.normalName) === needle) {
+            return entry;
+        }
+    }
+    return null;
+}
+
+function applyCpeNameOverride(name, overrides) {
+    var entry = findCpeNameOverride(name, overrides);
+    if (!entry) {
+        return { name: name, type: 'a' };
+    }
+    var overrideName = entry.cpeName && entry.cpeName.trim() ? entry.cpeName : name;
+    return { name: overrideName, type: entry.cpeType || '' };
+}
+
+function resolveCpeTypeLetter(value) {
+    if (value === 'app') {
+        return 'a';
+    }
+    if (value === 'os') {
+        return 'o';
+    }
+    if (value === 'hardware') {
+        return 'h';
+    }
+    return '';
+}
+
+function cpeOverrideCreateRow(entry) {
+    var normalName = entry && entry.normalName ? entry.normalName : '';
+    var cpeName = entry && entry.cpeName ? entry.cpeName : '';
+    var cpeType = normalizeCpeOverrideType(entry && entry.cpeType ? entry.cpeType : '');
+    var row = document.createElement('tr');
+    row.setAttribute('data-cpe-override-row', true);
+    row.innerHTML = pugRender({
+        renderTemplate: 'cpeNameOverrideRow',
+        doc: {
+            normalName: normalName,
+            cpeName: cpeName,
+            cpeType: cpeType
+        }
+    });
+    return row;
+}
+
+function cpeOverrideRenderRows(list) {
+    var tbody = document.getElementById('cpeNameOverrideRows');
+    if (!tbody) {
+        return;
+    }
+    tbody.innerHTML = '';
+    var entries = normalizeCpeOverrideList(list);
+    entries.sort(function (a, b) {
+        return normalizeCpeOverrideKey(a && (a.id || a.normalName)).localeCompare(
+            normalizeCpeOverrideKey(b && (b.id || b.normalName))
+        );
+    });
+    if (!entries.length) {
+        tbody.appendChild(cpeOverrideCreateRow({}));
+        return;
+    }
+    entries.forEach(function (entry) {
+        tbody.appendChild(cpeOverrideCreateRow(entry));
+    });
+}
+
+function cpeOverrideReadRows() {
+    var tbody = document.getElementById('cpeNameOverrideRows');
+    if (!tbody) {
+        return [];
+    }
+    var rows = tbody.querySelectorAll('tr[data-cpe-override-row]');
+    var list = [];
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var normalInput = row.querySelector('input[name="normalName"]');
+        var cpeInput = row.querySelector('input[name="cpeName"]');
+        var typeSelect = row.querySelector('select[name="cpeType"]');
+        list.push({
+            normalName: normalInput ? normalInput.value : '',
+            cpeName: cpeInput ? cpeInput.value : '',
+            cpeType: typeSelect ? typeSelect.value : ''
+        });
+    }
+    return list;
+}
+
+function cpeOverrideScheduleSave() {
+    if (cpeOverrideSaveTimer) {
+        clearTimeout(cpeOverrideSaveTimer);
+    }
+    cpeOverrideSaveTimer = setTimeout(function () {
+        cpeOverrideSaveTimer = null;
+        var list = cpeOverrideReadRows();
+        saveCpeNameOverrides(list);
+    }, 200);
+}
+
+function cpeOverrideAddRow() {
+    var tbody = document.getElementById('cpeNameOverrideRows');
+    if (!tbody) {
+        return;
+    }
+    var row = cpeOverrideCreateRow({});
+    tbody.appendChild(row);
+    var input = row.querySelector('input[name="normalName"]');
+    if (input) {
+        input.focus();
+    }
+    cpeOverrideScheduleSave();
+}
+
+function cpeOverrideDeleteRow(btn) {
+    if (!btn) {
+        return;
+    }
+    var row = btn.closest('tr');
+    if (row) {
+        row.remove();
+        cpeOverrideScheduleSave();
+    }
+}
+
+function initCpeOverrideDialog(dialog) {
+    if (cpeOverrideDialogReady || !dialog) {
+        return;
+    }
+    dialog.addEventListener('input', cpeOverrideScheduleSave);
+    dialog.addEventListener('change', cpeOverrideScheduleSave);
+    cpeOverrideDialogReady = true;
+}
+
+async function showCpeNameOverridesDialog() {
+    var dialog = document.getElementById('cpeNameOverrideDialog');
+    if (!dialog) {
+        return;
+    }
+    initCpeOverrideDialog(dialog);
+    var overrides = await loadCpeNameOverrides();
+    cpeOverrideRenderRows(overrides);
+    if (!dialog.open) {
+        dialog.showModal();
+    }
+}
+
 async function clearCPE() {
         localStorage.setItem('autoCPEChk', false);
         document.getElementById('autoCPEChk').checked = false;
@@ -630,10 +980,9 @@ async function autoCPE() {
         //docEditor.getEditor('root.containers.cna.cpeApplicability').watch('cntr.affected');
         var affectedEditor = await docEditor.getEditor('root.containers.cna.affected');
         var affected = await affectedEditor.getValue();
-
+        var overrides = await loadCpeNameOverrides();
         var cpeEditor = await docEditor.getEditor('root.containers.cna.cpeApplicability');
-        var cpe = generateCpeApplicability(affected);
-        //console.log(cpe);
+        var cpe = generateCpeApplicability(affected, overrides);
         cpeEditor.setValue(cpe,'',true);
     } else {
         //docEditor.getEditor('root.containers.cna.cpeApplicability').disable();
@@ -641,13 +990,17 @@ async function autoCPE() {
     }
 }
 
-function generateCpeApplicability(affected) {
+function generateCpeApplicability(affected, overrides) {
     let cpeApplicabilityNodes = [];
     if (!affected || affected.length === 0 || !(localStorage.getItem('autoCPEChk') === 'true')) {
         return [];
     }
+    var overrideMap = overrides instanceof Map ? overrides : cpeNameOverrideCache;
+    if (!(overrideMap instanceof Map)) {
+        overrideMap = new Map();
+    }
     for (const affectedProduct of affected) {
-        const cpeApplicabilityNode = generateCpeApplicabilityNode(affectedProduct);
+        const cpeApplicabilityNode = generateCpeApplicabilityNode(affectedProduct, overrideMap);
         if (cpeApplicabilityNode) {
             cpeApplicabilityNodes.push(cpeApplicabilityNode);
         }
@@ -661,11 +1014,20 @@ function normalizeCPEtoken(x) {
     if (x === undefined || x === null) {
         return '-';
     }
-    return x.trim().toLowerCase().replaceAll(/[\s:]+/g, '_').replaceAll(/([*?])/g, '\$1');
+    return x.trim().toLowerCase().replaceAll(/[^0-9a-z_\-\.\*]+/g, '_');
 }
 
-function generateCpeApplicabilityNode(affectedProduct) {
+function generateCpeApplicabilityNode(affectedProduct, overrides) {
     let cpeMatch = [];
+    var overrideMap = overrides instanceof Map ? overrides : cpeNameOverrideCache;
+    if (!(overrideMap instanceof Map)) {
+        overrideMap = new Map();
+    }
+    var vendorOverride = applyCpeNameOverride(affectedProduct.vendor, overrideMap);
+    var productOverride = applyCpeNameOverride(affectedProduct.product, overrideMap);
+    var cpeType = resolveCpeTypeLetter(productOverride.type) || resolveCpeTypeLetter(vendorOverride.type) || 'a';
+    var vendorToken = normalizeCPEtoken(vendorOverride.name);
+    var productToken = normalizeCPEtoken(productOverride.name);
 
     /*if (!affectedProduct.vendor || !affectedProduct.product) {
         return null;
@@ -682,10 +1044,12 @@ function generateCpeApplicabilityNode(affectedProduct) {
                     platforms = affectedProduct.platforms;
                 }
                 for (const p of platforms) {
+                    var platformOverride = applyCpeNameOverride(p, overrideMap);
+                    var platformToken = normalizeCPEtoken(platformOverride.name);
                     if (v.lessThan) {
                         cpeMatch.push({
                             "vulnerable": vulnerable,
-                            "criteria": `cpe:2.3:a:${normalizeCPEtoken(affectedProduct.vendor)}:${normalizeCPEtoken(affectedProduct.product)}:*:*:${normalizeCPEtoken(p)}:*:*:*:*:*`,
+                            "criteria": `cpe:2.3:${cpeType}:${vendorToken}:${productToken}:*:*:${platformToken}:*:*:*:*:*`,
                             "versionStartIncluding": normalizeCPEtoken(v.version),
                             "versionEndExcluding": normalizeCPEtoken(v.lessThan)
                         });
@@ -693,14 +1057,14 @@ function generateCpeApplicabilityNode(affectedProduct) {
                     else if (v.lessThanOrEqual) {
                         cpeMatch.push({
                             "vulnerable": vulnerable,
-                            "criteria": `cpe:2.3:a:${normalizeCPEtoken(affectedProduct.vendor)}:${normalizeCPEtoken(affectedProduct.product)}:*:*:${normalizeCPEtoken(p)}:*:*:*:*:*`,
+                            "criteria": `cpe:2.3:${cpeType}:${vendorToken}:${productToken}:*:*:${platformToken}:*:*:*:*:*`,
                             "versionStartIncluding": normalizeCPEtoken(v.version),
                             "versionEndIncluding": normalizeCPEtoken(v.lessThanOrEqual)
                         });
                     } else {
                         cpeMatch.push({
                             "vulnerable": vulnerable,
-                            "criteria": `cpe:2.3:a:${normalizeCPEtoken(affectedProduct.vendor)}:${normalizeCPEtoken(affectedProduct.product)}:${normalizeCPEtoken(v.version)}:*:${normalizeCPEtoken(p)}:*:*:*:*:*`
+                            "criteria": `cpe:2.3:${cpeType}:${vendorToken}:${productToken}:${normalizeCPEtoken(v.version)}:*:${platformToken}:*:*:*:*:*`
                         });
                     }
                 }
