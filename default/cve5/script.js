@@ -830,7 +830,7 @@ function applyCpeNameOverride(name, overrides) {
         return { name: name, type: 'a' };
     }
     var overrideName = entry.cpeName && entry.cpeName.trim() ? entry.cpeName : name;
-    return { name: overrideName, type: entry.cpeType || '' };
+    return { name: overrideName, type: entry.cpeType || '*' };
 }
 
 function resolveCpeTypeLetter(value) {
@@ -1011,8 +1011,8 @@ function generateCpeApplicability(affected, overrides) {
     }];
 }
 function normalizeCPEtoken(x) {
-    if (x === undefined || x === null) {
-        return '-';
+    if (x === undefined || x === null || x == '') {
+        return '*';
     }
     return x.trim().toLowerCase().replaceAll(/[^0-9a-z_\-\.\*]+/g, '_');
 }

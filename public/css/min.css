@@ -496,9 +496,12 @@ box-shadow: 0 0 0 0.2em color-mix(in srgb, var(--dis) 30%, transparent);
     font-weight: normal;
     white-space: normal;
     margin-bottom: 1px;
-    background-color: var(--bg1);
+    background-color: var(--wht);
 }
 
+.txt:focus {
+    background-color: var(--wht);
+}
 .txt:-webkit-autofill,
 .txt:-webkit-autofill:focus {
     transition: background-color 0s 600000s, color 0s 600000s !important;
@@ -558,7 +561,7 @@ box-shadow: 0 0 0 0.2em color-mix(in srgb, var(--dis) 30%, transparent);
     margin: 0px;
     margin-left: -1px;
     border-radius: 0px;
-    background-color: var(--bg1);
+    background-color: var(--wht);
 }
 
 .rdg input[type="checkbox"], .rdg input[type="radio"] {
