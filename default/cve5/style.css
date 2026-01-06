@@ -57,9 +57,9 @@ background-color:rgb(162, 213, 114);
 background-color: orangered;
 }
 
+div[data-schemaid="cvss4"] .je-indented-panel div div div.row:nth-child(6),
 div[data-schemaid="cvss4"] .je-indented-panel div div div.row:nth-child(7),
-div[data-schemaid="cvss4"] .je-indented-panel div div div.row:nth-child(8),
-div[data-schemaid="cvss4"] .je-indented-panel div div div.row:nth-child(9)
+div[data-schemaid="cvss4"] .je-indented-panel div div div.row:nth-child(8)
 {
   background-color: var(--bg1);
   border-radius: 5px;

@@ -118,7 +118,7 @@ JSONEditor.defaults.editors.array = class mystring extends JSONEditor.defaults.e
     /* move the delete button next to object title */
     _createDeleteButton (i, holder) {
         var r = super._createDeleteButton(i, holder);
-        r.setAttribute('class', 'sbn vgi-cancel');
+        r.setAttribute('class', 'rbtn vgi-x');
         r.innerHTML = '';
         r.parentNode.setAttribute("vg","obj-del");
         if(!this.options.disable_array_add) {
@@ -715,11 +715,7 @@ JSONEditor.defaults.editors.upload =
 var iconMapping = {
     collapse: 'down',
       expand: 'add',
-      delete: 'cancel',
-      edit: 'edit',
-      add: 'add',
-      cancel: 'cancel',
-      save: 'save',
+      delete: 'x',
       moveup: 'up',
       movedown: 'down'
 };
@@ -1155,7 +1151,7 @@ function showJSONerrors(errors) {
             }
         }
         var a = document.createElement('a');
-        a.setAttribute('class', 'vgi-alert')
+        a.setAttribute('class', 'rqd')
         a.setAttribute('e_path', e.path);
         a.setAttribute('onclick', 'scroll2Err(this)');
         a.textContent = (showLabel && showLabel.trim() ? showLabel : e.path.replace('^root.','')) + ": " + e.message;

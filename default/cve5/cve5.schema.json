@@ -2042,15 +2042,6 @@
             "propertyOrder": 2,
             "format": "grid",
             "properties": {
-              "version": {
-                "type": "string",
-                "enum": [
-                  "4.0"
-                ],
-                "options": {
-                  "hidden": "true"
-                }
-              },
               "attackVector": {
                 "title": "Attack Vector",
                 "type": "string",
@@ -2607,6 +2598,15 @@
                   }
                 }
               },
+              "version": {
+                "type": "string",
+                "enum": [
+                  "4.0"
+                ],
+                "options": {
+                  "hidden": "true"
+                }
+              },
               "baseSeverity": {
                 "title": "Severity",
                 "type": "string",
@@ -2676,7 +2676,7 @@
                   {
                     "place": "header",
                     "target": "_self",
-                    "class": "vgi-out",
+                    "class": "vgi-copy",
                     "href": "'javascript:copyToClipboard(\"' + cvssjs.vector4(context) + '\");void(0);'",
                     "title": "Copy Vector",
                     "rel": "' Copy'"

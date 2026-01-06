@@ -116,7 +116,7 @@ mixin showSecret
 
 mixin cpeNameOverrideDialog
     dialog.dlg.bor.rnd.shd#cpeNameOverrideDialog
-        +dlgHeader('vgi-cog','CPE Name Mappings')
+        +dlgHeader('vgi-cog','CPE name and type alias mappings')
         form.gap(onsubmit="event.preventDefault();return false;")
             table#cpeNameOverrideTable
                 thead
@@ -130,13 +130,13 @@ mixin cpeNameOverrideDialog
                 tfoot
                     tr(colspan=4)
                         td
-                            button.btn.sfe(type="button",onclick="cpeOverrideAddRow()") Add
+                            button.btn.vgi-add.sfe(type="button",onclick="cpeOverrideAddRow()") Add mapping
             center.gap
                 | 
-                button.btn(type="button",onclick="this.closest('dialog').close();autoCPE()") Close
+                button.btn.vgi-fail(type="button",onclick="this.closest('dialog').close();autoCPE()") Close
 
 mixin dlgHeader(icon, msg)
     header.ban.sec.pad
         b.lbl(class=icon)=msg
         | 
-        a.sbn.right.vgi-fail(onclick="this.closest('dialog').close()")
+        a.right.rbtn.vgi-x(onclick="this.closest('dialog').close()")

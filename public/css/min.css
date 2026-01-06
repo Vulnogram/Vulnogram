@@ -524,14 +524,14 @@ box-shadow: 0 0 0 0.2em color-mix(in srgb, var(--dis) 30%, transparent);
     box-shadow: none;
 }
 
-.sbn:hover, .fbn:hover,.btn:hover {
+.sbn:hover, .fbn:hover,.btn:hover,.rbtn:hover {
     box-shadow: 0px 2px 4px rgba(0,0,0,0.2);
     background-color: var(--bg1);
     color: var(--txt);
     transition: all 0.2s;
 }
 
-.sbn:active,.fbn:active,.btn:active {
+.sbn:active,.fbn:active,.btn:active,.rbtn:active {
     box-shadow: 0px 1px 1px rgba(0,0,0,0.1);
     opacity: 0.5;
     background-color: var(--bg1);
@@ -546,6 +546,22 @@ box-shadow: 0 0 0 0.2em color-mix(in srgb, var(--dis) 30%, transparent);
 }
 .btg .btn{
     margin-right: 0px;
+}
+.rbtn { /*round button X */
+    display: inline-block;
+    border-radius: 16px !important;
+    padding: 0px;
+    border: 1px solid var(--bor);
+    background-color: var(--bg1);
+}
+.rbtn::before {
+    display: block;
+    content: "";
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0px !important;
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
 }
 
 .rdg {
@@ -721,6 +737,7 @@ input.tab[type="radio"] + .lbl:focus
 .txt::placeholder {
     text-align: right;
 }
+.rqd::before,
 .editor .form-control div.tred::before,
 .editor p[style="color: red;"]::before {
     content: '✱';
@@ -1122,7 +1139,6 @@ div[data-schematype="object"]>h3>span:before {
 }
 
 .je-infobutton-icon {
-    font-size: 60% !important;
     color: var(--dis);
     padding: 0px 3px!important;
 }
@@ -1143,20 +1159,17 @@ div[data-schematype="object"]>h3>span:before {
 .expand {
     display: none;
 }
-
+/*
 .json-editor-btn-delete .vgi-cancel, .json-editor-btn-add .vgi-add {
     padding-left: 0em;
     padding-right: 0em;
     background-position-x:0px;
     background-size: 1em;
-}
+}*/
 td > span:first-child > .json-editor-btn-delete{
     border: none !important;
     box-shadow: none !important;
-    padding: 5px !important;
     background: none !important;
-    margin: 0px;
-    font-size: 1.5em;
 }
 .json-editor-btn-add {
     margin-left: 2em;

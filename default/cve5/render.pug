@@ -64,9 +64,9 @@ mixin cpeApplicability(cpeAs,readonly)
                 input#autoCPEChk.chk(type='checkbox',checked=cpestate,onclick='autoCPE()')
                 label.lbl(for="autoCPEChk") Auto Update
                 | 
-                button.fbn.vgi-cancel(type="button",onclick='clearCPE()') Remove
+                button.fbn.vgi-x(type="button",onclick='clearCPE()') Remove
                 | 
-                button.fbn.vgi-cog(type="button",onclick='showCpeNameOverridesDialog()') Name Mapings 
+                button.fbn.vgi-cog(type="button",onclick='showCpeNameOverridesDialog()') Aliases
     if cpeAs && cpeAs.length > 0
         each cpeA, k in cpeAs
             p

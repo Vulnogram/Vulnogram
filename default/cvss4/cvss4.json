@@ -654,7 +654,7 @@
         {
           "place": "header",
           "target": "_self",
-          "class": "vgi-out",
+          "class": "vgi-copy",
           "href": "'javascript:copyToClipboard(\"' +cvssjs.vector4(context) + '\");void(0);'",
           "title": "Copy Vector",
           "rel": "' Copy'"
