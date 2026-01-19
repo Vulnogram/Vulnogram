@@ -339,6 +339,8 @@ select.btn {
     box-sizing:border-box;
 }
 
+.editor input[type="date"],
+.editor input[type="datetime-local"],
 .sbn, .fbn, .btn, .txt, .lbl, .tag, .tag-s {
     display: inline-flex;
     zoom:1;
@@ -380,6 +382,8 @@ select.btn {
     padding: .4em;
     border-radius: .2em;
 }
+.editor input[type="date"],
+.editor input[type="datetime-local"],
 .out, .btn, .txt {
     border: 1px solid var(--bor);
     outline: none;
@@ -427,6 +431,9 @@ a.chk[aria-checked="true"]{
 .btn:hover {
     border: 1px solid var(--bor);
 }
+.editor input[type^="date"]:hover,
+.editor input[type^="date"]:active,
+.editor input[type^="date"]:focus,
 .otl:focus, .otl:active, .otl:hover,
 .txt:focus, .txt:active, .txt:hover,
 .out:focus, .out:active, .out:hover 
@@ -1159,22 +1166,17 @@ div[data-schematype="object"]>h3>span:before {
 .expand {
     display: none;
 }
-/*
-.json-editor-btn-delete .vgi-cancel, .json-editor-btn-add .vgi-add {
-    padding-left: 0em;
-    padding-right: 0em;
-    background-position-x:0px;
-    background-size: 1em;
-}*/
+
 td > span:first-child > .json-editor-btn-delete{
     border: none !important;
     box-shadow: none !important;
     background: none !important;
+    padding: 0px 5px !important;
+    margin: 0px !important;
 }
 .json-editor-btn-add {
     margin-left: 2em;
 }
-
 .editor span[vg="obj-del"] {
     position: absolute;
     top: 1em;
@@ -1344,14 +1346,14 @@ td.compact .form-control {
     color:var(--bg1);
 }
 
-input[type="datetime-local"] {
+input[type="datetime-local"], input[type="date"] {
     height: 17px;
     font-size: small;
-    background-color: var(--bg1);
+    background-color: var(--wht);
     min-width: 16em;
 }
 
-input[type="datetime-local"]::after {
+input[type="datetime-local"]::after, input[type="date"]::after{
     height: 17px;
     content: attr(tz);
     color: var(--dis);
