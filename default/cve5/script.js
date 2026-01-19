@@ -407,7 +407,7 @@ function getProblemTypeString(o) {
             if (o.problemTypes[j].descriptions[k].lang == "en") {
                 var pt = o.problemTypes[j].descriptions[k].description;
                 if (pt) {
-                    pts.push(pt.replace(/^CWE-[0-9 ]+/, ''));
+                    pts.push(pt.replace(/^CWE-[0-9 ]+/, '').replace(/Improper/, 'Insufficient'));
                 }
             }
         }
@@ -477,7 +477,7 @@ async function autoText(event) {
         });
         hE.setValue(text, '', false);
     } else {
-        showAlert('Please enter all the required fields first!');
+        showAlert('First, fill in the problem, impact, and affected fields!');
     }
 }
 
