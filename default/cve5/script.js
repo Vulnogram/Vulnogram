@@ -34,26 +34,6 @@ function hidepopups() {
     document.getElementById("userStatsPopup").open = false;
 }
 
-function tweetJSON(event, link) {
-    var j = mainTabGroup.getValue();
-    if (!j) {
-        event.preventDefault();
-        return;
-    }
-    var id = j.cveMetadata.cveId;
-    /* var cvelist = textUtil.deep_value(j, 'CNA_private.CVE_list');
-     if (cvelist && cvelist.length > 0) {
-         id = '';
-     }*/
-    var text = id + ' ' + getBestTitle(j.containers.cna);
-    text = text.replace(/ +(?= )/g, '');
-    link.href = 'https://twitter.com/intent/tweet?&text='
-        + encodeURI(text)
-        + '&url=' + encodeURI(textUtil.deep_value(j, 'containers.cna.references.0.url'));
-    //    + '&hashtags=' + encodeURI(id)
-    //via=vulnogram&hashtags=CVE
-}
-
 function loadCVE(value) {
     var realId = value.match(/(CVE-(\d{4})-(\d{1,12})(\d{3}))/);
     if (realId) {
