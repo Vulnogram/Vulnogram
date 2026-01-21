@@ -374,11 +374,12 @@ module.exports = {
             }
             if (schema.id == "datePublic") {
                 if(value && (new Date(value) > new Date())) {
-                    errors.push({
+                    //TODO. this should be a warning, not error.
+                    /*errors.push({
                         path: path,
                         property: 'format',
                         message: 'Date is in the future!'
-                    });
+                    });*/
                 }
             }
             return errors;
