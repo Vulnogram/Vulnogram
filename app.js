@@ -3,6 +3,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const http = require('http');
 const mongoose = require('mongoose');
 const flash = require('connect-flash');
 const https = require('https');
@@ -82,14 +83,15 @@ app.use(express.json({limit:'16mb'}));
 app.use(express.static('public'));
 
 // Express Session middleware
-app.use(session({
+const sessionMiddleware = session({
     secret: crypto.randomBytes(64).toString('hex'),
     resave: true,
     saveUninitialized: true,
     cookie: {
       httpOnly: true
     }
-}));
+});
+app.use(sessionMiddleware);
 
 // Passport config
 require('./config/passport')(passport);
@@ -217,12 +219,22 @@ app.get('/', function (req, res, next) {
     res.redirect(conf.homepage? conf.homepage : '/home');
 });
 
-if(conf.httpsOptions) {
-    https.createServer(conf.httpsOptions, app).listen(conf.serverPort, conf.serverHost, function () {
-        console.log('Server started at https://' + conf.serverHost + ':' + conf.serverPort);
+const realtimeEnabled = !conf.realtime || conf.realtime.enabled !== false;
+const server = conf.httpsOptions ? https.createServer(conf.httpsOptions, app) : http.createServer(app);
+
+if (realtimeEnabled) {
+    const { Server } = require('socket.io');
+    const io = new Server(server, {
+        maxHttpBufferSize: conf.realtime && conf.realtime.maxPatchBytes ? conf.realtime.maxPatchBytes * 2 : 1e6
     });
-} else {
-    app.listen(conf.serverPort, conf.serverHost, function () {
-        console.log('Server started at http://' + conf.serverHost + ':' + conf.serverPort);
+    require('./lib/realtime')(io, {
+        sessionMiddleware: sessionMiddleware,
+        passport: passport,
+        conf: conf,
+        confOpts: app.locals.confOpts
     });
 }
+
+server.listen(conf.serverPort, conf.serverHost, function () {
+    console.log('Server started at ' + (conf.httpsOptions ? 'https://' : 'http://') + conf.serverHost + ':' + conf.serverPort);
+});

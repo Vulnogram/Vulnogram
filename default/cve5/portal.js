@@ -764,6 +764,10 @@ async function cvePost() {
                     infoMsg.innerText = '';
                     infoMsg.appendChild(a);
                     hideJSONerrors();
+                    if (typeof draftsCache !== 'undefined' && draftsCache && draftsCache.remove) {
+                        draftsCache.cancelSave();
+                        draftsCache.remove(j.cveMetadata.cveId);
+                    }
                 }
             //} else {
             //    showAlert('CVE posting is not currently supported by production CVE services! Try Logging to Test Portal instance');

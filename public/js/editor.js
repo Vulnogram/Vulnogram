@@ -17,6 +17,9 @@
 /* globals getChanges */
 /* globals postURL */
 /* globals idpath */
+/* globals io */
+/* globals realtimeEnabled */
+/* globals realtimeConfig */
 
 
 var infoMsg = document.getElementById('infoMsg');
@@ -26,6 +29,510 @@ var editorLabel = document.getElementById('editorLabel');
 var iconTheme = 'vgi-';
 var starting_value = {};
 var sourceEditor;
+
+var realtimeStatus = document.getElementById('realtimeStatus');
+var realtimeViewers = document.getElementById('realtimeViewers');
+var realtimeApplying = false;
+var realtimeState = {
+    enabled: false,
+    socket: null,
+    connected: false,
+    joined: false,
+    currentDocId: null,
+    shadowDoc: null,
+    shadowVersion: null,
+    pending: false,
+    dirty: false,
+    debounceTimer: null,
+    inflightPatch: null,
+    inflightBase: null
+};
+var realtimeClientId = (function () {
+    var key = 'vulnogram-client-id';
+    try {
+        var existing = window.localStorage.getItem(key);
+        if (existing) {
+            return existing;
+        }
+        var fresh = 'client-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+        window.localStorage.setItem(key, fresh);
+        return fresh;
+    } catch (e) {
+        return 'client-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    }
+})();
+
+function realtimeCloneDoc(doc) {
+    return doc ? JSON.parse(JSON.stringify(doc)) : {};
+}
+
+function realtimeSetStatus(connected, message) {
+    if (!realtimeStatus) return;
+    var label = connected ? 'Connected' : 'Offline';
+    if (message) {
+        label = label + ' (' + message + ')';
+    }
+    realtimeStatus.textContent = label;
+}
+
+function realtimeSetViewers(count) {
+    if (!realtimeViewers) return;
+    if (count && count > 1) {
+        realtimeViewers.textContent = count + ' viewers';
+    } else {
+        realtimeViewers.textContent = '';
+    }
+}
+
+function realtimeGetCurrentDoc() {
+    var sourceTab = document.getElementById('sourceTab');
+    if (sourceTab && sourceTab.checked && sourceEditor) {
+        try {
+            return JSON.parse(sourceEditor.getSession().getValue());
+        } catch (e) {
+            return null;
+        }
+    }
+    if (docEditor && typeof docEditor.getValue === 'function') {
+        return docEditor.getValue();
+    }
+    return null;
+}
+
+function realtimeJoinIfReady() {
+    if (!window.realtimeEnabled) return;
+    if (!realtimeState.socket || !realtimeState.socket.connected) return;
+    if (!schemaName || typeof schemaName !== 'string') return;
+    var docId = getDocID();
+    if (!docId) return;
+    if (realtimeState.currentDocId === docId && realtimeState.joined) return;
+    realtimeState.joined = false;
+    realtimeState.socket.emit('doc:join', { collection: schemaName, docId: docId }, function (res) {
+        if (!res || !res.ok) {
+            return;
+        }
+        realtimeState.currentDocId = docId;
+        realtimeState.shadowDoc = realtimeCloneDoc(res.doc || {});
+        realtimeState.shadowVersion = typeof res.version === 'number' ? res.version : 0;
+        realtimeState.joined = true;
+        if (typeof res.viewers === 'number') {
+            realtimeSetViewers(res.viewers);
+        }
+        realtimeMaybeSyncLocal();
+    });
+}
+
+function realtimeMaybeSyncLocal() {
+    if (!realtimeState.joined || realtimeState.pending) return;
+    var currentDoc = realtimeGetCurrentDoc();
+    if (!currentDoc || !window.jsonpatch || typeof window.jsonpatch.compare !== 'function') {
+        return;
+    }
+    var patch = window.jsonpatch.compare(realtimeState.shadowDoc || {}, currentDoc);
+    if (patch && patch.length) {
+        realtimeSendPatch(patch);
+    }
+}
+
+function realtimeSendPatch(patch) {
+    if (!realtimeState.socket || !realtimeState.socket.connected) return;
+    if (!realtimeState.joined || !realtimeState.currentDocId) return;
+    if (realtimeState.pending) {
+        realtimeState.dirty = true;
+        return;
+    }
+    if (!window.jsonpatch || typeof window.jsonpatch.apply !== 'function') return;
+    infoMsg.textContent = "Saving...";
+    realtimeState.pending = true;
+    realtimeState.inflightPatch = patch;
+    realtimeState.inflightBase = realtimeCloneDoc(realtimeState.shadowDoc || {});
+    var payload = {
+        collection: schemaName,
+        docId: realtimeState.currentDocId,
+        baseVersion: realtimeState.shadowVersion,
+        patch: patch,
+        clientId: realtimeClientId
+    };
+    realtimeState.socket.emit('doc:patch', payload, function (res) {
+        realtimeState.pending = false;
+        if (res && res.ok) {
+            var nextShadow = realtimeCloneDoc(realtimeState.inflightBase || {});
+            try {
+                window.jsonpatch.apply(nextShadow, realtimeState.inflightPatch, true);
+            } catch (e) {
+                nextShadow = realtimeCloneDoc(realtimeGetCurrentDoc());
+            }
+            realtimeState.shadowDoc = nextShadow;
+            realtimeState.shadowVersion = res.newVersion;
+            realtimeState.inflightPatch = null;
+            realtimeState.inflightBase = null;
+            if (draftsCache && draftsCache.remove) {
+                draftsCache.cancelSave();
+                draftsCache.remove(realtimeState.currentDocId);
+                infoMsg.textContent = "Auto saved";
+            }
+            if (realtimeState.dirty) {
+                realtimeState.dirty = false;
+                realtimeSchedulePatch();
+            }
+            return;
+        }
+        realtimeState.inflightPatch = null;
+        realtimeState.inflightBase = null;
+        if (res && res.reason === 'VERSION_MISMATCH' && res.doc) {
+            realtimeApplying = true;
+            try {
+                if (docEditor) {
+                    docEditor.setValue(res.doc);
+                }
+            } catch (e) {
+            }
+            realtimeApplying = false;
+            realtimeState.shadowDoc = realtimeCloneDoc(res.doc || {});
+            realtimeState.shadowVersion = typeof res.version === 'number' ? res.version : realtimeState.shadowVersion;
+            return;
+        }
+        if (realtimeState.dirty) {
+            realtimeState.dirty = false;
+            realtimeSchedulePatch();
+        }
+    });
+}
+
+function realtimeSchedulePatch() {
+    if (!window.realtimeEnabled) return;
+    if (realtimeApplying || draftsSyncing) return;
+    if (realtimeState.pending) {
+        realtimeState.dirty = true;
+        return;
+    }
+    if (realtimeState.debounceTimer) {
+        clearTimeout(realtimeState.debounceTimer);
+    }
+    var debounceMs = (window.realtimeConfig && window.realtimeConfig.debounceMs) ? window.realtimeConfig.debounceMs : 350;
+    realtimeState.debounceTimer = setTimeout(function () {
+        if (!realtimeState.socket || !realtimeState.socket.connected) return;
+        if (!window.jsonpatch || typeof window.jsonpatch.compare !== 'function') return;
+        var currentDoc = realtimeGetCurrentDoc();
+        if (!currentDoc) return;
+        var patch = window.jsonpatch.compare(realtimeState.shadowDoc || {}, currentDoc);
+        if (patch && patch.length) {
+            realtimeSendPatch(patch);
+        }
+    }, debounceMs);
+}
+
+function realtimeApplyRemotePatch(data) {
+    if (!data || !data.patch) return;
+    if (data.clientId && data.clientId === realtimeClientId) return;
+    if (!window.jsonpatch || typeof window.jsonpatch.apply !== 'function') return;
+    var nextShadow = realtimeCloneDoc(realtimeState.shadowDoc || {});
+    try {
+        window.jsonpatch.apply(nextShadow, data.patch, true);
+    } catch (e) {
+        realtimeJoinIfReady();
+        return;
+    }
+    realtimeState.shadowDoc = nextShadow;
+    realtimeState.shadowVersion = typeof data.newVersion === 'number' ? data.newVersion : realtimeState.shadowVersion;
+    realtimeApplying = true;
+    try {
+        if (docEditor) {
+            docEditor.setValue(nextShadow);
+        }
+    } catch (e) {
+    }
+    realtimeApplying = false;
+}
+
+function initRealtime() {
+    if (!window.realtimeEnabled || typeof io === 'undefined') {
+        return;
+    }
+    realtimeState.enabled = true;
+    realtimeState.socket = io();
+    realtimeSetStatus(false, 'connecting');
+    realtimeState.socket.on('connect', function () {
+        realtimeState.connected = true;
+        realtimeSetStatus(true);
+        realtimeJoinIfReady();
+    });
+    realtimeState.socket.on('disconnect', function () {
+        realtimeState.connected = false;
+        realtimeState.joined = false;
+        realtimeSetStatus(false);
+        realtimeSetViewers(0);
+    });
+    realtimeState.socket.on('connect_error', function () {
+        realtimeSetStatus(false, 'error');
+    });
+    realtimeState.socket.on('doc:patched', function (data) {
+        realtimeApplyRemotePatch(data);
+    });
+    realtimeState.socket.on('doc:viewers', function (data) {
+        if (data && typeof data.count === 'number') {
+            realtimeSetViewers(data.count);
+        }
+    });
+}
+
+
+// IndexedDB cache for local document persistence
+var draftsCache = (function () {
+    var DB_NAME = 'vulnogram_cache';
+    var STORE_NAME = 'docs';
+    var DB_VERSION = 1;
+    var db = null;
+    var saveTimeout = null;
+    var channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('draftsCache') : null;
+    var listeners = [];
+
+    // Listen for updates from other tabs
+    if (channel != undefined) {
+        channel.onmessage = function (e) {
+            notify(e.data, true);
+        };
+    }
+
+    function notify(data, isRemote) {
+        listeners.forEach(function (cb) {
+            try { cb(data, isRemote); } catch (e) { console.error(e); }
+        });
+    }
+
+    function subscribe(cb) {
+        listeners.push(cb);
+    }
+
+    function open() {
+        return new Promise(function (resolve, reject) {
+            if (db) { resolve(db); return; }
+            var req = indexedDB.open(DB_NAME, DB_VERSION);
+            req.onupgradeneeded = function (e) {
+                var d = e.target.result;
+                if (!d.objectStoreNames.contains(STORE_NAME)) {
+                    d.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                }
+            };
+            req.onsuccess = function (e) { db = e.target.result; resolve(db); };
+            req.onerror = function (e) { reject(e.target.error); };
+        });
+    }
+
+    function save(id, doc) {
+        if (!id) return Promise.resolve();
+        return open().then(function (db) {
+            return new Promise(function (resolve, reject) {
+                var tx = db.transaction(STORE_NAME, 'readwrite');
+                var store = tx.objectStore(STORE_NAME);
+                store.put({ id: id, doc: doc, updatedAt: Date.now() });
+                tx.oncomplete = function () {
+                    var msg = { type: 'update', id: id };
+                    if (channel) channel.postMessage(msg);
+                    notify(msg, false);
+                    resolve();
+                };
+                tx.onerror = function (e) { reject(e.target.error); };
+            });
+        });
+    }
+    // ... (get, getAll remain same) ...
+    function get(id) {
+        if (!id) return Promise.resolve(null);
+        return open().then(function (db) {
+            return new Promise(function (resolve, reject) {
+                var tx = db.transaction(STORE_NAME, 'readonly');
+                var store = tx.objectStore(STORE_NAME);
+                var req = store.get(id);
+                req.onsuccess = function () { resolve(req.result || null); };
+                req.onerror = function (e) { reject(e.target.error); };
+            });
+        });
+    }
+
+    function getAll() {
+        return open().then(function (db) {
+            return new Promise(function (resolve, reject) {
+                var tx = db.transaction(STORE_NAME, 'readonly');
+                var store = tx.objectStore(STORE_NAME);
+                var req = store.getAll();
+                req.onsuccess = function () { resolve(req.result || []); };
+                req.onerror = function (e) { reject(e.target.error); };
+            });
+        });
+    }
+
+    function remove(id) {
+        if (!id) return Promise.resolve();
+        return open().then(function (db) {
+            return new Promise(function (resolve, reject) {
+                var tx = db.transaction(STORE_NAME, 'readwrite');
+                var store = tx.objectStore(STORE_NAME);
+                store.delete(id);
+                tx.oncomplete = function () {
+                    var msg = { type: 'delete', id: id };
+                    if (channel) channel.postMessage(msg);
+                    notify(msg, false);
+                    resolve();
+                };
+                tx.onerror = function (e) { reject(e.target.error); };
+            });
+        });
+    }
+
+    function scheduleSave(getIdFn, getDocFn) {
+        if (saveTimeout) clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(function () {
+            var id = typeof getIdFn === 'function' ? getIdFn() : null;
+            if (id) {
+                var doc = typeof getDocFn === 'function' ? getDocFn() : null;
+                if (doc === null || doc === undefined) return;
+                save(id, doc).catch(function (e) { console.warn('draftsCache save error:', e); });
+            }
+        }, 2000);
+    }
+
+    function onTabChange(callback) {
+        subscribe(function (data, isRemote) {
+            if (isRemote) callback(data);
+        });
+    }
+
+    function getLatest() {
+        return getAll().then(function (docs) {
+            if (!docs || docs.length === 0) return null;
+            docs.sort(function (a, b) { return (b.updatedAt || 0) - (a.updatedAt || 0); });
+            return docs[0];
+        });
+    }
+
+    function cancelSave() {
+        if (saveTimeout) {
+            clearTimeout(saveTimeout);
+            saveTimeout = null;
+        }
+    }
+
+    return { open: open, save: save, get: get, getAll: getAll, getLatest: getLatest, remove: remove, scheduleSave: scheduleSave, cancelSave: cancelSave, onTabChange: onTabChange, subscribe: subscribe };
+})();
+
+var draftsSyncing = false;
+var draftsUi = {
+    toggle: document.getElementById('draftsToggle'),
+    list: document.getElementById('draftsList'),
+    listMore: document.getElementById('draftsListMore'),
+    more: document.getElementById('draftsMore'),
+    empty: document.getElementById('draftsEmpty'),
+    count: document.getElementById('draftsCount')
+};
+
+function getDraftDocValue() {
+    if (docEditor && typeof docEditor.getValue === 'function') {
+        return docEditor.getValue();
+    }
+    return null;
+}
+
+function renderDraftButtons(target, entries) {
+    if (!target) return;
+    target.textContent = '';
+    entries.forEach(function (entry) {
+        var btn = document.createElement('a');
+        btn.className = 'lbl vgi-edit';
+        var time = '';
+        if (entry.updatedAt) {
+            var updatedAt = new Date(entry.updatedAt);
+            if (typeof textUtil !== 'undefined' && textUtil.formatFriendlyDate) {
+                time = ` (${textUtil.formatFriendlyDate(updatedAt)})`;
+            }
+        }
+        btn.textContent = entry.id + time;
+        btn.addEventListener('click', function () {
+            loadDraftFromCache(entry.id, false);
+            draftsUi.toggle.checked = false;
+        });
+        target.appendChild(btn);
+    });
+}
+
+function refreshDraftsList() {
+    if (!draftsUi.list || !draftsCache) return;
+    draftsCache.getAll().then(function (entries) {
+        entries = (entries || []).filter(function (entry) {
+            return entry && entry.id && entry.doc;
+        });
+        entries.sort(function (a, b) { return (b.updatedAt || 0) - (a.updatedAt || 0); });
+        var top = entries.slice(0, 10);
+        var rest = entries.slice(10);
+        renderDraftButtons(draftsUi.list, top);
+        renderDraftButtons(draftsUi.listMore, rest);
+        if (draftsUi.more) {
+            draftsUi.more.className = rest.length ? '' : 'hid';
+        }
+        if (draftsUi.empty) {
+            draftsUi.empty.className = entries.length ? 'hid' : 'sml tgrey';
+        }
+        if (draftsUi.count) {
+            draftsUi.count.textContent = entries.length ? entries.length : '';
+        }
+    }).catch(function (e) {
+        console.warn('draftsCache list error:', e);
+    });
+}
+
+function applyDraftEntry(entry) {
+    if (!entry || !entry.doc) return;
+    if (!docEditor || !mainTabGroup) {
+        loadJSON(entry.doc, entry.id, 'Loaded draft ' + entry.id);
+        return;
+    }
+    draftsSyncing = true;
+    insync = true;
+    try {
+        docEditor.setValue(entry.doc);
+    } catch (e) {
+        console.warn('Failed to apply draft', e);
+    }
+    insync = false;
+    if (entry.id) {
+        document.title = entry.id;
+    }
+    postUrl = entry.id ? './' + entry.id : "./new";
+    if (document.getElementById("save1")) {
+        save1.className = "fbn save";
+    }
+    mainTabGroup.change(0);
+    draftsSyncing = false;
+}
+
+function loadDraftFromCache(id, isSync) {
+    if (!draftsCache || !id) return;
+    draftsCache.get(id).then(function (entry) {
+        if (!entry || !entry.doc) return;
+        if (isSync) {
+            applyDraftEntry(entry);
+            return;
+        }
+        loadJSON(entry.doc, entry.id, 'Loaded draft ' + entry.id);
+    }).catch(function (e) {
+        console.warn('draftsCache load error:', e);
+    });
+}
+
+function initDraftsSidebar() {
+    if (!draftsUi.list || !draftsCache) return;
+    refreshDraftsList();
+    draftsCache.subscribe(function () {
+        refreshDraftsList();
+    });
+    draftsCache.onTabChange(function (data) {
+        if (!data || data.type !== 'update' || !data.id) return;
+        var currentId = getDocID();
+        if (currentId && currentId === data.id) {
+            loadDraftFromCache(data.id, true);
+        }
+    });
+}
 
 JSONEditor.defaults.languages.en.error_oneOf = "Please fill in the required fields *";
 
@@ -1070,13 +1577,17 @@ function Tabs(tabGroupId, tabOpts, primary) {
     tg.change = function(index) {
         if (!insync) {
             tg.changeIndex[index]++;
-            errMsg.textContent = '';
-            editorLabel.className = "lbl";
-            infoMsg.textContent = 'Edited';
-            var nid = getDocID();
-            document.title = '• ' + (nid ? nid : 'Vulnogram');
-            if (document.getElementById("save1")) {
-                save1.className = "fbn sfe save";
+            if (!realtimeApplying) {
+                errMsg.textContent = '';
+                editorLabel.className = "lbl";
+                infoMsg.textContent = 'Edited';
+                var nid = getDocID();
+                if (!draftsSyncing && draftsCache && draftsCache.scheduleSave) {
+                    draftsCache.scheduleSave(getDocID, getDraftDocValue);
+                }
+            }
+            if (typeof tg.onChange === 'function') {
+                tg.onChange(index, realtimeApplying);
             }
             //console.log('Inc '+ tg.tabId[index] + ' is ' + tg.changeIndex[index]);
         }
@@ -1262,6 +1773,11 @@ if(typeof additionalTabs !== 'undefined') {
 }
 
 var mainTabGroup = new Tabs('mainTabGroup', defaultTabs, 0);
+mainTabGroup.onChange = function () {
+    realtimeSchedulePatch();
+};
+initDraftsSidebar();
+initRealtime();
 
 function loadJSON(res, id, message, editorOptions) {
     // workaround for JSON Editor issue with clearing arrays
@@ -1280,15 +1796,17 @@ function loadJSON(res, id, message, editorOptions) {
             var nid =  getDocID();
             document.title = nid ? nid : 'Vulnogram';
         }
-        if (document.getElementById("save1")) {
-            save1.className = "fbn sfe";
-        }
         if (message) {
             selected = "editorTab";
         }
         docEditor.watch('root', function(){
             mainTabGroup.change(0);
         });
+        if (idpath) {
+            docEditor.watch('root.' + idpath, function () {
+                realtimeJoinIfReady();
+            });
+        }
         docEditor.on('change', async function(){
             var errors = [];
             if(docEditor.validation_results && docEditor.validation_results.length > 0) {
@@ -1306,6 +1824,7 @@ function loadJSON(res, id, message, editorOptions) {
         });
         editorLabel.className = "lbl";
         postUrl = getDocID() ? './' + getDocID() : "./new";
+        realtimeJoinIfReady();
 
         document.getElementById(selected).checked = true;
         var event = new Event('change');
@@ -1350,10 +1869,9 @@ function save(e, onSuccess) {
                 infoMsg.textContent = "Saved";
                 errMsg.textContent = "";
                 document.title = originalTitle;
-                // turn button to normal, indicate nothing to save,
-                // but do not disable it.
-                if (document.getElementById("save1")) {
-                    save1.className = "fbn sfe";
+                if (draftsCache && draftsCache.remove) {
+                    draftsCache.cancelSave();
+                    draftsCache.remove(getDocID());
                 }
                 getChanges(getDocID());
                 if (onSuccess)

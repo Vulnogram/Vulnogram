@@ -81,6 +81,9 @@ hr.bort {
 .bort {
     border-top:1px solid var(--bor); 
 }
+.borr {
+    border-right:1px solid var(--bor); 
+}
 
 .bor {
     border:1px solid var(--bor);
