@@ -14,18 +14,19 @@ Vulnogram project aims to make it easier for vendors and security researchers to
 
 ## Getting started
 
-Vulnogram can be deployed in two modes:
+Vulnogram can be set up in two modes:
 
-| Browser mode                  | Enterprise Server or Docker mode |
+| Solo mode                  | Team mode |
 |------------------------------|------------|
 | Frontend web UI only, as seen on [vulnogram.org](https://vulnogram.org). | A NodeJS web application serves frontend web UI for a backend Mongodb. |
+| Draft documents are stored in your browser | Documents are stored in Mongodb for collaborative team access and realtime edits |
 | It is a Javascript based tool to open, import, edit, preview and save JSON documents which conform to a given [JSON-Schema](https://json-schema.org). | It is a modern scalable issue tracker similar to JIRA or bugtrack but using [JSON-Schemas](https://json-schema.org) as data models and a NoSQL database as a backend. Along with customizable [plugins](https://github.com/Vulnogram/plugins) it can be used for tracking anything that can be expressed with a [JSON-Schema](https://json-schema.org). [plugins](https://github.com/Vulnogram/plugins) are available for tracking security incidents, tickets, contacts, NVD entries and CVE assignments. |
 | Can't save CVE JSON drafts.  | JSON documents are saved to a NoSQL (Mongodb) backend. |
 | No login required.           | Users are authenticated. |
 | No workflow or tracking.     | Allows tracking, querying, searching, version control, audit trail of changes, commenting and dashboard charts and graphs on collections of JSON documents. |
 | Security considerations: <br>👍 Information entered in the tool is not transmitted anywhere out of the browser.<br>ℹ️ Download button saves the JSON document in the browser to a local file.<br>⚠️ Ensure local filesystem is secured.<br>⚠️ Avoid using the tool on a public computer (beware of browser autofill). | Security considerations:<br>ℹ️ Configure HTTPS in the config file.<br>⚠️ Ensure that MongoDB is secured and hardened. Mongodb backend is used for storing documents on the server.<br>⚠️ Keep configuration files secured.<br>⚠️ Only create accounts for trusted users. There is no RBAC or ACL feature (as of now)! |
 
-## Server mode deployment
+## Vulnogram Team deployment
 
 ### Step 1. Install required Node.js modules
 
@@ -106,7 +107,13 @@ Web application should be now accessible at one of the following addresses, depe
 - <http://localhost:3555/>
 - <https://localhost:3555/>
 
-## Browser mode deployment
+### Realtime collaboration (Team mode)
+
+When enabled, edits are auto-saved on every change and broadcast to other clients editing the same record using RFC6902 JSON Patch over Socket.IO.
+
+To disable, set `VULNOGRAM_REALTIME=false` in the environment or set `realtime.enabled = false` in `config/conf.js`.
+
+## Solo mode deployment for personal use
 
 ### Step 1. Install required NodeJS modules
 
@@ -122,7 +129,7 @@ Edit the `config/conf-standalone.js` file to suit your requirements.
 
 See [step 4](https://github.com/Vulnogram/Vulnogram#step-4-optional-add-custom-templates-schemas-or-routes) above
 
-### Step 4. Generate files needed for a front-end only static website (browser mode)
+### Step 4. Generate files needed for a front-end only static website (Solo mode)
 
 ```plaintext
 $ make min
