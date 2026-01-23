@@ -319,13 +319,14 @@ var draftsCache = (function () {
         });
     }
 
-    function save(id, doc) {
+    function save(id, doc, errorCount) {
         if (!id) return Promise.resolve();
+        var count = typeof errorCount === 'number' ? errorCount : 0;
         return open().then(function (db) {
             return new Promise(function (resolve, reject) {
                 var tx = db.transaction(STORE_NAME, 'readwrite');
                 var store = tx.objectStore(STORE_NAME);
-                store.put({ id: id, doc: doc, updatedAt: Date.now() });
+                store.put({ id: id, doc: doc, errorCount: count, updatedAt: Date.now() });
                 tx.oncomplete = function () {
                     var msg = { type: 'update', id: id };
                     if (channel) channel.postMessage(msg);
@@ -380,14 +381,15 @@ var draftsCache = (function () {
         });
     }
 
-    function scheduleSave(getIdFn, getDocFn) {
+    function scheduleSave(getIdFn, getDocFn, getErrorCountFn) {
         if (saveTimeout) clearTimeout(saveTimeout);
         saveTimeout = setTimeout(function () {
             var id = typeof getIdFn === 'function' ? getIdFn() : null;
             if (id) {
                 var doc = typeof getDocFn === 'function' ? getDocFn() : null;
                 if (doc === null || doc === undefined) return;
-                save(id, doc).catch(function (e) { console.warn('draftsCache save error:', e); });
+                var errorCount = typeof getErrorCountFn === 'function' ? getErrorCountFn() : 0;
+                save(id, doc, errorCount).catch(function (e) { console.warn('draftsCache save error:', e); });
             }
         }, 2000);
     }
@@ -433,6 +435,19 @@ function getDraftDocValue() {
     return null;
 }
 
+function getDraftValidationErrorCount() {
+    if (!docEditor) return 0;
+    var errors = [];
+    if (docEditor.validation_results && docEditor.validation_results.length > 0) {
+        if (typeof(errorFilter) !== 'undefined') {
+            errors = errorFilter(docEditor.validation_results) || [];
+        } else {
+            errors = docEditor.validation_results;
+        }
+    }
+    return errors.length || 0;
+}
+
 function renderDraftButtons(target, entries) {
     if (!target) return;
     target.textContent = '';
@@ -446,7 +461,18 @@ function renderDraftButtons(target, entries) {
                 time = ` (${textUtil.formatFriendlyDate(updatedAt)})`;
             }
         }
-        btn.textContent = entry.id + time;
+        btn.appendChild(document.createTextNode(entry.id));
+        var errorCount = typeof entry.errorCount === 'number' ? entry.errorCount : 0;
+        if (errorCount > 0) {
+            var badge = document.createElement('span');
+            badge.className = 'indent bdg';
+            badge.textContent = errorCount;
+            badge.title = String(errorCount);
+            btn.appendChild(badge);
+        }
+        if (time) {
+            btn.appendChild(document.createTextNode(time));
+        }
         btn.addEventListener('click', function () {
             loadDraftFromCache(entry.id, false);
             draftsUi.toggle.checked = false;
@@ -1583,7 +1609,7 @@ function Tabs(tabGroupId, tabOpts, primary) {
                 infoMsg.textContent = 'Edited';
                 var nid = getDocID();
                 if (!draftsSyncing && draftsCache && draftsCache.scheduleSave) {
-                    draftsCache.scheduleSave(getDocID, getDraftDocValue);
+                    draftsCache.scheduleSave(getDocID, getDraftDocValue, getDraftValidationErrorCount);
                 }
             }
             if (typeof tg.onChange === 'function') {
