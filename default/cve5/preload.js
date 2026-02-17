@@ -31,6 +31,147 @@ function setProductExamples(schema, field, examples) {
     schema.definitions.product.properties[field].examples = examples;
 }
 
+var recentCveUi = {
+    toggle: document.getElementById('sidebarToggle'),
+    list: document.getElementById('recentList'),
+    empty: document.getElementById('recentEmpty'),
+    count: document.getElementById('recentCount')
+};
+var recentCveEntries = [];
+
+function normalizeRecentCveToken(value) {
+    if (!value) {
+        return null;
+    }
+    var token = String(value).trim().toUpperCase();
+    if (!token) {
+        return null;
+    }
+    token = token.replace(/^CVE-/, '');
+    if (!/^\d{4}-[A-Z\d\._-]{4,}$/.test(token)) {
+        return null;
+    }
+    return 'CVE-' + token;
+}
+
+function renderRecentCveList() {
+    if (!recentCveUi.list) {
+        return;
+    }
+    recentCveUi.list.textContent = '';
+    recentCveEntries.forEach(function (cveId) {
+        var btn = document.createElement('a');
+        btn.className = 'lbl';
+        btn.title = cveId;
+        var label = document.createElement('span');
+        label.appendChild(document.createTextNode(cveId));
+        btn.appendChild(label);
+        btn.appendChild(document.createElement('span'));
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (recentCveUi.toggle) {
+                recentCveUi.toggle.checked = true;
+            }
+            if (typeof cveLoad === 'function') {
+                Promise.resolve(cveLoad(cveId)).catch(function (err) {
+                    console.warn('recent cveLoad error:', err);
+                });
+            }
+        });
+        recentCveUi.list.appendChild(btn);
+    });
+    if (recentCveUi.empty) {
+        if (recentCveEntries.length > 0) {
+            recentCveUi.empty.classList.add('hid');
+        } else {
+            recentCveUi.empty.classList.remove('hid');
+        }
+    }
+    if (recentCveUi.count) {
+        recentCveUi.count.textContent = recentCveEntries.length ? recentCveEntries.length : '';
+    }
+}
+
+function setRecentCveEntries(entries) {
+    var seen = {};
+    recentCveEntries = [];
+    (entries || []).forEach(function (entry) {
+        var cveId = normalizeRecentCveToken(entry);
+        if (!cveId || seen[cveId]) {
+            return;
+        }
+        seen[cveId] = true;
+        recentCveEntries.push(cveId);
+    });
+    renderRecentCveList();
+}
+window.setRecentCveEntries = setRecentCveEntries;
+renderRecentCveList();
+
+var assignerRecentCache = {};
+function extractRecentAbbreviatedIds(rawText) {
+    if (!rawText) {
+        return [];
+    }
+    var snippet = String(rawText).split(/\r?\n/).slice(0, 20).join('\n');
+    if (snippet.length > 500) {
+        snippet = snippet.slice(0, 500);
+    }
+    var seen = {};
+    var ids = [];
+    var match = null;
+    var fullIdMatcher = /CVE-\d{4}-[a-zA-Z\d\._-]{4,}/gim;
+    while ((match = fullIdMatcher.exec(snippet)) !== null) {
+        var cveId = String(match[0]).toUpperCase();
+        if (seen[cveId]) {
+            continue;
+        }
+        seen[cveId] = true;
+        ids.push(cveId.replace(/^CVE-/, ''));
+    }
+    if (ids.length === 0) {
+        var shortIdMatcher = /["'](\d{4}-[a-zA-Z\d\._-]{4,})["']/gim;
+        while ((match = shortIdMatcher.exec(snippet)) !== null) {
+            var shortId = String(match[1]).toUpperCase();
+            if (seen[shortId]) {
+                continue;
+            }
+            seen[shortId] = true;
+            ids.push(shortId);
+        }
+    }
+    return ids;
+}
+
+async function loadRecentAbbreviatedIds(orgName) {
+    if (!orgName) {
+        return [];
+    }
+    if (assignerRecentCache[orgName]) {
+        return assignerRecentCache[orgName];
+    }
+    // Source path in cve-index remains /data/latest/.
+    var recentUrl = 'https://raw.githubusercontent.com/Vulnogram/cve-index/refs/heads/main/data/latest/' + orgName + '.json';
+    var recent = [];
+    try {
+        var response = await fetch(recentUrl, {
+            method: 'GET',
+            credentials: 'omit',
+            headers: {
+                'Accept': 'application/json, text/plain, */*',
+                'Range': 'bytes=0-499'
+            }
+        });
+        if (response.ok) {
+            recent = extractRecentAbbreviatedIds(await response.text());
+        }
+    } catch (e) {
+        console.error('Failed to load recent CVE list for ' + orgName, e);
+    }
+    assignerRecentCache[orgName] = recent;
+    return recent;
+}
+
 var ensureAssignerExamplesFromCache = null;
 async function ensureAssignerExamples(assignerShortName) {
     if (!assignerShortName || typeof normalizeShortName !== 'function' || typeof loadExamples !== 'function') {
@@ -43,7 +184,7 @@ async function ensureAssignerExamples(assignerShortName) {
     window.vgExamples = window.vgExamples || {};
     var fields = ['vendor', 'product', 'collectionURL', 'packageName'];
     var schemas = [docSchema, publicEditorOption.schema];
-    await Promise.all(fields.map(async function (field) {
+    var jobs = fields.map(async function (field) {
         try {
             var examples = null;
             if (typeof vgExamples !== 'undefined' && vgExamples[field] && vgExamples[field][orgName]) {
@@ -68,7 +209,14 @@ async function ensureAssignerExamples(assignerShortName) {
                 setProductExamples(schema, field, []);
             });            
         }
-    }));
+    });
+    jobs.push((async function () {
+        var recent = await loadRecentAbbreviatedIds(orgName);
+        if (typeof window !== 'undefined' && typeof window.setRecentCveEntries === 'function') {
+            window.setRecentCveEntries(recent);
+        }
+    })());
+    await Promise.all(jobs);
 }
 
 if (!initJSON && csCache && csCache.org) {

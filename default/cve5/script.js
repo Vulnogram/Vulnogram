@@ -34,53 +34,6 @@ function hidepopups() {
     document.getElementById("userStatsPopup").open = false;
 }
 
-function loadCVE(value) {
-    var realId = value.match(/(CVE-(\d{4})-(\d{1,12})(\d{3}))/);
-    if (realId) {
-        var id = realId[1];
-        var year = realId[2];
-        var bucket = realId[3];
-        fetch('https://raw.githubusercontent.com/CVEProject/cvelistv5/master/review_set/' + year + '/' + bucket + 'xxx/' + id + '.json', {
-            method: 'GET',
-            credentials: 'omit',
-            headers: {
-                'Accept': 'application/json, text/plain, */*'
-            },
-            redirect: 'error'
-        })
-            .then(function (response) {
-                if (!response.ok) {
-                    errMsg.textContent = "Failed to load valid CVE JSON";
-                    infoMsg.textContent = "";
-                    throw Error(id + ' ' + response.statusText);
-                }
-                return response.json();
-            })
-            .then(function (res) {
-                if (res.dataVersion && (res.dataVersion.match(/^5\.(0|[1-9][0-9]*)(\.(0|[1-9][0-9]*))?$/))) {
-                    if (res.containers.cna.x_legacyV4Record) {
-                        delete res.containers.cna.x_legacyV4Record;
-                    }
-                    if (res.containers) {
-                        res = cveFixForVulnogram(res);
-                    }
-                    var edOpts = (res.cveMetadata.state == 'REJECTED') ? rejectEditorOption : publicEditorOption;
-                    mainTabGroup.change(0);
-                    loadJSON(res, id, "Loaded " + id + " from GIT!", edOpts);
-                } else {
-                    errMsg.textContent = "Failed to load valid CVE JSON v 5 record";
-                    infoMsg.textContent = "";
-                }
-            })
-            .catch(function (error) {
-                errMsg.textContent = error;
-            })
-    } else {
-        errMsg.textContent = "CVE ID required";
-    }
-    return false;
-}
-
 async function rejectRecord() {
     var id = getDocID();
     if (window.confirm('Do you want to reject ' + id + '? All vulnerability details will be removed.')) {
@@ -197,12 +150,6 @@ var additionalTabs = {
                 renderTemplate: 'mitre',
                 doc: j
             });
-        }
-    },
-    cvePortalTab: {
-        title: 'CVE Org',
-        setValue: function () {
-
         }
     }
 }
@@ -542,38 +489,6 @@ function cvssImport(j) {
         })
     }
     return j
-}
-
-async function loadCVEFile(event, elem) {
-    var file = elem.files[0];
-    if (file) {
-        try {
-            var reader = new FileReader();
-            reader.readAsText(file, "UTF-8");
-            reader.onload = function (evt) {
-                try {
-                    res = JSON.parse(evt.target.result);
-                    if (res && res.dataVersion && res.dataVersion.match(/^5\.(0|[1-9][0-9]*)(\.(0|[1-9][0-9]*))?$/)) {
-                        res = cveFixForVulnogram(res);
-                        //docEditor.setValue(res);
-                        var edOpts = (res.cveMetadata.state == 'REJECTED') ? rejectEditorOption : publicEditorOption;
-                        mainTabGroup.change(0);
-                        loadJSON(res, null, "Imported file", edOpts);
-                    } else {
-                        showAlert("Not a CVE JSON 5.0 file!");
-                    }
-                } catch (e) {
-                    showAlert(e);
-                }
-            };
-            reader.onerror = function (evt) {
-                errMsg.textContent = "Error reading file";
-                showAlert('Error reading file!');
-            };
-        } catch (e) {
-            showAlert(e);
-        }
-    }
 }
 
 function cveFixForVulnogram(j) {

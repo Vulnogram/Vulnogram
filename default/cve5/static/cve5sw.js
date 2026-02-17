@@ -181,6 +181,18 @@ self.onmessage = e => {
                     clientReply(e, { error: "NO_SESSION" })
             });
             break;
+        case 'getSession':
+            checkSession(e).then(function (success) {
+                if (success) {
+                    clientReply(e, {
+                        user: storage.creds.user,
+                        org: storage.creds.org
+                    });
+                } else {
+                    clientReply(e, { error: "NO_SESSION" });
+                }
+            });
+            break;
         case 'destroy':
             destroySession();
             clientReply(e, "Cleaning up session");

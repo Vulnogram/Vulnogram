@@ -56,6 +56,10 @@
             return this._middleware ? true : false;
         }
 
+        getSession() {
+            return this._middleware.getSession();
+        }
+
         // Inter-instance communication.
 
         on(chanName) {
@@ -359,12 +363,16 @@
             return o;
         }
 
+        getSession() {
+            return this.send({ type: 'getSession' });
+        }
+
         destroy() {
             // Broadcast logout event
             let bc = new BroadcastChannel('logout');
             bc.postMessage({'error': 'LOGOUT', message: 'The user has logged out'});
             if (this.registration) {
-                //this.send({type: 'destroy'});
+                this.send({type: 'destroy'});
                 this.registration.unregister();
                 this.registration = undefined;
 

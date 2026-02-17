@@ -1,63 +1,229 @@
 //CVE Services Client and Portal GUI 
 
 var csClient = undefined;
+var defaultPortalUrl = 'https://cveawg.mitre.org/api';
 
 var csCache = {
     portalType: 'production',
-    url: 'https://cveawg.mitre.org/api',
+    url: defaultPortalUrl,
     org: null,
     user: null,
     orgInfo: null
 }
 
+function normalizePortalUrl(url) {
+    if (!url) {
+        return defaultPortalUrl;
+    }
+    return String(url).trim().replace(/\/+$/, '');
+}
+
+function getClientPortalUrl() {
+    if (!csClient || !csClient._middleware) {
+        return null;
+    }
+    return normalizePortalUrl(csClient._middleware.serviceUri);
+}
+
+function ensureCsClient(url) {
+    const targetUrl = normalizePortalUrl(url);
+    const currentUrl = getClientPortalUrl();
+    if (!csClient || currentUrl !== targetUrl) {
+        csClient = new CveServices(targetUrl, "./static/cve5sw.js");
+    }
+    return csClient;
+}
+
+function clearPortalSessionCache() {
+    const settings = getStoredPortalSettings();
+    csCache = {
+        portalType: settings.portalType,
+        url: settings.portalUrl,
+        org: null,
+        user: null,
+        orgInfo: null
+    };
+    window.localStorage.removeItem('cveApi');
+}
+
+async function hasActivePortalSession(url) {
+    if (!('serviceWorker' in navigator)) {
+        return false;
+    }
+    const targetUrl = normalizePortalUrl(url || csCache.url || getStoredPortalSettings().portalUrl);
+    csCache.url = targetUrl;
+    csClient = ensureCsClient(targetUrl);
+    const restored = await restorePortalCacheFromSession();
+    return !!(restored && csCache.user && csCache.org);
+}
+
+function setPortalSidebarState(show) {
+    var portalDialog = document.getElementById('cvePortalDialog');
+    var portalNav = document.getElementById('cvePortalNav');
+    if (!portalDialog) {
+        return false;
+    }
+    if (!portalDialog._portalEventsBound) {
+        portalDialog.addEventListener('close', function () {
+            var nav = document.getElementById('cvePortalNav');
+            if (nav) {
+                nav.classList.remove('active');
+            }
+        });
+        portalDialog._portalEventsBound = true;
+    }
+    if (show) {
+        if (!portalDialog.open) {
+            portalDialog.showModal();
+        }
+        if (portalNav) {
+            portalNav.classList.add('active');
+        }
+    } else {
+        if (portalDialog.open) {
+            portalDialog.close();
+        }
+        if (portalNav) {
+            portalNav.classList.remove('active');
+        }
+    }
+    return show;
+}
+
+function closeCvePortal(event) {
+    if (event && event.preventDefault) {
+        event.preventDefault();
+    }
+    setPortalSidebarState(false);
+    return false;
+}
+
+function showCvePortal(event, forceShow) {
+    if (event && event.preventDefault) {
+        event.preventDefault();
+    }
+    var portalDialog = document.getElementById('cvePortalDialog');
+    if (!portalDialog) {
+        return false;
+    }
+    var show = forceShow === true ? true : !portalDialog.open;
+    if (!show) {
+        setPortalSidebarState(false);
+        return false;
+    }
+    showPortalViewOrLogin();
+    return false;
+}
+
+async function showPortalViewOrLogin() {
+    if (!('serviceWorker' in navigator)) {
+        document.getElementById('port').innerHTML = '<h2 class="pad2 tred">Browser does not support Service Workers feature required for this tab.</h2><i class="indent pad2">Are you using Firefox in Private mode? Try normal mode.</i>';
+        setPortalSidebarState(true);
+        return false;
+    }
+    loadPortalCache();
+    if (!csCache.url) {
+        csCache.url = getStoredPortalSettings().portalUrl;
+    }
+    const hasSession = await hasActivePortalSession(csCache.url);
+    if (!hasSession) {
+        showPortalLogin();
+        setPortalSidebarState(true);
+        return false;
+    }
+    await showPortalView();
+    setPortalSidebarState(true);
+    return true;
+}
+
+function portalFocusEditor() {
+    setPortalSidebarState(false);
+    if (typeof (mainTabGroup) !== 'undefined') {
+        mainTabGroup.change(0);
+    }
+}
+
+function getStoredPortalSettings() {
+    let portalType = window.localStorage.getItem('portalType');
+    let portalUrl = window.localStorage.getItem('portalUrl');
+    if (!portalType || !portalUrl) {
+        portalType = 'production';
+        portalUrl = defaultPortalUrl;
+    }
+    return {
+        portalType: portalType,
+        portalUrl: portalUrl
+    };
+}
+
+function loadPortalCache() {
+    if (!window.localStorage.getItem('cveApi')) {
+        return;
+    }
+    try {
+        const cache = JSON.parse(window.localStorage.getItem('cveApi'));
+        if (cache && typeof cache === 'object') {
+            csCache = cache;
+        } else {
+            window.localStorage.removeItem('cveApi');
+        }
+    } catch (e) {
+        window.localStorage.removeItem('cveApi');
+    }
+}
+
+async function restorePortalCacheFromSession() {
+    if (!csClient || typeof csClient.getSession !== 'function') {
+        return false;
+    }
+    try {
+        const session = await csClient.getSession();
+        if (!session || !session.user || !session.org) {
+            return false;
+        }
+        const settings = getStoredPortalSettings();
+        csCache.user = session.user;
+        csCache.org = session.org;
+        csCache.url = csCache.url ? csCache.url : settings.portalUrl;
+        csCache.portalType = csCache.portalType ? csCache.portalType : settings.portalType;
+        csCache.orgInfo = csCache.orgInfo ? csCache.orgInfo : null;
+        window.localStorage.setItem('cveApi', JSON.stringify(csCache));
+        window.localStorage.setItem('shortName', session.org);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
 async function initCsClient() {
     if ('serviceWorker' in navigator) {
         try {
-            if (window.localStorage.getItem('cveApi')) {
-                csCache = JSON.parse(window.localStorage.getItem('cveApi'));
-            }
+            loadPortalCache();
             if (!csCache.url) {
-                csCache.url = 'https://cveawg.mitre.org/api';
+                csCache.url = getStoredPortalSettings().portalUrl;
             }
-            csClient = new CveServices(csCache.url, "./static/cve5sw.js");
+            csClient = ensureCsClient(csCache.url);
             listenforLogins();
             listenforLogouts();
-            if (!csCache.user) {
-                showPortalLogin();
-                return;
+            const hasSession = await hasActivePortalSession(csCache.url);
+            if (hasSession) {
+                await showPortalView();
+            } else {
+                clearPortalSessionCache();
             }
-            await showPortalView();
         } catch (e) {
             portalErrorHandler(e);
         }
-    } else {
-        document.getElementById('port').innerHTML = '<h2 class="pad2 tred">Browser does not support Service Workers feature required for this tab.</h2><i class="indent pad2">Are you using Firefox in Private mode? Try normal mode.</i>';
-//        console.log("Browser does not support Service Workers. Are you using Firefox in Private mode?")
-        //cveShowError('Browser not supported!');
     }
 }
 
 function showPortalLogin(message) {
-    let prevPortalType = window.localStorage.getItem('portalType');
-    let prevPortalUrl = window.localStorage.getItem('portalUrl');
-    if (!prevPortalType || !prevPortalUrl) {
-      // ensure consistency if either value is missing from localStorage by setting both to default
-      prevPortalType = 'production';
-      prevPortalUrl = 'https://cveawg.mitre.org/api';
-    }
-    csCache = {
-        portalType: prevPortalType,
-        url: prevPortalUrl,
-        org: null,
-        user: null,
-        orgInfo: null
-    }
-    window.localStorage.removeItem('cveApi');
+    clearPortalSessionCache();
 
     document.getElementById('port').innerHTML = cveRender({
         ctemplate: 'cveLoginBox',
         message: message,
-        prevPortal: prevPortalType,
+        prevPortal: csCache.portalType,
         prevOrg: window.localStorage.getItem('shortName')
     })
 }
@@ -66,7 +232,13 @@ async function portalLogout(message) {
     if (csClient != null) {
         await csClient.logout();
     }
-    showPortalLogin(message);
+    clearPortalSessionCache();
+    setPortalSidebarState(false);
+    if (document.getElementById('loginErr')) {
+        document.getElementById("loginErr").innerText = message ? message : '';
+    } else if (document.getElementById('port')) {
+        document.getElementById('port').innerHTML = '';
+    }
 }
 
 async function showPortalView(orgInfo, userInfo) {
@@ -89,7 +261,7 @@ async function showPortalView(orgInfo, userInfo) {
             if(csCache.portalType == 'test') {
                 button1.innerText = 'Post to Test Portal'
             } else {
-                button1.innerText = 'Post to CVE.org'
+                button1.innerText = 'Publish CVE'
             }
         }
         var button2 = document.getElementById("post2")
@@ -97,7 +269,7 @@ async function showPortalView(orgInfo, userInfo) {
             if(csCache.portalType == 'test') {
                 button2.innerText = 'Post to Test Portal'
             } else {
-                button2.innerText = 'Post to CVE.org';
+                button2.innerText = 'Publish CVE';
             }
         }
         return await cveGetList();
@@ -116,7 +288,13 @@ function listenforLogins() {
 }
 function listenforLogouts() {
     logoutChannel.onmessage = function (a) {
-        showPortalLogin(a.message);
+        clearPortalSessionCache();
+        setPortalSidebarState(false);
+        if (document.getElementById('loginErr')) {
+            document.getElementById("loginErr").innerText = a.message ? a.message : '';
+        } else if (document.getElementById('port')) {
+            document.getElementById('port').innerHTML = '';
+        }
     }
 }
 function normalizeShortName(shortName) {
@@ -125,19 +303,17 @@ function normalizeShortName(shortName) {
 }
 async function portalLogin(elem, credForm) {
     try {
-        if (!'serviceWorker' in navigator) {
-            cveShowError('Browser is missing required features. Try a different browser or the normal mode.')
+        if (!('serviceWorker' in navigator)) {
+            cveShowError('Browser is missing required features. Try a different browser that supports Service Workers.')
             return (false);
         }
         if (!credForm.checkValidity()) {
             return (false);
         }
         elem.preventDefault();
-        var url = credForm.portal.value;
+        var url = normalizePortalUrl(credForm.portal.value);
         var portalType = credForm.portal.options[credForm.portal.selectedIndex].text;
-        if (csClient && csCache.url != url) {
-            csClient = new CveServices(url, "./static/cve5sw.js");
-        }
+        csClient = ensureCsClient(url);
         var ret = await csClient.login(
             credForm.user.value,
             credForm.org.value,
@@ -181,19 +357,29 @@ function resetPortalLoginErr() {
 
 
 function portalErrorHandler(e) {
-    if (e.error && (e.error == 'NO_SESSION' || e.error == 'UNAUTHORIZED' || e.error.message == 'Failed to fetch')) {
-        if (e.error == 'UNAUTHORIZED') {
-            e.message = "Valid credentials required",
-            mainTabGroup.focus(3);
+    const err = e && e.error ? e.error : null;
+    const isNoSession = err == 'NO_SESSION';
+    const isUnauthorized = err == 'UNAUTHORIZED';
+    const isFetchError = !!(err && typeof err === 'object' && err.message == 'Failed to fetch');
+
+    if (isFetchError) {
+        const message = 'Error connecting to service';
+        if (document.getElementById("loginErr")) {
+            document.getElementById("loginErr").innerText = message;
+        } else {
+            cveShowError({ error: 'NETWORK_ERROR', message: message });
         }
-        if (e.error.message == 'Failed to fetch') {
-            e.message = "Error connecting to service";
-        }
+        return;
+    }
+
+    if (isNoSession || isUnauthorized) {
+        clearPortalSessionCache();
+        const message = isUnauthorized ? 'Valid credentials required' : ((e && e.message) ? e.message : 'Please login.');
         if (document.getElementById("loginErr")) {
             // Login screen exists
-            document.getElementById("loginErr").innerText = e && e.message ? e.message : 'Valid credentials required!';
+            document.getElementById("loginErr").innerText = message;
         } else {
-            showPortalLogin(e.message);
+            cveShowError({ error: err, message: message });
         }
     } else {
         cveShowError(e);
@@ -473,10 +659,8 @@ async function pageShow(ret) {
 }
 
 async function cveShowError(err) {
-    if ((err.error == 'UNAUTHORIZED' || err.error == 'NO_SESSION' || csClient == null || await csClient._middleware.worker == null)) {
-        err.message = 'Login required';
-        showPortalLogin();
-        mainTabGroup.focus(3);
+    if (!err) {
+        err = { error: 'Error', message: 'Unknown error' };
     }
     document.getElementById('cveErrors').innerHTML = cveRender({
         ctemplate: 'cveErrors',
@@ -582,8 +766,22 @@ async function cveSelectLoad(event) {
     return false;
 }
 
+function cveSyncLoadedUrl(cveId) {
+    if (!cveId || typeof updateDraftHistory !== 'function') {
+        return;
+    }
+    updateDraftHistory('./' + cveId, { id: cveId });
+}
+
+function cveLoadIntoEditor(res, cveId, message, edOpts) {
+    loadJSON(res, cveId, message, edOpts);
+    cveSyncLoadedUrl(cveId);
+    portalFocusEditor();
+}
+
 
 async function cveLoad(cveId) {
+    console.log('trying to load '+cveId);
     try {
         var res = await csClient.getCve(cveId);
         if (res.cveMetadata) {
@@ -593,9 +791,7 @@ async function cveLoad(cveId) {
                 console.log('no containers');
             }
             var edOpts = (res.cveMetadata.state == 'REJECTED') ? rejectEditorOption : publicEditorOption;
-            loadJSON(res, cveId, "Loaded " + cveId + " from CVE.org!", edOpts);
-
-            mainTabGroup.change(0);
+            cveLoadIntoEditor(res, cveId, "Loaded " + cveId + " from CVE.org!", edOpts);
             return res;
         } else {
             try {
@@ -603,10 +799,12 @@ async function cveLoad(cveId) {
                 if (response.ok) {
                     const data = await response.json();
                     if (data && data.cveMetadata) {
-                        loadJSON(cveFixForVulnogram(data), cveId, "Loaded " + cveId + " from public API");
-                        mainTabGroup.change(0);
+                        cveLoadIntoEditor(cveFixForVulnogram(data), cveId, "Loaded " + cveId + " from public API");
                         return data;
                     }
+                } else {
+                    errMsg.textContent = "CVE not found in CVE.org!" 
+                    infoMsg.textContent = "";
                 }
             } catch (e2) {
                 errMsg.textContent = "Failed to load valid CVE Record";
@@ -634,8 +832,7 @@ async function cveLoad(cveId) {
                     return {};
                 }
 
-                loadJSON(skeleton, cveId, "Loaded " + cveId, edOpts);
-                mainTabGroup.change(0);
+                cveLoadIntoEditor(skeleton, cveId, "Loaded " + cveId, edOpts);
                 return skeleton;
             } catch (e2) {
                 if (e2 == '404') {
@@ -648,10 +845,12 @@ async function cveLoad(cveId) {
                 if (response.ok) {
                     const data = await response.json();
                     if (data && data.cveMetadata) {
-                        loadJSON(cveFixForVulnogram(data), cveId, "Loaded " + cveId + " from public API");
-                        mainTabGroup.change(0);
+                        cveLoadIntoEditor(cveFixForVulnogram(data), cveId, "Loaded " + cveId + " from public API");
                         return data;
                     }
+                } else {
+                    errMsg.textContent = "CVE not found in CVE.org!" 
+                    infoMsg.textContent = "";
                 }
             } catch (e2) {
                 errMsg.textContent = "Failed to load valid CVE Record";
@@ -694,7 +893,40 @@ function filterADP(vr) {
         return vr
     }
 }
+
+function cvePublishErrorMessage(e) {
+    if (e == undefined || e == null) {
+        return "Unknown error";
+    }
+    if (typeof e == 'string') {
+        return e;
+    }
+    if (e.message) {
+        return e.message;
+    }
+    if (e.error) {
+        if (typeof e.error == 'string') {
+            return e.error;
+        }
+        if (e.error.message) {
+            return e.error.message;
+        }
+    }
+    try {
+        return JSON.stringify(e);
+    } catch (e2) {
+        return String(e);
+    }
+}
+
 async function cvePost() {
+    const hasSession = await hasActivePortalSession(csCache.url);
+    if (!hasSession) {
+        showPortalLogin('Please login to publish CVE records.');
+        setPortalSidebarState(true);
+        return;
+    }
+
     var vr = filterADP(docEditor.validation_results);
     if (vr && vr.length == 0) {
         /*if (save != undefined) {
@@ -714,6 +946,7 @@ async function cvePost() {
                     delete j.containers.cna.impacts;
                 }*/
                 var ret = null;
+                var publishErrorShown = false;
                 try {
                     var latestId = await csClient.getCveId(j.cveMetadata.cveId);
                     if (latestId.state == 'RESERVED') {
@@ -734,33 +967,34 @@ async function cvePost() {
                 } catch (e) {
                     //console.log('Got error');
                     //console.log(e);
-                    if (e.error) {
+                    console.error('Error publishing CVE record:', e);
+                    if (e && e.error) {
                         infoMsg.innerText = "";
-                        var alertMessage = "";
-                        if (e.details && e.details.errors) {
+                        if (e.details && e.details.errors && e.details.errors.length > 0) {
                             showJSONerrors(e.details.errors.map(
                                 a => {
-                                    alertMessage = alertMessage + ', ' + a.message;
                                     return ({
                                         path: transatePath(a.instancePath),
                                         message: a.message
                                     });
                                 }
                             ));
-                        } else if (e.error == 'UNAUTHORIZED') {
-                            cveShowError(e);
+                        } else {
+                            await cveShowError(e);
                         }
                     } else {
-                        showAlert('Error publishing! Got error ' + e)
+                        showAlert("Error publishing CVE", cvePublishErrorMessage(e));
                     }
+                    publishErrorShown = true;
                 }
                 //console.log(ret);
-                if (ret != null && ret.message) {
-                    showAlert("CVE Record is Published", ret.message, 10000);
+                if (ret != null) {
+                    var publishMessage = ret.message ? ret.message : "Successfully submitted " + j.cveMetadata.cveId;
+                    showAlert("CVE Record is Published", publishMessage, 10000);
                     var a = document.createElement('a');
                     a.setAttribute('href', (csCache.portalType == 'test'? 'https://test.cve.org/cverecord?id=' :  'https://www.cve.org/cverecord?id=')+j.cveMetadata.cveId);
                     a.setAttribute('target', '_blank');
-                    a.innerText = ret.message;
+                    a.innerText = j.cveMetadata.cveId;
                     infoMsg.innerText = '';
                     infoMsg.appendChild(a);
                     hideJSONerrors();
@@ -768,6 +1002,8 @@ async function cvePost() {
                         draftsCache.cancelSave();
                         draftsCache.remove(j.cveMetadata.cveId);
                     }
+                } else if (!publishErrorShown) {
+                    showAlert("Error publishing CVE", "No response from CVE Services. Please try again.");
                 }
             //} else {
             //    showAlert('CVE posting is not currently supported by production CVE services! Try Logging to Test Portal instance');
