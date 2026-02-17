@@ -3,12 +3,40 @@
 //- Extends default document editor for CVE
 
 extends ../../views/edit
-block append bannerItemsLeft
-    //-form.indent.out.nobr(onsubmit="event.preventDefault();loadCVE(this.git.value);return false;")
-        input.txt(type="text",name="git",placeholder="CVE-YYYY-NNNN",pattern=".*CVE-[0-9]{4}-[0-9]{4,12}.*",size=17,title="CVE ID CVE-yyyy-nnnn+",required)
-        button.btn.vgi-in(type="submit") GIT
-    button.fbn.sfe.vgi-put(id="post1") Post to CVE.org
-    //-a.vgi-download.fbn(type="button",oncontextmenu='saveCSAF(event, this);',onclick='saveCSAF(event, this);',target="_blank",title="Download CSAF") CSAF
+
+block append head
+    style.
+        #recentList { flex-direction: column; gap: 1px;}
+        #recentList a.lbl {
+            max-width: 17em;
+            gap: 0px;
+        }
+        #recentList a span:first-child  {
+            flex-grow: 1;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: "-";
+        }
+        #recentList a span:last-child {
+            margin-left: auto;
+            flex-shrink: 0;
+            padding-left: 0.5em;
+        }
+
+block append sidebarNav
+    details#recentGroup.sidebar-expandable
+        summary.lbl.vgi-time Recent
+            span.pad.tgrey#recentCount
+        #recentEmpty.lbl No recent CVEs yet.
+        #recentList.flx
+
+block append sidebarSections
+    a#cvePortalNav.lbl.vgi-org(href="#", onclick="return showCvePortal(event);") CVE Portal
+
+block append outputButtons
+    //- a.vgi-download.fbn(type="button",oncontextmenu='saveCSAF(event, this);',onclick='saveCSAF(event, this);',target="_blank",title="Download CSAF") CSAF
+    button.sfe.fbn.vgi-export(id="post1") Publish CVE
 
 block append scripts
     script(type="module")
@@ -31,28 +59,20 @@ block append loadEditor
 
 block prepend topHeaderRight
 
-block openButton
-    input#importJSON.hid(type="file",accept="application/json",onchange="loadCVEFile(event,this);")
-    a.fbn.vgi-folder(type="file",onclick='importFile(event, this);') Open
-
-block prepend bannerItemsRight
-    form.indent.out.nobr(onsubmit="cveSelectLoad(event);return false;")
-        input.txt.lbl#cveEditable(type="search",name="id",list="editablelist",placeholder="CVE-yyyy-nnnn..",title="Load CVE for editing",required)
+block append topHeaderLeft
+    form.bor.out.nobr.vgi-cve(onsubmit="cveSelectLoad(event);return false;")
+        input.txt#cveEditable(type="search",name="id",list="editablelist",placeholder="CVE-yyyy-nnnn",pattern=".*CVE-[0-9]{4}-[0-9]{4,12}.*",size=16,title="Load CVE from CVE.org",required)
         datalist#editablelist
-        button.btn.vgi-in(type="submit") Load
+        button.fbn.vgi-import(type="submit",tile="Import from cve.org") Load
 
 block customtabs
         input.tab(name='tabs', type='radio', id='advisoryTab', value="4")
         label.lbl(for='advisoryTab') Preview
-        .wht.fil.bort.pad
+        .fil.bort.pad
             div(style='float:right')
                 a.vgi-download.fbn.right(type="button",oncontextmenu='downloadHtml(document.getElementById("cvetitle").innerText, render, this);',onclick='downloadHtml(document.getElementById("cvetitle").innerText, render, this);',value="Download") Download
                 a.vgi-mail.fbn.right(type="button",oncontextmenu='draftEmail(event, this, "render");',onclick='draftEmail(event, this,"render");',value="Email") Email
             div.render(id="render")
-        input.tab(name='tabs', type='radio', id='cvePortalTab', value="6")
-        label.lbl(for='cvePortalTab') CVE Portal
-        .wht.fil.rnd.bort#port
-            
 
 block prepend content
     dialog.dlg.bor.rnd.shd#cveErrorsModal
@@ -63,6 +83,11 @@ block prepend content
     +userAddDialog
     +userEditDialog
     +cpeNameOverrideDialog
+    dialog.dlg.bor.rnd.shd#cvePortalDialog
+        header.ban.sec.pad
+            b.lbl.vgi-org CVE CNA Portal
+            a.right.rbtn.vgi-x(title="Close CVE Portal" onclick="return closeCvePortal(event);")
+        #port
 
 mixin userAddDialog
     dialog.dlg.bor.rnd.shd#userAddDialog

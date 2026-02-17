@@ -2,44 +2,37 @@
 
 extends layout
   
-block info
-    if doc && doc.updatedAt
-        span.lbl#infoMsg
-            ='Last updated ' + textUtil.formatFriendlyDate(doc.updatedAt) + ' by ' + doc.author + ' (v' + doc.__v + ')'
-    if !min && conf.realtime && conf.realtime.enabled
-        span.lbl.tgrey#realtimeStatus Live sync disconnected
-        span.lbl.tgrey#realtimeViewers
-
 block append head
     if !min
         link(rel='stylesheet', href= '/users/list/css')
     link(href=conf.basedir + "css/tagify.css",rel="stylesheet",type="text/css")
     link(rel='stylesheet', href=conf.basedir + 'css/simplehtml.css')
-    style.
-        #draftsLayout { display: flex; align-items: flex-start; gap: 0.5em; position: relative; }
-        #draftsSidebar { position: absolute; left: 0; top: 0; z-index: 6; width: 0; max-width: 0; height: calc(100vh - 1em); overflow: auto; padding: 0; border-width: 0; opacity: 0; pointer-events: none; transition: width 0.2s ease, max-width 0.2s ease, opacity 0.2s ease; }
-        #draftsList { flex-direction: column; }
-        #draftsToggle:checked ~ #draftsLayout #draftsSidebar { width: 18em; max-width: 85vw; padding: 0.25em 0.5em; border-width: 1px; opacity: 1; pointer-events: auto; }
-        #draftsLayout #mainTabGroup { flex: 1 1 0; min-width: 0; }
-        @media (min-width: 900px) {
-            #draftsSidebar { position: static; height: auto; max-width: 20em; }
-        }
 
-block prepend bannerItemsLeft
+block prepend topHeaderLeft
     if !min
-        a.fbn(href=(confOpts[schemaName].conf.uri? confOpts[schemaName].conf.uri : '/' + schemaName + '/' ), title=confOpts[schemaName].conf.title) All
-    
-block append bannerItemsLeft
+        a.rbtn.vgi-back(href=(confOpts[schemaName].conf.uri? confOpts[schemaName].conf.uri : '/' + schemaName + '/' ), title=confOpts[schemaName].conf.title)
+
+block append topHeaderLeft
     if !confOpts[schemaName].conf.readonly
         block openButton
             input#importJSON.hid(type="file",accept="application/json",onchange="loadFile(event,this);")
-            a.fbn.vgi-folder(type="file",onclick='importFile(event, this);') Open
+            button.fbn.vgi-folder(type="file",onclick='importFile(event, this);')
+    
+block prepend outputButtons
+    if !confOpts[schemaName].conf.readonly
         if !min
             button.fbn.vgi-put(id="save1") Save    
-        a.fbn.vgi-download(type="button",oncontextmenu='downloadFile(event, this);',onclick='downloadFile(event, this);',value="Download") Download
+        a.fbn.vgi-download(title="Download JSON" type="button",oncontextmenu='downloadFile(event, this);',onclick='downloadFile(event, this);',value="Download")
+
+block append sidebarNav
+    if !(opts && opts.conf && opts.conf.disableDrafts)
+        details#draftsGroup.sidebar-expandable.bort
+            summary.lbl.vgi-edit Drafts
+                span.pad.tgrey#draftsCount
+            #draftsEmpty.lbl No drafts yet.
+            #draftsList.flx
 
 block scripts
-    script(src=conf.basedir + 'js/simplehtml.js')
     if opts
         script
             | var iconMap = 
@@ -67,65 +60,59 @@ block scripts
         if opts && opts.conf && !opts.conf.readonly
             - var compileScript = pugLib.compileFileClient('views/subcontent.pug', {name: "subdocRender",basedir: 'views',compileDebug: false,inlineRuntimeFunctions: true})
             script !{compileScript}
-            script(src=conf.basedir + 'js/comment.js')
 
 block content
-    input#draftsToggle.hid(type="checkbox")
-    #draftsLayout
-        aside#draftsSidebar.wht.borr
-            .flx
-                b.lbl Drafts
-                    |  
-                    span.pad.tgrey#draftsCount
-                a.right.rbtn.vgi-x(onclick="draftsUi.toggle.checked=false")
-            #draftsEmpty.sml.tgrey No drafts yet.
-            #draftsList.flx
-            details#draftsMore
-                summary.sml  more ...
-                #draftsListMore
-        div#mainTabGroup
-            label.fbn(for="draftsToggle" title="Drafts menu") ☰
-            span.lbl &nbsp;
-            block editorTab
-                input.tab(name='tabs', type='radio', id='editorTab', value="1",checked)
-                label.lbl#editorLabel(for='editorTab')
-                    span.flx
-                        block editorLabel
-                            | Editor
-                        details.popup#errPop
-                            summary.sml.hid#errCount
-                            div.wht.pop.pad.bor.shd#errList
-                .wht.fil.bort.tpad
-                    block editorArea
-                        iframe(name="x",style="display:none",src="about:blank")
-                        form.editor(target="x",action="",id="docEditor")
-                        if !min
-                            a#remove.gap.flr.fbn.vgi-del.tred Delete this entry from local Vulnogram database
-            block sourceTab
-                input.tab(name='tabs', type='radio', id='sourceTab', value="2")
-                label.lbl(for='sourceTab')
-                    block sourceLabel 
-                        | Source
-                .wht.fil.bort
-                    div(id="output",rows="40",cols="100%")
-                        p
+    div#mainTabGroup
+        span.lbl &nbsp;
+        div#statusArea.nobr
+            span.lbl#infoMsg
+                if doc && doc.updatedAt
+                    ='Updated ' + textUtil.formatFriendlyDate(doc.updatedAt) + ' by ' + doc.author
+            if !min && conf.realtime && conf.realtime.enabled
+                span.lbl#realtimeStatus Offline
+                span.lbl#realtimeViewers
+        block editorTab
+            input.tab(name='tabs', type='radio', id='editorTab', value="1",checked)
+            label.lbl#editorLabel(for='editorTab')
+                span.flx
+                    block editorLabel
+                        | Editor
+                    details.popup#errPop
+                        summary.sml.hid#errCount
+                        div.wht.pop.pad.bor.rnd.shd#errList
+            .fil.bort.tpad
+                block editorArea
+                    iframe.hid(name="x",src="about:blank")
+                    form.editor(target="x",action="",id="docEditor")
+                    if !min
+                        a#remove.gap.flr.fbn.vgi-del.tred Delete this entry from local Vulnogram database
+        block sourceTab
+            input.tab(name='tabs', type='radio', id='sourceTab', value="2")
+            label.lbl(for='sourceTab')
+                block sourceLabel 
+                    | Source
+            .fil.bort.pad
+                div(id="output",rows="40",cols="100%")
+                    p
 
-            block customtabs
+        block customtabs
 
-            if !min
-                input.tab(name='tabs', type='radio', id='changesTab', value="6")
-                label.lbl(for='changesTab') Changes
-                .wht.fil.bort
-                    div#unSavedChanges
-                    div#changelog
+        if !min
+            input.tab(name='tabs', type='radio', id='changesTab', value="6")
+            label.lbl(for='changesTab') Changes
+            .wht.fil.bort
+                div#unSavedChanges
+                div#changelog
     
     block initGlobals
         script
             if conf.publicDefectURL
                 | var defectURL = "!{conf.publicDefectURL}";
             | var idpath = "#{idpath}";
-            | var allowAjax = "#{allowAjax}";
+            | var allowAjax = #{allowAjax === true};
+            | var soloMode = #{min === true};
             | var schemaName = "#{schemaName}";
+            | var draftsEnabled = #{!(opts && opts.conf && opts.conf.disableDrafts)};
             | var postUrl = "#{postUrl?postUrl:''}";
             | var csrfToken = "#{csrfToken}";
             | var ajaxBase  = "#{conf.basedir}";
@@ -144,22 +131,21 @@ block content
                 | var docSchema=!{JSON.stringify(opts && opts.schema ? opts.schema : '{}').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029').replace(/</g, '\\u003C').replace(/>/g, '\\u003E').replace(/\//g, '\\u002F')};
 
 
-    script(src=conf.basedir + 'js/util.js')
     if !min && opts && opts.schema
         script(src=conf.basedir + schemaName + '/schema.js')
     if conf.ajv && conf.ajvHash
       script(src=conf.ajv,integrity=conf.ajvHash,crossorigin="anonymous")
     script(src=conf.jsoneditor,integrity=conf.jsoneditorHash,crossorigin="anonymous")
-    script(src=conf.basedir + "js/tagify.min.js")
     script(src=conf.ace,integrity=conf.aceHash,crossorigin="anonymous")
     if !min && conf.realtime && conf.realtime.enabled
         script(src="/socket.io/socket.io.js")
         script(src=conf.basedir + "js/json-patch-extended.min.js")
-    script(src=conf.basedir + 'js/editor.js')
+    script(src=conf.basedir + 'js/vg-editor.js')
     script(src=conf.basedir + 'js/tablesort.min.js')
 
     block loadEditor
-        script loadJSON(initJSON);
+        - var msg = doc && doc.updatedAt ? 'Updated ' + textUtil.formatFriendlyDate(doc.updatedAt) + ' by ' + doc.author : '';
+        script loadJSON(initJSON,"#{doc_id}",!{JSON.stringify(msg)});
 
     if doc && doc.body
         script getChanges("#{doc_id}");
@@ -196,4 +182,4 @@ mixin alertDialog
             .gap#smallAlert  
             center.gap
                 input#alertOk.btn.sfe(type="reset" onclick="document.getElementById('alertDialog').close();" value="OK")
-                input#alertCancel.btn.red(type="reset" onclick="document.getElementById('alertDialog').close();" value="Cancel" dstyle="display:none")
+                input#alertCancel.btn.red.alert-cancel(type="reset" onclick="document.getElementById('alertDialog').close();" value="Cancel")

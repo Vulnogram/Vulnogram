@@ -54,7 +54,7 @@ function plotCharts(container, charts) {
         .data(charts)
         .enter()
         .append('div')
-        .attr('class', 'vis bor wht rnd shd pad')
+        .attr('class', 'vis bor pur rnd shd pad')
         .html(function (d) {
             d.div = this;
             if (d.type == 'pie') {

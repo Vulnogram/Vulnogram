@@ -12,6 +12,7 @@ module.exports = {
         name: 'CVSS 4.0',
         uri: '/cvss4/',
         class: 'vgi-cvss-logo',
+        disableDrafts: true,
         favicon: 'https://raw.githubusercontent.com/Vulnogram/vg-icons/refs/heads/main/src/cvss.svg',
         ogImage: 'https://vulnogram.org/screenshots/cvssog.png',
         order: 0.12, //Where to place the section on heading?

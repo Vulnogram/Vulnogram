@@ -3,6 +3,7 @@ conf:{
     title: 'National Vulnerability Database',
     readonly: true,
     name: 'NVD',
+    disableDrafts: true,
     class: 'vgi-data'
 },
 facet: {

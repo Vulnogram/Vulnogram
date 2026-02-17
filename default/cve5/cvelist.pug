@@ -31,7 +31,7 @@ mixin dlgHeader(icon, msg)
     header.ban.sec.pad(style="min-width:20em;")
         b.lbl(class=icon)=msg
         | 
-        a.sbn.right.vgi-fail(onclick="this.closest('dialog').close()")
+        a.rbtn.right.vgi-x(onclick="this.closest('dialog').close()")
 
 mixin cveErrors
     +dlgHeader('vgi-alert', typeof err == 'string' ? 'Error' : err.error)
@@ -51,7 +51,7 @@ mixin cveErrors
 mixin portal
     - var y = new Date().getFullYear()
     - var nextY = y+1
-    header.pad.ban.sec
+    header.pad.ban.bort
         .left
             label.vgi-globe.lbl Portal: 
                 =portalType
@@ -63,7 +63,7 @@ mixin portal
                               .gap
                                 dt.flx
                                     button.btn.vgi-magic(onclick='cveReserveAndRender(0, 5)' style="min-width:6em") Reserve  5
-                                    button.right.sbn.vgi-fail(onclick="this.closest('details').removeAttribute('open')")     
+                                    button.rbtn.right.vgi-x(onclick="this.closest('details').removeAttribute('open')")     
                                 dt
                                     button.btn.vgi-magic(onclick='cveReserveAndRender(0, 10)'  style="min-width:6em") Reserve 10
                                 dt 
@@ -123,7 +123,7 @@ mixin userstats
             |  ▼ 
         dl.pop.wht.bor.rnd.shd.pad
             .gap.row
-                button.right.sbn.vgi-fail(onclick="this.closest('details').removeAttribute('open')")     
+                button.right.rbtn.vgi-x(onclick="this.closest('details').removeAttribute('open')")     
             +userDetail(userInfo)
             hr.bort
             span.vgi-edit.fbn(onclick="cveUserEdit(this)" u=userInfo.username, f=userInfo.name?userInfo.name.first:'', l=userInfo.name?userInfo.name.last:'', ac=userInfo.active ad=userInfo.authority.active_roles.includes('ADMIN') title="Edit Info")
@@ -161,8 +161,8 @@ mixin usermgmt
         div.pop.wht.bor.rnd.shd.usermgmt
             .gap.row
                 button.sfe.btn.vgi-magic(onclick="document.getElementById('userAddDialog').showModal()") Add a user  
-                button.right.sbn.vgi-fail(onclick="this.closest('details').removeAttribute('open')")     
-            .tbl.gap
+                button.right.rbtn.vgi-x(onclick="this.closest('details').removeAttribute('open')")     
+            .vtbl.gap
                 .tbody#userlist
                     .tr
                         .td(colspan=6)
@@ -225,7 +225,7 @@ mixin reserveds
 mixin listIds
     if cveIds && cveIds.length > 0
         - var stateIcons = {'RESERVED':'vgi-tag', 'PUBLISHED':'vgi-globe', 'REJECTED':'vgi-no', 'PUBLIC':'vgi-globe'}
-        table#cveListTable.tbl.sortable
+        table#cveListTable.vtbl.sortable
             thead
                 tr
                     th ID
@@ -254,9 +254,9 @@ mixin listIds
                         td
                             if editable 
                                 if c.state == 'RESERVED'
-                                    a.fbn.vgi-cancel(data=c.cve_id onclick="cveReject(this, event)", title="Reject this CVE ID",) &nbsp;
+                                    a.fbn.vgi-x(data=c.cve_id onclick="cveReject(this, event)", title="Reject this CVE ID",) &nbsp;
                                 else if c.state == 'PUBLISHED'
-                                    a.fbn.vgi-cancel(data=c.cve_id onclick="showAlert('Rejecting published record', 'To reject this published record, open this in the editor, click the Reject ID button at the bottom')", title="Reject this CVE ID!",) &nbsp;
+                                    a.fbn.vgi-x(data=c.cve_id onclick="showAlert('Rejecting published record', 'To reject this published record, open this in the editor, click the Reject ID button at the bottom')", title="Reject this CVE ID!",) &nbsp;
                                 else
                                     i.vgi-no.tgrey(title="This ID is already rejected!") &nbsp;
     else

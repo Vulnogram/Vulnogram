@@ -22,11 +22,10 @@ confOpts = {
     cve: optSet('cve5', ['default'].concat(process.argv.slice(2))),
     cvss4: optSet('cvss4', ['default'].concat(process.argv.slice(2))),
     seaview: {conf:{
-        url:'/seaview',
+        uri:'https://www.vulnogram.org/seaview/',
         class:'vgi-search',
         title: 'Search and Display CVEs',
         name: 'Seaview - CVE Search',
-
     }}
 }
 confOpts.cve.conf.uri = '/';
@@ -52,7 +51,7 @@ fs.writeFileSync("standalone/index.html", cveEdit({
     confOpts: confOpts,
     opts: confOpts.cve,
     schemaName: 'cve',
-    allowAjax: false,
+    allowAjax: true,
 }));
 
 fs.writeFileSync("standalone/cvss4.html", pug.compileFile('default/cvss4/edit.pug', {compileDebug: false})({
@@ -65,5 +64,5 @@ fs.writeFileSync("standalone/cvss4.html", pug.compileFile('default/cvss4/edit.pu
     confOpts: confOpts,
     opts: confOpts.cvss4,
     schemaName: 'cvss4',
-    allowAjax: false,
+    allowAjax: true,
 }));

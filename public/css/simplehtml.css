@@ -6,6 +6,8 @@
     padding: 6px;
     border-bottom: 1px solid var(--bor);
     background: var(--bg1);
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
 }
 
 .vgh-toolbar button.active {
@@ -53,6 +55,8 @@
     font-size: 16px;
     line-height: 1.5;
     background-color: var(--wht);
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
 }
 
 .vgh-content {

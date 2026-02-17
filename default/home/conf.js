@@ -4,8 +4,9 @@ var sections = require('../../models/sections')();
 module.exports = {
 conf: {
     title: 'Dashboard',
-    name: 'Vulnogram',
-    class: 'vgi-logo',
+    name: 'Chart',
+    class: 'vgi-pie',
+    disableDrafts: false,
     order: -10,
     uri: '/home/'
 },

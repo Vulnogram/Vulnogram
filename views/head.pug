@@ -16,11 +16,15 @@ if (opts && opts.conf.ogImage)
 else
     meta(property='og:image', content=conf.basedir + 'css/logo.png')
 link(rel='apple-touch-icon', sizes='256x256', href=conf.basedir + 'css/logo.png')
-if (opts && opts.conf.favicon)
-    link(rel='icon' href=opts.conf.favicon)
-else
-    link(rel='icon' type='image/png', href= conf.basedir + 'css/logo.png', sizes='256x256')
 link(rel='stylesheet', href= conf.basedir + 'css/min.css')
 link(rel='stylesheet', href= conf.basedir + 'css/vg-icons.css')
+if (opts && opts.conf.favicon)
+    link#favicon(rel='icon' href=opts.conf.favicon)
+else
+    link#favicon(rel='icon' type='image/png', href= conf.basedir + 'css/logo.png', sizes='256x256')
+    script
+      | var iconClass = !{JSON.stringify((schemaName && confOpts && confOpts[schemaName] && confOpts[schemaName].conf && confOpts[schemaName].conf.class) || '')};
+      include favicon.js
+
 if (opts && opts.style)
     style !{opts.style}

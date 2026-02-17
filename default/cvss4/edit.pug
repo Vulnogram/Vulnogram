@@ -29,3 +29,10 @@ block prepend loadEditor
 block append loadEditor
     script 
         include postload.js
+
+block outputButtons
+    if !confOpts[schemaName].conf.readonly
+        a.fbn.vgi-download(title="Download JSON" type="button",oncontextmenu='downloadFile(event, this);',onclick='downloadFile(event, this);',value="Download")
+
+block append content
+    - min = true

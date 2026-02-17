@@ -127,7 +127,7 @@ mixin cpeNameOverrideRow(entry)
             option(value="os" selected=(cpeType == 'os')) os
             option(value="hardware" selected=(cpeType == 'hardware')) hardware
     td
-        button.fbn.vgi-cancel(type="button",onclick="cpeOverrideDeleteRow(this)") Delete
+        button.fbn.vgi-x(type="button",onclick="cpeOverrideDeleteRow(this)") Delete
 
 mixin cvssList(cvssList)
     if cvssList
@@ -267,113 +267,136 @@ mixin warnings(con)
                 | 
                 span=x.message
 
-mixin container(con)
-    h1#cvetitle
-        - var cveShowId = con.cveId.match(/^CVE-[0-9-]+$/)? con.cveId : 'CVE-yyyy-nnnn';
-        if con.source && con.source.advisory
-            = con.source.advisory
-            |  
-        = cveShowId + ' ' + (con.title ?  con.title : '')
-    p
-        if con.shortName || con.datePublic
-            span Published 
-        if con.shortName
-            | by 
-            b=con.shortName
-            |   
-        if con.datePublic
-            |  on 
-            +renderDate(con.datePublic)
-        if con.dateUpdated && con.dateUpdated != con.datePublic
-            |  (updated 
-            +renderDate(con.dateUpdated)
-            |)
-    if con.cvssList
-        p
+mixin container(con, cve)
+    .cna.pad
+        - var cList = (cve && cve.cveMetadata ? cve.cveMetadata.assignerShortName : false);
+        - var quote = (cList && cList.indexOf(' ') !== -1) ? '"' : '';
+        - var cnaName = con.shortName;
+        - if (typeof cna !== 'undefined' && cna && cna[con.shortName] && cna[con.shortName].n) { cnaName = cna[con.shortName].n; }
+        if con.url
+            a(href=cList ? '?CNA:'+quote+cList+quote : false)
+                img.logo(src="https://www.google.com/s2/favicons?sz=128&domain_url="+con.url)
+        span
+            span.flx
+                a.bld(href=cList ? '?CNA:'+quote+cList+quote : false)=cnaName
+                if con.url
+                    a.vgi-globe(href=con.url)
+            - var publicDate = con.datePublic || (cve && cve.cveMetadata ? cve.cveMetadata.datePublished : false);
+            - var publishDate = (cve && cve.cveMetadata ? cve.cveMetadata.datePublished : false) || con.datePublic;
+            +renderDate(publicDate)
+            if (con.dateUpdated || publishDate) && con.dateUpdated != publishDate
+                |  (updated 
+                +renderDate(con.dateUpdated)
+                |)
+        span.flx
             +cvssList(con.cvssList)
-    #description
+            if con.KEV
+                summary.lbl.rnd.tag.CVSS.CRITICAL.vgi-bomb Known Exploited Since 
+                    = con.KEV.dateAdded
+            a.sbn.vgi-mail(title="Share this CVE in email",href="mailto:?subject="+con.cveId+ ' ' + (con.title ? con.title : '')+"&body="+con.cveId + (con.title ? ' ' + con.title : '')+"%0A%0Ahttps://vulnogram.org/seaview/?"+con.cveId)
+            a.sbn.vgi-link(href="https://vulnogram.org/seaview/?"+con.cveId,target="_blank")
+    .desc.pad
         if con.state == 'REJECTED'
-            b.tag.red REJECTED
+            - con.maxCVSS = -1;
+            b.tag.rnd.CVSS.CRITICAL REJECTED
             |  ·  
         +tagList(con.tags)
-        | 
+        span#cvetitle
+            b=con.cveId
+            if con.title
+                |  
+                b=con.title
+        |  
         +spara(con.descriptions)
         +spara(con.rejectedReasons)
+    if (con.metrics && con.metrics.length > 0)
+        each metric, i in con.metrics
+            if (con.metrics[i].other && con.metrics[i].other.type == 'ssvc')
+                .metrics.pad
+                    b Stakeholder Specific Vulnerability Categorization (SSVC)
+                    each m, j in con.metrics[i].other.content.options
+                        each o, k in m
+                            p=k + ': ' + o
     if con.configurations
-        #configs
-            h2 Required configuration for exposure: 
+        .configs.pad
+            b.vgi-cog Required configuration for exposure: 
             +spara(con.configurations)
     if con.problemTypes
-        #problem
-            h2 Problem: 
-            p
-                for t in con.problemTypes
-                    if t.description
-                        for d in t.description
-                            =d.value
-                            br 
-                    if t.descriptions
-                        for d in t.descriptions
-                            =d.description
-                            |   
-                            if d.cweId
-                                a(href="https://cwe.mitre.org/data/definitions/"+d.cweId.substr(4) target="_blank")
+        .problem.pad
+            b.vgi-bug Problem: 
+            |  
+            for t in con.problemTypes
+                if t.description
+                    for d in t.description
+                        =d.value
+                        |  
+                if t.descriptions
+                    for d in t.descriptions
+                        |  
+                        if d.cweId
+                            if d.cweId != d.description
+                                =d.description
+                            - var cwe = d.cweId.match(/\d+/);
+                            if cwe && cwe[0]
+                                |  
+                                a(href="https://cwe.mitre.org/data/definitions/"+cwe[0],target="_blank")
                                     small=d.cweId
-                                br  
+                                |  
+                        else
+                            =d.description
     if con.impacts
-        #impact
-            h2 Impact:  
-            p
-                for t in con.impacts
-                    if t.descriptions
-                        for d in t.descriptions
-                            =d.value
-                            |   
-                    if t.capecId
-                        a(href="https://capec.mitre.org/data/definitions/"+t.capecId.substr(6) target="_blank")
+        .impact.pad
+            b.vgi-impact Impact:  
+            |  
+            for t in con.impacts
+                if t.description
+                    for d in t.description
+                        =d.value
+                        |  
+                if t.descriptions
+                    for d in t.descriptions
+                        =d.value
+                if t.capecId
+                    - var capec = t.capecId.match(/\d+/);
+                    if capec && capec[0]
+                        |  
+                        a(href="https://capec.mitre.org/data/definitions/"+capec[0],target="_blank")
                             small=t.capecId
-                        br  
+                        |  
     if con.exploits
-        #exploits
-            h2 Exploits:
+        .exploits.pad
+            b.vgi-bomb Exploits
             +spara(con.exploits)
-    
     if con.pvstatus
-        #status
-            h2 Product Status:
-            +statusTable(con.pvstatus)
-            br(style="font-size:0;")
+        +statusTable(con.pvstatus)
     if con.cpeApplicability
         #CPE
             h2 CPE Applicability:
             +cpeApplicability(con.cpeApplicability,true)
             br(style="font-size:0;")
-
     if con.solutions
-        #solution
-            h2 Solution:
+        .solution.pad
+            b.vgi-safe Solution
             +spara(con.solutions)
-
     if con.workarounds
-        #workaround
-            h2 Workaround:
+        .workaround.pad
+            b.vgi-avoid Workaround
             +spara(con.workarounds)
-
     if con.credits
-        #credits.rnd.pad.sec.vgap
-            h2 Credits:
+        .credits.rnd.pad.sec
+            b.vgi-like Credits
             +creditList(con.credits)
-
     if con.timeline
-        #timeline
-            h2 Timeline:
-            p
+        .timeline.pad
+            details(open)
+                summary
+                    b.vgi-cal Timeline
                 +timeList(con)
-
     if con.references
-        #references
-            h2 References
-            p
+        .references.pad
+            details(open)
+                summary
+                    b.vgi-ext References
                 +refList(con.references)
     if con.json
         pre=JSON.stringify(con.json,1,1)
@@ -542,7 +565,7 @@ block pageDef
                         - Object.assign(cvssdup, cvss);
                         - cvssdup.scenarios = x.scenarios;
                         - con.cvssList.push(cvssdup);
-            +container(con)
+            +container(con,cve)
 
 mixin mitre(cve)
     h2 MITRE CVE entry preview

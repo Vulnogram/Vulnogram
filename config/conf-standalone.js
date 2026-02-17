@@ -22,7 +22,7 @@ module.exports = {
     sections: [
 //        'cve',
         'cve5',
-//        'cvss4'
+        'cvss4'
     ],
     homepage: 'https://vulnogram.org'
 };

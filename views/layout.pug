@@ -1,4 +1,5 @@
-//- Copyright (c) 2017 Chandan B N. All rights reserved.
+//- Copyright (c) 2017-2026 Chandan B N. All rights reserved.
+//- Modern responsive grid layout with CSS-only collapsible sidebar
 
 doctype html
 html
@@ -7,66 +8,113 @@ html
     block head
         include head
   body#body(class=schemaName)
-    .stk#vgHead
-        block topHeader
-            header.ban.pad.wht.btm
+    //- CSS-only sidebar toggle checkbox
+    input#sidebarToggle(type="checkbox",checked=true)
+    
+    .layout-grid
+      //- Overlay for mobile (closes sidebar when clicked)
+      label.sidebar-overlay(for="sidebarToggle")
+      
+      //- Left Sidebar
+      aside.sidebar
+        .sidebar-head.pad
+          block sidebarHeader
+            label.lbl.vgi-logo(for="sidebarToggle") Vulnogram
+            label.lbl.vgi-larrow(for="sidebarToggle")
+        nav.sidebar-nav.pad
+          block sidebarNav
+            //-if min
+            //-  a.fbn.vgi-logo(title="Making the world safer one CVE at a time, since 2017", href=conf.homepage)="Vulnogram"
+            block sidebarSections
+              - var vs = Object.keys(confOpts).sort((a,b)=>(confOpts[a].conf.order-confOpts[b].conf.order));
+              each section in vs
+                if confOpts && confOpts[section]
+                  - var cf = confOpts[section].conf ? confOpts[section].conf : {};
+                  a.lbl(class=(cf.class ? cf.class : 'vgi-data')+ (schemaName == section ? ' rnd sec ':'')+ (page && page.startsWith('/' + section + '/') ? " hig " : ""), title=cf.title, href = (cf.uri? cf.uri : '/' + section + '/' ))=cf.name
+        .sidebar-foot
+          block sidebarFooter
+      script.
+        document.addEventListener('toggle', function (e) {
+          var d = e && e.target;
+          if (!d || !d.matches || !d.matches('details.sidebar-expandable') || !d.open) return;
+          var t = document.getElementById('sidebarToggle');
+          if (t) t.checked = false;
+        }, true);
+
+      //- Main Content Area
+      main.main-area
+        //- Top Header
+        .stk#vgHead
+          block topHeader
+            header.ban.pad.wht.btm.vg-top-header
+              .left.flx
+                block topHeaderLeft
+                  label#smallScreenMenu.lbl.vgi-logo(for="sidebarToggle") Vulnogram
+                  if schemaName && confOpts && confOpts[schemaName] && !confOpts[schemaName].conf.readonly
+                    if min
+                      a.fbn.sfe(href='./') NEW 
+                        = confOpts[schemaName].conf.name ? confOpts[schemaName].conf.name : schemaName
+                    else
+                      a.fbn.sfe(href='/' + schemaName + '/new') NEW 
+                        = confOpts[schemaName].conf.name ? confOpts[schemaName].conf.name : schemaName
+              .center.flx
+                block topHeaderMid
+                  if !min && schemaName
+                    form.bor.out.nobr.vg-search-form(action='/' + schemaName,method="GET")
+                      input.txt.vg-search-input(size=20,type="text",name="q",placeholder=" Search all "+schemaName,value=query ? (Array.isArray(query.q) ? query.q.join(' ') : query.q) :'',results="10")
+                      button.vgi-search.sbn(type="submit")
+              .right.flx
+                block topHeaderRight
+                  block outputButtons
+                  block userProfile
+                    if user
+                      details.popup.vg-user-details
+                        summary.lbl.vgi-user= user.name
+                        div.wht.pop.pad.bor.shd.rnd.vflx.vg-user-pop
+                          a.lbl.right.vgi-x(onclick="this.closest('details').removeAttribute('open')")
+                          a.lbl.vgi-edit.block(href="/users/profile/" + user.username) Update profile
+                          if opts && opts.conf && opts.conf.shortcuts
+                            each shortcut in opts.conf.shortcuts
+                              - var href=(shortcut.href instanceof Function ? shortcut.href(locals) : shortcut.href)
+                              a.fbn(class=shortcut.class,href=href,target=shortcut.target)=(shortcut.label instanceof Function ? shortcut.label(locals) : shortcut.label)
+                          div.bort
+                          a.lbl.vgi-exit.block(href="/users/logout") Logout
+          block banner
+            header.wht.stk
+              block bannerItems
                 .left
-                    block topHeaderLeft
-                        if min
-                            a.fbn.vgi-logo(title="Making the world safer one CVE at a time, since 2017", href=conf.homepage)="Vulnogram"
-                            | 
-                        - var vs = Object.keys(confOpts).sort((a,b)=>(confOpts[a].conf.order-confOpts[b].conf.order));
-                        //- console.log('JIRA order ' + confOpts['jira'].conf.order + '= '+ vs.map((a)=>(confOpts[a].conf.order)));
-                        each section in vs
-                            if confOpts && confOpts[section]
-                                - var cf = confOpts[section].conf ? confOpts[section].conf : {};
-                                a.fbn(class=cf.class + (page && page.startsWith('/' + section + '/') ? " hig ins " : ""), title=cf.title, href = (cf.uri? cf.uri : '/' + section + '/' ))=cf.name
+                  block bannerItemsLeft
                 .right
-                    block topHeaderRight
-                        if user
-                            a.vgi-user(class= (page == 'users' ? " active" : ""), href="/users/profile/" + user.username)= user.name
-                            //if opts && opts.conf && opts.conf.userpage
-                            //    a.icn.fbn.folder(href='/' + schemaName+'/' +opts.conf.userpage + user.username) Mine
-                            a.vgi-exit(href="/users/logout")=" Logout "
-        block banner
-            header.ban.pad.shd.hig
-                block bannerItems
-                    .left
-                        block bannerItemsLeft
-                            if schemaName && confOpts && confOpts[schemaName] && !confOpts[schemaName].conf.readonly
-                                if min
-                                    a.fbn.sfe(href='./') NEW
-                                else
-                                    a.fbn.sfe(href='/' + schemaName + '/new') NEW
-                                    
-                    .right
-                        block bannerItemsRight
-                            if !min
-                                if opts && opts.conf && opts.conf.shortcuts
-                                    each shortcut in opts.conf.shortcuts
-                                        - var href=(shortcut.href instanceof Function ? shortcut.href(locals) : shortcut.href)
-                                        a.fbn(class=shortcut.class,href=href,target=shortcut.target)=(shortcut.label instanceof Function ? shortcut.label(locals) : shortcut.label)
-                                form.indent.out.nobr(action='/' + schemaName,method="GET",style="flex-grow:1")
-                                    input.txt(size=20,style="flex-grow:1",type="text",name="q",placeholder=" Search all "+schemaName,value=query ? (Array.isArray(query.q) ? query.q.join(' ') : query.q) :'',results="10",required)
-                                    button.vgi-search.sbn(type="submit")
-    block facetBanner
-    if user && !min
-        script.
+                  block bannerItemsRight
+
+
+        block facetBanner
+
+        //- User script variables
+        if user && !min
+          script.
             var userName = "#{user.name}";
             var userUsername = "#{user.username}";
-    else
-        script.
+        else
+          script.
             var userUsername = ""
-            
-    .pad.ban.messagebar
-        .left.tred#errMsg
+
+        //- Message Bar
+        .pad.ban.messagebar
+          .left.tred#errMsg
             if !min
-                !=messages()
+              !=messages()
             block error
-        .right
+          .right
             block info
-    .pad
-        block scripts
-        block content
-    block subcontent
-    include foot
+
+        //- Main Content
+        .pad
+          block scripts
+          block content
+
+        //- Sub Content
+        block subcontent
+
+        //- Footer
+        include foot
