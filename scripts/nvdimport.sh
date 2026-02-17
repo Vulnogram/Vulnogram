@@ -6,7 +6,7 @@
 # Mongoimport wants a JSON array.
 # strip the wrapper around the CVE_Items array using egrep
 
-#for i in {2002..2020}; do curl --silent --show-error https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-$i.json.gz | gunzip -c > var/$i.json; done
+#for i in {2002..2026}; do curl --silent --show-error https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-$i.json.gz | gunzip -c > var/$i.json; done
 
 # curl --silent --show-error https://nvd.nist.gov/feeds/json/cve/1.0/nvdcve-1.0-modified.json.gz | gunzip -c | nvdimport.sh -
 for f in "$@"
