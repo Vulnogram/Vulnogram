@@ -4,8 +4,13 @@ JS = $(OUT)/js
 
 CSSO = ./node_modules/.bin/csso
 UJS = ./node_modules/.bin/uglifyjs
+EDIT_JS_SRC := ./src/js/edit
+EDITOR_SOURCES := $(wildcard $(EDIT_JS_SRC)/*.js)
+EDITOR_VENDOR_SOURCES := ./public/js/tagify.min.js
+EDITOR_PUBLIC_FILE := ./public/js/vg-editor.js
+EDITOR_BUNDLE_STAMP := ./public/js/.vg-editor-bundle.stamp
 
-TARGETS := $(OUT) $(OUT)/static $(OUT)/index.html $(CSS)/min.css $(CSS)/simplehtml.css $(CSS)/vg-icons.css $(CSS)/tagify.css $(CSS)/logo.png $(CSS)/logo.svg $(JS)/util.js $(JS)/editor.js $(JS)/mode-json.js $(JS)/cvss.json $(JS)/cwe-all.json $(JS)/cwe-frequent.json $(JS)/capec.json $(JS)/simplehtml.js $(JS)/tablesort.min.js $(JS)/tagify.min.js $(OUT)/static/CVE.svg $(OUT)/static/cve5sw.js $(OUT)/static/cvss40.js
+TARGETS := $(OUT) $(OUT)/static $(OUT)/index.html $(CSS)/min.css $(CSS)/simplehtml.css $(CSS)/vg-icons.css $(CSS)/tagify.css $(CSS)/logo.png $(CSS)/logo.svg $(JS)/vg-editor.js $(JS)/mode-json.js $(JS)/cvss.json $(JS)/cwe-all.json $(JS)/cwe-frequent.json $(JS)/capec.json $(JS)/tablesort.min.js $(OUT)/static/CVE.svg $(OUT)/static/cve5sw.js $(OUT)/static/cvss40.js
 
 $(OUT):
 	mkdir $(OUT)
@@ -36,6 +41,12 @@ $(CSS)/%.svgf: ./public/css/%.svg
     
 $(JS)/%.js: ./public/js/%.js
 	$(UJS) $< -c -o $@
+
+$(EDITOR_BUNDLE_STAMP): ./scripts/bundle-editor.js $(EDITOR_SOURCES) $(EDITOR_VENDOR_SOURCES)
+	node ./scripts/bundle-editor.js
+	touch $@
+
+$(EDITOR_PUBLIC_FILE): $(EDITOR_BUNDLE_STAMP)
 
 $(JS)/%.json: ./public/js/%.json
 	node -e 'console.log(JSON.stringify(require("./" + process.argv[1])))' $< > $@

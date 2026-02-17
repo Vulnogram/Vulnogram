@@ -454,7 +454,7 @@ formatFriendlyDate: function (isoString) {
     return date.toLocaleTimeString(undefined, {
       hour: 'numeric',
       minute: '2-digit',
-    });
+    }).toLocaleLowerCase();
   }
 
   // Case 2: The date is this year (but not today)

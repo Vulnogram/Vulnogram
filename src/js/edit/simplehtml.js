@@ -64,11 +64,11 @@ class SimpleHtml {
     init() {
         // Clear container and setup structure
         this.container.innerHTML = '';
-        this.container.classList.add('bor');
+        this.container.classList.add('rnd');
 
         // Create Toolbar
         this.toolbar = document.createElement('div');
-        this.toolbar.className = 'vgh-toolbar shd';
+        this.toolbar.className = 'vgh-toolbar';
         this.container.appendChild(this.toolbar);
         this.renderToolbar();
         this.initUrlForm();
