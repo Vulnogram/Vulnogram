@@ -1,0 +1,224 @@
+{
+  "title": "Using Vulnogram with CVE Services (Updated Screenshots)",
+  "sourcePdfTitle": "Using Vulnogram with CVE Services Portal",
+  "sourcePdf": "https://www.cve.org/Resources/Roles/Cnas/UsingVulnogramCVEServices.pdf",
+  "sourcePdfDate": "2025-12-19",
+  "outputMarkdown": "using-vulnogram-cve-services.md",
+  "screenshotsDir": "screenshots",
+  "sections": [
+    {
+      "id": "access",
+      "title": "1. Access Vulnogram",
+      "text": "Open Vulnogram and start in the CVE workspace. For local documentation builds, this script serves `standalone/index.html` and captures that UI."
+    },
+    {
+      "id": "login",
+      "title": "2. Login to CVE Services",
+      "text": "Open the **CVE Portal** panel, select the target portal (`production`, `test`, `adp-test`, or local), and authenticate with your CNA short name, CVE user, and API key."
+    },
+    {
+      "id": "reserve",
+      "title": "3. Reserve CVE IDs",
+      "text": "After login, use **Reserve One CVE** or the dropdown batch actions to reserve IDs for the current year, next year, or previous year. Use state/year filters to find reserved IDs."
+    },
+    {
+      "id": "details",
+      "title": "4. Enter CVE Record Details",
+      "text": "Use the editor tab to enter vulnerability details, affected products, references, and metrics. Switch between **Editor**, **Source**, and **Preview** tabs while drafting."
+    },
+    {
+      "id": "publish",
+      "title": "5. Publish to CVE Services",
+      "text": "Use **Publish CVE** to submit the record to the currently selected portal. In test mode, publishing targets the CVE Services test environment."
+    },
+    {
+      "id": "admin",
+      "title": "6. Manage Users and API Keys (Admin)",
+      "text": "Organization administrators can open **Users** in the portal view to add users, update profile and role attributes, disable accounts, and reset API secrets."
+    }
+  ],
+  "screenshots": [
+    {
+      "id": "01-access-editor",
+      "file": "01-access-editor.png",
+      "section": "access",
+      "alt": "Vulnogram CVE editor workspace with sidebar navigation and tabs",
+      "caption": "CVE workspace landing view in Vulnogram.",
+      "fullPage": true,
+      "steps": [
+        {
+          "action": "setViewport",
+          "width": 1600,
+          "height": 1000
+        },
+        {
+          "action": "goto"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "#mainTabGroup"
+        },
+        {
+          "action": "waitForTimeout",
+          "ms": 400
+        }
+      ]
+    },
+    {
+      "id": "02-portal-login",
+      "file": "02-portal-login.png",
+      "section": "login",
+      "alt": "CVE Portal login dialog in Vulnogram",
+      "caption": "CVE Services login form from the portal sidebar action.",
+      "target": "#cvePortalDialog",
+      "steps": [
+        {
+          "action": "setViewport",
+          "width": 1600,
+          "height": 1000
+        },
+        {
+          "action": "goto"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "#mainTabGroup"
+        },
+        {
+          "action": "showPortalLogin"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "#cvePortalDialog[open] #cveLoginForm"
+        },
+        {
+          "action": "waitForTimeout",
+          "ms": 300
+        }
+      ]
+    },
+    {
+      "id": "03-reserve-cve-ids",
+      "file": "03-reserve-cve-ids.png",
+      "section": "reserve",
+      "alt": "CVE Portal reserve controls in Vulnogram",
+      "caption": "Portal reserve controls with state and year filters.",
+      "target": "#cvePortalDialog",
+      "steps": [
+        {
+          "action": "setViewport",
+          "width": 1600,
+          "height": 1000
+        },
+        {
+          "action": "goto"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "#mainTabGroup"
+        },
+        {
+          "action": "renderPortalMock",
+          "variant": "member"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "#cvePortalDialog[open] #cvePortalFilter"
+        },
+        {
+          "action": "waitForTimeout",
+          "ms": 300
+        }
+      ]
+    },
+    {
+      "id": "04-enter-cve-details",
+      "file": "04-enter-cve-details.png",
+      "section": "details",
+      "alt": "Vulnogram CVE editor detail form area",
+      "caption": "Primary CVE editor form where record content is entered.",
+      "target": "#docEditor",
+      "steps": [
+        {
+          "action": "setViewport",
+          "width": 1600,
+          "height": 1000
+        },
+        {
+          "action": "goto"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "#docEditor"
+        },
+        {
+          "action": "waitForTimeout",
+          "ms": 400
+        }
+      ]
+    },
+    {
+      "id": "05-publish-cve",
+      "file": "05-publish-cve.png",
+      "section": "publish",
+      "alt": "Vulnogram header with Publish CVE action",
+      "caption": "Top action bar with publish control.",
+      "target": "#vgHead",
+      "steps": [
+        {
+          "action": "setViewport",
+          "width": 1600,
+          "height": 1000
+        },
+        {
+          "action": "goto"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "#post1"
+        },
+        {
+          "action": "waitForTimeout",
+          "ms": 300
+        }
+      ]
+    },
+    {
+      "id": "06-admin-user-management",
+      "file": "06-admin-user-management.png",
+      "section": "admin",
+      "alt": "CVE Portal user management popup in Vulnogram",
+      "caption": "Admin-oriented user management view in the portal.",
+      "target": "#userListPopup",
+      "steps": [
+        {
+          "action": "setViewport",
+          "width": 1600,
+          "height": 1000
+        },
+        {
+          "action": "goto"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "#mainTabGroup"
+        },
+        {
+          "action": "renderPortalMock",
+          "variant": "admin"
+        },
+        {
+          "action": "openUserList"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "#userListPopup[open]"
+        },
+        {
+          "action": "waitForTimeout",
+          "ms": 300
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "generatedAt": "2026-02-11T00:05:54Z",
+  "sourcePdf": "https://www.cve.org/Resources/Roles/Cnas/UsingVulnogramCVEServices.pdf",
+  "screenshots": {
+    "01-access-editor": {
+      "file": "01-access-editor.png",
+      "hash": null,
+      "exists": false,
+      "updatedAt": "2026-02-11T00:05:19Z"
+    },
+    "02-portal-login": {
+      "file": "02-portal-login.png",
+      "hash": null,
+      "exists": false,
+      "updatedAt": "2026-02-11T00:05:19Z"
+    },
+    "03-reserve-cve-ids": {
+      "file": "03-reserve-cve-ids.png",
+      "hash": null,
+      "exists": false,
+      "updatedAt": "2026-02-11T00:05:19Z"
+    },
+    "04-enter-cve-details": {
+      "file": "04-enter-cve-details.png",
+      "hash": null,
+      "exists": false,
+      "updatedAt": "2026-02-11T00:05:19Z"
+    },
+    "05-publish-cve": {
+      "file": "05-publish-cve.png",
+      "hash": null,
+      "exists": false,
+      "updatedAt": "2026-02-11T00:05:19Z"
+    },
+    "06-admin-user-management": {
+      "file": "06-admin-user-management.png",
+      "hash": null,
+      "exists": false,
+      "updatedAt": "2026-02-11T00:05:19Z"
+    }
+  }
+}
