@@ -10,4 +10,5 @@ package-lock.json
 ignore
 tmp
 standalone
+public/js/.vg-editor-bundle.stamp
 config/conf.js

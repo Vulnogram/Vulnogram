@@ -4545,8 +4545,8 @@ function downloadFile(event, link) {
     link.download = file.name;
     // trick to get autocomplete work
     document.getElementById('docEditor').submit();
-
 }
+
 function downloadText(element, link) {
     var j = mainTabGroup.getValue();
     if (!j){
