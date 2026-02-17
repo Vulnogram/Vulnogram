@@ -140,6 +140,8 @@
           "$ref": "#/definitions/uriType",
           "pattern": "^(ftp|http)s?://\\S+$",
           "options": {
+            "class": "vgi-ext",
+            "input_width": "80%",
             "patternmessage": "Enter a valid URL",
             "inputAttributes": {
               "placeholder": "eg., https://example.org/CVE-yyyy-nnnn"
@@ -164,7 +166,10 @@
           "format": "taglist",
           "uniqueItems": true,
           "options": {
-            "input_width": "15em"
+            "input_width": "30%",
+            "inputAttributes": {
+                "placeholder": "type of reference"
+            }
           },
           "items": {
             "type": "string",
@@ -189,7 +194,30 @@
               "broken-link",
               "permissions-required",
               "customer-entitlement"
-            ]
+            ],
+            "options": {
+              "icons": {
+              "vendor-advisory":"alert",
+              "issue-tracking":"bug",
+              "mitigation":"bandage",
+              "patch":"safe",
+              "third-party-advisory":"multialert",
+              "vdb-entry":"data",
+              "mailing-list":"mail",
+              "release-notes":"text",
+              "exploit":"bomb",
+              "not-applicable":"no",
+              "media-coverage":"info",
+              "product":"package",
+              "related":"ext",
+              "signature":"key",
+              "technical-description":"text",
+              "government-resource":"org",
+              "broken-link":"unlink",
+              "permissions-required":"lock",
+              "customer-entitlement":"user"
+              }
+            }
           }
         }
       }
@@ -276,10 +304,15 @@
           "unaffected": "safe",
           "unknown": "what"
         },
+        "tooltips": {
+          "affected": "Affected - bad",
+          "unaffected": "Unffected - safe",
+          "unknown": "Unknown - not sure"
+        },
         "enum_titles": [
-          "y",
-          "n",
-          "?"
+          " ",
+          " ",
+          " "
         ]
       }
     },
@@ -534,7 +567,7 @@
         "programRoutines": {
           "title": "Program routines (OSS)",
           "type": "array",
-          "format": "table",
+          "format": "taglist",
           "description": "A list of the affected source code functions, methods, subroutines, or procedures (optional).",
           "uniqueItems": true,
           "options": {
@@ -569,7 +602,8 @@
           "type": "array",
           "title": "Versions (exact versions or ranges)",
           "options": {
-            "class": "vgi-versions"
+            "class": "vgi-versions",
+            "table_class": "vtbl"
           },
           "description": "Set of product versions or version ranges related to the vulnerability. The versions satisfy the CNA Rules [8.1.2 requirement](https://cve.mitre.org/cve/cna/rules.html#section_8-1_cve_entry_information_requirements). Versions or defaultStatus may be omitted, but not both.",
           "minItems": 1,
@@ -601,6 +635,7 @@
                 "description": "The non-inclusive upper limit of the range. This is the least version NOT in the range. The usual version syntax is expanded to allow a pattern to end in an asterisk `(*)`, indicating an arbitrarily large number in the version ordering. For example, `{version: 1.0 lessThan: 1.*}` would describe the entire 1.X branch for most range kinds, and `{version: 2.0, lessThan: *}` describes all versions starting at 2.0, including 3.0, 5.1, and so on. Only one of lessThan and lessThanOrEqual should be specified.",
                 "$ref": "#/definitions/version",
                 "options": {
+                  "class": "vgi-lt",
                   "infoText": "Usually fixed version. Use * to indicate no upper bounds, or 1.2.* to indicate rest of 1.2 branch.",
                   "inputAttributes": {
                     "placeholder": "eg., 1.2.8, 1.2.*",
@@ -613,6 +648,7 @@
                 "description": "The inclusive upper limit of the range. This is the greatest version contained in the range. Only one of lessThan and lessThanOrEqual should be specified. For example, `{version: 1.0, lessThanOrEqual: 1.3}` covers all versions from 1.0 up to and including 1.3.",
                 "$ref": "#/definitions/version",
                 "options": {
+                  "class": "vgi-lte",
                   "inputAttributes": {
                     "placeholder": "eg., 1.2.7, 1.2.*",
                     "size": 4
@@ -623,10 +659,13 @@
                 "type": "array",
                 "title": "status changes (patches, split ranges)",
                 "format": "table",
+                "options": {
+                  "table_class": "none"
+                },
                 "description": "A list of status changes that take place during the range. The array should be sorted in increasing order by the 'at' field, according to the versionType, but clients must re-sort the list themselves rather than assume it is sorted.",
                 "uniqueItems": true,
                 "items": {
-                  "title": "item",
+                  "title": "status change",
                   "type": "object",
                   "description": "The start of a single status change during the range.",
                   "required": [
@@ -638,13 +677,14 @@
                       "description": "The version at which a status change occurs.",
                       "$ref": "#/definitions/version",
                       "options": {
+                        "input_width": "7em",
                         "inputAttributes": {
                           "placeholder": "eg., patch 10, 1.2.5a, 1.2.6"
                         }
                       }
                     },
                     "status": {
-                      "title": "Affected status changes to",
+                      "title": "status changes to",
                       "description": "The new status in the range starting at the given version.",
                       "$ref": "#/definitions/status",
                       "default": "unaffected"
@@ -657,9 +697,10 @@
                 "description": "The version numbering system used for specifying the range. This defines the exact semantics of the comparison (less-than) operation on versions, which is required to understand the range itself. 'Custom' indicates that the version type is unspecified and should be avoided whenever possible. It is included primarily for use in conversion of older data files.",
                 "minLength": 1,
                 "options": {
+                  "input_width": "7em",
                   "inputAttributes": {
                     "placeholder": "eg. semver, maven, custom, python",
-                    "size": "5"
+                    "size": "7"
                   }
                 },
                 "maxLength": 128,
@@ -986,10 +1027,31 @@
           }
         },
         "problemTypes": {
-          "$ref": "#/definitions/problemTypes"
+          "$ref": "#/definitions/problemTypes",
+          "default": [
+            {
+              "descriptions": [
+                {
+                  "lang": "en",
+                  "description": "",
+                  "type": "CWE"
+                }
+              ]
+            }
+          ]
         },
         "impacts": {
-          "$ref": "#/definitions/impacts"
+          "$ref": "#/definitions/impacts",
+          "default": [
+            {
+              "descriptions": [
+                {
+                  "lang": "en",
+                  "value": ""
+                }
+              ]
+            }
+          ]
         },
         "affected": {
           "$ref": "#/definitions/affected"
@@ -1042,7 +1104,24 @@
           "$ref": "#/definitions/references"
         },
         "metrics": {
-          "$ref": "#/definitions/metrics"
+          "$ref": "#/definitions/metrics",
+          "default": [
+            {
+              "format": "CVSS",
+              "scenarios": [
+                {
+                  "lang": "en",
+                  "value": "GENERAL"
+                }
+              ],
+              "cvssV4_0": {
+                "version": "4.0",
+                "baseScore": 10,
+                "baseSeverity": "CRITICAL",
+                "vectorString": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:H/SI:H/SA:H"
+              }
+            }
+          ]
         },
         "configurations": {
           "$ref": "#/definitions/configurations"
@@ -1168,6 +1247,12 @@
       "description": "An object containing the vulnerability information provided by an Authorized Data Publisher (ADP). Since multiple ADPs can provide information for a CVE ID, an ADP container must indicate which ADP is the source of the information in the object.",
       "type": "object",
       "format": "grid",
+      "default":
+      {
+        "providerMetadata": {
+          "orgId": "00000000-0000-4000-9000-000000000000"
+        }
+      },
       "properties": {
         "providerMetadata": {
           "$ref": "#/definitions/providerMetadata"
@@ -1180,22 +1265,32 @@
           "type": "string",
           "description": "Short english language title - if the description is long we may want a short title to refer to.",
           "minLength": 1,
-          "maxLength": 256
+          "maxLength": 256,
+          "options": {
+            "grid_columns": 12
+          }
         },
         "problemTypes": {
-          "$ref": "#/definitions/problemTypes"
+          "$ref": "#/definitions/problemTypes",
+          "default": [],
+          "minItems":0
         },
         "impacts": {
-          "$ref": "#/definitions/impacts"
+          "$ref": "#/definitions/impacts",
+          "default": [],
+          "minItems":0
         },
         "descriptions": {
-          "$ref": "#/definitions/descriptions"
+          "$ref": "#/definitions/descriptions",
+          "minItems":0
         },
         "affected": {
-          "$ref": "#/definitions/affected"
+          "$ref": "#/definitions/affected",
+          "minItems":0
         },
         "references": {
-          "$ref": "#/definitions/references"
+          "$ref": "#/definitions/references",
+          "minItems":0
         },
         "metrics": {
           "$ref": "#/definitions/metrics",
@@ -1219,9 +1314,6 @@
         "credits": {
           "$ref": "#/definitions/credits"
         },
-        "source": {
-          "$ref": "#/definitions/source"
-        },
         "tags": {
           "$ref": "#/definitions/adpTags"
         },
@@ -1238,7 +1330,7 @@
       },
       "additionalProperties": false,
       "options": {
-        "display_required_only": true
+        "display_required_only": false
       }
     },
     "affected": {
@@ -1514,19 +1606,9 @@
     "problemTypes": {
       "type": "array",
       "title": "Problem types",
-      "default": [
-        {
-          "descriptions": [
-            {
-              "lang": "en",
-              "description": "",
-              "type": "CWE"
-            }
-          ]
-        }
-      ],
       "options": {
         "hide_header": true,
+        "table_class": "nobor",
         "class": "vgi-bug",
         "grid_columns": 6,
         "formClass": "lni"
@@ -1546,6 +1628,9 @@
             "type": "array",
             "format": "table",
             "options": {
+              "hide_header": true,
+              "class": "shd",
+              "table_class": "nobor",
               "disable_array_add": true
             },
             "items": {
@@ -1582,6 +1667,7 @@
                   "minLength": 1,
                   "maxLength": 4096,
                   "options": {
+                    "class": "vgi-bug",
                     "inputAttributes": {
                       "placeholder": "eg., CWE-20 Improper Input Validation"
                     }
@@ -1623,7 +1709,8 @@
       "title": "References",
       "type": "array",
       "options": {
-        "class": "vgi-ext tgap"
+        "class": "vgi-ext tgap",
+         "hide_header": true
       },
       "format": "table",
       "description": "This is reference data in the form of URLs or file objects (uuencoded and embedded within the JSON file, exact format to be decided, e.g. we may require a compressed format so the objects require unpacking before they are \"dangerous\").",
@@ -1640,20 +1727,11 @@
       "title": "Impacts",
       "description": "Collection of impacts of this vulnerability.",
       "minItems": 0,
-      "default": [
-        {
-          "descriptions": [
-            {
-              "lang": "en",
-              "value": ""
-            }
-          ]
-        }
-      ],
       "uniqueItems": true,
       "options": {
         "hide_header": true,
         "class": "vgi-impact",
+        "table_class": "nobor",
         "grid_columns": 6,
         "formClass": "lni"
       },
@@ -1688,7 +1766,9 @@
             "format": "table",
             "minItems": 1,
             "options": {
-              "disable_array_add": true
+              "hide_header": true,
+              "disable_array_add": true,
+              "table_class": "nobor"
             },
             "items": {
               "type": "object",
@@ -1708,6 +1788,7 @@
                   "maxLength": 4096,
                   "$ref": "js/capec.json",
                   "options": {
+                    "class": "vgi-impact",
                     "inputAttributes": {
                       "placeholder": "eg., CAPEC-130 Excessive Allocation"
                     }
@@ -1735,7 +1816,7 @@
       "items": {
         "type": "object",
         "title": "Rating Metric",
-        "headerTemplate": "'Select the metric type ' + context.i1 + ' · ' + (context.self.format ? context.self.format: 'Other')",
+        "headerTemplate": "'Metric type ' + context.i1 + ' · ' + (context.self.format ? context.self.format: 'Other')",
         "options": {
           "remove_empty_properties": false,
           "display_required_only": true,
@@ -1799,11 +1880,14 @@
                   "type": {
                     "description": "Name of the non-standard impact metrics format used.",
                     "type": "string",
+                    "enum": [
+                      "ssvc"
+                    ],
+                    "default": "ssvc",
                     "minLength": 1,
                     "maxLength": 128,
-                    "default": "text",
                     "options": {
-                      "formClass": "lni"
+                      "hidden": true
                     }
                   }
                 },
@@ -2617,7 +2701,7 @@
                 },
                 "options": {
                   "grid_columns": 2,
-                  "class": "vgi-dial",
+                  "class": "vgi-cvss-logo",
                   "input_width": "5em"
                 }
               },
@@ -2633,7 +2717,8 @@
                 },
                 "options": {
                   "grid_columns": 1,
-                  "input_width": "3em"
+                  "input_width": "3em",
+                  "class": "vgi-cvss-logo"
                 }
               },
               "vectorString": {
@@ -3203,24 +3288,7 @@
             }
           }
         }
-      },
-      "default": [
-        {
-          "format": "CVSS",
-          "scenarios": [
-            {
-              "lang": "en",
-              "value": "GENERAL"
-            }
-          ],
-          "cvssV4_0": {
-            "version": "4.0",
-            "baseScore": 10,
-            "baseSeverity": "CRITICAL",
-            "vectorString": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:H/SI:H/SA:H"
-          }
-        }
-      ]
+      }
     },
     "solutions": {
       "title": "Solution (optional)",
@@ -3303,7 +3371,8 @@
       "title": "Timeline (optional)",
       "format": "table",
       "options": {
-        "class": "vgi-time tgap"
+        "class": "vgi-time tgap",
+        "hide_header":true
       },
       "description": "This is timeline information for significant events about this vulnerability or changes to CVE Record.",
       "uniqueItems": true,
@@ -3319,10 +3388,7 @@
           "time": {
             "title": "Timestamp",
             "description": "Timestamp representing when the event in the timeline occurred. The timestamp format is based on RFC3339 and ISO ISO8601, with an optional timezone. yyyy-MM-ddTHH:mm:ssZZZZ - if the timezone offset is not given, GMT (0000) is assumed.",
-            "$ref": "#/definitions/timestamp",
-            "options": {
-              "grid_columns": 3
-            }
+            "$ref": "#/definitions/timestamp"
           },
           "lang": {
             "description": "The language used in the description of the event. The language field is included so that CVE Records can support translations. The value must be a BCP 47 language code.",
@@ -3335,7 +3401,10 @@
             "minLength": 1,
             "maxLength": 4096,
             "options": {
-              "grid_columns": 9
+              "inputAttributes": {
+                "placeholder": "Summary of the event"
+              },
+              "input_width": "100%"
             }
           }
         }
@@ -3345,7 +3414,8 @@
       "type": "array",
       "title": "Credits (optional)",
       "options": {
-        "class": "vgi-like tgap"
+        "class": "vgi-like tgap",
+        "hide_header": true
       },
       "format": "table",
       "description": "Statements acknowledging specific people, organizations, or tools recognizing the work done in researching, discovering, remediating or helping with activities related to this CVE.",
@@ -3365,7 +3435,13 @@
             "title": "Name",
             "type": "string",
             "minLength": 1,
-            "maxLength": 4096
+            "maxLength": 4096,
+            "options": {
+              "inputAttributes": {
+                "placeholder": "Names of people, organizations, or tools"
+              },
+              "class": "vgi-like"
+            }
           },
           "user": {
             "options": {
@@ -3380,6 +3456,12 @@
             "type": "string",
             "description": "Type or role of the entity being credited (optional). finder: identifies the vulnerability.\nreporter: notifies the vendor of the vulnerability to a CNA.\nanalyst: validates the vulnerability to ensure accuracy or severity.\ncoordinator: facilitates the coordinated response process.\nremediation developer: prepares a code change or other remediation plans.\nremediation reviewer: reviews vulnerability remediation plans or code changes for effectiveness and completeness.\nremediation verifier: tests and verifies the vulnerability or its remediation.\ntool: names of tools used in vulnerability discovery or identification.\nsponsor: supports the vulnerability identification or remediation activities.",
             "default": "finder",
+            "options": {
+              "input_width": "7em",
+              "inputAttributes":{
+                "class":"txt"
+              }
+            },
             "enum": [
               "finder",
               "reporter",
@@ -3600,7 +3682,16 @@
           "unsupported-when-assigned",
           "exclusively-hosted-service",
           "disputed"
-        ]
+        ],
+        "options": {
+          "icons": {
+            "x_known-exploited-vulnerability":"vgi-bomb",
+            "x_open-source":"text",
+            "unsupported-when-assigned":"ghost",
+            "exclusively-hosted-service":"cloud",
+            "disputed":"comment"
+          }
+        }
       }
     },
     "adpTags": {
@@ -3683,7 +3774,7 @@
           "target": false,
           "href": "'javascript:cvePost()'",
           "title": "'Publish this record to CVE.org'",
-          "rel": "'Post to CVE.org'"
+          "rel": "'Publish CVE'"
         },
         {
           "place": "container",
@@ -3742,7 +3833,7 @@
           "target": false,
           "href": "'javascript:cvePost()'",
           "title": "'Publish this record to CVE.org'",
-          "rel": "'Post to CVE.org'"
+          "rel": "'Publish CVE'"
         }
       ]
     }
