@@ -8,6 +8,7 @@ module.exports = {
     // WARNING! Ensure MongoDB is not reachable from the network.
     database: `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME || "admin"}:${process.env.MONGO_INITDB_ROOT_PASSWORD || "admin"}@${process.env.MONGO_HOST || "127.0.0.1"}:${process.env.MONGO_PORT || "27017"}`,
     //database: `mongodb://vulnogram:StrongLongPass@127.0.0.1:27017/vulnogram`,
+    // database: `mongodb://127.0.0.1:27017/vulnogram`,
     // Name of the organization that should be used in page titles etc.,
     //orgName: 'Example Org',
 
@@ -28,6 +29,16 @@ module.exports = {
     serverHost: process.env.VULNOGRAM_HOST || '127.0.0.1',
     serverPort: process.env.VULNOGRAM_PORT || 3555,
     basedir: '/',
+    realtime: {
+        enabled: process.env.VULNOGRAM_REALTIME !== 'false',
+        debounceMs: 350,
+        maxPatchBytes: 50000,
+        maxPatchOps: 2000,
+        rateLimit: {
+            windowMs: 1000,
+            max: 60
+        }
+    },
 
     //Uncomment this block to enable HTTPs. Configure paths for valid SSL certificates.
     // Either get them from your favorite Certificate Authority or generate self signed:
@@ -54,10 +65,10 @@ module.exports = {
 
 
     // JSON Editor
-    jsoneditor: 'https://cdnjs.cloudflare.com/ajax/libs/json-editor/2.15.2/jsoneditor.js',
+    //jsoneditor: 'https://cdnjs.cloudflare.com/ajax/libs/json-editor/2.15.2/jsoneditor.js',
     jsoneditorHash: 'sha512-Odi69X/i28s3GR3ZQyE+g4ieU30AMOovH50wJbehVMWxVChGa1KCUzyvOXkHfYr/2AQizFRNWI1R6oifT16ouQ==',
     // if you want this served locally, download above jsoneditor editor to /public/js/ directory and point to that:
-    //jsoneditor: '/js/jsoneditor.min.js',
+    jsoneditor: '/js/jsoneditor.min.js',
 
     // ajv - JSON schema draft-07 validation
     // NOTE -- including ajv is experimental and can be excluded if desired by commenting out the next two lines
