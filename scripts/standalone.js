@@ -30,6 +30,7 @@ confOpts = {
 }
 confOpts.cve.conf.uri = './';
 confOpts.cve.conf.name = 'CVE';
+confOpts.cve.conf.favicon = './css/logo.png'
 confOpts.cvss4.conf.uri = './cvss4';
 
 var cd = confOpts.cve.schema?.definitions;
