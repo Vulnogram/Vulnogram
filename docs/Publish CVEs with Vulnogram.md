@@ -1,11 +1,6 @@
-# Using Vulnogram with CVE Services (Updated Screenshots)
+# Using Vulnogram Publish CVEs and Manage CVE API users and credentials.
 
 This guide is adapted from [Using Vulnogram with CVE Services Portal](https://www.cve.org/Resources/Roles/Cnas/UsingVulnogramCVEServices.pdf) and aligned to the current Vulnogram UI.
-
-- Source PDF date: 2025-12-19
-- Source PDF URL: https://www.cve.org/Resources/Roles/Cnas/UsingVulnogramCVEServices.pdf
-- Last generated: 2026-02-17T23:51:51Z
-- Screenshot refresh script: `node scripts/gendoc.js`
 
 ## 1. Access Vulnogram
 

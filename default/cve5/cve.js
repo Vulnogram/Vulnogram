@@ -371,15 +371,25 @@
             // Broadcast logout event
             let bc = new BroadcastChannel('logout');
             bc.postMessage({'error': 'LOGOUT', message: 'The user has logged out'});
-            if (this.registration) {
-                this.send({type: 'destroy'});
-                this.registration.unregister();
-                this.registration = undefined;
+            let unregisterCurrent = () => {
+                let reg = this.registration;
+                if (!reg) {
+                    return Promise.resolve(true);
+                }
+                return reg.unregister()
+                    .catch(() => false)
+                    .then(() => {
+                        this.registration = undefined;
+                        return true;
+                    });
+            };
 
-                return Promise.resolve(true);
-            } else {
-                return Promise.resolve(false);
-            }
+            // Ensure destroy reaches the worker before unregistration.
+            return this.send({type: 'destroy'})
+                .catch(() => false)
+                .then(() => unregisterCurrent())
+                .then(() => true)
+                .catch(() => false);
         }
     }
 

@@ -112,7 +112,6 @@ JSONEditor.defaults.editors.table = class mystring extends JSONEditor.defaults.e
             this._toggleHeader();
         }
         if(this.schema && this.schema.options && this.schema.options.table_class != undefined) {
-            console.log('SETTING TABLE CLASS', this.schema.options.table_class);
             this.table.className = this.schema.options.table_class;
         }
         if (this.header) {

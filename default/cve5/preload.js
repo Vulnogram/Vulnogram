@@ -26,9 +26,11 @@ var recentCveUi = {
     toggle: document.getElementById('sidebarToggle'),
     list: document.getElementById('recentList'),
     empty: document.getElementById('recentEmpty'),
-    count: document.getElementById('recentCount')
+    count: document.getElementById('recentCount'),
+    org: document.getElementById('recentOrg')
 };
 var recentCveEntries = [];
+var recentCveOrgName = '';
 
 function normalizeRecentCveToken(value) {
     if (!value) {
@@ -63,8 +65,9 @@ function renderRecentCveList() {
             if (recentCveUi.toggle) {
                 recentCveUi.toggle.checked = true;
             }
-            if (typeof cveLoad === 'function') {
-                Promise.resolve(cveLoad(cveId)).catch(function (err) {
+            var recentLoader = (typeof cveLoadFromCveOrg === 'function') ? cveLoadFromCveOrg : cveLoad;
+            if (typeof recentLoader === 'function') {
+                Promise.resolve(recentLoader(cveId)).catch(function (err) {
                     console.warn('recent cveLoad error:', err);
                 });
             }
@@ -81,9 +84,12 @@ function renderRecentCveList() {
     if (recentCveUi.count) {
         recentCveUi.count.textContent = recentCveEntries.length ? recentCveEntries.length : '';
     }
+    if (recentCveUi.org) {
+        recentCveUi.org.innerText = recentCveOrgName || '';
+    }
 }
 
-function setRecentCveEntries(entries) {
+function setRecentCveEntries(entries, orgName) {
     var seen = {};
     recentCveEntries = [];
     (entries || []).forEach(function (entry) {
@@ -94,6 +100,7 @@ function setRecentCveEntries(entries) {
         seen[cveId] = true;
         recentCveEntries.push(cveId);
     });
+    recentCveOrgName = orgName || '';
     renderRecentCveList();
 }
 window.setRecentCveEntries = setRecentCveEntries;
@@ -204,7 +211,7 @@ async function ensureAssignerExamples(assignerShortName) {
     jobs.push((async function () {
         var recent = await loadRecentAbbreviatedIds(orgName);
         if (typeof window !== 'undefined' && typeof window.setRecentCveEntries === 'function') {
-            window.setRecentCveEntries(recent);
+            window.setRecentCveEntries(recent, orgName);
         }
     })());
     await Promise.all(jobs);

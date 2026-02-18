@@ -12,6 +12,11 @@ var csCache = {
 }
 var portalBootstrapPromise = null;
 
+function isPortalAuthError(e) {
+    const err = e && e.error ? e.error : null;
+    return err == 'NO_SESSION' || err == 'UNAUTHORIZED';
+}
+
 function normalizePortalUrl(url) {
     if (!url) {
         return defaultPortalUrl;
@@ -55,7 +60,27 @@ async function hasActivePortalSession(url) {
     csCache.url = targetUrl;
     csClient = ensureCsClient(targetUrl);
     const restored = await restorePortalCacheFromSession();
-    return !!(restored && csCache.user && csCache.org);
+    if (!(restored && csCache.user && csCache.org)) {
+        return false;
+    }
+    // Verify session against CVE Services, not just cached SW credentials.
+    try {
+        await csClient.getOrgInfo();
+        return true;
+    } catch (e) {
+        if (isPortalAuthError(e)) {
+            if (csClient && typeof csClient.logout === 'function') {
+                try {
+                    await csClient.logout();
+                } catch (e2) {
+                    // ignore cleanup errors
+                }
+            }
+            clearPortalSessionCache();
+            return false;
+        }
+        throw e;
+    }
 }
 
 function setPortalSidebarState(show) {
@@ -132,7 +157,13 @@ async function showPortalViewOrLogin() {
     if (!csCache.url) {
         csCache.url = getStoredPortalSettings().portalUrl;
     }
-    const hasSession = await hasActivePortalSession(csCache.url);
+    let hasSession = false;
+    try {
+        hasSession = await hasActivePortalSession(csCache.url);
+    } catch (e) {
+        portalErrorHandler(e);
+        return false;
+    }
     if (!hasSession) {
         showPortalLogin();
         setPortalSidebarState(true);
@@ -326,6 +357,25 @@ function normalizeShortName(shortName) {
     if (!shortName) return null;
     return String(shortName).trim().toLowerCase().replace(/\s+/g, '_');
 }
+
+async function refreshRecentCveEntries(shortName) {
+    if (typeof loadRecentAbbreviatedIds !== 'function') {
+        return;
+    }
+    var orgName = normalizeShortName(shortName);
+    if (!orgName) {
+        return;
+    }
+    try {
+        var recent = await loadRecentAbbreviatedIds(orgName);
+        if (typeof window !== 'undefined' && typeof window.setRecentCveEntries === 'function') {
+            window.setRecentCveEntries(recent, orgName);
+        }
+    } catch (e) {
+        console.error('Failed to refresh recent CVE entries for ' + orgName, e);
+    }
+}
+
 async function portalLogin(elem, credForm) {
     try {
         if (!('serviceWorker' in navigator)) {
@@ -361,6 +411,7 @@ async function portalLogin(elem, credForm) {
 
         if (ret == 'ok' || ret.data == "ok") {
             csCache.keyUrl = ret.keyUrl;
+            await refreshRecentCveEntries(credForm.org.value);
             await showPortalView(orgInfo, userInfo);
             /* Add one hour session timeout in addition to timeout in serviceWorker */
             setTimeout(portalLogout, defaultTimeout);
@@ -398,11 +449,16 @@ function portalErrorHandler(e) {
     }
 
     if (isNoSession || isUnauthorized) {
+        if (csClient && typeof csClient.logout === 'function') {
+            csClient.logout().catch(function () { });
+        }
         clearPortalSessionCache();
         const message = isUnauthorized ? 'Valid credentials required' : ((e && e.message) ? e.message : 'Please login.');
         if (document.getElementById("loginErr")) {
             // Login screen exists
             document.getElementById("loginErr").innerText = message;
+        } else if (document.getElementById('port')) {
+            showPortalLogin(message);
         } else {
             cveShowError({ error: err, message: message });
         }
@@ -804,6 +860,34 @@ function cveLoadIntoEditor(res, cveId, message, edOpts) {
     portalFocusEditor();
 }
 
+async function cveLoadFromCveOrg(cveId) {
+    try {
+        const response = await fetch('https://cveawg.mitre.org/api/cve/' + cveId, {
+            method: 'GET',
+            credentials: 'omit',
+            headers: {
+                'Accept': 'application/json, text/plain, */*'
+            }
+        });
+        if (response.ok) {
+            const data = await response.json();
+            if (data && data.cveMetadata) {
+                cveLoadIntoEditor(cveFixForVulnogram(data), cveId, "Loaded " + cveId + " from CVE.org");
+                return data;
+            }
+        } else {
+            errMsg.textContent = "CVE not found in CVE.org!";
+            infoMsg.textContent = "";
+            return null;
+        }
+    } catch (e) {
+        errMsg.textContent = "Failed to load valid CVE Record";
+        infoMsg.textContent = "";
+        console.error('Failed to fetch from CVE.org:', e);
+        return null;
+    }
+}
+
 
 async function cveLoad(cveId) {
    // console.log('trying to load '+cveId);
@@ -819,23 +903,7 @@ async function cveLoad(cveId) {
             cveLoadIntoEditor(res, cveId, "Loaded " + cveId + " from CVE.org!", edOpts);
             return res;
         } else {
-            try {
-                const response = await fetch('https://cveawg.mitre.org/api/cve/' + cveId);
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data && data.cveMetadata) {
-                        cveLoadIntoEditor(cveFixForVulnogram(data), cveId, "Loaded " + cveId + " from CVE.org");
-                        return data;
-                    }
-                } else {
-                    errMsg.textContent = "CVE not found in CVE.org!" 
-                    infoMsg.textContent = "";
-                }
-            } catch (e2) {
-                errMsg.textContent = "Failed to load valid CVE Record";
-                infoMsg.textContent = "";
-                console.error('Failed to fetch from CVE.org:', e2);
-            }
+            return await cveLoadFromCveOrg(cveId);
         }
     } catch (e) {
         if (e == '404' || e.error == 'CVE_RECORD_DNE') {
@@ -865,23 +933,7 @@ async function cveLoad(cveId) {
                 }
             }
         } else {
-            try {
-                const response = await fetch('https://cveawg.mitre.org/api/cve/' + cveId);
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data && data.cveMetadata) {
-                        cveLoadIntoEditor(cveFixForVulnogram(data), cveId, "Loaded " + cveId + " from CVE.org");
-                        return data;
-                    }
-                } else {
-                    errMsg.textContent = "CVE not found in CVE.org!" 
-                    infoMsg.textContent = "";
-                }
-            } catch (e2) {
-                errMsg.textContent = "Failed to load valid CVE Record";
-                infoMsg.textContent = "";
-                console.error('Failed to fetch from CVE.org:', e2);
-            }
+            return await cveLoadFromCveOrg(cveId);
         }
     }
 }
@@ -1043,7 +1095,7 @@ async function cvePost() {
             portalErrorHandler(e);
         }
     } else {
-        showAlert('Please fix errors before posting - Please ignore the ADP errors');
+        showAlert('Please fill the required fields');
     }
 }
 

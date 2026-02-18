@@ -694,7 +694,6 @@ button.rbtn {
     font-size: 14px;
     display: inline-flex;
     vertical-align: middle;
-    flex-wrap: wrap;
 }
 .rdg .form-control {
     display: inline-flex;
@@ -702,6 +701,7 @@ button.rbtn {
 .rdg .lbl {
     border: 1px solid var(--bor);
     display: inline-flex;
+    padding: 0.5em 0.5em;
     margin: 0px;
     margin-left: -1px;
     border-radius: 0px;
