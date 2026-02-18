@@ -26,7 +26,6 @@ function setFaviconFromVgi() {
     probe.parentNode.removeChild(probe);
     if (!bg || bg === 'none') return;
     var match = bg.match(/url\(["']?(.*?)["']?\)/);
-    console.log(bg, 'URL pattern=', match);
     if (!match || !match[1]) return;
 
     var href = match[1];
@@ -36,7 +35,6 @@ function setFaviconFromVgi() {
     link.setAttribute('rel', 'icon');
     document.head.appendChild(link);
     }
-    console.log('setting '+href);
     link.setAttribute('href', href);
     if (href.indexOf('image/svg+xml') !== -1) {
     link.setAttribute('type', 'image/svg+xml');

@@ -169,7 +169,7 @@ button.json-editor-btn-delete {
 }
 
 #cvePortalDialog::backdrop {
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(1px);
   background-color: rgba(0, 0, 0, 0.18);
 }
 

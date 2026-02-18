@@ -781,14 +781,14 @@ function cveLoadIntoEditor(res, cveId, message, edOpts) {
 
 
 async function cveLoad(cveId) {
-    console.log('trying to load '+cveId);
+   // console.log('trying to load '+cveId);
     try {
         var res = await csClient.getCve(cveId);
         if (res.cveMetadata) {
             if (res.containers) {
                 res = cveFixForVulnogram(res);
             } else {
-                console.log('no containers');
+                //console.log('no containers');
             }
             var edOpts = (res.cveMetadata.state == 'REJECTED') ? rejectEditorOption : publicEditorOption;
             cveLoadIntoEditor(res, cveId, "Loaded " + cveId + " from CVE.org!", edOpts);

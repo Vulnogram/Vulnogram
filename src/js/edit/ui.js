@@ -111,7 +111,6 @@ JSONEditor.defaults.editors.table = class mystring extends JSONEditor.defaults.e
             this._removeControlsHeader();
             this._toggleHeader();
         }
-        console.log(this.schema.options);
         if(this.schema && this.schema.options && this.schema.options.table_class != undefined) {
             console.log('SETTING TABLE CLASS', this.schema.options.table_class);
             this.table.className = this.schema.options.table_class;
