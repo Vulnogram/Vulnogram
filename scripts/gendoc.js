@@ -304,6 +304,378 @@ async function applyAction(page, action, context) {
       await page.goto(targetUrl, { waitUntil: action.waitUntil || 'networkidle' });
       break;
     }
+    case 'setStyle': {
+      const selector = String(action.selector || '').trim();
+      const property = String(action.property || '').trim();
+      if (!selector || !property) {
+        throw new Error('setStyle action requires "selector" and "property"');
+      }
+      const value = String(action.value || '');
+      const important = Boolean(action.important);
+      await page.evaluate(
+        ({ targetSelector, cssProperty, cssValue, useImportant }) => {
+          const element = document.querySelector(targetSelector);
+          if (!element) {
+            throw new Error('Style target selector not found: ' + targetSelector);
+          }
+          element.style.setProperty(cssProperty, cssValue, useImportant ? 'important' : '');
+        },
+        {
+          targetSelector: selector,
+          cssProperty: property,
+          cssValue: value,
+          useImportant: important
+        }
+      );
+      break;
+    }
+    case 'loadCveDocument': {
+      const cveId = String(action.cveId || '').trim();
+      if (!cveId) {
+        throw new Error('loadCveDocument action requires "cveId"');
+      }
+      await page.evaluate(async (docId) => {
+        if (typeof window.cveLoad !== 'function') {
+          throw new Error('window.cveLoad is unavailable');
+        }
+        await Promise.resolve(window.cveLoad(docId));
+      }, cveId);
+      break;
+    }
+    case 'addArrowOverlay': {
+      const selector = String(action.selector || '').trim();
+      if (!selector) {
+        throw new Error('addArrowOverlay action requires "selector"');
+      }
+      const color = String(action.color || '#d62828');
+      const outlineColor = String(action.outlineColor || '#ffffff');
+      const width = Math.max(4, Number(action.width || 14));
+      const outlineWidth = Math.max(width + 2, Number(action.outlineWidth || width + 8));
+      const startOffsetX = Number(action.startOffsetX || -320);
+      const startOffsetY = Number(action.startOffsetY || 200);
+      const endOffsetX = Number(action.endOffsetX || 0);
+      const endOffsetY = Number(action.endOffsetY || 0);
+      const curve = Number(action.curve || 110);
+
+      await page.evaluate(
+        ({
+          targetSelector,
+          strokeColor,
+          strokeOutlineColor,
+          strokeWidth,
+          strokeOutlineWidth,
+          offsetX,
+          offsetY,
+          targetOffsetX,
+          targetOffsetY,
+          curveY
+        }) => {
+          const target = document.querySelector(targetSelector);
+          if (!target) {
+            throw new Error('Arrow target selector not found: ' + targetSelector);
+          }
+
+          const rect = target.getBoundingClientRect();
+          const endX = rect.left + rect.width / 2 + targetOffsetX;
+          const endY = rect.top + rect.height / 2 + targetOffsetY;
+          const startX = endX + offsetX;
+          const startY = endY + offsetY;
+
+          const c1X = startX + (endX - startX) * 0.35;
+          const c1Y = startY - curveY;
+          const c2X = startX + (endX - startX) * 0.75;
+          const c2Y = endY + curveY * 0.2;
+          const pathD = ['M', startX, startY, 'C', c1X, c1Y, c2X, c2Y, endX, endY].join(' ');
+
+          const svgNS = 'http://www.w3.org/2000/svg';
+          const overlayId = '__gendoc_arrow_overlay__';
+          const outlineMarkerId = '__gendoc_arrow_head_outline__';
+          const colorMarkerId = '__gendoc_arrow_head_color__';
+
+          let overlay = document.getElementById(overlayId);
+          if (!overlay) {
+            overlay = document.createElementNS(svgNS, 'svg');
+            overlay.setAttribute('id', overlayId);
+            overlay.style.position = 'fixed';
+            overlay.style.left = '0';
+            overlay.style.top = '0';
+            overlay.style.width = '100vw';
+            overlay.style.height = '100vh';
+            overlay.style.pointerEvents = 'none';
+            overlay.style.zIndex = '2147483647';
+            overlay.style.overflow = 'visible';
+            if (document.body) {
+              document.body.appendChild(overlay);
+            } else {
+              throw new Error('Document body is unavailable for arrow overlay');
+            }
+          }
+
+          const viewportWidth = Math.max(1, window.innerWidth || document.documentElement.clientWidth || 1);
+          const viewportHeight = Math.max(1, window.innerHeight || document.documentElement.clientHeight || 1);
+          overlay.setAttribute('viewBox', '0 0 ' + viewportWidth + ' ' + viewportHeight);
+          overlay.setAttribute('width', String(viewportWidth));
+          overlay.setAttribute('height', String(viewportHeight));
+          overlay.replaceChildren();
+
+          const defs = document.createElementNS(svgNS, 'defs');
+          const markerOutline = document.createElementNS(svgNS, 'marker');
+          const markerColor = document.createElementNS(svgNS, 'marker');
+          const outlineHeadSize = Math.max(strokeOutlineWidth * 2.2, 24);
+          const colorHeadSize = Math.max(strokeWidth * 2.2, 20);
+
+          markerOutline.setAttribute('id', outlineMarkerId);
+          markerOutline.setAttribute('viewBox', '0 0 ' + outlineHeadSize + ' ' + outlineHeadSize);
+          markerOutline.setAttribute('refX', String(outlineHeadSize - 2));
+          markerOutline.setAttribute('refY', String(outlineHeadSize / 2));
+          markerOutline.setAttribute('markerWidth', String(outlineHeadSize));
+          markerOutline.setAttribute('markerHeight', String(outlineHeadSize));
+          markerOutline.setAttribute('orient', 'auto');
+          markerOutline.setAttribute('markerUnits', 'userSpaceOnUse');
+          const outlineHead = document.createElementNS(svgNS, 'path');
+          outlineHead.setAttribute(
+            'd',
+            'M 0 0 L ' + outlineHeadSize + ' ' + outlineHeadSize / 2 + ' L 0 ' + outlineHeadSize + ' z'
+          );
+          outlineHead.setAttribute('fill', strokeOutlineColor);
+          markerOutline.appendChild(outlineHead);
+
+          markerColor.setAttribute('id', colorMarkerId);
+          markerColor.setAttribute('viewBox', '0 0 ' + colorHeadSize + ' ' + colorHeadSize);
+          markerColor.setAttribute('refX', String(colorHeadSize - 2));
+          markerColor.setAttribute('refY', String(colorHeadSize / 2));
+          markerColor.setAttribute('markerWidth', String(colorHeadSize));
+          markerColor.setAttribute('markerHeight', String(colorHeadSize));
+          markerColor.setAttribute('orient', 'auto');
+          markerColor.setAttribute('markerUnits', 'userSpaceOnUse');
+          const colorHead = document.createElementNS(svgNS, 'path');
+          colorHead.setAttribute(
+            'd',
+            'M 0 0 L ' + colorHeadSize + ' ' + colorHeadSize / 2 + ' L 0 ' + colorHeadSize + ' z'
+          );
+          colorHead.setAttribute('fill', strokeColor);
+          markerColor.appendChild(colorHead);
+
+          defs.appendChild(markerOutline);
+          defs.appendChild(markerColor);
+          overlay.appendChild(defs);
+
+          const outlinePath = document.createElementNS(svgNS, 'path');
+          outlinePath.setAttribute('d', pathD);
+          outlinePath.setAttribute('fill', 'none');
+          outlinePath.setAttribute('stroke', strokeOutlineColor);
+          outlinePath.setAttribute('stroke-width', String(strokeOutlineWidth));
+          outlinePath.setAttribute('stroke-linecap', 'round');
+          outlinePath.setAttribute('stroke-linejoin', 'round');
+          outlinePath.setAttribute('marker-end', 'url(#' + outlineMarkerId + ')');
+          overlay.appendChild(outlinePath);
+
+          const colorPath = document.createElementNS(svgNS, 'path');
+          colorPath.setAttribute('d', pathD);
+          colorPath.setAttribute('fill', 'none');
+          colorPath.setAttribute('stroke', strokeColor);
+          colorPath.setAttribute('stroke-width', String(strokeWidth));
+          colorPath.setAttribute('stroke-linecap', 'round');
+          colorPath.setAttribute('stroke-linejoin', 'round');
+          colorPath.setAttribute('marker-end', 'url(#' + colorMarkerId + ')');
+          overlay.appendChild(colorPath);
+        },
+        {
+          targetSelector: selector,
+          strokeColor: color,
+          strokeOutlineColor: outlineColor,
+          strokeWidth: width,
+          strokeOutlineWidth: outlineWidth,
+          offsetX: startOffsetX,
+          offsetY: startOffsetY,
+          targetOffsetX: endOffsetX,
+          targetOffsetY: endOffsetY,
+          curveY: curve
+        }
+      );
+      break;
+    }
+    case 'addCircleOverlay': {
+      const selector = String(action.selector || '').trim();
+      if (!selector) {
+        throw new Error('addCircleOverlay action requires "selector"');
+      }
+      const color = String(action.color || '#d62828');
+      const outlineColor = String(action.outlineColor || '#ffffff');
+      const width = Math.max(2, Number(action.width || 8));
+      const outlineWidth = Math.max(width + 2, Number(action.outlineWidth || width + 6));
+      const paddingX = Number(action.paddingX || 24);
+      const paddingY = Number(action.paddingY || 16);
+      const centerOffsetX = Number(action.centerOffsetX || 0);
+      const centerOffsetY = Number(action.centerOffsetY || 0);
+      const containerSelector = String(action.containerSelector || '').trim();
+
+      await page.evaluate(
+        ({
+          targetSelector,
+          strokeColor,
+          strokeOutlineColor,
+          strokeWidth,
+          strokeOutlineWidth,
+          padX,
+          padY,
+          offsetX,
+          offsetY,
+          overlayContainerSelector
+        }) => {
+          const target = document.querySelector(targetSelector);
+          if (!target) {
+            throw new Error('Circle target selector not found: ' + targetSelector);
+          }
+
+          const rect = target.getBoundingClientRect();
+          const cx = rect.left + rect.width / 2 + offsetX;
+          const cy = rect.top + rect.height / 2 + offsetY;
+          const rx = Math.max(10, rect.width / 2 + padX);
+          const ry = Math.max(10, rect.height / 2 + padY);
+
+          const svgNS = 'http://www.w3.org/2000/svg';
+          const overlayId = '__gendoc_circle_overlay__';
+          let overlayHost = document.body;
+          if (overlayContainerSelector) {
+            overlayHost = document.querySelector(overlayContainerSelector);
+            if (!overlayHost) {
+              throw new Error('Circle overlay container not found: ' + overlayContainerSelector);
+            }
+          }
+
+          let overlay = document.getElementById(overlayId);
+          if (!overlay) {
+            overlay = document.createElementNS(svgNS, 'svg');
+            overlay.setAttribute('id', overlayId);
+            overlay.style.position = 'fixed';
+            overlay.style.left = '0';
+            overlay.style.top = '0';
+            overlay.style.width = '100vw';
+            overlay.style.height = '100vh';
+            overlay.style.pointerEvents = 'none';
+            overlay.style.zIndex = '2147483647';
+            overlay.style.overflow = 'visible';
+            overlayHost.appendChild(overlay);
+          } else if (overlay.parentElement !== overlayHost) {
+            overlay.remove();
+            overlayHost.appendChild(overlay);
+          }
+
+          const viewportWidth = Math.max(1, window.innerWidth || document.documentElement.clientWidth || 1);
+          const viewportHeight = Math.max(1, window.innerHeight || document.documentElement.clientHeight || 1);
+          overlay.setAttribute('viewBox', '0 0 ' + viewportWidth + ' ' + viewportHeight);
+          overlay.setAttribute('width', String(viewportWidth));
+          overlay.setAttribute('height', String(viewportHeight));
+          overlay.replaceChildren();
+
+          const outlineEllipse = document.createElementNS(svgNS, 'ellipse');
+          outlineEllipse.setAttribute('cx', String(cx));
+          outlineEllipse.setAttribute('cy', String(cy));
+          outlineEllipse.setAttribute('rx', String(rx));
+          outlineEllipse.setAttribute('ry', String(ry));
+          outlineEllipse.setAttribute('fill', 'none');
+          outlineEllipse.setAttribute('stroke', strokeOutlineColor);
+          outlineEllipse.setAttribute('stroke-width', String(strokeOutlineWidth));
+          overlay.appendChild(outlineEllipse);
+
+          const colorEllipse = document.createElementNS(svgNS, 'ellipse');
+          colorEllipse.setAttribute('cx', String(cx));
+          colorEllipse.setAttribute('cy', String(cy));
+          colorEllipse.setAttribute('rx', String(rx));
+          colorEllipse.setAttribute('ry', String(ry));
+          colorEllipse.setAttribute('fill', 'none');
+          colorEllipse.setAttribute('stroke', strokeColor);
+          colorEllipse.setAttribute('stroke-width', String(strokeWidth));
+          overlay.appendChild(colorEllipse);
+        },
+        {
+          targetSelector: selector,
+          strokeColor: color,
+          strokeOutlineColor: outlineColor,
+          strokeWidth: width,
+          strokeOutlineWidth: outlineWidth,
+          padX: paddingX,
+          padY: paddingY,
+          offsetX: centerOffsetX,
+          offsetY: centerOffsetY,
+          overlayContainerSelector: containerSelector
+        }
+      );
+      break;
+    }
+    case 'showBrowserFrame': {
+      const heightPx = Math.max(48, Number(action.height || 64));
+      const radiusPx = Math.max(8, Number(action.radius || 14));
+      const displayUrl = action.url ? String(action.url) : '';
+      await page.evaluate(
+        ({ frameHeight, frameRadius, urlText }) => {
+          const frameId = '__gendoc_browser_frame__';
+          const styleId = '__gendoc_browser_frame_style__';
+          const doc = document;
+          const body = doc.body;
+          const head = doc.head || doc.documentElement;
+          if (!body || !head) {
+            return;
+          }
+
+          const existingFrame = doc.getElementById(frameId);
+          if (existingFrame) {
+            const urlNode = existingFrame.querySelector('[data-gendoc-url]');
+            if (urlNode) {
+              urlNode.textContent = urlText || window.location.href;
+            }
+            return;
+          }
+
+          if (!doc.getElementById(styleId)) {
+            const style = doc.createElement('style');
+            style.id = styleId;
+            style.textContent =
+              'body[data-gendoc-browser-frame="1"]{' +
+              'margin:0 !important;' +
+              'padding-top:calc(' +
+              frameHeight +
+              'px + 12px) !important;' +
+              'background:#e9edf4 !important;' +
+              'box-sizing:border-box;' +
+              '}' +
+              '#' +
+              frameId +
+              '{position:fixed;top:10px;left:12px;right:12px;height:' +
+              frameHeight +
+              'px;background:#f8fafc;border:1px solid #c7d2e3;border-radius:' +
+              frameRadius +
+              'px;display:flex;align-items:center;gap:10px;padding:0 12px;z-index:2147483647;box-shadow:0 4px 12px rgba(16,24,40,0.08);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}' +
+              '#' +
+              frameId +
+              ' .gendoc-dot{width:11px;height:11px;border-radius:50%;display:inline-block;}' +
+              '#' +
+              frameId +
+              ' .gendoc-url{flex:1;min-width:0;padding:10px 14px;border-radius:999px;background:#eef2f8;border:1px solid #d0dae8;color:#1f2937;font-size:15px;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}';
+            head.appendChild(style);
+          }
+
+          const frame = doc.createElement('div');
+          frame.id = frameId;
+          frame.innerHTML =
+            '<span class="gendoc-dot" style="background:#ff5f57"></span>' +
+            '<span class="gendoc-dot" style="background:#ffbd2e"></span>' +
+            '<span class="gendoc-dot" style="background:#28c840"></span>' +
+            '<div class="gendoc-url" data-gendoc-url></div>';
+
+          body.setAttribute('data-gendoc-browser-frame', '1');
+          body.prepend(frame);
+
+          const urlNode = frame.querySelector('[data-gendoc-url]');
+          if (urlNode) {
+            urlNode.textContent = urlText || window.location.href;
+          }
+        },
+        { frameHeight: heightPx, frameRadius: radiusPx, urlText: displayUrl }
+      );
+      break;
+    }
     case 'waitForSelector': {
       await page.waitForSelector(String(action.selector), {
         state: action.state || 'visible',
@@ -396,11 +768,153 @@ async function applyAction(page, action, context) {
         });
 
         if (isAdmin) {
+          var data = [
+            {
+              username: 'getid',
+              org_UUID: 'ba34e592-f0ae-45a4-bc65-de9154191442',
+              time: {
+                created: '2022-05-06T02:15:30.328Z',
+                modified: '2024-10-22T18:49:26.224Z'
+              },
+              UUID: 'cd8598c5-4d8c-4fbc-9196-787ec1ad187b',
+              active: true,
+              authority: {
+                active_roles: []
+              },
+              name: {
+                first: 'Get',
+                last: 'Ident',
+                middle: '',
+                suffix: ''
+              }
+            },
+            {
+              username: 'alice.redwood',
+              org_UUID: 'ba34e592-f0ae-45a4-bc65-de9154191442',
+              time: {
+                created: '2023-01-10T09:20:11.100Z',
+                modified: '2025-01-14T11:03:00.500Z'
+              },
+              UUID: '63ed3ae8-68f7-4ead-b8f4-4c22fa730001',
+              active: true,
+              authority: {
+                active_roles: ['ADMIN']
+              },
+              name: {
+                first: 'Alice',
+                last: 'Redwood',
+                middle: '',
+                suffix: ''
+              }
+            },
+            {
+              username: 'bruno.kent',
+              org_UUID: 'ba34e592-f0ae-45a4-bc65-de9154191442',
+              time: {
+                created: '2023-02-18T13:42:19.000Z',
+                modified: '2024-09-12T08:17:44.000Z'
+              },
+              UUID: '63ed3ae8-68f7-4ead-b8f4-4c22fa730002',
+              active: true,
+              authority: {
+                active_roles: ['USER']
+              },
+              name: {
+                first: 'Bruno',
+                last: 'Kent',
+                middle: '',
+                suffix: ''
+              }
+            },
+            {
+              username: 'cora.fields',
+              org_UUID: 'ba34e592-f0ae-45a4-bc65-de9154191442',
+              time: {
+                created: '2023-03-22T16:00:00.000Z',
+                modified: '2025-02-03T21:12:05.000Z'
+              },
+              UUID: '63ed3ae8-68f7-4ead-b8f4-4c22fa730003',
+              active: true,
+              authority: {
+                active_roles: ['USER']
+              },
+              name: {
+                first: 'Cora',
+                last: 'Fields',
+                middle: 'M',
+                suffix: ''
+              }
+            },
+            {
+              username: 'diego.lake',
+              org_UUID: 'ba34e592-f0ae-45a4-bc65-de9154191442',
+              time: {
+                created: '2023-05-01T07:33:28.000Z',
+                modified: '2024-11-29T10:02:31.000Z'
+              },
+              UUID: '63ed3ae8-68f7-4ead-b8f4-4c22fa730004',
+              active: false,
+              authority: {
+                active_roles: ['USER']
+              },
+              name: {
+                first: 'Diego',
+                last: 'Lake',
+                middle: '',
+                suffix: ''
+              }
+            },
+            {
+              username: 'eva.north',
+              org_UUID: 'ba34e592-f0ae-45a4-bc65-de9154191442',
+              time: {
+                created: '2023-07-12T12:44:53.000Z',
+                modified: '2025-01-19T19:45:17.000Z'
+              },
+              UUID: '63ed3ae8-68f7-4ead-b8f4-4c22fa730005',
+              active: true,
+              authority: {
+                active_roles: []
+              },
+              name: {
+                first: 'Eva',
+                last: 'North',
+                middle: '',
+                suffix: 'Jr.'
+              }
+            },
+            {
+              username: 'farah.hill',
+              org_UUID: 'ba34e592-f0ae-45a4-bc65-de9154191442',
+              time: {
+                created: '2023-09-03T05:27:40.000Z',
+                modified: '2024-12-08T14:08:09.000Z'
+              },
+              UUID: '63ed3ae8-68f7-4ead-b8f4-4c22fa730006',
+              active: true,
+              authority: {
+                active_roles: ['USER']
+              },
+              name: {
+                first: 'Farah',
+                last: 'Hill',
+                middle: '',
+                suffix: ''
+              }
+            }
+          ];
+
+          var userListPopup = document.getElementById('userListPopup');
+          if (userListPopup) {
+            userListPopup.setAttribute('ontoggle', '');
+          }
+
           var userList = document.getElementById('userlist');
           if (userList) {
-            userList.innerHTML =
-              '<div class="tr"><a class="td"><b>Portal Admin</b><br><small>admin.user</small></a></div>' +
-              '<div class="tr"><a class="td"><b>CNA Analyst</b><br><small>cna.user</small></a></div>';
+            userList.innerHTML = window.cveRender({
+              ctemplate: 'listUsers',
+              users: data
+            });
           }
         }
       }, variant);

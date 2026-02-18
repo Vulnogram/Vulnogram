@@ -9,7 +9,7 @@
     {
       "id": "access",
       "title": "1. Access Vulnogram",
-      "text": "Open Vulnogram and start in the CVE workspace. For local documentation builds, this script serves `standalone/index.html` and captures that UI."
+      "text": "Open Vulnogram and start in the CVE workspace. This screenshot shows the browser pointed at `https://www.vulnogram.org` with the URL visible."
     },
     {
       "id": "login",
@@ -42,21 +42,21 @@
       "id": "01-access-editor",
       "file": "01-access-editor.png",
       "section": "access",
-      "alt": "Vulnogram CVE editor workspace with sidebar navigation and tabs",
-      "caption": "CVE workspace landing view in Vulnogram.",
-      "fullPage": true,
+      "alt": "Vulnogram CVE editor workspace shown in a browser window with the URL visible",
+      "caption": "Access Vulnogram at https://www.vulnogram.org.",
       "steps": [
         {
           "action": "setViewport",
           "width": 1600,
-          "height": 1000
+          "height": 900
         },
         {
-          "action": "goto"
+          "action": "goto",
+          "path": "#editor"
         },
         {
           "action": "waitForSelector",
-          "selector": "#mainTabGroup"
+          "selector": "#docEditor"
         },
         {
           "action": "waitForTimeout",
@@ -70,12 +70,11 @@
       "section": "login",
       "alt": "CVE Portal login dialog in Vulnogram",
       "caption": "CVE Services login form from the portal sidebar action.",
-      "target": "#cvePortalDialog",
       "steps": [
         {
           "action": "setViewport",
           "width": 1600,
-          "height": 1000
+          "height": 900
         },
         {
           "action": "goto"
@@ -92,6 +91,12 @@
           "selector": "#cvePortalDialog[open] #cveLoginForm"
         },
         {
+          "action": "setStyle",
+          "selector": "#cvePortalNav",
+          "property": "background",
+          "value": "var(--acc)"
+        },
+        {
           "action": "waitForTimeout",
           "ms": 300
         }
@@ -103,12 +108,11 @@
       "section": "reserve",
       "alt": "CVE Portal reserve controls in Vulnogram",
       "caption": "Portal reserve controls with state and year filters.",
-      "target": "#cvePortalDialog",
       "steps": [
         {
           "action": "setViewport",
           "width": 1600,
-          "height": 1000
+          "height": 900
         },
         {
           "action": "goto"
@@ -126,6 +130,23 @@
           "selector": "#cvePortalDialog[open] #cvePortalFilter"
         },
         {
+          "action": "setStyle",
+          "selector": "#cvePortalNav",
+          "property": "background",
+          "value": "var(--acc)"
+        },
+        {
+          "action": "addCircleOverlay",
+          "selector": "#cvePortalDialog button[onclick=\"cveReserveAndRender(0)\"]",
+          "containerSelector": "#cvePortalDialog",
+          "color": "#d90429",
+          "outlineColor": "#ffffff",
+          "width": 8,
+          "outlineWidth": 14,
+          "paddingX": 26,
+          "paddingY": 14
+        },
+        {
           "action": "waitForTimeout",
           "ms": 300
         }
@@ -137,19 +158,23 @@
       "section": "details",
       "alt": "Vulnogram CVE editor detail form area",
       "caption": "Primary CVE editor form where record content is entered.",
-      "target": "#docEditor",
       "steps": [
         {
           "action": "setViewport",
           "width": 1600,
-          "height": 1000
+          "height": 900
         },
         {
-          "action": "goto"
+          "action": "goto",
+          "path": "#editor"
         },
         {
           "action": "waitForSelector",
           "selector": "#docEditor"
+        },
+        {
+          "action": "loadCveDocument",
+          "cveId": "CVE-2025-0001"
         },
         {
           "action": "waitForTimeout",
@@ -163,12 +188,11 @@
       "section": "publish",
       "alt": "Vulnogram header with Publish CVE action",
       "caption": "Top action bar with publish control.",
-      "target": "#vgHead",
       "steps": [
         {
           "action": "setViewport",
           "width": 1600,
-          "height": 1000
+          "height": 900
         },
         {
           "action": "goto"
@@ -176,6 +200,22 @@
         {
           "action": "waitForSelector",
           "selector": "#post1"
+        },
+        {
+          "action": "loadCveDocument",
+          "cveId": "CVE-2025-0001"
+        },
+        {
+          "action": "addArrowOverlay",
+          "selector": "#post1",
+          "color": "#d90429",
+          "outlineColor": "#ffffff",
+          "width": 6,
+          "outlineWidth": 12,
+          "startOffsetX": -10,
+          "startOffsetY": 120,
+          "endOffsetX": 0,
+          "endOffsetY": 50
         },
         {
           "action": "waitForTimeout",
@@ -189,12 +229,11 @@
       "section": "admin",
       "alt": "CVE Portal user management popup in Vulnogram",
       "caption": "Admin-oriented user management view in the portal.",
-      "target": "#userListPopup",
       "steps": [
         {
           "action": "setViewport",
           "width": 1600,
-          "height": 1000
+          "height": 900
         },
         {
           "action": "goto"
@@ -212,7 +251,13 @@
         },
         {
           "action": "waitForSelector",
-          "selector": "#userListPopup[open]"
+          "selector": "#cvePortalDialog #userListPopup[open]"
+        },
+        {
+          "action": "setStyle",
+          "selector": "#cvePortalNav",
+          "property": "background",
+          "value": "var(--acc)"
         },
         {
           "action": "waitForTimeout",
