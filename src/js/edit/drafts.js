@@ -244,8 +244,11 @@ function renderDraftButtons(target, entries) {
         });
         Meta.appendChild(del);
         btn.appendChild(Meta);
-        DraftId.addEventListener('click', function () {
-            draftsUi.toggle.checked = true;
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (draftsUi.toggle) {
+                draftsUi.toggle.checked = true;
+            }
             loadDraftFromCache(entry.id, false);
         });
         target.appendChild(btn);

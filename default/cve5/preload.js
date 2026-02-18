@@ -1,14 +1,5 @@
 loadCpeNameOverrides();
 
-async function preloadCve() {
-    try {
-        await initCsClient();
-    } catch (e) {
-        //portalErrorHandler(e);
-    }
-}
-preloadCve();
-
 document.getElementById('post1').addEventListener('click', cvePost);
 var publicEditorOption = cloneJSON(docEditorOptions);
 Object.assign(publicEditorOption.schema, docSchema.oneOf[0]);

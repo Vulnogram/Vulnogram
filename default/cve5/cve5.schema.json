@@ -230,10 +230,10 @@
         "class": "vgi-tag",
         "formClass": "lni",
         "grid_columns": 6,
-        "patternmessage": "Enter CVE-yyyy-nnnn format",
+        "patternmessage": "CVE-year-nnnn",
         "remove_empty_properties": false,
         "inputAttributes": {
-          "placeholder": "CVE-yyyy-nnnn or pick from existing",
+          "placeholder": "CVE-year-nnnn or pick from existing",
           "type": "search"
         }
       },
@@ -612,7 +612,7 @@
           "items": {
             "type": "object",
             "id": "vE",
-            "title": "Version",
+            "title": "version",
             "description": "A single version or a range of versions, with vulnerability status.\n\nAn entry with only 'version' and 'status' indicates the status of a single version.\n\nOtherwise, an entry describes a range; it must include the 'versionType' property, to define the version numbering semantics in use, and 'limit', to indicate the non-inclusive upper limit of the range. The object describes the status for versions V such that 'version' <= V and V < 'limit', using the <= and < semantics defined for the specific kind of 'versionType'. Status changes within the range can be specified by an optional 'changes' list.\n\nThe algorithm to decide the status specified for a version V is:\n\n\tfor entry in product.versions {\n\t\tif entry.lessThan is not present and entry.lessThanOrEqual is not present and v == entry.version {\n\t\t\treturn entry.status\n\t\t}\n\t\tif (entry.lessThan is present and entry.version <= v and v < entry.lessThan) or\n\t\t   (entry.lessThanOrEqual is present and entry.version <= v and v <= entry.lessThanOrEqual) { // <= and < defined by entry.versionType\n\t\t\tstatus = entry.status\n\t\t\tfor change in entry.changes {\n\t\t\t\tif change.at <= v {\n\t\t\t\t\tstatus = change.status\n\t\t\t\t}\n\t\t\t}\n\t\t\treturn status\n\t\t}\n\t}\n\treturn product.defaultStatus\n\n",
             "properties": {
               "status": {
@@ -631,27 +631,25 @@
                 }
               },
               "lessThan": {
-                "title": "< Version (range)",
+                "title": "< version (range)",
                 "description": "The non-inclusive upper limit of the range. This is the least version NOT in the range. The usual version syntax is expanded to allow a pattern to end in an asterisk `(*)`, indicating an arbitrarily large number in the version ordering. For example, `{version: 1.0 lessThan: 1.*}` would describe the entire 1.X branch for most range kinds, and `{version: 2.0, lessThan: *}` describes all versions starting at 2.0, including 3.0, 5.1, and so on. Only one of lessThan and lessThanOrEqual should be specified.",
                 "$ref": "#/definitions/version",
                 "options": {
                   "class": "vgi-lt",
                   "infoText": "Usually fixed version. Use * to indicate no upper bounds, or 1.2.* to indicate rest of 1.2 branch.",
                   "inputAttributes": {
-                    "placeholder": "eg., 1.2.8, 1.2.*",
-                    "size": 4
+                    "placeholder": "eg., 1.2.8, 1.2.*"
                   }
                 }
               },
               "lessThanOrEqual": {
-                "title": "<= Version (range)",
+                "title": "<= version (range)",
                 "description": "The inclusive upper limit of the range. This is the greatest version contained in the range. Only one of lessThan and lessThanOrEqual should be specified. For example, `{version: 1.0, lessThanOrEqual: 1.3}` covers all versions from 1.0 up to and including 1.3.",
                 "$ref": "#/definitions/version",
                 "options": {
                   "class": "vgi-lte",
                   "inputAttributes": {
-                    "placeholder": "eg., 1.2.7, 1.2.*",
-                    "size": 4
+                    "placeholder": "eg., 1.2.7, 1.2.*"
                   }
                 }
               },
@@ -665,7 +663,7 @@
                 "description": "A list of status changes that take place during the range. The array should be sorted in increasing order by the 'at' field, according to the versionType, but clients must re-sort the list themselves rather than assume it is sorted.",
                 "uniqueItems": true,
                 "items": {
-                  "title": "status change",
+                  "title": "change",
                   "type": "object",
                   "description": "The start of a single status change during the range.",
                   "required": [
@@ -677,7 +675,6 @@
                       "description": "The version at which a status change occurs.",
                       "$ref": "#/definitions/version",
                       "options": {
-                        "input_width": "7em",
                         "inputAttributes": {
                           "placeholder": "eg., patch 10, 1.2.5a, 1.2.6"
                         }
@@ -785,10 +782,10 @@
           },
           "links": [
             {
-              "class": "lbl vgi-ext",
-              "href": "'https://www.cve.org/CVERecord?id=' + context.self",
-              "title": "'CVE.org Entry",
-              "rel": "'cve.org'"
+              "class": "rbtn vgi-ext",
+              "href": "'https://www.vulnogram.org/' + context.self",
+              "title": "'View CVE Record",
+              "rel": "' '"
             }
           ]
         },

@@ -10,6 +10,7 @@ var csCache = {
     user: null,
     orgInfo: null
 }
+var portalBootstrapPromise = null;
 
 function normalizePortalUrl(url) {
     if (!url) {
@@ -121,6 +122,12 @@ async function showPortalViewOrLogin() {
         setPortalSidebarState(true);
         return false;
     }
+    try {
+        await ensurePortalBootstrap();
+    } catch (e) {
+        portalErrorHandler(e);
+        return false;
+    }
     loadPortalCache();
     if (!csCache.url) {
         csCache.url = getStoredPortalSettings().portalUrl;
@@ -195,16 +202,34 @@ async function restorePortalCacheFromSession() {
     }
 }
 
+async function bootstrapCsClient() {
+    if (!('serviceWorker' in navigator)) {
+        return false;
+    }
+    loadPortalCache();
+    if (!csCache.url) {
+        csCache.url = getStoredPortalSettings().portalUrl;
+    }
+    csClient = ensureCsClient(csCache.url);
+    listenforLogins();
+    listenforLogouts();
+    return true;
+}
+
+function ensurePortalBootstrap() {
+    if (!portalBootstrapPromise) {
+        portalBootstrapPromise = bootstrapCsClient().catch(function (e) {
+            portalBootstrapPromise = null;
+            throw e;
+        });
+    }
+    return portalBootstrapPromise;
+}
+
 async function initCsClient() {
     if ('serviceWorker' in navigator) {
         try {
-            loadPortalCache();
-            if (!csCache.url) {
-                csCache.url = getStoredPortalSettings().portalUrl;
-            }
-            csClient = ensureCsClient(csCache.url);
-            listenforLogins();
-            listenforLogouts();
+            await ensurePortalBootstrap();
             const hasSession = await hasActivePortalSession(csCache.url);
             if (hasSession) {
                 await showPortalView();
@@ -799,7 +824,7 @@ async function cveLoad(cveId) {
                 if (response.ok) {
                     const data = await response.json();
                     if (data && data.cveMetadata) {
-                        cveLoadIntoEditor(cveFixForVulnogram(data), cveId, "Loaded " + cveId + " from public API");
+                        cveLoadIntoEditor(cveFixForVulnogram(data), cveId, "Loaded " + cveId + " from CVE.org");
                         return data;
                     }
                 } else {
@@ -809,7 +834,7 @@ async function cveLoad(cveId) {
             } catch (e2) {
                 errMsg.textContent = "Failed to load valid CVE Record";
                 infoMsg.textContent = "";
-                console.error('Failed to fetch from public API:', e2);
+                console.error('Failed to fetch from CVE.org:', e2);
             }
         }
     } catch (e) {
@@ -845,7 +870,7 @@ async function cveLoad(cveId) {
                 if (response.ok) {
                     const data = await response.json();
                     if (data && data.cveMetadata) {
-                        cveLoadIntoEditor(cveFixForVulnogram(data), cveId, "Loaded " + cveId + " from public API");
+                        cveLoadIntoEditor(cveFixForVulnogram(data), cveId, "Loaded " + cveId + " from CVE.org");
                         return data;
                     }
                 } else {
@@ -855,7 +880,7 @@ async function cveLoad(cveId) {
             } catch (e2) {
                 errMsg.textContent = "Failed to load valid CVE Record";
                 infoMsg.textContent = "";
-                console.error('Failed to fetch from public API:', e2);
+                console.error('Failed to fetch from CVE.org:', e2);
             }
         }
     }
@@ -920,6 +945,12 @@ function cvePublishErrorMessage(e) {
 }
 
 async function cvePost() {
+    try {
+        await ensurePortalBootstrap();
+    } catch (e) {
+        portalErrorHandler(e);
+        return;
+    }
     const hasSession = await hasActivePortalSession(csCache.url);
     if (!hasSession) {
         showPortalLogin('Please login to publish CVE records.');

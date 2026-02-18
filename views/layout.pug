@@ -9,7 +9,7 @@ html
         include head
   body#body(class=schemaName)
     //- CSS-only sidebar toggle checkbox
-    input#sidebarToggle(type="checkbox")
+    input#sidebarToggle(type="checkbox" checked=true)
     
     .layout-grid
       //- Overlay for mobile (closes sidebar when clicked)
@@ -20,7 +20,7 @@ html
         .sidebar-head.pad
           block sidebarHeader
             label.lbl.vgi-logo(for="sidebarToggle") Vulnogram
-            label.lbl.vgi-larrow(for="sidebarToggle")
+            label.vgi-larrow(for="sidebarToggle")
         nav.sidebar-nav.pad
           block sidebarNav
             //-if min
@@ -40,6 +40,14 @@ html
           var t = document.getElementById('sidebarToggle');
           if (t) t.checked = false;
         }, true);
+        document.addEventListener('click', function (e) {
+          if (!window.matchMedia || !window.matchMedia('(max-width: 768px)').matches) return;
+          var target = e && e.target;
+          var navLink = target && target.closest ? target.closest('.sidebar-nav a.lbl') : null;
+          if (!navLink) return;
+          var t = document.getElementById('sidebarToggle');
+          if (t) t.checked = true;
+        });
 
       //- Main Content Area
       main.main-area

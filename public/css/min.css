@@ -1651,6 +1651,20 @@ div[data-schemapath*=".cvss"] .rdg .form-control:first-child input[value="NOT_DE
     overflow: hidden;
 }
 
+@media (min-width: 1500px) {
+    #sidebarToggle:checked ~ .layout-grid .sidebar {
+        width: 250px;
+        min-width: 250px;
+        max-width: 30vw;
+    }
+
+    #sidebarToggle:checked ~ .layout-grid .sidebar-nav .sidebar-expandable > :not(summary) {
+        overflow: visible;
+    }
+    .sidebar-head > .vgi-larrow {
+        display: none;
+    }
+}
 #smallScreenMenu.lbl {
     display: none;
 }
@@ -1661,6 +1675,14 @@ div[data-schemapath*=".cvss"] .rdg .form-control:first-child input[value="NOT_DE
 
 .vg-top-header {
     overflow: visible;
+    gap:0.2em;
+    flex-direction: column;
+}
+
+@media (min-width: 600px) {
+    .vg-top-header {
+        flex-direction: row;
+    }
 }
 
 .vg-search-form,
@@ -1733,14 +1755,14 @@ table.diff  pre {
         bottom: 0;
         transform: translateX(0);
         box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
-        width: 220px;
-        min-width: 220px;
+        width: 250px;
+        min-width: 250px;
     }
 
     #sidebarToggle:checked ~ .layout-grid .sidebar {
         transform: translateX(-100%);
-        width: 220px;
-        min-width: 220px;
+        width: 250px;
+        min-width: 250px;
         box-shadow: none;
     }
 
