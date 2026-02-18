@@ -12,3 +12,5 @@ tmp
 standalone
 public/js/.vg-editor-bundle.stamp
 config/conf.js
+docs/.screenshot-state.json
+test-results/.last-run.json
