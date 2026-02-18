@@ -293,8 +293,6 @@ mixin container(con, cve)
             if con.KEV
                 summary.lbl.rnd.tag.CVSS.CRITICAL.vgi-bomb Known Exploited Since 
                     = con.KEV.dateAdded
-            a.sbn.vgi-mail(title="Share this CVE in email",href="mailto:?subject="+con.cveId+ ' ' + (con.title ? con.title : '')+"&body="+con.cveId + (con.title ? ' ' + con.title : '')+"%0A%0Ahttps://vulnogram.org/seaview/?"+con.cveId)
-            a.sbn.vgi-link(href="https://vulnogram.org/seaview/?"+con.cveId,target="_blank")
     .desc.pad
         if con.state == 'REJECTED'
             - con.maxCVSS = -1;
