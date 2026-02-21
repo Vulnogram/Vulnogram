@@ -28,9 +28,12 @@ block append sidebarNav
     details#recentGroup.sidebar-expandable
         summary.lbl.vgi-time Recent 
             span#recentOrg
-            span.pad.tgrey#recentCount
-        #recentEmpty.lbl No recent CVEs yet.
+        #recentEmpty.lbl ...
         #recentList.flx
+
+block draftsSummaryActions
+    if min
+        a#draftPublishOpenBtn.right.fbn.vgi-export(href="#" title="Publish multiple cached drafts" onclick="event.stopPropagation();return cveOpenDraftPublishDialog(event);") Publish
 
 block append sidebarSections
     a#cvePortalNav.lbl.vgi-org(href="#", onclick="return showCvePortal(event);") CVE Portal
@@ -81,6 +84,30 @@ block prepend content
         #cveErrors
         center.pad2
             input.btn.sfe(type="reset" onclick="document.getElementById('cveErrorsModal').close()" value="OK")
+    dialog.dlg.bor.rnd.shd#draftPublishDialog
+        header.ban.sec.pad
+            b.lbl.vgi-edit Draft Publishing
+            a.right.rbtn.vgi-x(title="Close draft publishing" onclick="this.closest('dialog').close()")
+        .pad2
+            p.lbl#draftPublishStatus Select drafts with 0 warnings to publish.
+            table#draftPublishTable.vtbl
+                thead
+                    tr
+                        th
+                            input(type="checkbox" onclick="cveDraftPublishToggleAll(this.checked)")
+                        th Draft ID
+                        th Title
+                        th CVSS
+                        th Warnings
+                        th Updated
+                        th Status
+                tbody#draftPublishRows
+        center.pad2
+            button.btn.sfe.vgi-export(type="button" onclick="return cvePublishSelectedDrafts(event);") Publish Selected
+            | 
+            button.btn.vgi-reuse(type="button" onclick="cveRefreshDraftPublishDialog()") Refresh
+            | 
+            button.btn(type="button" onclick="this.closest('dialog').close()") Close
     +showSecret
     +userAddDialog
     +userEditDialog

@@ -158,7 +158,7 @@ mixin table(docs, columns, showCheckboxes, id)
             tbody
                 each doc, i in docs
                     - rowCount ++
-                    tr
+                    tr(id='vgListItem'+doc.ID)
                         if showCheckboxes
                             td.rowCheckLabel
                                 label.rowCheckLabel

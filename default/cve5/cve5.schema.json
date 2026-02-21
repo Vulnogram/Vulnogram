@@ -3,7 +3,7 @@
   "$id": "https://cve.org/cve/record/v5_00/",
   "type": "object",
   "title": "CVE JSON record format",
-  "description": "cve-schema specifies the CVE JSON record format. This is the blueprint for a rich set of JSON data that can be submitted by CVE Numbering Authorities (CNAs) and Authorized Data Publishers (ADPs) to describe a CVE Record. Some examples of CVE record data include CVE ID number, affected product(s), affected version(s), and public references. While those specific items are required when assigning a CVE, there are many other optional data in the schema that can be used to enrich CVE Records for community benefit. Learn more about the CVE program at [the official website](https://cve.mitre.org). This CVE JSON record format is defined using JSON Schema. Learn more about JSON Schema [here](https://json-schema.org/).",
+  "description": "cve-schema specifies the CVE JSON record format. This is the blueprint for a rich set of JSON data that can be submitted by CVE Numbering Authorities (CNAs) and Authorized Data Publishers (ADPs) to describe a CVE Record. Some examples of CVE record data include CVE ID number, affected product(s), affected version(s), and public references. While those specific items are required when assigning a CVE, there are many other optional data in the schema that can be used to enrich CVE Records for community benefit. Learn more about the CVE program at [the official website](https://cve.org). This CVE JSON record format is defined using JSON Schema. Learn more about JSON Schema [here](https://json-schema.org/).",
   "options": {
     "class": "hid",
     "keep_oneof_values": true
@@ -567,7 +567,7 @@
         "programRoutines": {
           "title": "Program routines (OSS)",
           "type": "array",
-          "format": "taglist",
+          "format": "table",
           "description": "A list of the affected source code functions, methods, subroutines, or procedures (optional).",
           "uniqueItems": true,
           "options": {
@@ -605,7 +605,7 @@
             "class": "vgi-versions",
             "table_class": "vtbl"
           },
-          "description": "Set of product versions or version ranges related to the vulnerability. The versions satisfy the CNA Rules [8.1.2 requirement](https://cve.mitre.org/cve/cna/rules.html#section_8-1_cve_entry_information_requirements). Versions or defaultStatus may be omitted, but not both.",
+          "description": "Set of product versions or version ranges related to the vulnerability. The versions satisfy the CNA Rules. Versions or defaultStatus may be omitted, but not both.",
           "minItems": 1,
           "uniqueItems": true,
           "format": "table",

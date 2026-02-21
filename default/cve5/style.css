@@ -92,7 +92,7 @@ div[data-schemaid="cvss4"] .je-indented-panel div div div.row:last-child
 
 div[data-schemapath="root.containers.adp"] > div > div > [vg="array-obj"] {
   border: 2px solid var(--acc);
-  background-color: var(--bg1);
+  background-color: var(--wht);
 }
 
 
@@ -158,6 +158,31 @@ button.json-editor-btn-delete {
 
 #cpBox {
   background-color: var(--cve) !important;
+}
+
+#cvePortalNav {
+  position: relative;
+}
+
+#cvePortalNav::after {
+  content: "";
+  position: absolute;
+  top: 0.5em;
+  left: 3em;
+  width: 0.75em;
+  height: 0.75em;
+  border-radius: 999px;
+  background-color: #d73a3a;
+  box-shadow: 0 0 0 2px var(--wht);
+  pointer-events: none;
+}
+
+#cvePortalNav[data-portal-status="connected"]::after {
+  background-color: #2ea44f;
+}
+
+#cvePortalNav[data-portal-status="disconnected"]::after {
+  background-color: #d73a3a;
 }
 
 #cvePortalDialog {

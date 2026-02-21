@@ -153,18 +153,6 @@ module.exports = {
                 duplicate: 'ext'
             }
         },
-        cveState: {
-            path: 'body.cveMetadata.state',
-            //chart: true,
-            tabs: false,
-            enum: ["RESERVED", "PUBLISHED", "REJECTED"],
-            class: 'nobr ',
-            icons: {
-                RESERVED: 'edit',
-                PUBLISHED: 'globe',
-                REJECTED: 'no'
-            }
-        },
         cvss: {
             path: 'body.containers.cna.metrics.cvssV4_0.baseScore',
         },
@@ -194,7 +182,7 @@ module.exports = {
         /*        Advisory: {
                     path: 'body.containers.cna.source.advisory'
                 },*/
-        date: {
+        publicOn: {
             path: 'body.containers.cna.datePublic',
             bulk: true
         },

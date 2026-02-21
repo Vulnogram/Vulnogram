@@ -269,7 +269,7 @@ mixin warnings(con)
 
 mixin container(con, cve)
     .cna.pad
-        - var cList = (cve && cve.cveMetadata ? cve.cveMetadata.assignerShortName : false);
+        - var cList = con && con.shortName ? con.shortName : (cve && cve.cveMetadata ? cve.cveMetadata.assignerShortName : false);
         - var quote = (cList && cList.indexOf(' ') !== -1) ? '"' : '';
         - var cnaName = con.shortName;
         - if (typeof cna !== 'undefined' && cna && cna[con.shortName] && cna[con.shortName].n) { cnaName = cna[con.shortName].n; }
@@ -534,36 +534,48 @@ block pageDef
             | .affectedCol {border: 4px solid #fa582d}
         div.pad
             -
-                var cve = {}, con = {};
+                var cve = {}, CDM = {}, allContainers = [];
                 Object.assign(cve, d);
-                var CDM = cve.cveMetadata;
-                if (cve.containers) { 
-                    Object.assign(con, cve.containers.cna)
+                CDM = cve.cveMetadata || {};
+                var buildContainer = function(rawCon, sourceType) {
+                    var con = {};
+                    Object.assign(con, rawCon || {});
+                    con.containerType = sourceType;
+                    con.state = CDM.state;
+                    con.cveId = CDM.cveId;
+                    var PMD = (rawCon && rawCon.providerMetadata) ? rawCon.providerMetadata : {};
+                    con.dateUpdated = PMD.dateUpdated;
+                    con.shortName = PMD.shortName || con.shortName;
+                    con.cvssList = [];
+                    con.pvstatus = con.affected ? versionStatusTable5(con.affected) : null;
+                    if (con.metrics && con.metrics.length > 0) {
+                        for (var i = 0; i < con.metrics.length; i++) {
+                            var x = con.metrics[i];
+                            var cvss = x.cvssV4_0 ? x.cvssV4_0 : x.cvssV3_1 ? x.cvssV3_1 : x.cvssV3_0 ? x.cvssV3_0 : x.cvssV2_0 ? x.cvssV2_0 : null;
+                            if (cvss) {
+                                var cvssdup = {};
+                                Object.assign(cvssdup, cvss);
+                                cvssdup.scenarios = x.scenarios;
+                                con.cvssList.push(cvssdup);
+                            }
+                        }
+                    }
+                    return con;
                 };
-                //var jsonClone = {};
-                //delete con.json;
-                //con.json = jsonClone;
-                //delete con.json.x_legacyV4Record;
-                //con.x_ValidationErrors = cve.x_ValidationErrors;
-                con.state = CDM.state;
-                con.cveId = CDM.cveId;
-                var PMD = cve.containers.cna.providerMetadata;
-                con.dateUpdated = PMD.dateUpdated;
-                con.shortName = PMD.shortName;
-                var title = con.title;
-                var sourceText = {"INTERNAL":"This issue was found during internal product security testing or research.", "EXTERNAL":"This issue was discovered during an external security research.", "USER":"This issue was seen during production usage.", "UNKNOWN":""};
-                var cveId = CDM.cveId.match("^CVE-[0-9-]+$") ? CDM.cveId : 'CVE-yyyy-nnnn';
-                con.cvssList = [];
-                con.pvstatus = con.affected ? versionStatusTable5(con.affected) : null;
-            if (con.metrics && con.metrics.length > 0)
-                each x, i in con.metrics
-                    - var cvss = x.cvssV3_1 ? x.cvssV3_1 : x.cvssV3_0 ? x.cvssV3_0 : x.cvssV2_0 ? x.cvssV2_0 : null;
-                    if cvss
-                        - var cvssdup = {};
-                        - Object.assign(cvssdup, cvss);
-                        - cvssdup.scenarios = x.scenarios;
-                        - con.cvssList.push(cvssdup);
-            +container(con,cve)
+                if (cve.containers && cve.containers.cna) {
+                    allContainers.push(buildContainer(cve.containers.cna, 'cna'));
+                }
+                if (cve.containers && cve.containers.adp && cve.containers.adp.length > 0) {
+                    for (var i = 0; i < cve.containers.adp.length; i++) {
+                        allContainers.push(buildContainer(cve.containers.adp[i], 'adp'));
+                    }
+                }
+            each con, i in allContainers
+                if con.containerType == 'cna'
+                    +container(con,cve)
+                else
+                    blockquote.bor.rnd.wht.pad
+                        +container(con,cve)
 
 mixin mitre(cve)
     h2 MITRE CVE entry preview

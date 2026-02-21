@@ -54,8 +54,9 @@ mixin paginate
         //    input(type="hidden",name=d,value=i)
         span.right
             if pages <= 1
-                | Found 
-                = total
+                span.lbl
+                    | Found 
+                    = total
             if pages > 1
                 span.pagination
                     | Showing 

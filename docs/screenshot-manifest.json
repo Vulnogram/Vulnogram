@@ -1,8 +1,5 @@
 {
-  "title": "Using Vulnogram with CVE Services (Updated Screenshots)",
-  "sourcePdfTitle": "Using Vulnogram with CVE Services Portal",
-  "sourcePdf": "https://www.cve.org/Resources/Roles/Cnas/UsingVulnogramCVEServices.pdf",
-  "sourcePdfDate": "2025-12-19",
+  "title": "Using Vulnogram with CVE Services",
   "outputMarkdown": "using-vulnogram-cve-services.md",
   "screenshotsDir": "screenshots",
   "sections": [

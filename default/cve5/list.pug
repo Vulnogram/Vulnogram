@@ -1,0 +1,30 @@
+extends ../../views/list.pug
+
+block prepend messageBar
+    if bulkInput && Object.keys(bulkInput).length !== 0
+        .left
+            button#teamPublishSelected.btn.sfe.vgi-export(type="button") Publish Selected
+
+block append scripts
+    script
+        include cve.js
+        include portal.js
+    - var compileScript = pugLib.compileFileClient('default/cve5/cvelist.pug', {name: "cveRender", basedir: '', compileDebug: false,inlineRuntimeFunctions: true})
+    script !{compileScript}
+    script(src='/' + schemaName + '/static/list-page.js')
+
+block append sidebarSections
+    a#cvePortalNav.lbl.vgi-org(href="#", onclick="return showCvePortal(event);") CVE Portal
+
+block append content
+    .pad
+        span.lbl#teamPublishStatus Select one or more drafts and click Publish Selected.
+    dialog.dlg.bor.rnd.shd#cveErrorsModal
+        #cveErrors
+        center.pad2
+            input.btn.sfe(type="reset" onclick="document.getElementById('cveErrorsModal').close()" value="OK")
+    dialog.dlg.bor.rnd.shd#cvePortalDialog
+        header.ban.sec.pad
+            b.lbl.vgi-org CVE CNA Portal
+            a.right.rbtn.vgi-x(title="Close CVE Portal" onclick="return closeCvePortal(event);")
+        #port

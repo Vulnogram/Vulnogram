@@ -75,28 +75,28 @@ function fileDelete(m) {
     itemDelete(url, fileLink.textContent, getFiles);
 }
 function itemDelete(url, id, cb) {
-        if (confirm('Delete this ' + id + '?')) {
-            fetch(url, {
-                    method: 'DELETE',
-                    credentials: 'include',
-                    redirect: 'error',
-                    headers: {
-                        'Accept': 'application/json, text/plain, */*',
-                        'CSRF-Token': csrfToken
-                    },
-                }).then(function (response) {
-                    if (response.status == 200) {
-                        infoMsg.textContent = "Deleted ";
-                        errMsg.textContent = "";
-                    } else {
-                        errMsg.textContent = "Error " + response.statusText;
-                        infoMsg.textContent = "";
-                    }
-                    cb();
-                }).catch(function(error) {
-                    alert('Error Deleting file! Try reloading page!');
-                });
-        }
+    if (confirm('Delete this ' + id + '?')) {
+        fetch(url, {
+            method: 'DELETE',
+            credentials: 'include',
+            redirect: 'error',
+            headers: {
+                'Accept': 'application/json, text/plain, */*',
+                'CSRF-Token': csrfToken
+            },
+        }).then(function (response) {
+            if (response.status == 200) {
+                infoMsg.textContent = "Deleted ";
+                errMsg.textContent = "";
+            } else {
+                errMsg.textContent = "Error " + response.statusText;
+                infoMsg.textContent = "";
+            }
+            cb();
+        }).catch(function (error) {
+            alert('Error Deleting file! Try reloading page!');
+        });
+    }
 }
 
 async function getChanges(id) {
@@ -158,7 +158,7 @@ function newCommentBox(div) {
     var nf = nc.firstElementChild;
     nf.commentarea = nc.getElementsByClassName('simplehtml-editor')[0];
     var initialHtml = '';
-    if(div) {
+    if (div) {
         initialHtml = div.innerHTML;
         div.className = nf.commentarea.className;
         div.innerHTML = '';
@@ -197,7 +197,7 @@ function preview(el, ev) {
     el.parentNode.lastChild.innerHTML = subdocRender({
         ctemplate: 'filePreview',
         docs: files,
-        columns: ['Selected File','size']
+        columns: ['Selected File', 'size']
     });
     el.nextSibling.nextSibling.className = "btn icn indent save sfe"
 }
@@ -217,7 +217,7 @@ function attach(el, event) {
                 getFiles();
                 el.removeAttribute("disabled");
                 el.form.reset();
-                el.form.lastChild.innerHTML="";
+                el.form.lastChild.innerHTML = "";
             },
             failure: function (error) {
                 pgb.className = 'hid';
@@ -238,7 +238,7 @@ function attach(el, event) {
     return false;
 };
 
-function upload (type, files, comment, cbs) {
+function upload(type, files, comment, cbs) {
 
     var reader = new FileReader();
     var xhr = new XMLHttpRequest();

@@ -1,6 +1,7 @@
 loadCpeNameOverrides();
 
 document.getElementById('post1').addEventListener('click', cvePost);
+
 var publicEditorOption = cloneJSON(docEditorOptions);
 Object.assign(publicEditorOption.schema, docSchema.oneOf[0]);
 delete publicEditorOption.schema.oneOf;
@@ -26,7 +27,6 @@ var recentCveUi = {
     toggle: document.getElementById('sidebarToggle'),
     list: document.getElementById('recentList'),
     empty: document.getElementById('recentEmpty'),
-    count: document.getElementById('recentCount'),
     org: document.getElementById('recentOrg')
 };
 var recentCveEntries = [];
@@ -80,9 +80,6 @@ function renderRecentCveList() {
         } else {
             recentCveUi.empty.classList.remove('hid');
         }
-    }
-    if (recentCveUi.count) {
-        recentCveUi.count.textContent = recentCveEntries.length ? recentCveEntries.length : '';
     }
     if (recentCveUi.org) {
         recentCveUi.org.innerText = recentCveOrgName || '';
@@ -300,7 +297,7 @@ JSONEditor.defaults.editors.string.prototype.sanitize = function(value) {
                 doc: this.value
             })
         }
-        if (this.schema.template && (localStorage.getItem('autoCPEChk') === 'true')) {
+        if (this.schema.template) {
             const callback = this.expandCallbacks('template', { template: this.schema.template })
             if (typeof callback.template === 'function') this.template = callback.template
             else this.template = this.jsoneditor.compileTemplate(this.schema.template, this.template_engine)

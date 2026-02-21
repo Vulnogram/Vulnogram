@@ -225,6 +225,8 @@ mixin reserveds
 mixin listIds
     if cveIds && cveIds.length > 0
         - var stateIcons = {'RESERVED':'vgi-tag', 'PUBLISHED':'vgi-globe', 'REJECTED':'vgi-no', 'PUBLIC':'vgi-globe'}
+        - var canInlineLoad = (typeof inlineLoad === 'boolean') ? inlineLoad : true
+        - var docBase = docPathBase ? docPathBase : '/cve5/'
         table#cveListTable.vtbl.sortable
             thead
                 tr
@@ -238,8 +240,12 @@ mixin listIds
                     tr(data=c.state)
                         td
                             if editable
-                                a(class=stateIcons[c.state]?stateIcons[c.state]:'',href="javascript:cveLoad('"+c.cve_id+"')", title='Load ' + c.state + ' ' + c.cve_id + ' to edit')
-                                    =c.cve_id
+                                if canInlineLoad
+                                    a(class=stateIcons[c.state]?stateIcons[c.state]:'',href="javascript:cveLoad('"+c.cve_id+"')", title='Load ' + c.state + ' ' + c.cve_id + ' to edit')
+                                        =c.cve_id
+                                else
+                                    a(class=stateIcons[c.state]?stateIcons[c.state]:'',href=docBase + encodeURIComponent(c.cve_id), title='Open ' + c.cve_id)
+                                        =c.cve_id
                             else
                                 span(class=stateIcons[c.state]?stateIcons[c.state]:'', title=c.state)
                                     =c.cve_id

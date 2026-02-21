@@ -1,42 +1,41 @@
 {
-  "generatedAt": "2026-02-11T00:05:54Z",
-  "sourcePdf": "https://www.cve.org/Resources/Roles/Cnas/UsingVulnogramCVEServices.pdf",
+  "generatedAt": "2026-02-18T21:23:54Z",
   "screenshots": {
     "01-access-editor": {
       "file": "01-access-editor.png",
-      "hash": null,
-      "exists": false,
-      "updatedAt": "2026-02-11T00:05:19Z"
+      "hash": "3da626bb0cc9e96a4da541acc4711d49fa955a5ce90e62d11cb5ab89f962c18c",
+      "exists": true,
+      "updatedAt": "2026-02-18T21:21:35Z"
     },
     "02-portal-login": {
       "file": "02-portal-login.png",
-      "hash": null,
-      "exists": false,
-      "updatedAt": "2026-02-11T00:05:19Z"
+      "hash": "0a66dcf0020a2aae5271189d5d3a506a9c47af1c869ecd6114487e683d2e4c58",
+      "exists": true,
+      "updatedAt": "2026-02-18T21:21:35Z"
     },
     "03-reserve-cve-ids": {
       "file": "03-reserve-cve-ids.png",
-      "hash": null,
-      "exists": false,
-      "updatedAt": "2026-02-11T00:05:19Z"
+      "hash": "b903b32a9ebe082a2c657466458a2c54bbef88a9a0bbf0febbd496ba1fb5a33a",
+      "exists": true,
+      "updatedAt": "2026-02-18T21:21:35Z"
     },
     "04-enter-cve-details": {
       "file": "04-enter-cve-details.png",
-      "hash": null,
-      "exists": false,
-      "updatedAt": "2026-02-11T00:05:19Z"
+      "hash": "dbeb24668ff58454bf231a5401d075eb5cc67ae1232adfbedee2346585101e76",
+      "exists": true,
+      "updatedAt": "2026-02-18T21:21:35Z"
     },
     "05-publish-cve": {
       "file": "05-publish-cve.png",
-      "hash": null,
-      "exists": false,
-      "updatedAt": "2026-02-11T00:05:19Z"
+      "hash": "94f553277a963c2e51207c8b87c5af697f18148080323202360d81b316a8c38d",
+      "exists": true,
+      "updatedAt": "2026-02-18T21:21:35Z"
     },
     "06-admin-user-management": {
       "file": "06-admin-user-management.png",
-      "hash": null,
-      "exists": false,
-      "updatedAt": "2026-02-11T00:05:19Z"
+      "hash": "b0d82a91a304fffb70671d5024553a7d08a300f3991441690e999f8d2f7a6bbf",
+      "exists": true,
+      "updatedAt": "2026-02-18T21:21:35Z"
     }
   }
 }
