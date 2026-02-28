@@ -178,7 +178,6 @@ This project uses or depends on software from:
 - Ajv <https://github.com/ajv-validator/ajv>
 - json-patch-extended
 - querymen
-- linkifyjs
 - pptxGenJS
 
 Copyright (c) 2017-2026 Chandan B N.

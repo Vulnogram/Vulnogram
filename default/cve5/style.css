@@ -161,10 +161,6 @@ button.json-editor-btn-delete {
   font-size: smaller;
 }
 
-#cpBox {
-  background-color: var(--cve) !important;
-}
-
 #cvePortalNav {
   position: relative;
 }
@@ -266,6 +262,7 @@ button.json-editor-btn-delete {
   justify-items: center; 
   align-items: center; 
   text-align: center;
+  max-width: 1000px;
 }
 #cpTitle {
   align-self: start; 
@@ -287,7 +284,7 @@ button.json-editor-btn-delete {
 
 #cveLoginForm {
   grid-auto-rows: 1fr;
-  width: 50vw;
+  width: 100%;
   grid-template-columns: min-content 1fr;
 }
 

@@ -707,10 +707,10 @@ var cvssjs = {
     m: function(m) {
         var metric = this.metricMap4[m];
         if (metric && this.cvss[metric]) {
-            console.log(["M:", m, this.valueMap[this.cvss[metric]] || this.cvss[metric].charAt(0)]);
+            //console.log(["M:", m, this.valueMap[this.cvss[metric]] || this.cvss[metric].charAt(0)]);
            return (this.valueMap[this.cvss[metric]] || this.cvss[metric].charAt(0));
         } else { 
-            console.log("M:", m, "X!");
+            //console.log("M:", m, "X!");
             return "X";
         }
     },
@@ -4410,7 +4410,7 @@ function scroll2Err(x) {
 
 function showJSONerrors(errors) {
     errList.textContent="";
-    for (i = 0;i < errors.length; i++) {
+    for (var i = 0; i < errors.length; i++) {
         var e = errors[i];
         var showLabel = undefined;
         var ee = docEditor.getEditor(e.path);
