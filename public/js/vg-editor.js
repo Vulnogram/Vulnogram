@@ -1700,6 +1700,46 @@ class SimpleHtml {
     sanitize(html) {
         if (!html) return '';
         const doc = new DOMParser().parseFromString(html, 'text/html');
+
+        // If the parser reports an error, bail out with empty content
+        if (doc.querySelector('parsererror')) {
+            return '';
+        }
+
+        // Helper to validate URL-bearing attributes more strictly
+        const isSafeUrl = (attrName, value) => {
+            if (!value) return false;
+            const trimmed = value.trim();
+            const lower = trimmed.toLowerCase();
+
+            // Always disallow javascript:, data: (except data:image/ for src), vbscript:, etc.
+            if (this.disallowedProtocols && this.disallowedProtocols.some(p => lower.startsWith(p))) {
+                if (attrName === 'src' && lower.startsWith('data:image/')) {
+                    // explicitly allow data:image/* in src
+                    return true;
+                }
+                return false;
+            }
+
+            // For href, do not allow data: at all
+            if (attrName === 'href' && lower.startsWith('data:')) {
+                return false;
+            }
+
+            try {
+                // Use URL parsing when possible to normalize the protocol
+                const url = new URL(trimmed, window.location.origin);
+                const protocol = url.protocol.toLowerCase();
+                if (this.disallowedProtocols && this.disallowedProtocols.some(p => protocol === p || protocol === p + ':')) {
+                    return false;
+                }
+            } catch (e) {
+                // If URL constructor fails, fall back to prefix checks above
+            }
+
+            return true;
+        };
+
         const cleanNode = (node) => {
             if (node.nodeType === 3) return node.cloneNode(true);
             if (node.nodeType !== 1) return null;
@@ -1718,15 +1758,16 @@ class SimpleHtml {
             const allowedAttrs = this.allowedTags[tag];
             for (let i = 0; i < node.attributes.length; i++) {
                 const attr = node.attributes[i];
-                if (!allowedAttrs.includes(attr.name)) continue;
-                if (attr.name === 'href' || attr.name === 'src') {
-                    const val = attr.value.toLowerCase().trim();
-                    if (this.disallowedProtocols.some(p => val.startsWith(p)) &&
-                        !(attr.name === 'src' && val.startsWith('data:image/'))) {
+                const name = attr.name;
+                // Never allow event handler attributes, even if misconfigured in allowedAttrs
+                if (/^on/i.test(name)) continue;
+                if (!allowedAttrs.includes(name)) continue;
+                if (name === 'href' || name === 'src') {
+                    if (!isSafeUrl(name, attr.value)) {
                         continue;
                     }
                 }
-                el.setAttribute(attr.name, attr.value);
+                el.setAttribute(name, attr.value);
             }
 
             for (let i = 0; i < node.childNodes.length; i++) {
