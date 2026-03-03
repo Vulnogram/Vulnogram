@@ -71,7 +71,7 @@ module.exports = {
     //ajvHash: 'sha512-U2SW9Ihh3GF6F8gP8QgLS+I244xnM5pFCh3cigpw7bAzUDnKDlxdlFL4kjyXTle8SJl/tJ0gdnwd44Eb3hLG/Q==',
 
 
-    usernameRegex: '[a-zA-Z0-9]{3,}',
+    usernameRegex: '[a-zA-Z0-9]{3,64}',
     sections: [
         'cve',
         'cve5',
