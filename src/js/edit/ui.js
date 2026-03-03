@@ -505,6 +505,162 @@ JSONEditor.defaults.editors.dateTime = class dateTime extends JSONEditor.default
 
 
 JSONEditor.defaults.editors.taglist = class taglist extends JSONEditor.defaults.editors.string {
+    preBuild() {
+        this.enumSource = null;
+        var itemSchema = this.schema && this.schema.items ? this.schema.items : null;
+        if (itemSchema && itemSchema.enumSource) {
+            this.enumSource = [];
+            var source = itemSchema.enumSource;
+            if (!Array.isArray(source)) {
+                source = itemSchema.enumValue
+                    ? [{ source: source, value: itemSchema.enumValue }]
+                    : [{ source: source }];
+            }
+            for (var i = 0; i < source.length; i++) {
+                var entry = source[i];
+                if (typeof entry === 'string') {
+                    entry = { source: entry };
+                } else if (Array.isArray(entry)) {
+                    entry = entry.slice();
+                } else {
+                    entry = Object.assign({}, entry);
+                }
+                if (!Array.isArray(entry)) {
+                    if (typeof entry.value === 'string' || typeof entry.value === 'function') {
+                        entry.value = this._compileEnumTemplate(entry.value);
+                    }
+                    if (typeof entry.title === 'string' || typeof entry.title === 'function') {
+                        entry.title = this._compileEnumTemplate(entry.title);
+                    }
+                    if (typeof entry.filter === 'string' || typeof entry.filter === 'function') {
+                        entry.filter = this._compileEnumTemplate(entry.filter);
+                    }
+                }
+                this.enumSource.push(entry);
+            }
+        }
+        super.preBuild();
+    }
+    _compileEnumTemplate(template) {
+        if (typeof template === 'function') {
+            return template;
+        }
+        if (typeof template !== 'string') {
+            return template;
+        }
+        return this.jsoneditor.compileTemplate(template, this.template_engine);
+    }
+    _resolveEnumSourceValues() {
+        var values = [];
+        var watched = this.getWatchedFieldValues ? this.getWatchedFieldValues() : {};
+        for (var sourceIdx = 0; sourceIdx < this.enumSource.length; sourceIdx++) {
+            var sourceConf = this.enumSource[sourceIdx];
+            if (Array.isArray(sourceConf)) {
+                values = values.concat(sourceConf);
+                continue;
+            }
+            var sourceValues = Array.isArray(sourceConf.source) ? sourceConf.source : watched[sourceConf.source];
+            if (!Array.isArray(sourceValues)) {
+                continue;
+            }
+            if (sourceConf.slice) {
+                sourceValues = Array.prototype.slice.apply(sourceValues, sourceConf.slice);
+            }
+            if (sourceConf.filter) {
+                var filtered = [];
+                for (var filteredIdx = 0; filteredIdx < sourceValues.length; filteredIdx++) {
+                    if (sourceConf.filter({ i: filteredIdx, item: sourceValues[filteredIdx], watched: watched })) {
+                        filtered.push(sourceValues[filteredIdx]);
+                    }
+                }
+                sourceValues = filtered;
+            }
+            for (var valueIdx = 0; valueIdx < sourceValues.length; valueIdx++) {
+                var item = sourceValues[valueIdx];
+                var value = sourceConf.value ? sourceConf.value({ i: valueIdx, item: item, watched: watched }) : item;
+                if (Array.isArray(value)) {
+                    values = values.concat(value);
+                } else {
+                    values.push(value);
+                }
+            }
+        }
+        var deduped = [];
+        var seen = {};
+        for (var i = 0; i < values.length; i++) {
+            var value = values[i];
+            if (value === null || value === undefined) {
+                continue;
+            }
+            var key = typeof value + ':' + String(value);
+            if (seen[key]) {
+                continue;
+            }
+            seen[key] = true;
+            deduped.push(value);
+        }
+        return deduped;
+    }
+    _getWhitelistValues() {
+        var itemSchema = this.schema && this.schema.items ? this.schema.items : {};
+        if (Array.isArray(itemSchema.enum)) {
+            return itemSchema.enum.slice();
+        }
+        if (this.enumSource) {
+            return this._resolveEnumSourceValues();
+        }
+        if (Array.isArray(itemSchema.examples)) {
+            return itemSchema.examples.slice();
+        }
+        return [];
+    }
+    _enforceWhitelist(whitelist) {
+        var itemSchema = this.schema && this.schema.items ? this.schema.items : {};
+        if (Array.isArray(itemSchema.enum)) {
+            return true;
+        }
+        if (this.enumSource) {
+            return whitelist.length > 0;
+        }
+        return false;
+    }
+    refreshTagWhitelist() {
+        if (!this.tagify) {
+            return;
+        }
+        var whitelist = this._getWhitelistValues();
+        var enforce = this._enforceWhitelist(whitelist);
+        this.tagify.settings.whitelist = whitelist;
+        this.tagify.settings.enforceWhitelist = enforce;
+
+        if (!enforce) {
+            return;
+        }
+        var current = this.getValue();
+        var allowed = {};
+        for (var i = 0; i < whitelist.length; i++) {
+            allowed[String(whitelist[i])] = true;
+        }
+        var filtered = [];
+        for (var j = 0; j < current.length; j++) {
+            if (allowed[String(current[j])]) {
+                filtered.push(current[j]);
+            }
+        }
+        if (filtered.length !== current.length) {
+            this.tagify.removeAllTags();
+            if (filtered.length) {
+                this.tagify.addTags(filtered);
+            }
+            this.onChange(true);
+        }
+    }
+    onWatchedFieldChange() {
+        super.onWatchedFieldChange();
+        if (this.enumSource) {
+            this.refreshTagWhitelist();
+        }
+    }
     getValue() {
         if(this.tagify && this.tagify.value) {
             return this.tagify.value.map(item => item.value);
@@ -513,11 +669,16 @@ JSONEditor.defaults.editors.taglist = class taglist extends JSONEditor.defaults.
         }
     }
     setValue(val) {
+        if (!this.tagify) {
+            return;
+        }
         if (val instanceof Array) {
             this.tagify.removeAllTags();
             this.tagify.addTags(val);
-        } else {
+        } else if (typeof val === 'string' && val.length > 0) {
             this.tagify.addTags(val.split(','));
+        } else {
+            this.tagify.removeAllTags();
         }
         this.onChange(true);
     }
@@ -541,10 +702,12 @@ JSONEditor.defaults.editors.taglist = class taglist extends JSONEditor.defaults.
         if (!Object.keys(tagClasses).length) {
             tagClasses = null;
         }
+        var whitelist = this._getWhitelistValues();
+        var enforceWhitelist = this._enforceWhitelist(whitelist);
         //console.log('list'+ this.schema.items.examples);
         this.tagify = new Tagify(this.input, {
-            whitelist: this.schema.items.enum ? this.schema.items.enum : (this.schema.items.examples ? this.schema.items.examples : []),
-            enforceWhitelist: this.schema.items.enum ? true : false,
+            whitelist: whitelist,
+            enforceWhitelist: enforceWhitelist,
             maxTags: this.schema.maxItems ? this.schema.maxItems : 512,
             transformTag: function(tagData) {
                 if (!tagClasses || !tagData || tagData.value === null || tagData.value === undefined) return;
@@ -591,6 +754,9 @@ JSONEditor.defaults.editors.taglist = class taglist extends JSONEditor.defaults.
           })
         if(this.options && this.options.inputAttributes && this.options.inputAttributes.placeholder) {
             this.input.setAttribute('placeholder', this.options.inputAttributes.placeholder)
+        }
+        if (this.enumSource) {
+            this.refreshTagWhitelist();
         }
     }
 };

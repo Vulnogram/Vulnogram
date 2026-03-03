@@ -20,7 +20,7 @@ mixin facetChart(facet, query, tfacet)
           div.ins.hig.flx.wlp.pad
             each values, field in facet[0]
               div.wht.rnd.shd.chart(class=field)
-                label.ico(class=field,for='flt'+field)=field
+                label(for='flt'+field)=field
                 input.expand(id="flt"+field,type="checkbox")
                 each v in values
                     - var vx = v._id;

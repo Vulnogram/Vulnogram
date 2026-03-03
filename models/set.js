@@ -2,6 +2,7 @@
 
 var fs = require('fs');
 var extend = require('extend');
+var path = require('path');
 
 // go through default and custom configurations and return them.
 module.exports = function (setName, paths) {
@@ -11,26 +12,28 @@ module.exports = function (setName, paths) {
         render: 'render'
     };
     var conf = {};
+    var projectRoot = path.resolve(__dirname, '..');
     if (!paths) 
         paths = ['default','custom'];
-    for (p in paths) {
-        path=paths[p];
-        if(fs.existsSync(path + '/' + setName + '/conf.js')) {
-            var temp = require('../' + path + '/' + setName + '/conf.js');
+    for (var i = 0; i < paths.length; i++) {
+        var basePath = paths[i];
+        var setDir = path.join(projectRoot, basePath, setName);
+        if (fs.existsSync(path.join(setDir, 'conf.js'))) {
+            var temp = require(path.join(setDir, 'conf.js'));
             conf = extend(true, conf, temp);
         }
-        if(fs.existsSync(path + '/' + setName + '/static')) {
-            result.static = path + '/' + setName + '/static';
+        if (fs.existsSync(path.join(setDir, 'static'))) {
+            result.static = basePath + '/' + setName + '/static';
         }
-        if(!conf.style && fs.existsSync(path + '/' + setName + '/style.css')) {
-            result.style = fs.readFileSync(path + '/' + setName + '/style.css', 'utf8');
+        if (!conf.style && fs.existsSync(path.join(setDir, 'style.css'))) {
+            result.style = fs.readFileSync(path.join(setDir, 'style.css'), 'utf8');
         }
-        if(!conf.script && fs.existsSync(path + '/' + setName + '/script.js')) {
-            result.script = (result.script ? result.script : '')+fs.readFileSync(path + '/' + setName + '/script.js', {encoding:'utf8'});
+        if (!conf.script && fs.existsSync(path.join(setDir, 'script.js'))) {
+            result.script = (result.script ? result.script : '') + fs.readFileSync(path.join(setDir, 'script.js'), { encoding: 'utf8' });
         }
-        for (template of ['list', 'edit', 'render']) {
-            if (fs.existsSync(path + '/' + setName + '/' + template + '.pug')) {
-                result[template] = '../' + path + '/' + setName + '/' + template;
+        for (var template of ['list', 'edit', 'render']) {
+            if (fs.existsSync(path.join(setDir, template + '.pug'))) {
+                result[template] = '../' + basePath + '/' + setName + '/' + template;
             }
         }
     }
