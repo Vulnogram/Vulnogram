@@ -225,6 +225,10 @@ if (!initJSON && csCache && csCache.org) {
 if (typeof loadJSON === 'function') {
     var originalLoadJSON = loadJSON;
     loadJSON = async function (res) {
+        if (typeof cveFixForVulnogram === 'function') {
+            res = cveFixForVulnogram(res);
+            arguments[0] = res;
+        }
         if (ensureAssignerExamplesFromCache) {
             try {
                 await ensureAssignerExamplesFromCache;
