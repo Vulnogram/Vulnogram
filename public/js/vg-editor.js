@@ -107,11 +107,12 @@ reduceJSON: function (cve) {
     if(c.impact && c.impact.cvss && c.impact.cvss.baseScore === 0) {
         delete c.impact;    
     }
-    return(orderKeys(c));
+    //return(orderKeys(c));
+    return(c);
 },
 
 getMITREJSON: function(cve) {
-    return JSON.stringify(cve, null, "  ");
+    return JSON.stringify(cve, null, "    ");
 },
 getPR: function(cve) {
     var matches = [];
@@ -4688,6 +4689,8 @@ var defaultTabs = {
                 ace.config.set('basePath', '/js/')
                 sourceEditor = ace.edit("output");
                 sourceEditor.getSession().setMode("ace/mode/json");
+                sourceEditor.getSession().setUseSoftTabs(true);
+                sourceEditor.getSession().setTabSize(2);
                 sourceEditor.getSession().on('change', function () {
                     mainTabGroup.change(1);
                 });

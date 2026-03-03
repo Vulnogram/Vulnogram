@@ -98,11 +98,12 @@ reduceJSON: function (cve) {
     if(c.impact && c.impact.cvss && c.impact.cvss.baseScore === 0) {
         delete c.impact;    
     }
-    return(orderKeys(c));
+    //return(orderKeys(c));
+    return(c);
 },
 
 getMITREJSON: function(cve) {
-    return JSON.stringify(cve, null, "  ");
+    return JSON.stringify(cve, null, "    ");
 },
 getPR: function(cve) {
     var matches = [];

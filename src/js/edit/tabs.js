@@ -279,6 +279,8 @@ var defaultTabs = {
                 ace.config.set('basePath', '/js/')
                 sourceEditor = ace.edit("output");
                 sourceEditor.getSession().setMode("ace/mode/json");
+                sourceEditor.getSession().setUseSoftTabs(true);
+                sourceEditor.getSession().setTabSize(2);
                 sourceEditor.getSession().on('change', function () {
                     mainTabGroup.change(1);
                 });
