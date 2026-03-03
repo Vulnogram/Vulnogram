@@ -542,7 +542,6 @@ module.exports = function (name, opts) {
         async function (req, res) {
             try {
                 var q = req.querymen.query;
-                console.log('Got query = '  + JSON.stringify(req.body)+' idpath '+idpath +' q '+JSON.stringify(q));
                 var f = q[idpath];
                 if (f) {
                     delete q[idpath];
@@ -556,11 +555,9 @@ module.exports = function (name, opts) {
                         var d = new Date();
                         q.author = req.user.username;
                         q.updatedAt = d;
-                        console.log(q);
                         var fq = {};
                         fq[idpath] = f;
                         var docs = await Document.find(fq).toArray();
-                        console.log(['Bulkd', Document])
                         var results = [];
                         for (var d of docs) {
                             var updated = await Document.findOneAndUpdate(
