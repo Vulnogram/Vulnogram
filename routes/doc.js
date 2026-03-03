@@ -1,6 +1,5 @@
 const express = require('express');
 const fs = require('fs');
-const ObjectID = require('mongodb').ObjectID;
 const docModel = require('../models/doc');
 const conf = require('../config/conf');
 const querymw = require('../lib/querymw');
@@ -11,12 +10,15 @@ var querymen = require('querymen');
 var qs = require('querystring');
 const _ = require('lodash');
 const path = require('path');
-const mongoose = require('mongoose');
+const toErrorMessage = require('../lib/error-message');
 
 var queryMW;
+var queryMWBody;
 
 module.exports = function (name, opts) {
     opts.schemaName = name;
+    opts.collectionName = opts.conf && opts.conf.collectionName ? opts.conf.collectionName : name;
+    opts.historyCollectionName = opts.conf && opts.conf.historyCollectionName ? opts.conf.historyCollectionName : opts.schemaName + '_history';
     //todo make it configurable
     var idpath = opts.idpath = opts.facet.ID.path;
     if (undefined == opts.facet.ID.link) {
@@ -111,19 +113,20 @@ module.exports = function (name, opts) {
     }
 
     queryMW = querymw(opts.facet);
+    queryMWBody = querymw(opts.facet, 'body');
 
     var module = {};
-    var Document = module.Document = docModel(name);
+    var Document = module.Document = docModel(opts.collectionName);
 
     //console.log(toIndex);
     for (var x in toIndex) {
         var o = {};
         o[x] = toIndex[x];
         delete o.createIndex;
-        Document.collection.createIndex(o, { background: true }).catch(function(e){
+        Document.createIndex(o, { background: true }).catch(function (e) {
             console.log('Error ensuring text index: ' + e.message)
         });
-            
+
     }
 
 
@@ -134,7 +137,7 @@ module.exports = function (name, opts) {
         router = express.Router();
     }
 
-    router.get('*', function (req, res, next) {
+    router.use(function (req, res, next) {
         res.locals.schemaName = name;
         res.locals.page = req.baseUrl + req.path;
         next();
@@ -145,28 +148,27 @@ module.exports = function (name, opts) {
 
 
 
-    router.get('/json/:id', function (req, res) {
+    router.get('/json/:id', async function (req, res) {
         var ids = req.params.id.match(RegExp(idpattern, 'img'));
         if (ids) {
-            var searchSchema = Document;
             var q = {};
             q[idpath] = {
                 "$in": ids
             };
-            searchSchema.find(q, {
-                //body: 1,
-                _id: 0
-            }, {}, function (err, docs) {
-                if (err) {
-                    res.json({
-                        title: 'Error',
-                        message: 'Query failed',
-                        docs: []
-                    });
-                } else {
-                    res.json(docs);
-                }
-            });
+            try {
+                var docs = await Document.find(q, {
+                    projection: {
+                        _id: 0
+                    }
+                }).toArray();
+                res.json(docs);
+            } catch (err) {
+                res.json({
+                    title: 'Error',
+                    message: 'Query failed',
+                    docs: []
+                });
+            }
         } else {
             res.json([]);
         }
@@ -186,7 +188,9 @@ module.exports = function (name, opts) {
                     fields[f] = 1;
                 }
             }
-            var results = await Document.find(q, fields);
+            var results = await Document.find(q, {
+                projection: fields
+            }).toArray();
             res.json(results);
         } else {
             res.json([]);
@@ -230,18 +234,26 @@ module.exports = function (name, opts) {
             var r = await Document.aggregate([
                 { $match: req.querymen.query },
                 { $project: project }
-            ]);
+            ]).toArray();
             res.json(r);
         });
 
-    router.get('/:t(examples|enum)/',
+    async function enumExamples(req, res, t) {
+        var r = await Document.distinct(req.query.field, req.querymen.query);
+        var ret = {};
+        ret[t] = r;
+        res.json(ret);
+    }
+
+    router.get(['/examples', '/examples/'],
         queryMW,
         async function (req, res) {
-            //console.log(JSON.stringify(req.querymen.query));
-            var r = await Document.find(req.querymen.query).distinct(req.query.field);
-            var ret = {};
-            ret[req.params.t] = r;
-            res.json(ret);
+            return enumExamples(req, res, 'examples');
+        });
+    router.get(['/enum', '/enum/'],
+        queryMW,
+        async function (req, res) {
+            return enumExamples(req, res, 'enum');
         });
 
     router.get('/agg/',
@@ -324,7 +336,7 @@ module.exports = function (name, opts) {
                         })
                     }
                     //console.log('pipeLine:' + JSON.stringify(pipeLine,2,2,2));
-                    var ret = await Document.aggregate(pipeLine);
+                    var ret = await Document.aggregate(pipeLine).toArray();
 
                     res.json(ret);
                 } else {
@@ -411,7 +423,7 @@ module.exports = function (name, opts) {
                 //console.log('QUERY:' + JSON.stringify(req.querymen.query,2,3,4));
                 tabs = await Document.aggregate([{
                     $facet: tabFacet
-                }]).exec();
+                }]).toArray();
             }
 
             // get the charts aggregated counts            
@@ -455,8 +467,7 @@ module.exports = function (name, opts) {
                 pipeLine.push({
                     $facet: chartFacet
                 });
-                var agg = Document.aggregate(pipeLine).collation(numCollation);
-                charts = await agg.exec();
+                charts = await Document.aggregate(pipeLine, { collation: numCollation }).toArray();
                 //console.log('Aggregation QUERY: ' + JSON.stringify(pipeLine, null, 3));
                 docs = charts[0].all;
                 delete charts[0].all;
@@ -467,14 +478,13 @@ module.exports = function (name, opts) {
                 delete charts[0].count;
             } else {
                 //console.log('PROJE' + JSON.stringify(project));
-                total = await Document.countDocuments(req.querymen.query).exec();
+                total = await Document.countDocuments(req.querymen.query);
                 var aggQuery = [
                     {
                         $match: req.querymen.query
                     }].concat(allQuery);
                 //console.log('AGG QUERY' + JSON.stringify(aggQuery,1,1,1));
-                docs = await Document.
-                    aggregate(aggQuery).collation(numCollation).exec();
+                docs = await Document.aggregate(aggQuery, { collation: numCollation }).toArray();
                 //total = docs.length;
             }
             //console.log('Results'+ JSON.stringify(docs,1,1,1));
@@ -524,16 +534,15 @@ module.exports = function (name, opts) {
     });
 
     var onedoc = require('./onedoc')(Document, opts);
-    var History = mongoose.models[opts.schemaName + '_history'] || docModel(opts.schemaName + '_history');
+    var History = docModel(opts.historyCollectionName);
     //UPDATE many
     router.post('/update',
         csrfProtection,
-        function (req, res, next) { req.query = req.body; next(); },
-        queryMW,
+        queryMWBody,
         async function (req, res) {
             try {
                 var q = req.querymen.query;
-
+                console.log('Got query = '  + JSON.stringify(req.body)+' idpath '+idpath +' q '+JSON.stringify(q));
                 var f = q[idpath];
                 if (f) {
                     delete q[idpath];
@@ -547,24 +556,25 @@ module.exports = function (name, opts) {
                         var d = new Date();
                         q.author = req.user.username;
                         q.updatedAt = d;
-                        //console.log(q);
+                        console.log(q);
                         var fq = {};
                         fq[idpath] = f;
-                        var docs = await Document.find(fq);
+                        var docs = await Document.find(fq).toArray();
                         console.log(['Bulkd', Document])
                         var results = [];
                         for (var d of docs) {
-                            var result = await Document.findByIdAndUpdate(
-                                d._id, {
+                            var updated = await Document.findOneAndUpdate(
+                                { _id: d._id }, {
                                 "$set": q,
                                 "$inc": {
                                     __v: 1
                                 }
                             }, {
-                                "upsert": false,
-                                "new": true
+                                upsert: false,
+                                returnDocument: 'after'
                             });
-                            var r = onedoc.addModelHistory(History, d, result);
+                            var result = updated;
+                            var r = result ? onedoc.addModelHistory(History, d, result) : null;
                             if (r) {
                                 r.__v = r.__v + ' (' + _.get(result, idpath) + ')';
                                 results.push(r);
@@ -588,7 +598,7 @@ module.exports = function (name, opts) {
                     });
                 }
             } catch (err) {
-                req.flash('error', err);
+                req.flash('error', toErrorMessage(err));
                 res.render('blank', {
                     title: 'Error',
                     message: 'failed bulk updates: ' + err.message

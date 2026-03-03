@@ -70,7 +70,7 @@ module.exports = function (Document, opts) {
                         }], $position: 0
                     }
                 }
-            }, { new: true }).exec();
+            }, { returnDocument: 'after' });
 
             return ({
                 ok: 1,
@@ -96,8 +96,8 @@ module.exports = function (Document, opts) {
                     "comments.$.updatedAt": date
                 }
             }, {
-                new: true
-            }).exec();
+                returnDocument: 'after'
+            });
             return ({
                 ok: 1,
                 ret: await unifiedComments(doc_id, ret ? ret.comments : [])
@@ -109,7 +109,7 @@ module.exports = function (Document, opts) {
             });
         }
     }
-    router = express.Router();
+    var router = express.Router();
     router.post('/comment', csrfProtection, async function (req, res) {
         if (req.body.slug) {
             var r = await updateComment(req.body.id, req.user.username, req.body.text, req.body.slug, new Date());
