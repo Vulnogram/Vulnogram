@@ -20,15 +20,18 @@ mixin facetChart(facet, query, tfacet)
           div.ins.hig.flx.wlp.pad
             each values, field in facet[0]
               div.wht.rnd.shd.chart(class=field)
-                label(for='flt'+field)=field
+                label(for='flt'+field, class=(fields[field] && fields[field].icon ? fields[field].icon : ''))=field
                 input.expand(id="flt"+field,type="checkbox")
                 each v in values
                     - var vx = v._id;
                     - vx = (v._id == null) ? 'null': ((v._id == '') ? 'null': v._id);
                     - vx = Array.isArray(vx) ? vx.join(',') : vx;
+                    - var valueIcon = '';
+                    - if (fields[field] && fields[field].icons && fields[field].icons[v._id]) valueIcon = 'vgi-' + fields[field].icons[v._id];
+                    - else if (opts && opts.icons && opts.icons[v._id]) valueIcon = 'vgi-' + opts.icons[v._id];
                     div.bar(style="width:" + Math.round(v.count/total*170.0+1) + "px")
                         input(type="checkbox", id=field+vx, name=field, value= vx, checked=(v._id && query[field] && query[field].includes(v._id)) || (vx === 'null' && query[field] && query[field].includes('null')))
-                        label.otl(class=vx + (fields[field].class? ' ' + fields[field].class : ''), for=field+vx, title=vx+ " (" + v.count + ")")
+                        label.otl(class=(vx + ((fields[field] && fields[field].class) ? ' ' + fields[field].class : '') + (valueIcon ? ' ' + valueIcon : '')), for=field+vx, title=vx+ " (" + v.count + ")")
                             = vx
                             br
                             b=v.count
@@ -112,14 +115,14 @@ mixin bulkTable(docs, columns, id)
                     .left.pad
                         each spec, name in bulkInput
                           .indent.out
-                            label.lbl.icn(class=name)=name
+                            label.lbl.icn(class=(name + ((fields[name] && fields[name].icon) ? ' ' + fields[name].icon : '')))=name
                             if spec.type && spec.type == "select"
                                 select.btn(name=name)
                                     option(selected,value="") - No Change -
                                     each v in spec.enum
                                         option(value=v)=v
                             else
-                                input.txt(name=name)
+                                input.txt(name=name,pattern=(fields[name] && fields[name].pattern ? fields[name].pattern : null),placeholder=(fields[name] && fields[name].placeholder ? fields[name].placeholder : null),title=(fields[name] && fields[name].pattern ? 'Pattern: ' + fields[name].pattern : null))
                     .left.nobr.pad
                         input.btn(type='submit',value="Update")
                         input.btn(type='reset')
@@ -147,10 +150,15 @@ block append bannerItemsLeft
       each values, field in tfacet[0]
         each v in values
             - var active = ''
+            - var tfValueIcon = ''
+            - var tfFieldIcon = ''
+            - if (fields[field] && fields[field].icon) tfFieldIcon = fields[field].icon
+            - if (fields[field] && fields[field].icons && fields[field].icons[v._id]) tfValueIcon = 'vgi-' + fields[field].icons[v._id]
+            - else if (opts && opts.icons && opts.icons[v._id]) tfValueIcon = 'vgi-' + opts.icons[v._id]
             if (v._id == query[field] || ((typeof query[field] === 'string') && query[field].split(',').includes(v._id)) || ((query[field] instanceof Array) && query[field].includes(v._id)))
                 - active = 'pur'
                 //input(type="hidden",name=field,value=v._id)
-            a.fbn(href='/' + schemaName + '?' + field + '=' + v._id, class=active + ' ' + (opts.icons? 'vgi-'+opts.icons[v._id]: v._id), count=v.count)
+            a.fbn(href='/' + schemaName + '?' + field + '=' + v._id, class=(active + (tfFieldIcon ? ' ' + tfFieldIcon : '') + (tfValueIcon ? ' ' + tfValueIcon : '')), count=v.count)
                 =(v._id ? v._id : 'null')
                 |  (
                 = v.count

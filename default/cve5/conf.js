@@ -121,37 +121,13 @@ module.exports = {
         },        
         state: {
             path: 'body.CNA_private.state',
-            //chart: true,
             tabs: true,
             bulk: true,
-            enum: cve5.definitions.CNA_private.properties.state.enum,
-            class: 'nobr ',
-            icons: {
-                new: 'inbox',
-                open: 'inbox1',
-                draft: 'edit',
-                review: 'eye',
-                waiting: 'wait',
-                pending: 'cal',
-                closed: 'closed'
-            }
         },
         type: {
             path: 'body.CNA_private.type',
-            //chart: true,
             tabs: true,
-            bulk: true,
-            enum: cve5.definitions.CNA_private.properties.type.enum,
-            class: 'nobr ',
-            icons: {
-                unsure: 'what',
-                'no-vuln': 'safe',
-                advisory: 'alert',
-                'no-advisory': 'no',
-                doc: 'text',
-                misc: 'misc',
-                duplicate: 'ext'
-            }
+            bulk: true
         },
         cvss: {
             path: 'body.containers.cna.metrics.cvssV4_0.baseScore',
@@ -164,15 +140,7 @@ module.exports = {
         discovery: {
             path: 'body.containers.cna.source.discovery',
             chart: true,
-            bulk: true,
-            enum: ['INTERNAL', 'EXTERNAL', 'USER', 'UNKNOWN'],
-            icons: {
-                INTERNAL: 'hardhat',
-                EXTERNAL: 'hat',
-                USER: 'cap',
-                UNKNOWN: 'what'
-            },
-            class: 'nobr '
+            bulk: true
         },
         defect: {
             path: 'body.containers.cna.source.defect',
@@ -205,14 +173,13 @@ module.exports = {
             path: 'body.CNA_private.publish.ym',
             chart: true,
             hideColumn: true,
-            sort: -1
+            sort: -1,
+            icon: 'vgi-cal'
         },
         owner: {
             path: 'body.CNA_private.owner',
             chart: true,
-            bulk: true,
-            enum: ['example', 'team', 'memebers', 'change', 'in', 'conf.js'],
-            class: 'nobr '
+            bulk: true
         }
     },
     schema: cve5,
