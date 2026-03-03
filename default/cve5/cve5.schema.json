@@ -500,6 +500,19 @@
             }
           }
         },
+        "packageURL": {
+          "title": "Package URL (purl)",
+          "description": "A Package URL, a unified URL specification for identifying packages hosted by known package hosts. The Package URL MUST NOT include a version.",
+          "$ref": "#/definitions/uriType",
+          "options": {
+            "show_errors": "always",
+            "grid_columns": 12,
+            "class": "vgi-package",
+            "inputAttributes": {
+              "placeholder": "eg., pkg:maven/org.apache.commons/commons-lang3"
+            }
+          }
+        },
         "cpes": {
           "title": "CPEs",
           "type": "array",
@@ -726,7 +739,21 @@
           "$ref": "#/definitions/status",
           "default": "unaffected"
         }
-      }
+      },
+      "defaultProperties": [
+        "vendor",
+        "product",
+        "platforms",
+        "collectionURL",
+        "packageName",
+        "repo",
+        "cpes",
+        "modules",
+        "programFiles",
+        "programRoutines",
+        "versions",
+        "defaultStatus"
+      ]
     },
     "replacedBy": {
       "type": "array",
