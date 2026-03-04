@@ -420,3 +420,226 @@ JSONEditor.defaults.resolvers.unshift(function (schema) {
         return 'ssvcOpts';
     }
 });
+
+var languagePickerOptions = [
+    { code: 'en', label: 'English', flag: '🌐' },
+    { code: 'fr', label: 'French', flag: '🇫🇷' },
+    { code: 'de', label: 'German', flag: '🇩🇪' },
+    { code: 'es', label: 'Spanish', flag: '🇪🇸' },
+    { code: 'pt', label: 'Portuguese', flag: '🇵🇹' },
+    { code: 'it', label: 'Italian', flag: '🇮🇹' },
+    { code: 'nl', label: 'Dutch', flag: '🇳🇱' },
+    { code: 'sv', label: 'Swedish', flag: '🇸🇪' },
+    { code: 'no', label: 'Norwegian', flag: '🇳🇴' },
+    { code: 'da', label: 'Danish', flag: '🇩🇰' },
+    { code: 'fi', label: 'Finnish', flag: '🇫🇮' },
+    { code: 'pl', label: 'Polish', flag: '🇵🇱' },
+    { code: 'cs', label: 'Czech', flag: '🇨🇿' },
+    { code: 'tr', label: 'Turkish', flag: '🇹🇷' },
+    { code: 'ru', label: 'Russian', flag: '🇷🇺' },
+    { code: 'uk', label: 'Ukrainian', flag: '🇺🇦' },
+    { code: 'ja', label: 'Japanese', flag: '🇯🇵' },
+    { code: 'ko', label: 'Korean', flag: '🇰🇷' },
+    { code: 'zh', label: 'Chinese', flag: '🇨🇳' },
+    { code: 'ar', label: 'Arabic', flag: '🇸🇦' },
+    { code: 'he', label: 'Hebrew', flag: '🇮🇱' },
+    { code: 'hi', label: 'Hindi', flag: '🇮🇳' },
+    { code: 'id', label: 'Indonesian', flag: '🇮🇩' },
+    { code: 'vi', label: 'Vietnamese', flag: '🇻🇳' },
+    { code: 'th', label: 'Thai', flag: '🇹🇭' }
+];
+
+var englishLanguageCodes = {
+    en: true
+};
+
+function normalizeLanguageCode(value) {
+    return String(value || '').trim().replace(/_/g, '-').toLowerCase();
+}
+
+JSONEditor.defaults.editors.languagePicker = class languagePicker extends JSONEditor.defaults.editors.string {
+    build() {
+        super.build();
+
+        this.languagePickerSelect = document.createElement('select');
+        this.languagePickerSelect.className = 'txt language-picker-select';
+        this.languagePickerSelect.setAttribute('aria-label', 'Select language');
+
+        this.languagePickerSelect.appendChild(this.createPickerOption('', 'Language'));
+
+        this.pickerOptions = this.getPickerOptions();
+        for (var i = 0; i < this.pickerOptions.length; i++) {
+            var item = this.pickerOptions[i];
+            this.languagePickerSelect.appendChild(
+                this.createPickerOption(
+                    item.code,
+                    item.flag + ' ' + item.label
+                )
+            );
+        }
+        this.languagePickerSelect.appendChild(
+            this.createPickerOption('__custom__', 'Custom code')
+        );
+
+        this.input.classList.add('language-picker-code');
+        if (!this.input.getAttribute('placeholder')) {
+            this.input.setAttribute('placeholder', 'BCP 47 code (e.g., en-US)');
+        }
+
+        this.languagePickerWrap = document.createElement('div');
+        this.languagePickerWrap.className = 'language-picker-wrap';
+        this.languagePickerWrap.appendChild(this.languagePickerSelect);
+        if (this.input.parentNode) {
+            this.input.parentNode.insertBefore(this.languagePickerWrap, this.input);
+        } else if (this.control) {
+            this.control.appendChild(this.languagePickerWrap);
+        }
+        this.languagePickerWrap.appendChild(this.input);
+
+        this.languagePickerSelect.addEventListener('change', this.onPickerChange.bind(this));
+        this.input.addEventListener('input', this.onCodeInput.bind(this));
+
+        this.syncPickerToValue(this.getValue());
+        this.languagePickerSelect.disabled = !!this.input.disabled;
+    }
+
+    createPickerOption(value, text) {
+        var option = document.createElement('option');
+        option.value = value;
+        option.textContent = text;
+        return option;
+    }
+
+    getPickerOptions() {
+        if (
+            typeof this.schema.pattern === 'string' &&
+            this.schema.pattern.indexOf('^en') === 0
+        ) {
+            return languagePickerOptions.filter(function (item) {
+                return englishLanguageCodes[item.code];
+            });
+        }
+        return languagePickerOptions.slice();
+    }
+
+    findCanonicalLanguageCode(value) {
+        var normalized = normalizeLanguageCode(value);
+        if (!normalized) {
+            return '';
+        }
+        for (var i = 0; i < this.pickerOptions.length; i++) {
+            if (normalizeLanguageCode(this.pickerOptions[i].code) === normalized) {
+                return this.pickerOptions[i].code;
+            }
+        }
+        return '';
+    }
+
+    setCustomInputVisible(show) {
+        if (!this.input) {
+            return;
+        }
+        if (show) {
+            this.input.classList.remove('language-picker-code-hidden');
+        } else {
+            this.input.classList.add('language-picker-code-hidden');
+        }
+    }
+
+    syncPickerToValue(value) {
+        if (!this.languagePickerSelect) {
+            return;
+        }
+        var current = String(value || '').trim();
+        var canonical = this.findCanonicalLanguageCode(current);
+
+        if (canonical) {
+            this.languagePickerSelect.value = canonical;
+            this.input.value = canonical;
+            this.value = canonical;
+            this.setCustomInputVisible(false);
+            return;
+        }
+
+        if (!current) {
+            this.languagePickerSelect.value = '';
+            this.input.value = '';
+            this.value = '';
+            this.setCustomInputVisible(true);
+            return;
+        }
+
+        this.languagePickerSelect.value = '__custom__';
+        this.input.value = current;
+        this.value = current;
+        this.setCustomInputVisible(true);
+    }
+
+    onPickerChange() {
+        var selectedCode = this.languagePickerSelect.value;
+        if (selectedCode === '__custom__') {
+            this.setCustomInputVisible(true);
+            this.input.focus();
+            return;
+        }
+
+        if (!selectedCode) {
+            this.input.value = '';
+            this.value = '';
+            this.setCustomInputVisible(true);
+            this.onChange(true);
+            return;
+        }
+
+        this.setValue(selectedCode);
+        this.setCustomInputVisible(false);
+        this.onChange(true);
+    }
+
+    onCodeInput() {
+        if (!this.languagePickerSelect) {
+            return;
+        }
+        var typed = String(this.input.value || '').trim();
+        var canonical = this.findCanonicalLanguageCode(typed);
+
+        if (!typed) {
+            this.languagePickerSelect.value = '';
+        } else if (canonical) {
+            this.languagePickerSelect.value = canonical;
+        } else {
+            this.languagePickerSelect.value = '__custom__';
+        }
+        this.value = typed;
+    }
+
+    setValue(value, initial, fromTemplate) {
+        super.setValue(value, initial, fromTemplate);
+        this.syncPickerToValue(this.getValue());
+    }
+
+    refreshValue() {
+        super.refreshValue();
+        this.syncPickerToValue(this.value);
+    }
+
+    enable() {
+        super.enable();
+        if (!this.always_disabled && this.languagePickerSelect) {
+            this.languagePickerSelect.disabled = false;
+        }
+    }
+
+    disable() {
+        super.disable();
+        if (this.languagePickerSelect) {
+            this.languagePickerSelect.disabled = true;
+        }
+    }
+};
+
+JSONEditor.defaults.resolvers.unshift(function (schema) {
+    if (schema.format === 'languagePicker') {
+        return 'languagePicker';
+    }
+});

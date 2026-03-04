@@ -1355,7 +1355,38 @@ async function cvePost() {
     }
 }
 
-async function postADP(orgID) {
+function postADPSetButtonMessage(button, message, isError) {
+    if (!button || !button.parentNode || !message) {
+        return;
+    }
+    var msgNode = button._postAdpMsgNode;
+    if (!msgNode || !msgNode.parentNode) {
+        msgNode = document.createElement('small');
+        msgNode.className = 'lbl sml bor vgi-info rnd shd wht';
+        msgNode.style.marginLeft = '0.5em';
+        button.insertAdjacentElement('afterend', msgNode);
+        button._postAdpMsgNode = msgNode;
+    }
+    msgNode.innerText = message;
+    if (isError) {
+        msgNode.classList.add('tred');
+    } else {
+        msgNode.classList.remove('tred');
+    }
+    if (button._postAdpMsgTimer) {
+        clearTimeout(button._postAdpMsgTimer);
+    }
+    button._postAdpMsgTimer = setTimeout(function () {
+        if (msgNode && msgNode.parentNode) {
+            msgNode.parentNode.removeChild(msgNode);
+        }
+        button._postAdpMsgNode = null;
+        button._postAdpMsgTimer = null;
+    }, 15000);
+}
+
+async function postADP(orgID, button) {
+    var postFeedback = button ? new feedback(button, 'text', 'Posting ...') : null;
     try {
         var currentOrgId = csCache && csCache.orgInfo ? csCache.orgInfo.UUID : null;
         if (!currentOrgId) {
@@ -1380,10 +1411,17 @@ async function postADP(orgID) {
             if (!(await cveEnsurePublishSession())) {
                 return;
             }
-            await csClient.updateAdp(cveId, { adpContainer: matches[0] });
+            var ret = await csClient.updateAdp(cveId, { adpContainer: matches[0] });
+            postADPSetButtonMessage(button, (ret && ret.message) ? ret.message : 'ADP information posted.', false);
         }
     } catch (e) {
-        cveAlert('Error posting ADP', cvePublishErrorMessage(e));
+        var errorMessage = cvePublishErrorMessage(e);
+        cveAlert('Error posting ADP', errorMessage);
+        postADPSetButtonMessage(button, errorMessage, true);
+    } finally {
+        if (postFeedback) {
+            postFeedback.cancel();
+        }
     }
 }
 

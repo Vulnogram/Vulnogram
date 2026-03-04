@@ -15,6 +15,15 @@ JSONEditor.AbstractEditor.prototype.addLinks = function () {
       if (this.schema.links) {
         for (let i = 0; i < this.schema.links.length; i++) {
             var link = this.schema.links[i];
+            var linkCondition = null;
+            if (Object.prototype.hasOwnProperty.call(link, 'if')) {
+                linkCondition = this.jsoneditor.compileTemplate(link.if, this.template_engine);
+                this.refreshWatchedFieldValues();
+                var showLink = !!linkCondition(this.getWatchedFieldValues() || {});
+                if (!showLink) {
+                    continue;
+                }
+            }
             //todo: refactor
             var style = null;
             if(link.class) {
@@ -41,7 +50,17 @@ JSONEditor.AbstractEditor.prototype.addLinks = function () {
                 h.setAttribute('target', link.target)
             }
             if(link.onclick) {
-                h.setAttribute('onclick', link.onclick);
+                var onClickHandler = link.onclick;
+                if (typeof onClickHandler === 'string') {
+                    try {
+                        var onClickTemplate = this.jsoneditor.compileTemplate(onClickHandler, this.template_engine);
+                        this.refreshWatchedFieldValues();
+                        onClickHandler = onClickTemplate(this.getWatchedFieldValues() || {});
+                    } catch (e) {
+                        onClickHandler = link.onclick;
+                    }
+                }
+                h.setAttribute('onclick', onClickHandler);
             }
             if(link.place == "container" && this.container) {
                 this.container.appendChild(h);
@@ -49,6 +68,18 @@ JSONEditor.AbstractEditor.prototype.addLinks = function () {
                 this.header.appendChild(h);
             } else {
                 this.addLink(h)
+            }
+            if (linkCondition) {
+                (function (el, condition, editor) {
+                    var initialDisplay = el.style.display;
+                    editor.link_watchers.push(function (context) {
+                        var show = false;
+                        try {
+                            show = !!condition(context || editor.getWatchedFieldValues() || {});
+                        } catch (e) {}
+                        el.style.display = show ? initialDisplay : 'none';
+                    });
+                })(h, linkCondition, this);
             }
         }
       }

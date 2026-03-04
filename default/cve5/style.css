@@ -104,6 +104,28 @@ button.json-editor-btn-delete {
   margin-left: 1em;
 }
 
+.language-picker-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.language-picker-select {
+  flex: 1 1 18em;
+  min-width: 14em;
+}
+
+.language-picker-code {
+  flex: 0 0 11em;
+  min-width: 11em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.language-picker-code-hidden {
+  display: none;
+}
+
 
 .tags-look .tagify__dropdown__item{
   display: inline-block;
