@@ -32,7 +32,6 @@
     "extend": "^3.0.2",
     "json-patch-extended": "^0.1.2",
     "mongodb": "^7.1.0",
-    "mongoose-legacy-pluralize": "^2.0.0",
     "node-fetch": "^3.3.2",
     "nodemon": "^3.1.14",
     "passport": "^0.7.0",
