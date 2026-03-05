@@ -4,7 +4,6 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
-const mongoose = require('mongoose');
 const flash = require('connect-flash');
 const https = require('https');
 const pug = require('pug');
@@ -15,6 +14,15 @@ const passport = require('passport');
 const crypto = require('crypto');
 const compress = require('compression');
 
+if (process.cwd() !== __dirname) {
+    try {
+        process.chdir(__dirname);
+    } catch (err) {
+        console.error('Failed to set working directory to app root:', err.message);
+        process.exit(1);
+    }
+}
+
 const dotenv = require('dotenv').config()
 if (dotenv.error) {
     console.log(".env was not loaded.");
@@ -22,30 +30,13 @@ if (dotenv.error) {
 
 const conf = require('./config/conf');
 const optSet = require('./models/set');
+const mongo = require('./lib/mongo');
 
-if(!process.env.NODE_ENV) {
+if (!process.env.NODE_ENV) {
     process.env.NODE_ENV = "production";
 }
 
-mongoose.Promise = global.Promise;
-mongoose.set('strictQuery', false);
-mongoose.connect(conf.database, {
-    keepAlive: true,
-}).catch(function(e){
-    console.log("Error"+e.message);
-});
-const db = mongoose.connection;
-
-//Check connection
-db.once('open', function () {
-    console.log('Connected to MongoDB');
-});
-
-//Check for db errors
-db.on('error', function (err) {
-   console.error(err.message);
-   console.error('Check mongodb connection URL configuration. Ensure Mongodb server is running!');
-});
+let db = null;
 
 const app = express();
 
@@ -83,13 +74,17 @@ app.use(express.json({limit:'16mb'}));
 app.use(express.static('public'));
 
 // Express Session middleware
+const useSecureCookie = process.env.VULNOGRAM_SECURE_COOKIE === 'true' || !!conf.httpsOptions;
+if (process.env.VULNOGRAM_SECURE_COOKIE === 'true') {
+    app.set('trust proxy', 1);
+}
 const sessionMiddleware = session({
     secret: crypto.randomBytes(64).toString('hex'),
     resave: true,
     saveUninitialized: true,
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production'
+      secure: useSecureCookie
     }
 });
 app.use(sessionMiddleware);
@@ -121,7 +116,7 @@ function ensureAuthenticated(req, res, next) {
 }
 
 function ensureConnected(req, res, next) {
-    if (mongoose.connection.readyState == 1) {
+    if (mongo.isConnected()) {
         return next();
     } else {
         req.session.returnTo = req.originalUrl;
@@ -148,94 +143,102 @@ app.use(function (req, res, next) {
     next()
 })
 
-// set up routes
-let users = require('./routes/users');
-app.use('/users', users.public);
-app.use('/users', ensureAuthenticated, users.protected);
-
-let docs = require('./routes/doc');
-
-app.locals.confOpts = {};
-
-var sections = require('./models/sections.js')();
-
-for(section of sections) {
-    var s = optSet(section, ['default', 'custom']);
-    //var s = conf.sections[section];
-    if(s.facet && s.facet.ID) {
-        app.locals.confOpts[section] = s;
-        let r = docs(section, app.locals.confOpts[section]);
-        app.use('/' + section, ensureAuthenticated, r.router);
+async function bootstrap() {
+    try {
+        db = await mongo.connect(conf.database);
+        console.log('Connected to MongoDB');
+    } catch (err) {
+        console.error(err.message);
+        console.error('Check mongodb connection URL configuration. Ensure Mongodb server is running!');
+        process.exit(1);
     }
-}
+    // set up routes
+    let users = require('./routes/users');
+    app.use('/users', users.public);
+    app.use('/users', ensureAuthenticated, users.protected);
 
-app.use('/home/stats', ensureAuthenticated, async function(req, res, next){
-    var sections = [];
-    for(section of conf.sections){
-        var s = {};
-        try {
-            var s = await db.collection(section+'s').stats();
-        } catch (e){
+    let docs = require('./routes/doc');
 
-        };
-        if (s === {}) {
-        try {
-            var s = await db.collection(section).stats();
-        } catch (e){
+    app.locals.confOpts = {};
 
-        };
-        };
+    var sections = require('./models/sections.js')();
 
-        sections.push({
-            name: section,
-            items: s.count,
-            size: s.size,
-            avgSize: s.avgObjSize
+    for (var section of sections) {
+        var s = optSet(section, ['default', 'custom']);
+        //var s = conf.sections[section];
+        if (s.facet && s.facet.ID) {
+            app.locals.confOpts[section] = s;
+            let r = docs(section, app.locals.confOpts[section]);
+            app.use('/' + section, ensureAuthenticated, r.router);
+        }
+    }
+
+    app.use('/home/stats', ensureAuthenticated, async function (req, res, next) {
+        var sections = [];
+        for (var section of conf.sections) {
+            var s = {};
+            var sectionOpts = app.locals.confOpts[section];
+            var collectionName = sectionOpts && sectionOpts.conf && sectionOpts.conf.collectionName
+                ? sectionOpts.conf.collectionName
+                : section;
+            try {
+                s = await db.collection(collectionName).stats();
+            } catch (e) {
+            }
+
+            sections.push({
+                name: section,
+                items: s.count,
+                size: s.size,
+                avgSize: s.avgObjSize
+            });
+        }
+        res.render('list',
+            {
+                docs: sections,
+                columns: ['name', 'items', 'size', 'avgSize'],
+                fields: {
+                    'name': {
+                        className: 'icn'
+                    }
+                }
+            })
+    });
+
+    app.use(function (req, res, next) {
+        res.locals.confOpts = app.locals.confOpts;
+        next();
+    });
+
+    if (conf.customRoutes) {
+        for (var r of conf.customRoutes) {
+            app.use(r.path, require(r.route));
+        }
+    }
+
+    app.get('/', function (req, res, next) {
+        res.redirect(conf.homepage ? conf.homepage : '/home');
+    });
+
+    const realtimeEnabled = !conf.realtime || conf.realtime.enabled !== false;
+    const server = conf.httpsOptions ? https.createServer(conf.httpsOptions, app) : http.createServer(app);
+
+    if (realtimeEnabled) {
+        const { Server } = require('socket.io');
+        const io = new Server(server, {
+            maxHttpBufferSize: conf.realtime && conf.realtime.maxPatchBytes ? conf.realtime.maxPatchBytes * 2 : 1e6
+        });
+        require('./lib/realtime')(io, {
+            sessionMiddleware: sessionMiddleware,
+            passport: passport,
+            conf: conf,
+            confOpts: app.locals.confOpts
         });
     }
-    res.render('list',
-    {
-        docs: sections,
-        columns: ['name', 'items', 'size', 'avgSize'],
-        fields: {
-            'name': {
-                className: 'icn'
-            }
-        }
-    })
-});
 
-app.use(function (req, res, next) {
-    res.locals.confOpts = app.locals.confOpts;
-    next();
-});
-
-if(conf.customRoutes) {
-    for(r of conf.customRoutes) {
-        app.use(r.path, require(r.route));
-    }
-}
-
-app.get('/', function (req, res, next) {
-    res.redirect(conf.homepage? conf.homepage : '/home');
-});
-
-const realtimeEnabled = !conf.realtime || conf.realtime.enabled !== false;
-const server = conf.httpsOptions ? https.createServer(conf.httpsOptions, app) : http.createServer(app);
-
-if (realtimeEnabled) {
-    const { Server } = require('socket.io');
-    const io = new Server(server, {
-        maxHttpBufferSize: conf.realtime && conf.realtime.maxPatchBytes ? conf.realtime.maxPatchBytes * 2 : 1e6
-    });
-    require('./lib/realtime')(io, {
-        sessionMiddleware: sessionMiddleware,
-        passport: passport,
-        conf: conf,
-        confOpts: app.locals.confOpts
+    server.listen(conf.serverPort, conf.serverHost, function () {
+        console.log('Server started at ' + (conf.httpsOptions ? 'https://' : 'http://') + conf.serverHost + ':' + conf.serverPort);
     });
 }
 
-server.listen(conf.serverPort, conf.serverHost, function () {
-    console.log('Server started at ' + (conf.httpsOptions ? 'https://' : 'http://') + conf.serverHost + ':' + conf.serverPort);
-});
+bootstrap();

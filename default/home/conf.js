@@ -1,19 +1,11 @@
 var appConf = require('../../config/conf');
 var sections = require('../../models/sections')();
+var optSet = require('../../models/set');
 
-module.exports = {
-conf: {
-    title: 'Dashboard',
-    name: 'Chart',
-    class: 'vgi-pie',
-    disableDrafts: false,
-    order: -10,
-    uri: '/home/'
-},
-facet: {
+var facet = {
     ID: {
         path: 'body.ID',
-        regex: 'PLOT-[A-Za-z0-9-_]+',
+        regex: 'PLOT-[A-Za-z0-9_-]+',
         chart: false,
         href: '/home/',
         hrefSuffix: '#chart'
@@ -58,7 +50,44 @@ facet: {
         path: 'body.color',
 //        hideColumn: true
     }
+};
+
+function buildSectionFacetEnumSource() {
+    var source = [];
+    var seen = {};
+    for (var i = 0; i < sections.length; i++) {
+        var sectionName = sections[i];
+        var sectionConf = sectionName === 'home' ? { facet: facet } : optSet(sectionName, ['default', 'custom']);
+        var keys = Object.keys((sectionConf && sectionConf.facet) || {});
+        for (var j = 0; j < keys.length; j++) {
+            var facetKey = keys[j];
+            var id = sectionName + ':' + facetKey;
+            if (seen[id]) {
+                continue;
+            }
+            seen[id] = true;
+            source.push({
+                section: sectionName,
+                key: facetKey
+            });
+        }
+    }
+    return source;
+}
+
+var sectionFacetEnumSource = buildSectionFacetEnumSource();
+
+module.exports = {
+conf: {
+    title: 'Dashboard',
+    name: 'Chart',
+    class: 'vgi-pie',
+    disableDrafts: false,
+    order: -10,
+    uri: '/home/',
+    collectionName: 'homes'
 },
+facet: facet,
 schema: {    
   "definitions": {},
   "$schema": "http://json-schema.org/draft-07/schema#",
@@ -75,7 +104,7 @@ schema: {
       "ID": {
           "type": "string",
           "description": "Unique ID starting with PLOT-xxxxxxx..",
-          "pattern": "^PLOT-([A-Za-z0-9]+)$",
+          "pattern": "^PLOT-([A-Za-z0-9_-]+)$",
       },
     "title": {
       "$id": "#/properties/title",
@@ -99,8 +128,9 @@ schema: {
     },
     "type": {
       "$id": "#/properties/type",
-      "type": "radio",
+      "type": "string",
       "title": "Chart Type",
+      "format": "radio",
       "default": "bar",
       "enum": [
         "pie","bar","treemap"
@@ -124,9 +154,19 @@ schema: {
       "format": "taglist",
       "title": "Group by field names (Max 2 for bar charts, Max 1 for pie charts)",
       "$ref": "/home/examples?field=body.key",
+      "watch": {
+        "section": "root.section"
+      },
       "items": {
-            "type": "string",   
-        },
+            "type": "string",
+            "enumSource": [
+                {
+                    "source": sectionFacetEnumSource,
+                    "filter": "context.watched && context.item.section === context.watched.section",
+                    "value": "context.item.key"
+                }
+            ]
+      },
         "maxItems": 2,
         "minItems": 1
     },

@@ -81,6 +81,7 @@ html
                         div.wht.pop.pad.bor.shd.rnd.vflx.vg-user-pop
                           a.lbl.right.vgi-x(onclick="this.closest('details').removeAttribute('open')")
                           a.lbl.vgi-edit.block(href="/users/profile/" + user.username) Update profile
+                          a.lbl.vgi-user(href="/users/list") Team list
                           if opts && opts.conf && opts.conf.shortcuts
                             each shortcut in opts.conf.shortcuts
                               - var href=(shortcut.href instanceof Function ? shortcut.href(locals) : shortcut.href)

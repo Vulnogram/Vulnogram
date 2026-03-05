@@ -1,7 +1,14 @@
 //- Copyright (c) 2017 Chandan B N. All rights reserved.
 
 extends ../layout
+include ../util
+
+block append topHeaderLeft
+  a.btn.sfe.vgi-magic(href="/users/profile") Add user
+  a.fbn.vgi-user(href="/users/list") User list
+
 block content
+    +tablesort
     table.vtbl.wht.sortable
         thead
             tr

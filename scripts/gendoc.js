@@ -4,7 +4,6 @@
 const fs = require('fs');
 const fsp = fs.promises;
 const path = require('path');
-const os = require('os');
 const http = require('http');
 const crypto = require('crypto');
 const { pathToFileURL } = require('url');
@@ -169,6 +168,128 @@ async function writeTextIfChanged(filePath, content) {
 async function fileHash(filePath) {
   const buffer = await fsp.readFile(filePath);
   return crypto.createHash('sha256').update(buffer).digest('hex');
+}
+
+function hashBuffer(buffer) {
+  return crypto.createHash('sha256').update(buffer).digest('hex');
+}
+
+function readPngDimensions(buffer) {
+  if (!Buffer.isBuffer(buffer) || buffer.length < 24) {
+    throw new Error('Invalid PNG buffer');
+  }
+  const signature = '89504e470d0a1a0a';
+  if (buffer.subarray(0, 8).toString('hex') !== signature) {
+    throw new Error('Screenshot buffer is not PNG');
+  }
+  const width = buffer.readUInt32BE(16);
+  const height = buffer.readUInt32BE(20);
+  if (!width || !height) {
+    throw new Error('Screenshot PNG has invalid dimensions');
+  }
+  return { width, height };
+}
+
+function clampNumber(value, fallback, min, max) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return fallback;
+  }
+  if (typeof min === 'number' && parsed < min) {
+    return min;
+  }
+  if (typeof max === 'number' && parsed > max) {
+    return max;
+  }
+  return parsed;
+}
+
+function getScreenshotFrameStyle(shot) {
+  const input = shot && shot.frameStyle && typeof shot.frameStyle === 'object' ? shot.frameStyle : {};
+  return {
+    enabled: input.enabled !== false,
+    radius: clampNumber(input.radius, 16, 0, 100),
+    padding: clampNumber(input.padding, 24, 0, 200),
+    borderWidth: clampNumber(input.borderWidth, 1, 0, 20),
+    borderColor: String(input.borderColor || 'rgba(15, 23, 42, 0.12)'),
+    shadow: String(input.shadow || '0 18px 42px rgba(15, 23, 42, 0.26)'),
+    shadowPadding: clampNumber(input.shadowPadding, 28, 0, 200)
+  };
+}
+
+async function addScreenshotFrame(browser, screenshotBuffer, shot) {
+  const frameStyle = getScreenshotFrameStyle(shot);
+  if (!frameStyle.enabled) {
+    return screenshotBuffer;
+  }
+
+  const dimensions = readPngDimensions(screenshotBuffer);
+  const totalPadding = frameStyle.padding + frameStyle.shadowPadding;
+  const viewportWidth = Math.min(
+    8192,
+    Math.max(300, dimensions.width + totalPadding * 2 + frameStyle.borderWidth * 2)
+  );
+  const viewportHeight = Math.min(
+    8192,
+    Math.max(220, dimensions.height + totalPadding * 2 + frameStyle.borderWidth * 2)
+  );
+
+  const renderPage = await browser.newPage({
+    viewport: { width: viewportWidth, height: viewportHeight }
+  });
+  try {
+    const html =
+      '<!doctype html><html><head><meta charset="utf-8">' +
+      '<style>' +
+      'html,body{margin:0;padding:0;background:transparent;}' +
+      '#gendoc-shot-shell{display:inline-block;padding:' +
+      totalPadding +
+      'px;background:transparent;box-sizing:border-box;}' +
+      '#gendoc-shot-frame{display:inline-block;line-height:0;background:#fff;overflow:hidden;border:' +
+      frameStyle.borderWidth +
+      'px solid ' +
+      frameStyle.borderColor +
+      ';border-radius:' +
+      frameStyle.radius +
+      'px;box-shadow:' +
+      frameStyle.shadow +
+      ';}' +
+      '#gendoc-shot-frame>img{display:block;width:' +
+      dimensions.width +
+      'px;height:' +
+      dimensions.height +
+      'px;}' +
+      '</style></head><body>' +
+      '<div id="gendoc-shot-shell">' +
+      '<div id="gendoc-shot-frame">' +
+      '<img alt="" src="data:image/png;base64,' +
+      screenshotBuffer.toString('base64') +
+      '">' +
+      '</div>' +
+      '</div>' +
+      '</body></html>';
+
+    await renderPage.setContent(html, { waitUntil: 'load' });
+    await renderPage.evaluate(async () => {
+      const image = document.querySelector('#gendoc-shot-frame > img');
+      if (!image) {
+        throw new Error('Framed screenshot image was not rendered');
+      }
+      if (image.complete) {
+        return;
+      }
+      await new Promise((resolve, reject) => {
+        image.onload = () => resolve();
+        image.onerror = () => reject(new Error('Failed to decode screenshot image'));
+      });
+    });
+    return await renderPage.locator('#gendoc-shot-shell').screenshot({
+      animations: 'disabled',
+      type: 'png'
+    });
+  } finally {
+    await renderPage.close();
+  }
 }
 
 function toUtcTimestamp(date = new Date()) {
@@ -350,6 +471,65 @@ async function applyAction(page, action, context) {
           targetSelector: selector,
           attributeName: attribute,
           attributeValue: value
+        }
+      );
+      break;
+    }
+    case 'markLinkByText': {
+      const text = String(action.text || '').trim();
+      if (!text) {
+        throw new Error('markLinkByText action requires "text"');
+      }
+      const exact = Boolean(action.exact);
+      const includeTitle = action.includeTitle !== false;
+      const attributeName = String(action.attribute || 'data-gendoc-link-target').trim();
+      const attributeValue = String(
+        Object.prototype.hasOwnProperty.call(action, 'value') ? action.value : '1'
+      );
+      await page.evaluate(
+        ({ targetText, useExact, matchTitle, markerAttr, markerValue }) => {
+          const normalize = (value) => String(value || '').replace(/\s+/g, ' ').trim();
+          const expected = normalize(targetText);
+          if (!expected) {
+            throw new Error('markLinkByText action received empty text');
+          }
+          const links = Array.from(document.querySelectorAll('a'));
+          for (const link of links) {
+            link.removeAttribute(markerAttr);
+          }
+          const matches = (value) => (useExact ? value === expected : value.includes(expected));
+          const isVisible = (element) => {
+            const style = window.getComputedStyle(element);
+            if (style.display === 'none' || style.visibility === 'hidden' || Number(style.opacity) === 0) {
+              return false;
+            }
+            return element.getClientRects().length > 0;
+          };
+
+          let found = null;
+          for (const link of links) {
+            if (!isVisible(link)) {
+              continue;
+            }
+            const label = normalize(link.textContent);
+            const title = normalize(link.getAttribute('title'));
+            if (matches(label) || (matchTitle && matches(title))) {
+              found = link;
+              break;
+            }
+          }
+
+          if (!found) {
+            throw new Error('No visible link found for text: ' + expected);
+          }
+          found.setAttribute(markerAttr, markerValue);
+        },
+        {
+          targetText: text,
+          useExact: exact,
+          matchTitle: includeTitle,
+          markerAttr: attributeName,
+          markerValue: attributeValue
         }
       );
       break;
@@ -1087,6 +1267,102 @@ async function applyAction(page, action, context) {
       }, variant);
       break;
     }
+    case 'renderCveListMock': {
+      const count = Math.max(1, Math.min(200, Number(action.count || 10)));
+      const year = Math.max(2000, Math.min(9999, Number(action.year || 2025)));
+      const startSequence = Math.max(1, Number(action.startSequence || 1000));
+      const requester = String(action.requester || 'cna.user');
+      const defaultState = String(action.state || 'RESERVED').toUpperCase();
+      const entries = Array.isArray(action.entries) ? action.entries : [];
+      await page.evaluate(
+        ({ sampleEntries, sampleCount, idYear, sequenceStart, defaultRequester, fallbackState }) => {
+          function padSequence(value) {
+            return String(value).padStart(4, '0');
+          }
+
+          function makeTime(index) {
+            const base = Date.UTC(idYear, 0, 1, 10, 0, 0);
+            const created = new Date(base + index * 24 * 60 * 60 * 1000).toISOString();
+            const modified = new Date(base + index * 24 * 60 * 60 * 1000 + 4 * 60 * 60 * 1000).toISOString();
+            return { created, modified };
+          }
+
+          function normalizeState(value) {
+            const next = String(value || fallbackState || 'RESERVED').toUpperCase();
+            if (next === 'RESERVED' || next === 'PUBLISHED' || next === 'REJECTED') {
+              return next;
+            }
+            return 'RESERVED';
+          }
+
+          function normalizeEntry(entry, index) {
+            const suffix = padSequence(sequenceStart + index);
+            const cveId = entry && entry.cve_id ? String(entry.cve_id) : 'CVE-' + idYear + '-' + suffix;
+            const state = normalizeState(entry && entry.state);
+            const requestedBy =
+              entry && entry.requested_by && entry.requested_by.user
+                ? String(entry.requested_by.user)
+                : defaultRequester;
+            const time =
+              entry &&
+              entry.time &&
+              entry.time.created &&
+              entry.time.modified &&
+              !isNaN(Date.parse(entry.time.created)) &&
+              !isNaN(Date.parse(entry.time.modified))
+                ? {
+                    created: String(entry.time.created),
+                    modified: String(entry.time.modified)
+                  }
+                : makeTime(index);
+            return {
+              cve_id: cveId,
+              state: state,
+              requested_by: {
+                user: requestedBy
+              },
+              time: time
+            };
+          }
+
+          const list = [];
+          if (sampleEntries.length > 0) {
+            for (let i = 0; i < sampleEntries.length; i += 1) {
+              list.push(normalizeEntry(sampleEntries[i], i));
+            }
+          } else {
+            for (let i = 0; i < sampleCount; i += 1) {
+              list.push(normalizeEntry(null, i));
+            }
+          }
+
+          const cveList = document.getElementById('cveList');
+          if (!cveList) {
+            throw new Error('#cveList container is unavailable');
+          }
+          if (typeof window.cveRender !== 'function') {
+            throw new Error('window.cveRender is unavailable');
+          }
+
+          cveList.innerHTML = window.cveRender({
+            ctemplate: 'listIds',
+            cveIds: list,
+            editable: true,
+            inlineLoad: true,
+            docPathBase: '/cve5/'
+          });
+        },
+        {
+          sampleEntries: entries,
+          sampleCount: count,
+          idYear: year,
+          sequenceStart: startSequence,
+          defaultRequester: requester,
+          fallbackState: defaultState
+        }
+      );
+      break;
+    }
     case 'openUserList': {
       await page.evaluate(() => {
         var summary = document.querySelector('#userListPopup > summary');
@@ -1096,42 +1372,64 @@ async function applyAction(page, action, context) {
       });
       break;
     }
+    case 'scrollToSelector': {
+      const selector = String(action.selector || '').trim();
+      if (!selector) {
+        throw new Error('scrollToSelector action requires "selector"');
+      }
+      const block = String(action.block || 'center');
+      const inline = String(action.inline || 'nearest');
+      await page.evaluate(
+        ({ targetSelector, targetBlock, targetInline }) => {
+          const element = document.querySelector(targetSelector);
+          if (!element) {
+            throw new Error('Scroll target selector not found: ' + targetSelector);
+          }
+          element.scrollIntoView({
+            behavior: 'auto',
+            block: targetBlock,
+            inline: targetInline
+          });
+        },
+        {
+          targetSelector: selector,
+          targetBlock: block,
+          targetInline: inline
+        }
+      );
+      if (action.ms) {
+        await page.waitForTimeout(Number(action.ms));
+      }
+      break;
+    }
     default:
       throw new Error('Unsupported action: ' + name);
   }
 }
 
 async function captureScreenshot(page, shot, screenshotsDir, context) {
-  const tempPath = path.join(
-    os.tmpdir(),
-    'gendoc-' +
-      shot.id +
-      '-' +
-      Date.now().toString(36) +
-      '-' +
-      Math.random().toString(36).slice(2, 8) +
-      '.png'
-  );
   const outputPath = path.join(screenshotsDir, shot.file);
 
   for (const step of shot.steps) {
     await applyAction(page, step, context);
   }
 
+  let screenshotBuffer;
   if (shot.target) {
-    await page.locator(shot.target).first().screenshot({
-      path: tempPath,
-      animations: 'disabled'
+    screenshotBuffer = await page.locator(shot.target).first().screenshot({
+      animations: 'disabled',
+      type: 'png'
     });
   } else {
-    await page.screenshot({
-      path: tempPath,
+    screenshotBuffer = await page.screenshot({
       fullPage: Boolean(shot.fullPage),
-      animations: 'disabled'
+      animations: 'disabled',
+      type: 'png'
     });
   }
+  const framedBuffer = await addScreenshotFrame(context.browser, screenshotBuffer, shot);
 
-  const nextHash = await fileHash(tempPath);
+  const nextHash = hashBuffer(framedBuffer);
   let previousHash = null;
   try {
     previousHash = await fileHash(outputPath);
@@ -1144,9 +1442,8 @@ async function captureScreenshot(page, shot, screenshotsDir, context) {
   const changed = context.force || nextHash !== previousHash;
   if (changed) {
     await fsp.mkdir(path.dirname(outputPath), { recursive: true });
-    await fsp.copyFile(tempPath, outputPath);
+    await fsp.writeFile(outputPath, framedBuffer);
   }
-  await fsp.unlink(tempPath).catch(() => undefined);
 
   return {
     id: shot.id,
@@ -1183,6 +1480,21 @@ async function getExistingScreenshotStatus(shot, screenshotsDir) {
 }
 
 function buildMarkdown(manifest, screenshotStatuses, generatedAt) {
+  const uiBadgeRules = [
+    { label: 'CVE CNA Portal', icon: 'org' },
+    { label: 'CVE Portal', icon: 'org' },
+    { label: 'CNA Portal', icon: 'org' },
+    { label: 'Reserve One CVE', icon: 'magic' },
+    { label: 'Publish Selected', icon: 'export' },
+    { label: 'Publish CVE', icon: 'export' },
+    { label: 'Drafts Manager', icon: 'edit' },
+    { label: 'Drafts', icon: 'edit' },
+    { label: 'Users', icon: 'cog' },
+    { label: 'Reject this CVE ID', icon: 'del' },
+    { label: 'Reject this ID', icon: 'no' },
+    { label: 'Manage', icon: 'export' }
+  ];
+
   function escapeHtmlAttribute(value) {
     return String(value)
       .replace(/&/g, '&amp;')
@@ -1191,12 +1503,31 @@ function buildMarkdown(manifest, screenshotStatuses, generatedAt) {
       .replace(/>/g, '&gt;');
   }
 
+  function escapeRegex(value) {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function renderUiBadge(icon, label) {
+    return '<b class="lbl bor vgi-' + icon + '">' + label + '</b>';
+  }
+
+  function applyUiBadges(markdownText) {
+    let output = String(markdownText || '');
+    for (const rule of uiBadgeRules) {
+      const pattern = new RegExp('\\*\\*' + escapeRegex(rule.label) + '\\*\\*', 'g');
+      output = output.replace(pattern, renderUiBadge(rule.icon, rule.label));
+    }
+    return output;
+  }
+
   const title = manifest.title || 'Using Vulnogram with CVE Services';
   const sourcePdfTitle = manifest.sourcePdfTitle || 'Using Vulnogram with CVE Services';
   const sourcePdfDate = manifest.sourcePdfDate || 'unknown';
   const sourcePdf = manifest.sourcePdf;
   const markdownStylesheet =
     manifest.markdownStylesheet || 'https://vulnogram.org/1.0.0/css/min.css';
+  const markdownIconStylesheet =
+    manifest.markdownIconStylesheet || 'https://vulnogram.org/1.0.0/css/vg-icons.css';
   const screenshotsDir = asPublicDocPath(manifest.screenshotsDir || 'screenshots');
   const sections = manifest.sections || [];
 
@@ -1204,6 +1535,7 @@ function buildMarkdown(manifest, screenshotStatuses, generatedAt) {
   lines.push('# ' + title);
   lines.push('');
   lines.push('<link rel="stylesheet" href="' + escapeHtmlAttribute(markdownStylesheet) + '" />');
+  lines.push('<link rel="stylesheet" href="' + escapeHtmlAttribute(markdownIconStylesheet) + '" />');
   lines.push('');
   lines.push(
     'This guide is adapted from [' +
@@ -1223,12 +1555,19 @@ function buildMarkdown(manifest, screenshotStatuses, generatedAt) {
     lines.push('## ' + section.title);
     lines.push('');
     if (section.text) {
-      lines.push(section.text);
+      lines.push(applyUiBadges(section.text));
       lines.push('');
     }
 
     const sectionShots = manifest.screenshots.filter((shot) => shot.section === section.id);
+    let lastSubsection = null;
     for (const shot of sectionShots) {
+      const subsection = shot.subsection ? String(shot.subsection).trim() : '';
+      if (subsection && subsection !== lastSubsection) {
+        lines.push('### ' + subsection);
+        lines.push('');
+        lastSubsection = subsection;
+      }
       const status = screenshotStatuses.get(shot.id);
       const imagePath = './' + asPublicDocPath(path.join(screenshotsDir, shot.file));
       lines.push(
@@ -1236,10 +1575,10 @@ function buildMarkdown(manifest, screenshotStatuses, generatedAt) {
           escapeHtmlAttribute(imagePath) +
           '" alt="' +
           escapeHtmlAttribute(shot.alt) +
-          '" class="bor rndx shd" />'
+          '"/>'
       );
       if (shot.caption) {
-        lines.push('*' + shot.caption + '*');
+        lines.push('*' + applyUiBadges(shot.caption) + '*');
       }
       if (!status || !status.exists) {
         lines.push('_Screenshot missing. Run `node scripts/gendoc.js` to generate this file._');
@@ -1385,7 +1724,8 @@ async function main() {
         page.setDefaultTimeout(30000);
         const status = await captureScreenshot(page, shot, screenshotsDir, {
           baseUrl,
-          force: options.force
+          force: options.force,
+          browser
         });
         capturedStatuses.push(status);
         await page.close();

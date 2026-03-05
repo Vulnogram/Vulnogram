@@ -2,44 +2,49 @@
 
 extends ../layout
 
+block append topHeaderLeft
+  if admin
+    a.btn.sfe.vgi-magic(href="/users/profile") Add user
+  a.fbn.vgi-user(href="/users/list") User list
+
 block content
  div
   - var action = '/users/profile/';
   if profile.username
     - action = action + profile.username;
-  form.pad2.bor.shd.rnd(method='POST', action=action)
+  form.pad2(method='POST', action=action)
     input(type='hidden', name='_csrf', value=csrfToken)
     .row
-        .cardtitle=title
+        h2=title
     .row
-      label.lbl.icn.owner Name:
+      label.lbl.vgi-user Name:
       input.txt(name='name', type='text', value=profile.name)
     .row
-      label.lbl.icn.Email Email:
+      label.lbl.vgi-mail Email:
       input.txt(name='email', type='text', value=profile.email)
     .row
-      label.lbl.icn.owner Username:
+      label.lbl.vgi-user Username:
       if admin
         input.txt(name='username', type='text',value=profile.username)
       else
         tt=profile.username
     .row
-      label.lbl.icn Favorite Emoji:
+      label.lbl.vgi-image Favorite Emoji:
       input.txt(name='emoji', type='text', value=profile.emoji)
     .row
-      label.lbl.icn Password:
+      label.lbl.vgi-key Password:
       input.txt(name='password', type='password', autocomplete="new-password")
     .row
-      label.lbl.icn Confirm Password:
+      label.lbl.vgi-key Confirm Password:
       input.txt(name='password2', type='password', autocomplete="new-password")
     .row
-      label.lbl.icn.CNA CNA or group email:
+      label.lbl.vgi-org CNA or group email:
       if admin
         input.txt(name='group', type='text',value=profile.group)
       else
         tt=profile.group
     .row
-      label.lbl.icn Privilege:
+      label.lbl.vgi-crown Privilege:
       if admin
         select.form-control(name='priv')
             //option(value=2,selected=profile.priv==2) Read only
@@ -53,18 +58,12 @@ block content
                 | Read/Write
             else if profile.priv == 2
                 | Read only
-    .row
+    .gap
         button.btn.sfe(type='submit', value='Save') Save
-    .row
-        div.center
-            a.btn.icn.owner(href="/users/list") User list
-            if admin
-                |  · 
-                a.btn.icn.add(href="/users/profile") Add user
-        div.center
-            if admin && profile.username
-                a.sml.icn.rejected.tred(href="/users/delete/"+profile.username,onclick="return confirm('Delete this user?')") Delete 
-                    = profile.username
+        if admin && profile.username
+          a.fbn.vgi-del.dis(href="/users/delete/"+profile.username,onclick="return confirm('Delete this user?')") Delete 
+            = profile.username    
+
                 
         
 

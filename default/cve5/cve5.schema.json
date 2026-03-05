@@ -500,13 +500,23 @@
             }
           }
         },
+        "packageURL": {
+          "title": "Package URL (purl)",
+          "description": "A Package URL, a unified URL specification for identifying packages hosted by known package hosts. The Package URL MUST NOT include a version.",
+          "$ref": "#/definitions/uriType",
+          "options": {
+            "show_errors": "always",
+            "grid_columns": 12,
+            "class": "vgi-package",
+            "inputAttributes": {
+              "placeholder": "eg., pkg:maven/org.apache.commons/commons-lang3"
+            }
+          }
+        },
         "cpes": {
           "title": "CPEs",
           "type": "array",
           "format": "table",
-          "options": {
-            "hidden": true
-          },
           "description": "Affected products defined by CPE. This is an array of CPE values (vulnerable and not), we use an array so that we can make multiple statements about the same version and they are separate (if we used a JSON object we'd essentially be keying on the CPE name and they would have to overlap). Also this allows things like cveDataVersion or cveDescription to be applied directly to the product entry. This also allows more complex statements such as \"Product X between versions 10.2 and 10.8\" to be put in a machine-readable format. As well since multiple statements can be used multiple branches of the same product can be defined here.",
           "uniqueItems": true,
           "items": {
@@ -726,7 +736,20 @@
           "$ref": "#/definitions/status",
           "default": "unaffected"
         }
-      }
+      },
+      "defaultProperties": [
+        "vendor",
+        "product",
+        "platforms",
+        "collectionURL",
+        "packageName",
+        "repo",
+        "modules",
+        "programFiles",
+        "programRoutines",
+        "versions",
+        "defaultStatus"
+      ]
     },
     "replacedBy": {
       "type": "array",
@@ -1242,6 +1265,7 @@
       "description": "An object containing the vulnerability information provided by an Authorized Data Publisher (ADP). Since multiple ADPs can provide information for a CVE ID, an ADP container must indicate which ADP is the source of the information in the object.",
       "type": "object",
       "format": "grid",
+      "headerTemplate": "'ADP Container from  ' + context.i1 + ' · ' + (context.self.providerMetadata && context.self.providerMetadata.shortName ? context.self.providerMetadata.shortName : (csCache && csCache.org ? csCache.org : ''))",
       "default":
       {
         "providerMetadata": {
@@ -1252,45 +1276,18 @@
         {
           "place": "header",
           "class": "indent fbn sfe vgi-export",
-          "style": "",
+          "style": "context.self.providerMetadata",
           "target": false,
-          "href": "'javascript:postADP(' + JSON.stringify(context.self && context.self.providerMetadata ? context.self.providerMetadata.orgId : null) + ')'",
+          "if": "context.self && context.self.providerMetadata && (context.self.providerMetadata.orgId === '00000000-0000-4000-9000-000000000000' || (csCache && csCache.orgInfo && context.self.providerMetadata.orgId === csCache.orgInfo.UUID))",
+          "href": "'#'",
+          "onclick": "'postADP(' + JSON.stringify(context.self && context.self.providerMetadata ? context.self.providerMetadata.orgId : null) + ', this); return false;'",
           "title": "Post this ADP information ",
           "rel": "'Post this information'"
         }
       ],
       "properties": {
         "providerMetadata": {
-          "$ref": "#/definitions/providerMetadata",
-          "allOf": [
-            {
-              "if": {
-                "required": ["shortName"]
-              },
-              "then": {
-                "properties": {
-                  "shortName": {
-                    "$ref": "#/definitions/shortName",
-                    "title": "ADP Short Name",
-                    "readOnly": true,
-                    "options": {
-                      "hidden": false,
-                      "class": "dis",
-                      "formClass": "lni dis gap"
-                    }
-                  }
-                }
-              },
-              "else": {
-                "properties": {
-                  "shortName": {
-                    "$ref": "#/definitions/shortName",
-                    "options": { "hidden": true }
-                  }
-                }
-              }
-            }
-          ]
+          "$ref": "#/definitions/providerMetadata"
         },
         "datePublic": {
           "title": "Date Public",
@@ -1299,6 +1296,9 @@
           },
           "$ref": "#/definitions/timestamp",
           "description": "If known, the date/time the vulnerability was disclosed publicly."
+        },
+        "tags": {
+          "$ref": "#/definitions/adpTags"
         },
         "title": {
           "type": "string",
@@ -1323,9 +1323,39 @@
           "minItems":0
         },
         "descriptions": {
-          "$ref": "#/definitions/descriptions",
+          "type": "array",
+          "title": "CVE Description",
+          "description": "A list of multi-lingual descriptions of the vulnerability. E.g., [PROBLEMTYPE] in [COMPONENT] in [VENDOR] [PRODUCT] [VERSION] on [PLATFORMS] allows [ATTACKER] to [IMPACT] via [VECTOR]. OR [COMPONENT] in [VENDOR] [PRODUCT] [VERSION] [ROOT CAUSE], which allows [ATTACKER] to [IMPACT] via [VECTOR].",
           "default": [],
-          "minItems":0
+          "minItems":0,
+          "uniqueItems": true,
+          "options": {
+            "disable_array_add": false,
+            "disable_array_delete": false,
+            "class": "vgi-text tgap"
+          },
+          "items": {
+            "$ref": "#/definitions/description",
+            "title": "Description",
+            "options": {
+              "class": "hid"
+            },
+            "properties": {
+              "supportingMedia": {
+                "items": {
+                  "required": []
+                }
+              },
+              "lang": {
+                "title": " ",
+                "$ref": "#/definitions/language",
+                "options": {
+                  "class": "hid",
+                  "hidden": false
+                }
+              }
+            }
+          }
         },
         "affected": {
           "$ref": "#/definitions/affected",
@@ -1357,9 +1387,7 @@
         "credits": {
           "$ref": "#/definitions/credits"
         },
-        "tags": {
-          "$ref": "#/definitions/adpTags"
-        },
+
         "taxonomyMappings": {
           "$ref": "#/definitions/taxonomyMappings"
         }
@@ -1373,7 +1401,8 @@
       },
       "additionalProperties": false,
       "options": {
-        "display_required_only": false
+        "display_required_only": false,
+        "remove_empty_properties": false
       }
     },
     "affected": {
@@ -3598,15 +3627,20 @@
     },
     "language": {
       "type": "string",
+      "format": "languagePicker",
       "description": "BCP 47 language code, language-region.",
       "default": "en",
       "pattern": "^[A-Za-z]{2,4}([\\-_][A-Za-z]{4})?([\\-_]([A-Za-z]{2}|[0-9]{3}))?$",
       "options": {
-        "hidden": true
+        "hidden": true,
+        "inputAttributes": {
+          "placeholder": "BCP 47 code (e.g., en-US)"
+        }
       }
     },
     "englishLanguage": {
       "type": "string",
+      "format": "languagePicker",
       "description": "BCP 47 language code, language-region, required to be English.",
       "pattern": "^en([_-][A-Za-z]{4})?([_\\-]([A-Za-z]{2}|[0-9]{3}))?$"
     },

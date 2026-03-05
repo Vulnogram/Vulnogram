@@ -21,7 +21,7 @@
     {
       "id": "details",
       "title": "4. Enter CVE Record Details",
-      "text": "Use the editor tab to enter vulnerability details, affected products, references, and metrics. Switch between **Editor**, **Source**, and **Preview** tabs while drafting."
+      "text": "Use the **Editor** tab to enter vulnerability details, affected products, references, and metrics. Switch between **Editor**, **Source**, and **Preview** tabs while drafting."
     },
     {
       "id": "publish",
@@ -32,6 +32,11 @@
       "id": "admin",
       "title": "6. Manage Users and API Keys (Admin)",
       "text": "Organization administrators can open **Users** in the portal view to add users, update profile and role attributes, disable accounts, and reset API secrets."
+    },
+    {
+      "id": "reject",
+      "title": "7. How to Reject a CVE ID",
+      "text": "Use **Reject this CVE ID** and **Reject this ID** controls to retire unused IDs or withdraw published records. The two workflows below show where each reject action lives."
     }
   ],
   "screenshots": [
@@ -66,7 +71,7 @@
       "file": "02-portal-login.png",
       "section": "login",
       "alt": "CVE Portal login dialog in Vulnogram",
-      "caption": "CVE Services login form from the portal sidebar action.",
+      "caption": "CVE Services login form from the **CVE Portal** sidebar action.",
       "steps": [
         {
           "action": "setViewport",
@@ -104,7 +109,7 @@
       "file": "03-reserve-cve-ids.png",
       "section": "reserve",
       "alt": "CVE Portal reserve controls in Vulnogram",
-      "caption": "Portal reserve controls with state and year filters.",
+      "caption": "**CVE Portal** reserve controls with state and year filters.",
       "steps": [
         {
           "action": "setViewport",
@@ -125,6 +130,19 @@
         {
           "action": "waitForSelector",
           "selector": "#cvePortalDialog[open] #cvePortalFilter"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "#cvePortalDialog[open] #cveList",
+          "state": "attached"
+        },
+        {
+          "action": "renderCveListMock",
+          "count": 10,
+          "year": 2025,
+          "startSequence": 8401,
+          "state": "RESERVED",
+          "requester": "example.cna"
         },
         {
           "action": "setStyle",
@@ -160,7 +178,7 @@
       "file": "04-enter-cve-details.png",
       "section": "details",
       "alt": "Vulnogram CVE editor detail form area",
-      "caption": "Primary CVE editor form where record content is entered.",
+      "caption": "Primary **Editor** form where record content is entered.",
       "steps": [
         {
           "action": "setViewport",
@@ -196,7 +214,7 @@
       "file": "05-publish-cve.png",
       "section": "publish",
       "alt": "Vulnogram header with Publish CVE action",
-      "caption": "Top action bar with publish control.",
+      "caption": "Top action bar with **Publish CVE** control.",
       "steps": [
         {
           "action": "setViewport",
@@ -243,7 +261,7 @@
       "file": "05b-publish-multiple-cve.png",
       "section": "publish",
       "alt": "Vulnogram drafts manager dialog showing multiple cached CVE entries",
-      "caption": "Drafts Manager with sample cached CVE entries ready for bulk publish.",
+      "caption": "**Drafts Manager** with sample cached CVE entries ready for bulk publish.",
       "steps": [
         {
           "action": "setViewport",
@@ -328,7 +346,7 @@
       "file": "06-admin-user-management.png",
       "section": "admin",
       "alt": "CVE Portal user management popup in Vulnogram",
-      "caption": "Admin-oriented user management view in the portal.",
+      "caption": "Admin-oriented **Users** management view in the **CVE Portal**.",
       "steps": [
         {
           "action": "setViewport",
@@ -347,6 +365,19 @@
           "variant": "admin"
         },
         {
+          "action": "waitForSelector",
+          "selector": "#cvePortalDialog[open] #cveList",
+          "state": "attached"
+        },
+        {
+          "action": "renderCveListMock",
+          "count": 10,
+          "year": 2025,
+          "startSequence": 8401,
+          "state": "RESERVED",
+          "requester": "example.cna"
+        },
+        {
           "action": "openUserList"
         },
         {
@@ -358,6 +389,148 @@
           "selector": "#cvePortalNav",
           "property": "background",
           "value": "var(--acc)"
+        },
+        {
+          "action": "setAttribute",
+          "selector": "#cvePortalNav",
+          "attribute": "data-portal-status",
+          "value": "connected"
+        },
+        {
+          "action": "waitForTimeout",
+          "ms": 300
+        }
+      ]
+    },
+    {
+      "id": "07a-reject-unused-cves",
+      "file": "07a-reject-unused-cves.png",
+      "section": "reject",
+      "subsection": "a) Rejecting Unused or Unpublished CVEs",
+      "alt": "CVE list table in Vulnogram portal with reject icon highlighted for an unused CVE ID",
+      "caption": "Unused/unpublished IDs can be rejected directly from **Reject this CVE ID** in the CVE list action column.",
+      "steps": [
+        {
+          "action": "setViewport",
+          "width": 1600,
+          "height": 980
+        },
+        {
+          "action": "goto"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "#mainTabGroup"
+        },
+        {
+          "action": "renderPortalMock",
+          "variant": "member"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "#cvePortalDialog[open] #cveList",
+          "state": "attached"
+        },
+        {
+          "action": "renderCveListMock",
+          "count": 10,
+          "year": 2025,
+          "startSequence": 8401,
+          "state": "RESERVED",
+          "requester": "example.cna"
+        },
+        {
+          "action": "setStyle",
+          "selector": "#cvePortalNav",
+          "property": "background",
+          "value": "var(--acc)"
+        },
+        {
+          "action": "setAttribute",
+          "selector": "#cvePortalNav",
+          "attribute": "data-portal-status",
+          "value": "connected"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "#cveListTable tbody tr:nth-child(10) td:last-child a.fbn.vgi-del[title=\"Reject this CVE ID\"]"
+        },
+        {
+          "action": "scrollToSelector",
+          "selector": "#cveListTable tbody tr:nth-child(10) td:last-child a.fbn.vgi-del[title=\"Reject this CVE ID\"]",
+          "block": "center",
+          "ms": 200
+        },
+        {
+          "action": "addCircleOverlay",
+          "selector": "#cveListTable tbody tr:nth-child(10) td:last-child a.fbn.vgi-del[title=\"Reject this CVE ID\"]",
+          "containerSelector": "#cvePortalDialog",
+          "color": "#d90429",
+          "outlineColor": "#ffffff",
+          "width": 8,
+          "outlineWidth": 14,
+          "paddingX": 18,
+          "paddingY": 12
+        },
+        {
+          "action": "waitForTimeout",
+          "ms": 300
+        }
+      ]
+    },
+    {
+      "id": "07b-reject-published-cve",
+      "file": "07b-reject-published-cve.png",
+      "section": "reject",
+      "subsection": "b) Rejecting Published CVEs",
+      "alt": "Bottom of a loaded CVE editor form with reject this CVE ID link highlighted",
+      "caption": "Published records are rejected from the editor footer **Reject this ID** link after loading the CVE.",
+      "steps": [
+        {
+          "action": "setViewport",
+          "width": 1600,
+          "height": 980
+        },
+        {
+          "action": "goto",
+          "path": "#editor"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "#docEditor"
+        },
+        {
+          "action": "loadCveDocument",
+          "cveId": "CVE-2025-0001"
+        },
+        {
+          "action": "waitForTimeout",
+          "ms": 400
+        },
+        {
+          "action": "markLinkByText",
+          "text": "Reject this ID",
+          "exact": true
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "a[data-gendoc-link-target=\"1\"]"
+        },
+        {
+          "action": "scrollToSelector",
+          "selector": "a[data-gendoc-link-target=\"1\"]",
+          "block": "end",
+          "ms": 250
+        },
+        {
+          "action": "addCircleOverlay",
+          "selector": "a[data-gendoc-link-target=\"1\"]",
+          "color": "#d90429",
+          "outlineColor": "#ffffff",
+          "width": 8,
+          "outlineWidth": 14,
+          "paddingX": 30,
+          "paddingY": 14
         },
         {
           "action": "setAttribute",

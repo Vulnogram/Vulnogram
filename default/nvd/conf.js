@@ -4,7 +4,8 @@ conf:{
     readonly: true,
     name: 'NVD',
     disableDrafts: true,
-    class: 'vgi-data'
+    class: 'vgi-data',
+    collectionName: 'nvds'
 },
 facet: {
     ID: {

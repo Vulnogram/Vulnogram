@@ -10,10 +10,22 @@ var sanitizeFile = require("sanitize-filename");
 
 module.exports = function (Document, opts) {
     var router = express.Router();
+    var idRegex = new RegExp('^' + opts.idpattern + '$');
     // SAVE a file.
 
-    async function checkDir(req, res) {
-        if(sanitizeFile(req.params.id) != req.params.id) {
+    function checkPattern(req, res, next) {
+        if (!idRegex.test(req.params.id)) {
+            res.json({
+                type: 'err',
+                msg: 'Invalid document ID.'
+            });
+            return;
+        }
+        return next();
+    }
+
+    async function checkDir(req, res, next) {
+        if (sanitizeFile(req.params.id) != req.params.id) {
             res.json({
                 type: 'err',
                 msg: 'Error! document ID contain disallowed characters.'
@@ -22,7 +34,7 @@ module.exports = function (Document, opts) {
             return next();
         }
     }
-    router.post('/:id(' + opts.idpattern + ')/file', csrfProtection, checkDir, async function (req, res) {
+    router.post('/:id/file', csrfProtection, checkPattern, checkDir, async function (req, res) {
         var fq = {};
         fq[opts.idpath] = req.params.id;
         var doc = await Document.findOne(fq);
@@ -83,16 +95,16 @@ module.exports = function (Document, opts) {
                                 "files.$": nf
                             }
                         }, {
-                            new: true
-                        }).exec();
+                            returnDocument: 'after'
+                        });
                         if (ret === null) {
                             var ret = await Document.findOneAndUpdate(fq, {
                                 $push: {
                                     files: nf
                                 }
                             }, {
-                                new: true
-                            }).exec();
+                                returnDocument: 'after'
+                            });
                         }
 
                         if (x == (fcount - 1)) {
@@ -135,7 +147,7 @@ module.exports = function (Document, opts) {
     });
 
     //GET file contents
-    router.get('/:id(' + opts.idpattern + ')/file/:filename', checkDir,
+    router.get('/:id/file/:filename', checkPattern, checkDir,
         async function (req, res, next) {
             res.setHeader("Content-Security-Policy", "default-src 'none'; connect-src 'none'");
             return next();
@@ -144,19 +156,19 @@ module.exports = function (Document, opts) {
     );
 
     // delete file
-    router.delete('/:id(' + opts.idpattern + ')/file/:filename', csrfProtection, checkDir, async function (req, res) {
+    router.delete('/:id/file/:filename', csrfProtection, checkPattern, checkDir, async function (req, res) {
         var fq = {};
         fq[opts.idpath] = req.params.id;
         try {
-            var ret = await Document.update(fq, { $pull: { files: { name: req.params.filename } } });
-            res.json({ ok: ret.ok, n: ret.n });
+            var ret = await Document.updateOne(fq, { $pull: { files: { name: req.params.filename } } });
+            res.json({ ok: ret.acknowledged ? 1 : 0, n: ret.modifiedCount });
         } catch (e) {
             res.json(e);
         }
     });
 
     // file listing in JSON format
-    router.get('/files/:id(' + opts.idpattern + ')', checkDir,
+    router.get('/files/:id', checkPattern, checkDir,
         async function (req, res, next) {
             res.setHeader("Content-Security-Policy", "default-src 'none'; connect-src 'none'");
             return next();
@@ -165,12 +177,12 @@ module.exports = function (Document, opts) {
         async function (req, res) {
             var fq = {};
             fq[opts.idpath] = req.params.id;
-            var doc = await Document.findOne(fq, { files: 1 });
-            res.json(doc.files);
+            var doc = await Document.findOne(fq, { projection: { files: 1 } });
+            res.json(doc ? doc.files : []);
         });
 
     // Directory listing
-    router.get('/:id(' + opts.idpattern + ')/file/', checkDir, function (req, res) {
+    router.get('/:id/file/', checkPattern, checkDir, function (req, res) {
         fs.readdir(path.join(opts.conf.files, req.params.id, '/file/'), function (err, items) {
             res.render(opts.list, {
                 title: req.params.id + ' files',

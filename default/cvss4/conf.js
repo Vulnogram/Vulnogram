@@ -10,7 +10,7 @@ module.exports = {
         title: 'Common Vulnerability Scoring System',
         description: 'Intuitive and interactive CVSS 4.0 scoring calculator. Generate accurate vulnerability severity score and ratings, vector string, and JSON exchange file for CVSS v4.0 Base, Threat, and Supplemental metrics.',
         name: 'CVSS 4.0',
-        uri: '/cvss4/',
+        uri: '/cvss4/new',
         class: 'vgi-cvss-logo',
         disableDrafts: true,
         favicon: 'https://raw.githubusercontent.com/Vulnogram/vg-icons/refs/heads/main/src/cvss.svg',

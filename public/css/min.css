@@ -821,30 +821,30 @@ div.form-control[data-format="taglist"]>span.txt-icon-wrap>.txt-input-icon {
 .rbtn {
     /*round button X */
     display: inline-block;
-    border-radius: 16px !important;
+    border-radius: 17px !important;
     padding: 0px;
     border: 1px solid var(--bor);
     background-color: var(--bg1);
-    max-width: 30px;
-    max-height: 30px;
-    width: 30px !important;
-    height: 30px !important;
-    min-width: 30px;
-    min-height: 30px;
+    max-width: 34px;
+    max-height: 34px;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px;
+    min-height: 34px;
     text-align: center;
 
 }
 
 .rbtn::before {
     content: "";
-    width: 30px !important;
-    height: 30px !important;
-    min-width: 30px;
-    min-height: 30px;
-    background-size: 20px;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px;
+    min-height: 34px;
+    background-size: 24px;
     padding: 0px !important;
-    max-width: 30px;
-    max-height: 30px;
+    max-width: 34px;
+    max-height: 34px;
 }
 
 button.rbtn {
@@ -1611,11 +1611,6 @@ td.compact .form-control {
     margin: 0px;
 }
 
-/*.je-object__title {
-    padding: .5em 0em;
-}*/
-
-
 .je-switcher {
     height: 28px !important;
     appearance: none;
@@ -1840,7 +1835,7 @@ div[data-schemapath*=".cvss"] .rdg .form-control:first-child input[value="NOT_DE
 .sidebar-head {
     padding: 0.5em 0;
     overflow-x: hidden;
-    min-height: 36px;
+    min-height: 38px;
     border-bottom: 1px solid var(--bor);
     display: flex;
     align-items: center;
@@ -1853,8 +1848,18 @@ div[data-schemapath*=".cvss"] .rdg .form-control:first-child input[value="NOT_DE
     flex-direction: column;
     gap: 0.5em;
     flex: 1;
-    overflow-x: scroll;
-    overflow-y: scroll;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    padding: 0.5em 0;
+}
+
+.sidebar-nav:hover {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    flex: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
     padding: 0.5em 0;
 }
 
@@ -1927,10 +1932,6 @@ div[data-schemapath*=".cvss"] .rdg .form-control:first-child input[value="NOT_DE
     #sidebarToggle:checked~.layout-grid .sidebar-nav .sidebar-expandable> :not(summary) {
         overflow: visible;
     }
-
-    .sidebar-head>.vgi-larrow {
-        display: none;
-    }
 }
 
 #smallScreenMenu.lbl {
@@ -1950,12 +1951,49 @@ div[data-schemapath*=".cvss"] .rdg .form-control:first-child input[value="NOT_DE
 @media (min-width: 600px) {
     .vg-top-header {
         flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+    }
+
+    .vg-top-header>.left {
+        flex: 0 0 auto;
+        margin-right: 0;
+    }
+
+    .vg-top-header>.center {
+        flex: 1 1 auto;
+        min-width: 10em;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .vg-top-header>.center.flx {
+        flex-wrap: nowrap;
+    }
+
+    .vg-top-header>.right {
+        flex: 0 0 auto;
     }
 }
 
-.vg-search-form,
-.vg-search-input {
+.vg-search-form {
+    display: flex;
     flex-grow: 1;
+    flex-wrap: nowrap;
+    align-items: center;
+    width: 90%;
+    min-width: 10em;
+    max-width: 90%;
+}
+
+.vg-search-input {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+}
+
+.vg-search-form .sbn {
+    flex: 0 0 auto;
 }
 
 .vg-user-details {

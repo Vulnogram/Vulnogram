@@ -492,16 +492,39 @@ function cvssImport(j) {
 }
 
 function cveFixForVulnogram(j) {
+    if (!j) {
+        return j;
+    }
     j = addRichTextCVE(j);
     j = cvssImport(j);
-    if (j.containers && j.containers.cna && j.containers.cna.problemTypes == undefined) {
-        j.containers.cna.problemTypes = [];
+    var cna = j.containers && j.containers.cna;
+    if (!cna) {
+        return j;
     }
-    if (j.containers && j.containers.cna && j.containers.cna.impacts == undefined) {
-        j.containers.cna.impacts = [];
+    if (Array.isArray(cna.problemTypes)) {
+        cna.problemTypes.forEach(function (problemType) {
+            if (!problemType || !Array.isArray(problemType.descriptions)) {
+                return;
+            }
+            problemType.descriptions.forEach(function (entry) {
+                if (!entry || entry.type != "CWE" || typeof entry.cweId != "string" || typeof entry.description != "string") {
+                    return;
+                }
+                var description = entry.description.trim();
+                if (description && description.indexOf(entry.cweId) == -1) {
+                    entry.description = entry.cweId + " " + description;
+                }
+            });
+        });
     }
-    if (j.containers && j.containers.cna && j.containers.cna.metrics == undefined) {
-        j.containers.cna.metrics = [];
+    if (cna.problemTypes == undefined) {
+        cna.problemTypes = [];
+    }
+    if (cna.impacts == undefined) {
+        cna.impacts = [];
+    }
+    if (cna.metrics == undefined) {
+        cna.metrics = [];
     }
     return j;
 }
