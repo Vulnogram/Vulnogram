@@ -18,7 +18,7 @@ var queryMWBody;
 module.exports = function (name, opts) {
     opts.schemaName = name;
     opts.collectionName = opts.conf && opts.conf.collectionName ? opts.conf.collectionName : name;
-    opts.historyCollectionName = opts.conf && opts.conf.historyCollectionName ? opts.conf.historyCollectionName : opts.schemaName + '_history';
+    opts.historyCollectionName = opts.conf && opts.conf.historyCollectionName ? opts.conf.historyCollectionName : opts.schemaName + '_histories';
     //todo make it configurable
     var idpath = opts.idpath = opts.facet.ID.path;
     if (undefined == opts.facet.ID.link) {

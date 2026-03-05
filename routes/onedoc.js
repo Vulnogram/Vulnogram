@@ -180,7 +180,7 @@ module.exports = function (Document, opts) {
     }
     var historyCollectionName = opts.historyCollectionName
         || (opts.conf && opts.conf.historyCollectionName)
-        || (opts.schemaName + '_history');
+        || (opts.schemaName + '_histories');
     var History = docModel(historyCollectionName);
     var addHistory = function(oldDoc, newDoc) {
         return module.addModelHistory(History, oldDoc, newDoc);
