@@ -630,4 +630,4 @@ module.exports = function (name, opts) {
 
     module.router = router;
     return module;
-}
+};
