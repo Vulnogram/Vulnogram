@@ -151,7 +151,7 @@ mixin userstats
                 button.right.rbtn.vgi-x(onclick="this.closest('details').removeAttribute('open')")     
             +userDetail(userInfo)
             hr.bort
-            span.vgi-edit.fbn(onclick="cveUserEdit(this)" u=userInfo.username, f=userInfo.name?userInfo.name.first:'', l=userInfo.name?userInfo.name.last:'', ac=userInfo.active ad=userInfo.authority.active_roles.includes('ADMIN') title="Edit Info")
+            span.vgi-edit.fbn(onclick="cveUserEdit(this)" u=userInfo.username, f=userInfo.name?userInfo.name.first:'', l=userInfo.name?userInfo.name.last:'', ac=userInfo.active, ad=userInfo.authority.active_roles.includes('ADMIN') title="Edit Info")
                 | Update my details
             hr.bort
             dt Org:  
@@ -164,7 +164,7 @@ mixin userstats
             span.vgi-exit.fbn(onclick="portalLogout()") Logout!
 
 mixin userDetail(u)
-    a.td(onclick="cveUserEdit(this)",u=u.username, f=u.name?u.name.first:'', l=u.name?u.name.last:'' ac=u.active ad=u.authority.active_roles.includes('ADMIN') title="Edit Info")
+    a.td(onclick="cveUserEdit(this)", u=u.username, f=u.name?u.name.first:'', l=u.name?u.name.last:'', ac=u.active, ad=u.authority.active_roles.includes('ADMIN') title="Edit Info")
         b=u.name?u.name.first:''
             | 
             =u.name?u.name.last:''

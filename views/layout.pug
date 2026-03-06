@@ -31,6 +31,7 @@ html
                 if confOpts && confOpts[section]
                   - var cf = confOpts[section].conf ? confOpts[section].conf : {};
                   a.lbl(class=(cf.class ? cf.class : 'vgi-data')+ (schemaName == section ? ' rnd sec ':'')+ (page && page.startsWith('/' + section + '/') ? " hig " : ""), title=cf.title, href = (cf.uri? cf.uri : '/' + section + '/' ))=cf.name
+          label.sidebar-nav-fill(for="sidebarToggle" aria-label="Toggle sidebar")
         .sidebar-foot
           block sidebarFooter
       script.
