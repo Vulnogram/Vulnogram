@@ -2833,10 +2833,19 @@
                   {
                     "place": "header",
                     "target": "_self",
-                    "class": "vgi-copy",
+                    "class": "indent vgi-copy",
                     "href": "'javascript:copyToClipboard(\"' + cvssjs.vector4(context) + '\");void(0);'",
                     "title": "Copy Vector",
                     "rel": "' Copy'"
+                  },
+                  {
+                    "place": "header",
+                    "target": "_self",
+                    "class": "indent vgi-in",
+                    "href": "'javascript:void(0);'",
+                    "onclick": "'return pasteCvssVectorFromClipboard(this);'",
+                    "title": "Paste CVSS Vector text",
+                    "rel": "' Paste'"
                   }
                 ]
               }

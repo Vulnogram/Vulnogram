@@ -512,7 +512,7 @@ select.btn {
     font-size: 100%;
     padding: .5em 1em;
     text-decoration: none !important;
-    border-radius: 2px;
+    border-radius: 5px;
     color: var(--txt);
     transition: background-color 0.3s ease;
     min-height: 20px;

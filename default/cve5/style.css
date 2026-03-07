@@ -233,6 +233,7 @@ button.json-editor-btn-delete {
 
 #cpBox {
   width: 85vw;
+  max-height: calc(92vh - 3.5em);
   background: linear-gradient(135deg, var(--cve) 0%, var(--sev-med) 100%);
   padding: 2em 0px;
   position: fixed;
