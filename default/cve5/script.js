@@ -1003,6 +1003,123 @@ function generateCpeApplicabilityNode(affectedProduct, overrides) {
 }
 
 /**
+ * Extract a CVSS vector from raw clipboard text.
+ * Accepts direct vectors and common calculator URLs containing vectors.
+ */
+function extractCvssVectorString(text) {
+  if (text === undefined || text === null) {
+    return null;
+  }
+  var input = String(text).trim();
+  if (!input) {
+    return null;
+  }
+
+  // Support URL payloads like "...?vector=CVSS:4.0/..."
+  var vectorParam = input.match(/[?#&]vector=([^&#\s]+)/i);
+  if (vectorParam && vectorParam[1]) {
+    try {
+      input = decodeURIComponent(vectorParam[1]);
+    } catch (e) {
+      input = vectorParam[1];
+    }
+  }
+
+  var prefixed = input.match(/CVSS:\d(?:\.\d)?\/[A-Za-z0-9:\/._-]+/i);
+  if (prefixed && prefixed[0]) {
+    return prefixed[0];
+  }
+
+  // Retry once if the whole clipboard payload is URL encoded.
+  try {
+    var decoded = decodeURIComponent(input);
+    if (decoded && decoded !== input) {
+      prefixed = decoded.match(/CVSS:\d(?:\.\d)?\/[A-Za-z0-9:\/._-]+/i);
+      if (prefixed && prefixed[0]) {
+        return prefixed[0];
+      }
+      input = decoded;
+    }
+  } catch (e) {
+    // Ignore decode failures and continue with original text.
+  }
+
+  // CVSS v2 vectors have no CVSS: prefix.
+  var v2 = input.match(/AV:[NAL]\/AC:[LMH]\/Au:[MSN](?:\/[A-Za-z]{1,3}:[A-Za-z0-9._-]+)+/i);
+  if (v2 && v2[0]) {
+    return v2[0];
+  }
+
+  return null;
+}
+
+function resolveCvssEditorPathFromNode(node) {
+  if (!node || !node.closest) {
+    return null;
+  }
+  var current = node.closest('[data-schemapath]');
+  while (current) {
+    var schemaPath = current.getAttribute('data-schemapath');
+    if (schemaPath) {
+      var m = schemaPath.match(/^(.*\.(cvssV4_0|cvssV3_1|cvssV3_0|cvssV2_0))(?:\.|$)/);
+      if (m && m[1]) {
+        return m[1];
+      }
+    }
+    current = current.parentElement ? current.parentElement.closest('[data-schemapath]') : null;
+  }
+  return null;
+}
+
+function pasteCvssVector(vectorText, cvssEditorPath) {
+  var vectorString = extractCvssVectorString(vectorText);
+  if (!vectorString) {
+    console.warn('No CVSS vector found in clipboard text.');
+    return false;
+  }
+
+  var targetPath = cvssEditorPath || resolveCvssEditorPathFromNode(document.activeElement);
+  if (!targetPath || !docEditor || !docEditor.getEditor) {
+    console.warn('Unable to locate a CVSS editor for vector paste.');
+    return false;
+  }
+
+  var cvssEditor = docEditor.getEditor(targetPath);
+  if (!cvssEditor) {
+    console.warn('Unable to find CVSS editor:', targetPath);
+    return false;
+  }
+
+  var nextValue = {};
+  Object.assign(nextValue, cvssEditor.getValue() || {});
+  nextValue.vectorString = vectorString;
+  // Force vector values to overwrite existing defaults/current selections.
+  fillCvssMetrics(nextValue, { force: true });
+  cvssEditor.setValue(nextValue, '', true);
+  return false;
+}
+
+function pasteCvssVectorFromClipboard(sourceNode) {
+  var targetPath = resolveCvssEditorPathFromNode(sourceNode || document.activeElement);
+  if (!targetPath && sourceNode !== document.activeElement) {
+    targetPath = resolveCvssEditorPathFromNode(document.activeElement);
+  }
+  if (!(navigator.clipboard && navigator.clipboard.readText)) {
+    console.warn('Clipboard API unavailable for CVSS vector paste.');
+    return false;
+  }
+  navigator.clipboard.readText()
+    .then(function (text) {
+      pasteCvssVector(text, targetPath);
+      return null;
+    })
+    .catch(function (e) {
+      console.warn('Unable to read clipboard text for CVSS paste.', e);
+    });
+  return false;
+}
+
+/**
  * Fill missing CVSS metric fields from vectorString; otherwise:
  * - Base metrics -> "worst-case" value
  * - Threat/Supplemental (v4) -> "NOT_DEFINED"
@@ -1010,7 +1127,9 @@ function generateCpeApplicabilityNode(affectedProduct, overrides) {
  * Supports CVSS v2.0, v3.0/v3.1, and v4.0(.1) JSON schema shapes as published by FIRST.
  * Mutates and returns the same object.
  */
-function fillCvssMetrics(cvss) {
+function fillCvssMetrics(cvss, options) {
+  options = options || {};
+  var force = options.force === true;
   const isMissing = v => v === undefined || v === null || v === "";
 
   // --- version detection -----------------------------------------------------
@@ -1110,13 +1229,13 @@ function fillCvssMetrics(cvss) {
       SA: { prop: "subAvailabilityImpact",      map: { H: "HIGH", L: "LOW", N: "NONE" } },
     },
     threat: {
-      // E values in vector are single letters; JSON value we'll use: "ATTACKED" | "POC" | "UNREPORTED" | "NOT_DEFINED"
-      E:  { prop: "exploitMaturity", map: { X: "NOT_DEFINED", A: "ATTACKED", P: "POC", U: "UNREPORTED" } },
+      // E values in vector are single letters; map them to schema enum values.
+      E:  { prop: "exploitMaturity", map: { X: "NOT_DEFINED", A: "ATTACKED", P: "PROOF_OF_CONCEPT", U: "UNREPORTED" } },
     },
     supplemental: {
-      S:  { prop: "safety",                    map: { X: "NOT_DEFINED", N: "NEGLIGIBLE", P: "PRESENT" } },
-      AU: { prop: "automatable",               map: { X: "NOT_DEFINED", N: "NO", Y: "YES" } },
-      R:  { prop: "recovery",                  map: { X: "NOT_DEFINED", A: "AUTOMATIC", U: "USER", I: "IRRECOVERABLE" } },
+      S:  { prop: "Safety",                    map: { X: "NOT_DEFINED", N: "NEGLIGIBLE", P: "PRESENT" } },
+      AU: { prop: "Automatable",               map: { X: "NOT_DEFINED", N: "NO", Y: "YES" } },
+      R:  { prop: "Recovery",                  map: { X: "NOT_DEFINED", A: "AUTOMATIC", U: "USER", I: "IRRECOVERABLE" } },
       V:  { prop: "valueDensity",              map: { X: "NOT_DEFINED", D: "DIFFUSE", C: "CONCENTRATED" } },
       RE: { prop: "vulnerabilityResponseEffort", map: { X: "NOT_DEFINED", L: "LOW", M: "MODERATE", H: "HIGH" } },
       // U uses words in the vector (Clear/Green/Amber/Red). Normalize to upper-case JSON forms.
@@ -1149,7 +1268,7 @@ function fillCvssMetrics(cvss) {
   const fillGroup = (obj, table, worst) => {
     for (const [abbr, entry] of Object.entries(table)) {
       const prop = entry.prop;
-      if (isMissing(obj[prop])) {
+      if (force || isMissing(obj[prop])) {
         const v = fromVectorOr(abbr, entry);
         obj[prop] = v != null ? v : (worst ? worst[prop] : obj[prop]);
       }
@@ -1162,14 +1281,14 @@ function fillCvssMetrics(cvss) {
     // Threat metrics -> vector or NOT_DEFINED
     for (const [abbr, entry] of Object.entries(v40.threat)) {
       const prop = entry.prop;
-      if (isMissing(cvss[prop])) {
+      if (force || isMissing(cvss[prop])) {
         cvss[prop] = fromVectorOr(abbr, entry) ?? "NOT_DEFINED";
       }
     }
     // Supplemental metrics -> vector or NOT_DEFINED
     for (const [abbr, entry] of Object.entries(v40.supplemental)) {
       const prop = entry.prop;
-      if (isMissing(cvss[prop])) {
+      if (force || isMissing(cvss[prop])) {
         cvss[prop] = fromVectorOr(abbr, entry) ?? "NOT_DEFINED";
       }
     }

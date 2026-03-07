@@ -512,7 +512,7 @@ select.btn {
     font-size: 100%;
     padding: .5em 1em;
     text-decoration: none !important;
-    border-radius: 2px;
+    border-radius: 5px;
     color: var(--txt);
     transition: background-color 0.3s ease;
     min-height: 20px;
@@ -847,6 +847,9 @@ div.form-control[data-format="taglist"]>span.txt-icon-wrap>.txt-input-icon {
     max-height: 34px;
 }
 
+button {
+    cursor: pointer;
+}
 button.rbtn {
     box-sizing: content-box;
     -webkit-appearance: none;
@@ -1875,6 +1878,9 @@ div[data-schemapath*=".cvss"] .rdg .form-control:first-child input[value="NOT_DE
     white-space: nowrap;
 }
 
+.sidebar-head label{
+    cursor:w-resize;
+}
 .sidebar-head .lbl::before,
 .sidebar-nav .lbl::before {
     width: 30px;
@@ -1894,6 +1900,13 @@ div[data-schemapath*=".cvss"] .rdg .form-control:first-child input[value="NOT_DE
 .sidebar-nav .lbl.active {
     background: var(--acc);
     color: var(--bg1);
+}
+
+.sidebar-nav-fill {
+    flex: 1 1 auto;
+    min-height: 1.5em;
+    width: 100%;
+    cursor: w-resize;
 }
 
 .main-area {
@@ -1918,10 +1931,18 @@ div[data-schemapath*=".cvss"] .rdg .form-control:first-child input[value="NOT_DE
     max-width: 64px;
 }
 
+#sidebarToggle:checked~.layout-grid .sidebar-head label {
+    cursor:e-resize;
+}
+
+#sidebarToggle:checked~.layout-grid .sidebar-nav-fill {
+    cursor: e-resize;
+}
+
 #sidebarToggle:checked~.layout-grid .sidebar-nav .sidebar-expandable> :not(summary) {
     overflow: hidden;
 }
-
+/*
 @media (min-width: 1500px) {
     #sidebarToggle:checked~.layout-grid .sidebar {
         width: 250px;
@@ -1933,7 +1954,7 @@ div[data-schemapath*=".cvss"] .rdg .form-control:first-child input[value="NOT_DE
         overflow: visible;
     }
 }
-
+*/
 #smallScreenMenu.lbl {
     display: none;
 }

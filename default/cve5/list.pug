@@ -1,5 +1,7 @@
 extends ../../views/list.pug
 
+include portal-dialogs.pug
+
 block prepend messageBar
     if bulkInput && Object.keys(bulkInput).length !== 0
         .left
@@ -19,6 +21,9 @@ block append sidebarSections
 block append content
     .pad
         span.lbl#teamPublishStatus Select one or more drafts and click Publish Selected.
+    +showSecret
+    +userAddDialog
+    +userEditDialog
     dialog.dlg.bor.rndx.shd#cveErrorsModal
         #cveErrors
         center.pad2

@@ -681,7 +681,12 @@ function validateForm(f) {
 }
 
 async function cveUserEdit(elem) {
-    f = document.getElementById('userEditForm');
+    const f = document.getElementById('userEditForm');
+    const userEditDialog = document.getElementById('userEditDialog');
+    if (!elem || !f || !userEditDialog) {
+        cveShowError({ error: 'UI_ERROR', message: 'User edit form is unavailable on this page.' });
+        return;
+    }
     f.u.value = elem.getAttribute('u');
     f.new_username.value = elem.getAttribute('u');
     f.first.value = elem.getAttribute('f');
@@ -700,7 +705,7 @@ async function cveUserEdit(elem) {
         f.admin.removeAttribute('disabled');
         f.active.removeAttribute('disabled');
     }
-    document.getElementById('userEditDialog').showModal();
+    userEditDialog.showModal();
 }
 
 async function cveAddUser(f) {
