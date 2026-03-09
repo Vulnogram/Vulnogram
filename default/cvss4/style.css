@@ -91,21 +91,24 @@ header:hover #wig{
 
 #cvssSummary {
   gap: 2px 2px;
+  align-items:center;
 }
 
 #finalScore {
-font-weight:900; font-family:'Verdana';line-height:96px; font-size:67px;
-min-width: 140px;
+font-weight:900; font-family:'Verdana';line-height:48px; font-size:33px;
+min-width: 70px;
 text-align: center;
 border-radius: 7px;
 transition: 500ms;
+max-height: 48px;
 }
 #finalSeverity, #finalUrgency {
-min-width: 200px;
-font-weight:100; font-family:'Verdana';line-height:48px; font-size:30px;
+min-width: 100px;
+font-weight:100; font-family:'Verdana';line-height:24px; font-size:15px;
 text-align: center;
 border-radius: 7px;
 transition: 500ms;
+max-height: 48px;
 }
 
 .CVSS.NA {

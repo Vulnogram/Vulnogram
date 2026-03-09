@@ -1966,7 +1966,8 @@ div[data-schemapath*=".cvss"] .rdg .form-control:first-child input[value="NOT_DE
 .vg-top-header {
     overflow: visible;
     gap: 0.2em;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
 }
 
 @media (min-width: 600px) {

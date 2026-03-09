@@ -1,21 +1,15 @@
-# Using Vulnogram with CVE Services
+# Using <span class="vgi-logo">Vulnogram</span> with CVE Services
 
-<link rel="stylesheet" href="https://vulnogram.org/1.0.0/css/min.css" />
-<link rel="stylesheet" href="https://vulnogram.org/1.0.0/css/vg-icons.css" />
+<link rel="stylesheet" href="https://vulnogram.org/css/min.css" />
+<link rel="stylesheet" href="https://vulnogram.org/css/vg-icons.css" />
+<style>body {background-color:var(--wht);}</style>
 
-This guide is adapted from [Using Vulnogram with CVE Services](undefined) and aligned to the current Vulnogram UI.
+## 1. Access <span class="vgi-logo">Vulnogram</span>
 
-- Source PDF date: unknown
-- Source PDF URL: undefined
-- Last generated: 2026-03-05T00:01:00Z
-- Screenshot refresh script: `node scripts/gendoc.js`
-
-## 1. Access Vulnogram
-
-Open Vulnogram and start in the CVE workspace. This screenshot shows the browser pointed at `https://www.vulnogram.org` with the URL visible.
+Open [Vulnogram.org](https://www.vulnogram.org) for a quick start. The instance on [Vulnogram.org](https://www.vulnogram.org) enables CNAs to use the browser to draft, manage, and publish CVE records. To enable multiple CNA team members to collaborate on drafts in a cental place, download and set up Vulnogram in [Team server mode](https://github.com/Vulnogram/Vulnogram?tab=readme-ov-file#vulnogram-team-deployment).
 
 <img src="./screenshots/01-access-editor.png" alt="Vulnogram CVE editor workspace shown in a browser window with the URL visible"/>
-*Access Vulnogram at https://www.vulnogram.org.*
+*Access Vulnogram at [https://www.vulnogram.org](https://www.vulnogram.org).*
 
 ## 2. Login to CVE Services
 
@@ -68,11 +62,3 @@ Use <b class="lbl bor vgi-del">Reject this CVE ID</b> and <b class="lbl bor vgi-
 
 <img src="./screenshots/07b-reject-published-cve.png" alt="Bottom of a loaded CVE editor form with reject this CVE ID link highlighted"/>
 *Published records are rejected from the editor footer <b class="lbl bor vgi-no">Reject this ID</b> link after loading the CVE.*
-
-## Regenerate Documentation
-
-- Capture screenshots and regenerate markdown: `node scripts/gendoc.js`
-- Regenerate markdown only: `node scripts/gendoc.js --no-capture`
-- Capture specific screenshots: `node scripts/gendoc.js --only 02-portal-login,03-reserve-cve-ids`
-
-The screenshot workflow is incremental: each image is hashed and only rewritten when the rendered output changes.

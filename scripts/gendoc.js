@@ -1520,14 +1520,14 @@ function buildMarkdown(manifest, screenshotStatuses, generatedAt) {
     return output;
   }
 
-  const title = manifest.title || 'Using Vulnogram with CVE Services';
+  const title = manifest.title || 'Using <span class="vgi-logo">Vulnogram</a> with CVE Services';
   const sourcePdfTitle = manifest.sourcePdfTitle || 'Using Vulnogram with CVE Services';
   const sourcePdfDate = manifest.sourcePdfDate || 'unknown';
   const sourcePdf = manifest.sourcePdf;
   const markdownStylesheet =
-    manifest.markdownStylesheet || 'https://vulnogram.org/1.0.0/css/min.css';
+    manifest.markdownStylesheet || 'https://vulnogram.org/css/min.css';
   const markdownIconStylesheet =
-    manifest.markdownIconStylesheet || 'https://vulnogram.org/1.0.0/css/vg-icons.css';
+    manifest.markdownIconStylesheet || 'https://vulnogram.org/css/vg-icons.css';
   const screenshotsDir = asPublicDocPath(manifest.screenshotsDir || 'screenshots');
   const sections = manifest.sections || [];
 
@@ -1536,21 +1536,8 @@ function buildMarkdown(manifest, screenshotStatuses, generatedAt) {
   lines.push('');
   lines.push('<link rel="stylesheet" href="' + escapeHtmlAttribute(markdownStylesheet) + '" />');
   lines.push('<link rel="stylesheet" href="' + escapeHtmlAttribute(markdownIconStylesheet) + '" />');
+  lines.push('<style>body {background-color:var(--wht);}</style>');
   lines.push('');
-  lines.push(
-    'This guide is adapted from [' +
-      sourcePdfTitle +
-      '](' +
-      sourcePdf +
-      ') and aligned to the current Vulnogram UI.'
-  );
-  lines.push('');
-  lines.push('- Source PDF date: ' + sourcePdfDate);
-  lines.push('- Source PDF URL: ' + sourcePdf);
-  lines.push('- Last generated: ' + generatedAt);
-  lines.push('- Screenshot refresh script: `node scripts/gendoc.js`');
-  lines.push('');
-
   for (const section of sections) {
     lines.push('## ' + section.title);
     lines.push('');
@@ -1586,18 +1573,6 @@ function buildMarkdown(manifest, screenshotStatuses, generatedAt) {
       lines.push('');
     }
   }
-
-  lines.push('## Regenerate Documentation');
-  lines.push('');
-  lines.push('- Capture screenshots and regenerate markdown: `node scripts/gendoc.js`');
-  lines.push('- Regenerate markdown only: `node scripts/gendoc.js --no-capture`');
-  lines.push('- Capture specific screenshots: `node scripts/gendoc.js --only 02-portal-login,03-reserve-cve-ids`');
-  lines.push('');
-  lines.push(
-    'The screenshot workflow is incremental: each image is hashed and only rewritten when the rendered output changes.'
-  );
-  lines.push('');
-
   return lines.join('\n');
 }
 
