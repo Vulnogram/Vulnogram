@@ -733,6 +733,47 @@ JSONEditor.defaults.editors.taglist = class taglist extends JSONEditor.defaults.
         if (!Object.keys(tagClasses).length) {
             tagClasses = null;
         }
+        var normalizeMappedIconClasses = function (mappedClass) {
+            if (typeof mappedClass !== 'string' || !mappedClass.trim()) {
+                return [];
+            }
+            return mappedClass.trim().split(/\s+/).map(function (cls) {
+                if (!cls) return cls;
+                // `options.icons` values are icon keys; normalize to CSS classes used in this app.
+                if (cls.indexOf(iconTheme) === 0) return cls;
+                return iconTheme + cls;
+            }).filter(Boolean);
+        };
+        var mergeClassLists = function (existingClassName, mappedClasses) {
+            var existingClasses = [];
+            if (typeof existingClassName === 'string' && existingClassName.trim()) {
+                existingClasses = existingClassName.trim().split(/\s+/);
+            }
+            var mergedClasses = [];
+            var seen = {};
+            var i;
+
+            for (i = 0; i < existingClasses.length; i++) {
+                if (!existingClasses[i] || seen[existingClasses[i]]) continue;
+                seen[existingClasses[i]] = true;
+                mergedClasses.push(existingClasses[i]);
+            }
+            for (i = 0; i < mappedClasses.length; i++) {
+                if (!mappedClasses[i] || seen[mappedClasses[i]]) continue;
+                seen[mappedClasses[i]] = true;
+                mergedClasses.push(mappedClasses[i]);
+            }
+            return mergedClasses;
+        };
+        var applyMappedTagClass = function (tagData) {
+            if (!tagData || tagData.value === null || tagData.value === undefined) return;
+            var mappedClass = tagClasses ? tagClasses[String(tagData.value)] : null;
+            var mappedClasses = normalizeMappedIconClasses(mappedClass);
+            var mergedClasses = mergeClassLists(tagData.class, mappedClasses);
+            if (mergedClasses.length) {
+                tagData.class = mergedClasses.join(' ');
+            }
+        };
         var whitelist = this._getWhitelistValues();
         var enforceWhitelist = this._enforceWhitelist(whitelist);
         //console.log('list'+ this.schema.items.examples);
@@ -741,39 +782,14 @@ JSONEditor.defaults.editors.taglist = class taglist extends JSONEditor.defaults.
             enforceWhitelist: enforceWhitelist,
             maxTags: this.schema.maxItems ? this.schema.maxItems : 512,
             transformTag: function(tagData) {
-                if (!tagClasses || !tagData || tagData.value === null || tagData.value === undefined) return;
-
-                var tagValue = String(tagData.value);
-                var mappedClass = tagClasses[tagValue];
-                if (typeof mappedClass !== 'string' || !mappedClass.trim()) return;
-
-                var existingClasses = [];
-                if (typeof tagData.class === 'string' && tagData.class.trim()) {
-                    existingClasses = tagData.class.trim().split(/\s+/);
-                }
-                var mappedClasses = mappedClass.trim().split(/\s+/).map(function (cls) {
-                    if (!cls) return cls;
-                    // `options.icons` values are icon keys; normalize to CSS classes used in this app.
-                    if (cls.indexOf(iconTheme) === 0) return cls;
-                    return iconTheme + cls;
-                });
-                var mergedClasses = [];
-                var seen = {};
-                var i;
-
-                for (i = 0; i < existingClasses.length; i++) {
-                    if (!existingClasses[i] || seen[existingClasses[i]]) continue;
-                    seen[existingClasses[i]] = true;
-                    mergedClasses.push(existingClasses[i]);
-                }
-                for (i = 0; i < mappedClasses.length; i++) {
-                    if (!mappedClasses[i] || seen[mappedClasses[i]]) continue;
-                    seen[mappedClasses[i]] = true;
-                    mergedClasses.push(mappedClasses[i]);
-                }
-
-                if (mergedClasses.length) {
-                    tagData.class = mergedClasses.join(' ');
+                applyMappedTagClass(tagData);
+            },
+            templates: {
+                dropdownItem: function (tagData) {
+                    applyMappedTagClass(tagData);
+                    return '<div ' + this.getAttributes(tagData) +
+                        " class='" + this.settings.classNames.dropdownItem + ' ' + (tagData.class ? tagData.class : '') + "'" +
+                        " tabindex='0' role='option'>" + tagData.value + '</div>';
                 }
             },
             dropdown: {

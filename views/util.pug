@@ -1,3 +1,5 @@
+include formatters.pug
+
 mixin hyperlevel(obj, name)
     - var value = obj[name];
     span.nobr.icn(class="l" + value.charAt(0),title=value)
@@ -77,6 +79,8 @@ mixin hyperVal(obj, name)
         case name
             when 'size'
                 +hypersize(obj, name)
+            when 'quantity'
+                +compactNumber(value)
             when 'level'
                 +hyperlevel(obj, name)
             when 'CVSS'
@@ -86,7 +90,7 @@ mixin hyperVal(obj, name)
             default
                 if fields && fields[name]
                     - var cls = fields[name].class ? fields[name].class : '';
-                    - var onlick = fields[name].onclick ? fields[name].onclick : false;
+                    - var onclick = fields[name].onclick ? fields[name].onclick : false;
                     if fields[name].xref && fields[name].xref.class
                         - cls = cls + obj[fields[name].xref.class]
                     if Array.isArray(fields[name].links) && (value != '')
@@ -122,7 +126,7 @@ mixin hyperVal(obj, name)
                                     - cls = (cls ? cls + ' ' : '')+ 'vgi-'+fields[name].icons[value]
                                 else
                                     - cls = (cls ? cls + ' ' : '')+ value
-                            span(class=cls title=value onclick=onlick)=value
+                            span(class=cls title=value onclick=onclick)=value
                 else
                     =value
 

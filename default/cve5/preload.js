@@ -2,6 +2,478 @@ loadCpeNameOverrides();
 
 document.getElementById('post1').addEventListener('click', cvePost);
 
+var DEFAULT_PROPERTIES_CACHE_KEY = 'vulnogram.cve5.defaultProperties.v1';
+var defaultPropertiesTargets = {
+    cnaContainer: {
+        definitionNames: ['cnaPublishedContainer', 'cnaRejectedContainer'],
+        hostId: 'defaultPropertiesCnaFields',
+        presets: {
+            noob: ['title', 'problemTypes'],
+            basic: ['title', 'problemTypes', 'metrics', 'solutions', 'workarounds', 'credits'],
+            pro: '*'
+        }
+    },
+    adpContainer: {
+        definitionNames: ['adpContainer'],
+        hostId: 'defaultPropertiesAdpFields',
+        presets: {
+            enricher: ['problemTypes', 'metrics'],
+            supplier: ['affected', 'references']
+        }
+    },
+    productFields: {
+        definitionNames: ['product'],
+        hostId: 'defaultPropertiesProductFields',
+        requiredFields: ['vendor', 'product', 'versions', 'defaultStatus'],
+        presets: {
+            openSource: ['platforms', 'collectionURL', 'packageName', 'repo', 'packageURL', 'modules', 'programFiles', 'programRoutines'],
+            closedSource: ['platforms', 'modules']
+        }
+    }
+};
+var defaultPropertiesTargetNames = Object.keys(defaultPropertiesTargets);
+var defaultPropertiesBaseline = {};
+var defaultPropertiesSelection = {};
+
+function getPresetChecksForTarget(targetName) {
+    var target = defaultPropertiesTargets[targetName];
+    if (!target) {
+        return null;
+    }
+    var host = document.getElementById(target.hostId);
+    if (!host) {
+        return null;
+    }
+    return host.querySelectorAll('input[type="checkbox"]');
+}
+
+function applyPresetToChecks(checks, presetFields) {
+    if (!checks || checks.length === 0) {
+        return;
+    }
+    if (presetFields === '*') {
+        for (var i = 0; i < checks.length; i++) {
+            checks[i].checked = true;
+        }
+        return;
+    }
+    var selected = {};
+    var fields = Array.isArray(presetFields) ? presetFields : [];
+    for (var i = 0; i < fields.length; i++) {
+        selected[fields[i]] = true;
+    }
+    for (var j = 0; j < checks.length; j++) {
+        checks[j].checked = !!selected[checks[j].value];
+    }
+}
+
+function setDefaultPropertiesPreset(targetName, presetName) {
+    var target = defaultPropertiesTargets[targetName];
+    if (!target || !target.presets) {
+        return false;
+    }
+    applyPresetToChecks(getPresetChecksForTarget(targetName), target.presets[presetName]);
+    return false;
+}
+
+function getFirstDefinitionForTarget(rootSchema, targetName) {
+    var target = defaultPropertiesTargets[targetName];
+    if (!target || !rootSchema || !rootSchema.definitions) {
+        return null;
+    }
+    for (var i = 0; i < target.definitionNames.length; i++) {
+        var def = rootSchema.definitions[target.definitionNames[i]];
+        if (def && def.properties) {
+            return def;
+        }
+    }
+    return null;
+}
+
+function getDefinitionPropertyKeys(definition) {
+    if (!definition || !definition.properties) {
+        return [];
+    }
+    return Object.keys(definition.properties);
+}
+
+function getDefinitionRequiredKeys(definition) {
+    if (!definition || !Array.isArray(definition.required)) {
+        return [];
+    }
+    return definition.required.slice();
+}
+
+function getTargetRequiredKeys(targetName, definition) {
+    var required = getDefinitionRequiredKeys(definition);
+    var target = defaultPropertiesTargets[targetName];
+    if (!target || !Array.isArray(target.requiredFields) || target.requiredFields.length === 0) {
+        return required;
+    }
+    var seen = {};
+    for (var i = 0; i < required.length; i++) {
+        seen[required[i]] = true;
+    }
+    for (var j = 0; j < target.requiredFields.length; j++) {
+        var key = target.requiredFields[j];
+        if (!seen[key]) {
+            required.push(key);
+            seen[key] = true;
+        }
+    }
+    return required;
+}
+
+function getDisplayPropertyKeys(definition, required) {
+    var allowed = getDefinitionPropertyKeys(definition);
+    var requiredSet = {};
+    for (var i = 0; i < required.length; i++) {
+        requiredSet[required[i]] = true;
+    }
+    return allowed.filter(function (fieldName) {
+        if (requiredSet[fieldName]) {
+            return false;
+        }
+        var field = definition.properties[fieldName] || {};
+        var options = field.options || {};
+        if (options.hidden === true || options.hidden === 'true') {
+            return false;
+        }
+        if (typeof options.class === 'string' && options.class.split(/\s+/).indexOf('hid') >= 0) {
+            return false;
+        }
+        return true;
+    });
+}
+
+function getVgiIconClass(fieldSchema, rootSchema, fieldName) {
+    var source = fieldSchema;
+    if ((!source || !source.options || typeof source.options.class !== 'string')
+        && rootSchema && rootSchema.definitions && fieldName && rootSchema.definitions[fieldName]) {
+        source = rootSchema.definitions[fieldName];
+    }
+    if (!source || !source.options || typeof source.options.class !== 'string') {
+      return '';
+    }
+    var classes = source.options.class.split(/\s+/);
+    for (var i = 0; i < classes.length; i++) {
+        if (classes[i].indexOf('vgi-') === 0) {
+            return classes[i];
+        }
+    }
+    return '';
+}
+
+function sanitizeDefaultPropertiesSelection(selection, allowed, required) {
+    var allowedSet = {};
+    var selectedSet = {};
+    var out = [];
+    var i = 0;
+
+    for (i = 0; i < allowed.length; i++) {
+        allowedSet[allowed[i]] = true;
+    }
+
+    if (Array.isArray(selection)) {
+        for (i = 0; i < selection.length; i++) {
+            var key = selection[i];
+            if (!allowedSet[key]) {
+                continue;
+            }
+            selectedSet[key] = true;
+        }
+    }
+
+    for (i = 0; i < required.length; i++) {
+        var req = required[i];
+        if (allowedSet[req]) {
+            selectedSet[req] = true;
+        }
+    }
+
+    for (i = 0; i < allowed.length; i++) {
+        var field = allowed[i];
+        if (!selectedSet[field]) {
+            continue;
+        }
+        out.push(field);
+    }
+
+    if (out.length === 0) {
+        out = allowed.slice();
+    }
+
+    return out;
+}
+
+function getDefaultSelectionForTarget(rootSchema, targetName) {
+    var definition = getFirstDefinitionForTarget(rootSchema, targetName);
+    if (!definition) {
+        return [];
+    }
+    var allowed = getDefinitionPropertyKeys(definition);
+    var required = getTargetRequiredKeys(targetName, definition);
+    var source = Array.isArray(definition.defaultProperties) && definition.defaultProperties.length > 0
+        ? definition.defaultProperties.slice()
+        : allowed.slice();
+    return sanitizeDefaultPropertiesSelection(source, allowed, required);
+}
+
+function buildSelectionFromSchema(rootSchema) {
+    var out = {};
+    for (var i = 0; i < defaultPropertiesTargetNames.length; i++) {
+        var targetName = defaultPropertiesTargetNames[i];
+        out[targetName] = getDefaultSelectionForTarget(rootSchema, targetName);
+    }
+    return out;
+}
+
+function cloneSelection(selection) {
+    var out = {};
+    for (var i = 0; i < defaultPropertiesTargetNames.length; i++) {
+        var target = defaultPropertiesTargetNames[i];
+        out[target] = Array.isArray(selection && selection[target]) ? selection[target].slice() : [];
+    }
+    return out;
+}
+
+function normalizeSelectionForSchema(selection, rootSchema) {
+    var out = {};
+    for (var i = 0; i < defaultPropertiesTargetNames.length; i++) {
+        var targetName = defaultPropertiesTargetNames[i];
+        var definition = getFirstDefinitionForTarget(rootSchema, targetName);
+        if (!definition) {
+            out[targetName] = [];
+            continue;
+        }
+        var allowed = getDefinitionPropertyKeys(definition);
+        var required = getTargetRequiredKeys(targetName, definition);
+        var source = (selection && Array.isArray(selection[targetName]))
+            ? selection[targetName]
+            : getDefaultSelectionForTarget(rootSchema, targetName);
+        out[targetName] = sanitizeDefaultPropertiesSelection(
+            source,
+            allowed,
+            required
+        );
+    }
+    return out;
+}
+
+function applySelectionToSchemaRoot(rootSchema, selection) {
+    if (!rootSchema || !rootSchema.definitions) {
+        return;
+    }
+    for (var i = 0; i < defaultPropertiesTargetNames.length; i++) {
+        var targetName = defaultPropertiesTargetNames[i];
+        var target = defaultPropertiesTargets[targetName];
+        for (var j = 0; j < target.definitionNames.length; j++) {
+            var definition = rootSchema.definitions[target.definitionNames[j]];
+            if (!definition || !definition.properties) {
+                continue;
+            }
+            var allowed = getDefinitionPropertyKeys(definition);
+            var required = getTargetRequiredKeys(targetName, definition);
+            definition.defaultProperties = sanitizeDefaultPropertiesSelection(
+                selection[targetName],
+                allowed,
+                required
+            );
+        }
+    }
+}
+
+function applyDefaultPropertiesSelection(selection) {
+    defaultPropertiesSelection = normalizeSelectionForSchema(selection, docSchema);
+    applySelectionToSchemaRoot(docSchema, defaultPropertiesSelection);
+    if (publicEditorOption && publicEditorOption.schema) {
+        applySelectionToSchemaRoot(publicEditorOption.schema, defaultPropertiesSelection);
+    }
+    if (rejectEditorOption && rejectEditorOption.schema) {
+        applySelectionToSchemaRoot(rejectEditorOption.schema, defaultPropertiesSelection);
+    }
+}
+
+function applyBaselineDefaultPropertiesSelection() {
+    applyDefaultPropertiesSelection(cloneSelection(defaultPropertiesBaseline));
+}
+
+function loadCachedDefaultPropertiesSelection() {
+    try {
+        var raw = localStorage.getItem(DEFAULT_PROPERTIES_CACHE_KEY);
+        if (!raw) {
+            return null;
+        }
+        var parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') {
+            return null;
+        }
+        return parsed;
+    } catch (e) {
+        console.warn('Failed to read cached default property settings', e);
+        return null;
+    }
+}
+
+function saveCachedDefaultPropertiesSelection(selection) {
+    try {
+        localStorage.setItem(DEFAULT_PROPERTIES_CACHE_KEY, JSON.stringify(selection));
+    } catch (e) {
+        console.warn('Failed to persist default property settings', e);
+    }
+}
+
+function clearCachedDefaultPropertiesSelection() {
+    try {
+        localStorage.removeItem(DEFAULT_PROPERTIES_CACHE_KEY);
+    } catch (e) {
+        console.warn('Failed to clear default property settings cache', e);
+    }
+}
+
+function renderDefaultPropertiesTarget(targetName) {
+    var target = defaultPropertiesTargets[targetName];
+    if (!target) {
+        return;
+    }
+    var host = document.getElementById(target.hostId);
+    if (!host) {
+        return;
+    }
+    host.textContent = '';
+
+    var definition = getFirstDefinitionForTarget(docSchema, targetName);
+    if (!definition || !definition.properties) {
+        host.appendChild(document.createTextNode('Schema fields unavailable.'));
+        return;
+    }
+
+    var selected = defaultPropertiesSelection[targetName] || [];
+    var selectedSet = {};
+    for (var i = 0; i < selected.length; i++) {
+        selectedSet[selected[i]] = true;
+    }
+
+    var keys = getDisplayPropertyKeys(definition, getTargetRequiredKeys(targetName, definition));
+    if (keys.length === 0) {
+        host.appendChild(document.createTextNode('No optional fields available.'));
+        return;
+    }
+    for (i = 0; i < keys.length; i++) {
+        var fieldName = keys[i];
+        var fieldSchema = definition.properties[fieldName] || {};
+        var fieldLabel = fieldSchema.title ? fieldSchema.title : fieldName;
+        var iconClass = getVgiIconClass(fieldSchema, docSchema, fieldName);
+
+        var row = document.createElement('label');
+        row.className = 'lbl flx';
+
+        var check = document.createElement('input');
+        check.type = 'checkbox';
+        check.className = 'chk';
+        check.name = 'defaultProps-' + targetName;
+        check.value = fieldName;
+        check.checked = !!selectedSet[fieldName];
+
+        row.appendChild(check);
+
+        var nameNode = document.createElement('span');
+        if(iconClass) nameNode.className = iconClass;
+        nameNode.appendChild(document.createTextNode(fieldLabel));
+        row.appendChild(nameNode);
+
+        host.appendChild(row);
+    }
+}
+
+function syncDefaultPropertiesDialog() {
+    for (var i = 0; i < defaultPropertiesTargetNames.length; i++) {
+        renderDefaultPropertiesTarget(defaultPropertiesTargetNames[i]);
+    }
+}
+
+function collectSelectionFromDialog(targetName) {
+    var target = defaultPropertiesTargets[targetName];
+    if (!target) {
+        return [];
+    }
+    var host = document.getElementById(target.hostId);
+    var definition = getFirstDefinitionForTarget(docSchema, targetName);
+    if (!host || !definition) {
+        return [];
+    }
+    var allowed = getDefinitionPropertyKeys(definition);
+    var required = getTargetRequiredKeys(targetName, definition);
+    var selected = [];
+    var checks = host.querySelectorAll('input[type="checkbox"]');
+    for (var i = 0; i < checks.length; i++) {
+        if (checks[i].checked) {
+            selected.push(checks[i].value);
+        }
+    }
+    return sanitizeDefaultPropertiesSelection(selected, allowed, required);
+}
+
+function getEditorOptionsForDocValue(value) {
+    if (value && value.cveMetadata && value.cveMetadata.state === 'REJECTED') {
+        return rejectEditorOption;
+    }
+    return publicEditorOption;
+}
+
+function refreshEditorForDefaultPropertySettings() {
+    if (!docEditor || typeof loadJSON !== 'function') {
+        return;
+    }
+    var value = docEditor.getValue();
+    var id = (typeof getDocID === 'function') ? getDocID() : null;
+    loadJSON(value, id, undefined, getEditorOptionsForDocValue(value));
+    setTimeout(function () {
+        if (typeof infoMsg !== 'undefined' && infoMsg) {
+            infoMsg.textContent = 'Default container fields updated';
+        }
+    }, 100);
+}
+
+function openDefaultPropertiesSettings(event) {
+    if (event) {
+        event.preventDefault();
+    }
+    syncDefaultPropertiesDialog();
+    var dialog = document.getElementById('defaultPropertiesSettingsDialog');
+    if (dialog && !dialog.open) {
+        dialog.showModal();
+    }
+    return false;
+}
+
+function saveDefaultPropertiesSettings() {
+    var next = {};
+    for (var i = 0; i < defaultPropertiesTargetNames.length; i++) {
+        var targetName = defaultPropertiesTargetNames[i];
+        next[targetName] = collectSelectionFromDialog(targetName);
+    }
+    applyDefaultPropertiesSelection(next);
+    saveCachedDefaultPropertiesSelection(defaultPropertiesSelection);
+    var dialog = document.getElementById('defaultPropertiesSettingsDialog');
+    if (dialog && dialog.open) {
+        dialog.close();
+    }
+    refreshEditorForDefaultPropertySettings();
+}
+
+function resetDefaultPropertiesSettings() {
+    applyBaselineDefaultPropertiesSelection();
+    clearCachedDefaultPropertiesSelection();
+    syncDefaultPropertiesDialog();
+    refreshEditorForDefaultPropertySettings();
+}
+
+window.openDefaultPropertiesSettings = openDefaultPropertiesSettings;
+window.saveDefaultPropertiesSettings = saveDefaultPropertiesSettings;
+window.resetDefaultPropertiesSettings = resetDefaultPropertiesSettings;
+window.setDefaultPropertiesPreset = setDefaultPropertiesPreset;
+
 var publicEditorOption = cloneJSON(docEditorOptions);
 Object.assign(publicEditorOption.schema, docSchema.oneOf[0]);
 delete publicEditorOption.schema.oneOf;
@@ -9,6 +481,15 @@ delete publicEditorOption.schema.oneOf;
 var rejectEditorOption = cloneJSON(docEditorOptions);
 Object.assign(rejectEditorOption.schema, docSchema.oneOf[1]);
 delete rejectEditorOption.schema.oneOf;
+
+defaultPropertiesBaseline = buildSelectionFromSchema(docSchema);
+var cachedDefaultPropertiesSelection = loadCachedDefaultPropertiesSelection();
+if (cachedDefaultPropertiesSelection) {
+    applyDefaultPropertiesSelection(cachedDefaultPropertiesSelection);
+} else {
+    applyBaselineDefaultPropertiesSelection();
+}
+syncDefaultPropertiesDialog();
 
 if (initJSON && initJSON.cveMetadata && initJSON.cveMetadata.state == 'REJECTED') {
     docEditorOptions = rejectEditorOption;

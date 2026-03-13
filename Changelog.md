@@ -60,7 +60,7 @@ This release summarizes changes from branch `0.5.0` to branch `1.0.0`.
 - Updated CWE dataset and added `scripts/parse-cwe.js` to regenerate CWE examples.
 - Added NVD empty-state guidance in list UI.
 - Refreshed CVE Services guide screenshots and related documentation pages.
-- Updated schema generator default engine metadata to `Vulnogram 1.0.0-beta`.
+- Updated schema generator default engine metadata to `Vulnogram 1.0.0`.
 
 ## Developer And Build Changes
 - Added editor bundling script: `scripts/bundle-editor.js`.

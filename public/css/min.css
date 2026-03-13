@@ -63,8 +63,7 @@ dialog::backdrop {
 
 dialog {
     min-width: 100px;
-    width: 70vw;
-    max-width: 80vw;
+    max-width: 95vw;
     color: var(--txt);
     background-color: var(--bg1);
 }
@@ -1966,7 +1965,8 @@ div[data-schemapath*=".cvss"] .rdg .form-control:first-child input[value="NOT_DE
 .vg-top-header {
     overflow: visible;
     gap: 0.2em;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
 }
 
 @media (min-width: 600px) {

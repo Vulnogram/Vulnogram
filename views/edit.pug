@@ -22,7 +22,7 @@ block prepend outputButtons
     if !confOpts[schemaName].conf.readonly
         if !min
             button.fbn.vgi-put(id="save1") Save    
-        a.fbn.vgi-download(title="Download JSON" type="button",oncontextmenu='downloadFile(event, this);',onclick='downloadFile(event, this);',value="Download")
+        a.rbtn.vgi-download(title="Download JSON" type="button",oncontextmenu='downloadFile(event, this);',onclick='downloadFile(event, this);',value="Download")
 
 block append sidebarNav
     if !(opts && opts.conf && opts.conf.disableDrafts)

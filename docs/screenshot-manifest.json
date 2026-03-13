@@ -1,12 +1,12 @@
 {
-  "title": "Using Vulnogram with CVE Services",
-  "outputMarkdown": "using-vulnogram-cve-services.md",
+  "title": "Using <span class=\"vgi-logo\">Vulnogram</span> with CVE Services",
+  "outputMarkdown": "index.md",
   "screenshotsDir": "screenshots",
   "sections": [
     {
       "id": "access",
-      "title": "1. Access Vulnogram",
-      "text": "Open Vulnogram and start in the CVE workspace. This screenshot shows the browser pointed at `https://www.vulnogram.org` with the URL visible."
+      "title": "1. Access <span class=\"vgi-logo\">Vulnogram</span>",
+      "text": "Open [Vulnogram.org](https://www.vulnogram.org) for a quick start. The instance on [Vulnogram.org](https://www.vulnogram.org) enables CNAs to use the browser to draft, manage, and publish CVE records. To enable multiple CNA team members to collaborate on drafts in a cental place, download and set up Vulnogram in [Team server mode](https://github.com/Vulnogram/Vulnogram?tab=readme-ov-file#vulnogram-team-deployment)."
     },
     {
       "id": "login",
@@ -45,7 +45,7 @@
       "file": "01-access-editor.png",
       "section": "access",
       "alt": "Vulnogram CVE editor workspace shown in a browser window with the URL visible",
-      "caption": "Access Vulnogram at https://www.vulnogram.org.",
+      "caption": "Access Vulnogram at [https://www.vulnogram.org](https://www.vulnogram.org).",
       "steps": [
         {
           "action": "setViewport",

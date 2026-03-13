@@ -1,5 +1,4 @@
 const express = require('express');
-const fs = require('fs');
 const docModel = require('../models/doc');
 const conf = require('../config/conf');
 const querymw = require('../lib/querymw');
@@ -32,7 +31,6 @@ module.exports = function (name, opts) {
     var tabFacet = {};
     var bulkInput = {};
     var toIndex = {};
-    var defaultSort = {};
     var lookups = [];
     var chartFacet = {
         count: [{
