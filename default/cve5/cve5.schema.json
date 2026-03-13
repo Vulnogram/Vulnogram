@@ -385,6 +385,15 @@
               "64 bit",
               "32 bit"
             ],
+            "options": {
+              "icons": {
+              "Windows": "vgi-ms",
+              "MacOS": "vgi-mac",
+              "Linux": "vgi-tux",
+              "iOS":"vgi-mac",
+              "Android":"vgi-android"
+              }
+            },
             "maxLength": 1024
           }
         },
