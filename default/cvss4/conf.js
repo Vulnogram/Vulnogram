@@ -1,9 +1,5 @@
-var conf = require('../../config/conf');
 var express = require('express')
 var router = express.Router();
-const csurf = require('csurf');
-var csrfProtection = csurf();
-var package = require('../../package.json');
 var cvss = require('./cvss4.json');
 module.exports = {
     conf: {
