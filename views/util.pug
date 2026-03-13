@@ -1,3 +1,5 @@
+include formatters.pug
+
 mixin hyperlevel(obj, name)
     - var value = obj[name];
     span.nobr.icn(class="l" + value.charAt(0),title=value)
@@ -77,6 +79,8 @@ mixin hyperVal(obj, name)
         case name
             when 'size'
                 +hypersize(obj, name)
+            when 'quantity'
+                +compactNumber(value)
             when 'level'
                 +hyperlevel(obj, name)
             when 'CVSS'

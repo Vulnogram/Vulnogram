@@ -1,0 +1,18 @@
+mixin compactNumber(value)
+    if value === undefined || value === null || value === ''
+        span.tgrey -
+    else
+        - var num = Number(value);
+        if isNaN(num)
+            = value
+        else
+            - var abs = Math.abs(num);
+            - var divisor = 1;
+            - var suffix = '';
+            - if (abs >= 1000000000) { divisor = 1000000000; suffix = 'b'; }
+            - else if (abs >= 1000000) { divisor = 1000000; suffix = 'm'; }
+            - else if (abs >= 1000) { divisor = 1000; suffix = 'k'; }
+            - var scaled = num / divisor;
+            - var rounded = divisor === 1 ? num : (Math.abs(scaled) >= 10 ? Math.round(scaled) : Math.round(scaled * 10) / 10);
+            - var text = divisor === 1 ? num.toLocaleString('en-US', { maximumFractionDigits: 2 }) : ((Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1).replace(/\.0$/, '')) + suffix);
+            span(title=String(value))= text
