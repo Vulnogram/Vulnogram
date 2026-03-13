@@ -37,7 +37,7 @@ html
       script.
         document.addEventListener('toggle', function (e) {
           var d = e && e.target;
-          if (!d || !d.matches || !d.matches('details.sidebar-expandable') || !d.open) return;
+          if (!d || !d.matches || !d.matches('details.sidebar-expandable') || d.open === undefined || !d.open) return;
           var t = document.getElementById('sidebarToggle');
           if (t) t.checked = false;
         }, true);
