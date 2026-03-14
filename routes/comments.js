@@ -2,29 +2,7 @@ const express = require('express');
 const csurf = require('csurf');
 var csrfProtection = csurf();
 const crypto = require('crypto');
-const sanitizeHtml = require('sanitize-html');
-
-var sanitizeComment = function (dirty) {
-    return sanitizeHtml(dirty, {
-        allowedTags: [
-            'b', 'strong', 'i', 'em', 'u',
-            'p', 'div', 'br', 'span', 'dd',
-            'h1', 'h2', 'h3', 'blockquote',
-            'ul', 'ol', 'li',
-            'a', 'img',
-            'table', 'thead', 'tbody', 'tfoot', 'tr', 'td', 'th',
-            'code', 'pre'
-        ],
-        allowedAttributes: {
-            'a': ['href', 'target', 'title', 'rel'],
-            'img': ['src', 'alt', 'width', 'height'],
-            'td': ['colspan', 'rowspan'],
-            'th': ['colspan', 'rowspan']
-        },
-        allowedSchemes: ['http', 'https', 'mailto'],
-        allowProtocolRelative: false
-    });
-};
+const { sanitizeRichHtml } = require('../lib/html-sanitize');
 
 var random_slug = function () {
     return crypto.randomBytes(13).toString('base64').replace(/[\+\/\=]/g, '-');
@@ -89,7 +67,7 @@ module.exports = function (Document, opts) {
                             updatedAt: dt,
                             author: username,
                             slug: slug,
-                            hypertext: sanitizeComment(text),
+                            hypertext: sanitizeRichHtml(text),
                         }], $position: 0
                     }
                 }
@@ -115,7 +93,7 @@ module.exports = function (Document, opts) {
             q['comments.author'] = username;
             var ret = await Document.findOneAndUpdate(q, {
                 '$set': {
-                    "comments.$.hypertext": sanitizeComment(text),
+                    "comments.$.hypertext": sanitizeRichHtml(text),
                     "comments.$.updatedAt": date
                 }
             }, {

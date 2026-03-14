@@ -1179,7 +1179,7 @@
           "properties": {
             "engine": {
               "type": "string",
-              "default": "Vulnogram 1.0.0"
+              "default": "Vulnogram 1.0.1"
             }
           },
           "options": {

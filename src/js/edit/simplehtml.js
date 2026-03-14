@@ -2,6 +2,24 @@
  * SimpleHtml Editor
  * A minimal, modular, secure rich text editor.
  */
+const SIMPLE_HTML_ALLOWED_TAGS = {
+    'b': [], 'strong': [], 'i': [], 'em': [], 'u': [],
+    'p': [], 'div': [],
+    'h1': [], 'h2': [], 'h3': [],
+    'blockquote': [],
+    'ul': [], 'ol': [], 'li': [],
+    'a': ['href', 'target', 'title', 'rel'],
+    'img': ['src', 'alt', 'width', 'height'],
+    'table': [],
+    'thead': [], 'tbody': [], 'tfoot': [],
+    'tr': [], 'td': ['colspan', 'rowspan'], 'th': ['colspan', 'rowspan'],
+    'code': [], 'pre': [], 'br': [], 'span': [], 'dd': []
+};
+
+const SIMPLE_HTML_DISALLOWED_PROTOCOLS = ['javascript:', 'vbscript:', 'data:'];
+const SIMPLE_HTML_ALLOWED_IMAGE_MIME_TYPES = ['image/gif', 'image/png', 'image/jpeg'];
+const SIMPLE_HTML_ALLOWED_DATA_IMAGE_PATTERN = /^data:image\/(?:gif|png|jpeg)(?:;[^,]*)?,/i;
+
 class SimpleHtml {
     constructor(container, options = {}) {
         this.container = typeof container === 'string' ? document.querySelector(container) : container;
@@ -39,26 +57,33 @@ class SimpleHtml {
         this.historyIndex = -1;
         this.maxHistory = 50;
 
-        this.allowedTags = {
-            'b': [], 'strong': [], 'i': [], 'em': [], 'u': [],
-            'p': [], 'div': [],
-            'h1': [], 'h2': [], 'h3': [],
-            'blockquote': [],
-            'ul': [], 'ol': [], 'li': [],
-            'a': ['href', 'target', 'title','rel'],
-            'img': ['src', 'alt', 'width', 'height'],
-            'table': [],
-            'thead': [], 'tbody': [], 'tfoot': [],
-            'tr': [], 'td': ['colspan', 'rowspan'], 'th': ['colspan', 'rowspan'],
-            'code': [], 'pre': [], 'br': [], 'span':[], 'dd':[]
-        };
+        this.allowedTags = SIMPLE_HTML_ALLOWED_TAGS;
 
         // Block `javascript:` protocols
-        this.disallowedProtocols = ['javascript:', 'vbscript:', 'data:'];
-        // Note: data: might be needed for pasted images, but user asked for secure. 
-        // We will allow data:image specifically if needed, but let's default to blocking scripts.
+        this.disallowedProtocols = SIMPLE_HTML_DISALLOWED_PROTOCOLS;
+        this.allowedImageMimeTypes = SIMPLE_HTML_ALLOWED_IMAGE_MIME_TYPES;
+        this.allowedDataImagePattern = SIMPLE_HTML_ALLOWED_DATA_IMAGE_PATTERN;
 
         this.init();
+    }
+
+    static isAllowedImageMimeType(mimeType) {
+        return !!mimeType && SIMPLE_HTML_ALLOWED_IMAGE_MIME_TYPES.includes(mimeType.toLowerCase());
+    }
+
+    static isAllowedDataImageUrl(url) {
+        return !!url && SIMPLE_HTML_ALLOWED_DATA_IMAGE_PATTERN.test(url.trim());
+    }
+
+    static sanitizeHtmlFragment(html) {
+        return SimpleHtml.prototype.sanitize.call({
+            allowedTags: SIMPLE_HTML_ALLOWED_TAGS,
+            disallowedProtocols: SIMPLE_HTML_DISALLOWED_PROTOCOLS,
+            allowedDataImagePattern: SIMPLE_HTML_ALLOWED_DATA_IMAGE_PATTERN,
+            isAllowedDataImageUrl: function (url) {
+                return SimpleHtml.isAllowedDataImageUrl(url);
+            }
+        }, html);
     }
 
     init() {
@@ -196,7 +221,11 @@ class SimpleHtml {
         this.urlUploadButton.append(document.createTextNode(' or '), b);
 
         this.urlFileInput = document.createElement('input');
-        Object.assign(this.urlFileInput, { type: 'file', accept: 'image/*', className: 'simplehtml-url-file' });
+        Object.assign(this.urlFileInput, {
+            type: 'file',
+            accept: this.allowedImageMimeTypes.join(','),
+            className: 'simplehtml-url-file'
+        });
         this.urlFileInput.setAttribute('aria-hidden', 'true');
 
         this.urlOkButton = document.createElement('button');
@@ -228,11 +257,11 @@ class SimpleHtml {
         this.urlFileInput.addEventListener('change', () => {
             const file = this.urlFileInput.files && this.urlFileInput.files[0];
             if (!file || this.urlFormMode !== 'image') return resetFileInput();
-            if (file.type && !file.type.startsWith('image/')) return resetFileInput();
+            if (!this.isAllowedImageMimeType(file.type)) return resetFileInput();
             const reader = new FileReader();
             reader.onload = () => {
                 const dataUrl = typeof reader.result === 'string' ? reader.result : '';
-                if (!dataUrl) return resetFileInput();
+                if (!this.isAllowedDataImageUrl(dataUrl)) return resetFileInput();
                 this.urlInput.value = dataUrl;
                 this.applyUrl();
                 resetFileInput();
@@ -793,6 +822,14 @@ class SimpleHtml {
         this.saveHistory(); // Record state change
     }
 
+    isAllowedImageMimeType(mimeType) {
+        return SimpleHtml.isAllowedImageMimeType(mimeType);
+    }
+
+    isAllowedDataImageUrl(url) {
+        return SimpleHtml.isAllowedDataImageUrl(url);
+    }
+
     sanitize(html) {
         if (!html) return '';
         const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -810,8 +847,7 @@ class SimpleHtml {
 
             // Always disallow javascript:, data: (except data:image/ for src), vbscript:, etc.
             if (this.disallowedProtocols && this.disallowedProtocols.some(p => lower.startsWith(p))) {
-                if (attrName === 'src' && lower.startsWith('data:image/')) {
-                    // explicitly allow data:image/* in src
+                if (attrName === 'src' && this.isAllowedDataImageUrl(trimmed)) {
                     return true;
                 }
                 return false;
@@ -887,4 +923,10 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = SimpleHtml;
 } else {
     window.SimpleHtml = SimpleHtml;
+}
+
+if (typeof window !== 'undefined' && typeof window.sanitizeRichHtml !== 'function') {
+    window.sanitizeRichHtml = function (html) {
+        return SimpleHtml.sanitizeHtmlFragment(html);
+    };
 }
