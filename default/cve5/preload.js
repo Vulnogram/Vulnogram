@@ -22,6 +22,7 @@ var defaultPropertiesTargets = {
     cnaContainer: {
         definitionNames: ['cnaPublishedContainer', 'cnaRejectedContainer'],
         hostId: 'defaultPropertiesCnaFields',
+        requiredFields: ['x_generator'],
         presets: {
             noob: ['title', 'problemTypes'],
             basic: ['title', 'problemTypes', 'metrics', 'solutions', 'workarounds', 'credits'],
@@ -31,6 +32,7 @@ var defaultPropertiesTargets = {
     adpContainer: {
         definitionNames: ['adpContainer'],
         hostId: 'defaultPropertiesAdpFields',
+        requiredFields: ['x_generator'],
         presets: {
             enricher: ['problemTypes', 'metrics'],
             supplier: ['affected', 'references']
