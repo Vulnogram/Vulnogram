@@ -88,8 +88,7 @@ block prepend content
         center.pad2
             input.btn.sfe(type="reset" onclick="document.getElementById('cveErrorsModal').close()" value="OK")
     dialog.dlg.bor.rndx.shd#defaultPropertiesSettingsDialog
-        +dlgHeader('vgi-cog','Configure Fields Display')
-        p.lbl Pick optional fields are preselected for new entries
+        +dlgHeader('vgi-cog','Configure Defaults for new entries ')
         form.gap.pad(onsubmit="event.preventDefault();return false;")
             div.flx
                 div.vflx
@@ -119,6 +118,21 @@ block prepend content
                     #defaultPropertiesAdpFields.pad.vflx
                 div.vflx
                     b.lbl Product fields
+                    .lbl Default values:
+                    .vflx
+                        label.lbl(for="defaultPropertiesVendorName") Default vendor name
+                        span.txt-icon-wrap
+                            span.txt-input-icon.vgi-factory
+                            input.txt.txt-has-icon#defaultPropertiesVendorName(type="text", size="28", placeholder="eg., Linux")
+                        label.lbl(for="defaultPropertiesProductName") Default product
+                        span.txt-icon-wrap
+                            span.txt-input-icon.vgi-package
+                            input.txt.txt-has-icon#defaultPropertiesProductName(type="text", size="28", placeholder="eg., Linux Kernel")
+                        label.lbl(for="defaultPropertiesVersionType") Default version type
+                        span.txt-icon-wrap
+                            span.txt-input-icon.vgi-versions
+                            input.txt.txt-has-icon#defaultPropertiesVersionType(type="text", size="16", list="defaultPropertiesVersionTypeSuggestions", placeholder="eg., semver")
+                        datalist#defaultPropertiesVersionTypeSuggestions
                     .lbl Preset:
                     .rdg
                         .form-control
@@ -131,7 +145,7 @@ block prepend content
             center.gap
                 button.btn.sfe(type="button", onclick="saveDefaultPropertiesSettings()") Apply
                 | 
-                button.btn(type="button", onclick="resetDefaultPropertiesSettings()") Reset defaults
+                button.btn.vgi-reuse(type="button", onclick="resetDefaultPropertiesSettings()") Reset defaults
                 | 
                 button.btn.vgi-x(type="button", onclick="this.closest('dialog').close()") Close
     dialog.dlg.bor.rndx.shd#draftPublishDialog
