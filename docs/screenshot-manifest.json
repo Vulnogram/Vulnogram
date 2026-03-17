@@ -2,6 +2,12 @@
   "title": "Using <span class=\"vgi-logo\">Vulnogram</span> with CVE Services",
   "outputMarkdown": "index.md",
   "screenshotsDir": "screenshots",
+  "hero": {
+    "src": "https://vulnogram.org/css/Vulnogram-og.jpg",
+    "alt": "Vulnogram - Reserve, Manage, Publish CVEs.",
+    "href": "https://www.vulnogram.org/",
+    "caption": "Vulnogram - Reserve, Manage, Publish CVEs."
+  },
   "sections": [
     {
       "id": "access",
@@ -21,7 +27,7 @@
     {
       "id": "details",
       "title": "4. Enter CVE Record Details",
-      "text": "Use the **Editor** tab to enter vulnerability details, affected products, references, and metrics. Switch between **Editor**, **Source**, and **Preview** tabs while drafting."
+      "text": "Use the **Editor** tab to enter vulnerability details, affected products, references, and metrics. Switch between **Editor**, **Source**, and **Preview** tabs while drafting.\n\nFor repeated CNA or ADP work, open the **Configure Default Settings** dialog from the top-right settings button <span class=\"rbtn vgi-cog\"></span>. It lets you simplify the form for new entries by choosing default set of fields to show and by setting default vendor, product, and version-type values, which helps reduce repetitive edits and keeps new records more consistent."
     },
     {
       "id": "publish",
@@ -202,6 +208,44 @@
           "selector": "#cvePortalNav",
           "attribute": "data-portal-status",
           "value": "connected"
+        },
+        {
+          "action": "waitForTimeout",
+          "ms": 400
+        }
+      ]
+    },
+    {
+      "id": "04b-settings-dialog",
+      "file": "04b-settings-dialog.png",
+      "section": "details",
+      "alt": "Vulnogram settings dialog for configuring default CNA, ADP, and product fields for new entries",
+      "caption": "The settings dialog configures defaults for new entries.",
+      "steps": [
+        {
+          "action": "setViewport",
+          "width": 1680,
+          "height": 1080
+        },
+        {
+          "action": "goto",
+          "path": "#editor"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "#docEditor"
+        },
+        {
+          "action": "loadCveDocument",
+          "cveId": "CVE-2025-0001"
+        },
+        {
+          "action": "click",
+          "selector": "button[title=\"Customize default CNA/ADP fields\"]"
+        },
+        {
+          "action": "waitForSelector",
+          "selector": "#defaultPropertiesSettingsDialog[open]"
         },
         {
           "action": "waitForTimeout",

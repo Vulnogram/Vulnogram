@@ -2,7 +2,10 @@
 
 <link rel="stylesheet" href="https://vulnogram.org/css/min.css" />
 <link rel="stylesheet" href="https://vulnogram.org/css/vg-icons.css" />
-<style>body {background-color:var(--wht);}</style>
+<style>body {background-color:var(--wht);} .doc-hero {margin:1rem 0 2rem;} .doc-hero img {display:block;width:100%;max-width:1200px;height:auto;border-radius:18px;box-shadow:0 12px 32px rgba(15,23,42,0.18);} .doc-hero a {display:inline-block;}</style>
+
+<p class="doc-hero"><a href="https://www.vulnogram.org/"><img src="https://vulnogram.org/css/Vulnogram-og.jpg" alt="Vulnogram - Reserve, Manage, Publish CVEs."/></a></p>
+*Vulnogram - Reserve, Manage, Publish CVEs.*
 
 ## 1. Access <span class="vgi-logo">Vulnogram</span>
 
@@ -29,8 +32,13 @@ After login, use <b class="lbl bor vgi-magic">Reserve One CVE</b> or the dropdow
 
 Use the **Editor** tab to enter vulnerability details, affected products, references, and metrics. Switch between **Editor**, **Source**, and **Preview** tabs while drafting.
 
+For repeated CNA or ADP work, open the **Configure Default Settings** dialog from the top-right settings button <span class="rbtn vgi-cog"></span>. It lets you simplify the form for new entries by choosing default set of fields to show and by setting default vendor, product, and version-type values, which helps reduce repetitive edits and keeps new records more consistent.
+
 <img src="./screenshots/04-enter-cve-details.png" alt="Vulnogram CVE editor detail form area"/>
 *Primary **Editor** form where record content is entered.*
+
+<img src="./screenshots/04b-settings-dialog.png" alt="Vulnogram settings dialog for configuring default CNA, ADP, and product fields for new entries"/>
+*The settings dialog configures defaults for new entries.*
 
 ## 5. Publish to CVE Services
 
