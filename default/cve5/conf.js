@@ -363,6 +363,22 @@ module.exports = {
                     });
                 };
             }
+            if (typeof value === 'string' && /\.references\.\d+\.url$/.test(path)) {
+                if (value !== value.trim()) {
+                    errors.push({
+                        path: path,
+                        property: 'format',
+                        message: 'Remove leading or trailing whitespace from the URL'
+                    });
+                }
+                if (/^(?:https?|ftp):\/\/(?:https?|ftp)(?::\/\/|\/\/)/i.test(value)) {
+                    errors.push({
+                        path: path,
+                        property: 'format',
+                        message: 'Enter a single URL scheme, for example https://example.org/advisory'
+                    });
+                }
+            }
             if (schema.id == "datePublic") {
                 if(value && (new Date(value) > new Date())) {
                     //TODO. this should be a warning, not error.
