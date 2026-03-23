@@ -58,7 +58,8 @@
                     credentials: 'include',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json, text/plain, */*'
+                        'Accept': 'application/json, text/plain, */*',
+                        'CSRF-Token': csrfToken
                     },
                     body: JSON.stringify({
                         ids: selected,
