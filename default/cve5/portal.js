@@ -1149,10 +1149,34 @@ function cveCloneDoc(doc) {
     return JSON.parse(JSON.stringify(doc));
 }
 
+function normalizeReferenceUrls(references) {
+    if (!Array.isArray(references)) {
+        return;
+    }
+    for (var i = 0; i < references.length; i++) {
+        if (references[i] && typeof references[i].url === 'string') {
+            references[i].url = references[i].url.trim();
+            if (/^(?:https?|ftp):\/\/(?:https?|ftp)(?::\/\/|\/\/)/i.test(references[i].url)) {
+                throw new Error('Reference URLs must include a single scheme, for example https://example.org/advisory');
+            }
+        }
+    }
+}
+
 function cvePreparePublishDoc(doc) {
     var prepared = cveCloneDoc(doc);
     if (typeof textUtil !== 'undefined' && textUtil && typeof textUtil.reduceJSON === 'function') {
         prepared = textUtil.reduceJSON(prepared);
+    }
+    if (prepared && prepared.containers) {
+        if (prepared.containers.cna) {
+            normalizeReferenceUrls(prepared.containers.cna.references);
+        }
+        if (Array.isArray(prepared.containers.adp)) {
+            for (var i = 0; i < prepared.containers.adp.length; i++) {
+                normalizeReferenceUrls(prepared.containers.adp[i] && prepared.containers.adp[i].references);
+            }
+        }
     }
     return prepared;
 }
