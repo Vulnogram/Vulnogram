@@ -32,6 +32,8 @@ module.exports = function (name, opts) {
     var bulkInput = {};
     var toIndex = {};
     var lookups = [];
+    var allowedFieldPaths = new Set();
+    var xExtensionPrefixes = new Set();
     var chartFacet = {
         count: [{
             $count: "total"
@@ -39,8 +41,82 @@ module.exports = function (name, opts) {
     };
     var chartCount = 0;
 
+    function addAllowedFieldPath(path) {
+        if (typeof path !== 'string' || !path) {
+            return;
+        }
+        var parts = path.split('.').filter(Boolean);
+        if (!parts.length) {
+            return;
+        }
+        for (var i = 1; i <= parts.length; i++) {
+            allowedFieldPaths.add(parts.slice(0, i).join('.'));
+        }
+    }
+
+    function collectSchemaPropertyPrefixes(schema, prefix, depth) {
+        if (!schema || typeof schema !== 'object' || depth > 6) {
+            return;
+        }
+        if (schema.patternProperties && Object.prototype.hasOwnProperty.call(schema.patternProperties, '^x_')) {
+            xExtensionPrefixes.add(prefix);
+        }
+        if (schema.properties && typeof schema.properties === 'object') {
+            for (var key in schema.properties) {
+                if (!Object.prototype.hasOwnProperty.call(schema.properties, key)) {
+                    continue;
+                }
+                var nextPrefix = prefix ? prefix + '.' + key : key;
+                addAllowedFieldPath(nextPrefix);
+                collectSchemaPropertyPrefixes(schema.properties[key], nextPrefix, depth + 1);
+            }
+        }
+        if (schema.items && typeof schema.items === 'object') {
+            collectSchemaPropertyPrefixes(schema.items, prefix, depth + 1);
+        }
+        for (var k of ['allOf', 'anyOf', 'oneOf']) {
+            if (Array.isArray(schema[k])) {
+                for (var i = 0; i < schema[k].length; i++) {
+                    collectSchemaPropertyPrefixes(schema[k][i], prefix, depth + 1);
+                }
+            }
+        }
+    }
+
+    function isSafeFieldPath(path) {
+        if (typeof path !== 'string' || !/^[A-Za-z0-9_.]+$/.test(path)) {
+            return false;
+        }
+        if (allowedFieldPaths.has(path)) {
+            return true;
+        }
+        var parts = path.split('.').filter(Boolean);
+        if (parts[0] === 'body') {
+            for (var segment of parts.slice(1)) {
+                if (segment.indexOf('x_') === 0) {
+                    return true;
+                }
+            }
+        }
+        for (var i = 0; i < parts.length; i++) {
+            var part = parts[i];
+            var parentPath = parts.slice(0, i).join('.');
+            if (part.indexOf('x_') === 0 && xExtensionPrefixes.has(parentPath)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     for (key in opts.facet) {
         var options = opts.facet[key];
+        if (typeof options.path === 'string') {
+            addAllowedFieldPath(options.path);
+        } else if (Array.isArray(options.path)) {
+            for (var ap of options.path) {
+                addAllowedFieldPath(ap);
+            }
+        }
         //toIndex[options.path] = options.sort ? options.sort : 1;
 
         if (!options.hideColumn) {
@@ -110,6 +186,11 @@ module.exports = function (name, opts) {
         }
     }
 
+    addAllowedFieldPath(idpath);
+    if (opts.schema && typeof opts.schema === 'object') {
+        collectSchemaPropertyPrefixes(opts.schema, 'body', 0);
+    }
+
     queryMW = querymw(opts.facet);
     queryMWBody = querymw(opts.facet, 'body');
 
@@ -171,7 +252,7 @@ module.exports = function (name, opts) {
             res.json([]);
         }
     });
-    router.post('/json/', async function (req, res) {
+    router.post('/json/', csrfProtection, async function (req, res) {
         if (req.body.ids && req.body.ids.length > 0) {
             //console.log('REQ: ' + JSON.stringify(req.body.ids));
             var q = {};
@@ -183,6 +264,14 @@ module.exports = function (name, opts) {
             };
             if (req.body.fields && req.body.fields.length > 0) {
                 for (var f of req.body.fields) {
+                    if (!isSafeFieldPath(f)) {
+                        res.status(400);
+                        res.json({
+                            title: 'Error',
+                            message: 'Invalid field selection'
+                        });
+                        return;
+                    }
                     fields[f] = 1;
                 }
             }
@@ -237,6 +326,14 @@ module.exports = function (name, opts) {
         });
 
     async function enumExamples(req, res, t) {
+        if (!isSafeFieldPath(req.query.field)) {
+            res.status(400);
+            res.json({
+                title: 'Error',
+                message: 'Invalid field selection'
+            });
+            return;
+        }
         var r = await Document.distinct(req.query.field, req.querymen.query);
         var ret = {};
         ret[t] = r;
@@ -539,6 +636,14 @@ module.exports = function (name, opts) {
         queryMWBody,
         async function (req, res) {
             try {
+                if (opts.conf && opts.conf.readonly) {
+                    res.status(403);
+                    res.render('blank', {
+                        title: 'Error',
+                        message: 'Error: bulk updates are not allowed for readonly sections.'
+                    });
+                    return;
+                }
                 var q = req.querymen.query;
                 var f = q[idpath];
                 if (f) {
