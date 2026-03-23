@@ -33,6 +33,7 @@ module.exports = function (name, opts) {
     var toIndex = {};
     var lookups = [];
     var allowedFieldPaths = new Set();
+    var xExtensionPrefixes = new Set();
     var chartFacet = {
         count: [{
             $count: "total"
@@ -57,6 +58,9 @@ module.exports = function (name, opts) {
         if (!schema || typeof schema !== 'object' || depth > 6) {
             return;
         }
+        if (schema.patternProperties && Object.prototype.hasOwnProperty.call(schema.patternProperties, '^x_')) {
+            xExtensionPrefixes.add(prefix);
+        }
         if (schema.properties && typeof schema.properties === 'object') {
             for (var key in schema.properties) {
                 if (!Object.prototype.hasOwnProperty.call(schema.properties, key)) {
@@ -80,9 +84,28 @@ module.exports = function (name, opts) {
     }
 
     function isSafeFieldPath(path) {
-        return typeof path === 'string'
-            && /^[A-Za-z0-9_.]+$/.test(path)
-            && allowedFieldPaths.has(path);
+        if (typeof path !== 'string' || !/^[A-Za-z0-9_.]+$/.test(path)) {
+            return false;
+        }
+        if (allowedFieldPaths.has(path)) {
+            return true;
+        }
+        var parts = path.split('.').filter(Boolean);
+        if (parts[0] === 'body') {
+            for (var segment of parts.slice(1)) {
+                if (segment.indexOf('x_') === 0) {
+                    return true;
+                }
+            }
+        }
+        for (var i = 0; i < parts.length; i++) {
+            var part = parts[i];
+            var parentPath = parts.slice(0, i).join('.');
+            if (part.indexOf('x_') === 0 && xExtensionPrefixes.has(parentPath)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     for (key in opts.facet) {
