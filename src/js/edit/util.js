@@ -173,7 +173,8 @@ getDocuments: async function(schemaName, ids, paths) {
             credentials: 'include',
             headers: {
                 'Accept': 'application/json, text/plain, */*',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'CSRF-Token': csrfToken
             },
             redirect: 'error',
             body: JSON.stringify({ids:ids,fields:paths})
