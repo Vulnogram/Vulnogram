@@ -61,7 +61,7 @@ Success New user is now registered and can log in: tester
 
 ### Step 6 (Optional). Configure the .env file
 
-Copy the `example.env` file to `.env` and configure the environment variables to values you prefer. The values in `.env` will automatically be loaded as environment variables when Vulnogram starts. See [dotenv](https://github.com/motdotla/dotenv) for more details.
+Copy the `example.env` file to `.env` and replace the sample MongoDB and administrator credentials with unique values before starting Vulnogram. The values in `.env` will automatically be loaded as environment variables when Vulnogram starts. See [dotenv](https://github.com/motdotla/dotenv) for more details.
 
 ### Step 7. Start the node application
 
@@ -141,16 +141,18 @@ Note: Opening the index.html as a file URL may not work since some browsers (inc
 
 ## Docker deployment
 
-To run Vulnogram in a container alongside MongoDB, run the following command:
+To run Vulnogram in a container alongside MongoDB, first copy `example.env` to `.env`, replace the sample credentials with unique values, and then run:
 
 ```plaintext
+$ cp example.env .env
 $ docker compose up
 ```
 
-To modify the configuration options available, make a copy of the example.env file and make relevant modifications. Then launch Vulnogram by using the `ENV_VAR_PATH` environment variable. Replace `example.env` with the path to your file:
+To modify the configuration options available, make a copy of `example.env`, replace the sample credentials, and then launch Vulnogram by using the `ENV_VAR_PATH` environment variable. Replace `my-env-vars.env` with the path to your file:
 
 ```plaintext
-$ ENV_VAR_PATH=example.env docker compose up
+$ cp example.env my-env-vars.env
+$ ENV_VAR_PATH=my-env-vars.env docker compose up
 ```
 
 To change the ports that Vulnogram or MongoDB are running on, use the `MONGO_PORT` and `VULNOGRAM_PORT` environment variables. When doing this, make sure to make the appropriate modifications within the environment variables file as well, so that the ports used inside the container match those being passed to docker compose:
