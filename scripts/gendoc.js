@@ -127,6 +127,24 @@ function normalizeManifest(manifest) {
   return manifest;
 }
 
+function normalizeHeroGraphic(hero) {
+  if (!hero) {
+    return null;
+  }
+  if (typeof hero !== 'object') {
+    throw new Error('Manifest "hero" must be an object');
+  }
+  if (!hero.src || !hero.alt) {
+    throw new Error('Manifest hero requires "src" and "alt"');
+  }
+  return {
+    src: String(hero.src),
+    alt: String(hero.alt),
+    href: hero.href ? String(hero.href) : '',
+    caption: hero.caption ? String(hero.caption) : ''
+  };
+}
+
 async function readJson(filePath) {
   const raw = await fsp.readFile(filePath, 'utf8');
   return JSON.parse(raw);
@@ -1528,6 +1546,7 @@ function buildMarkdown(manifest, screenshotStatuses, generatedAt) {
     manifest.markdownStylesheet || 'https://vulnogram.org/css/min.css';
   const markdownIconStylesheet =
     manifest.markdownIconStylesheet || 'https://vulnogram.org/css/vg-icons.css';
+  const hero = normalizeHeroGraphic(manifest.hero);
   const screenshotsDir = asPublicDocPath(manifest.screenshotsDir || 'screenshots');
   const sections = manifest.sections || [];
 
@@ -1536,8 +1555,31 @@ function buildMarkdown(manifest, screenshotStatuses, generatedAt) {
   lines.push('');
   lines.push('<link rel="stylesheet" href="' + escapeHtmlAttribute(markdownStylesheet) + '" />');
   lines.push('<link rel="stylesheet" href="' + escapeHtmlAttribute(markdownIconStylesheet) + '" />');
-  lines.push('<style>body {background-color:var(--wht);}</style>');
+  lines.push(
+    '<style>body {background-color:var(--wht);} .doc-hero {margin:1rem 0 2rem;} .doc-hero img {display:block;width:100%;max-width:1200px;height:auto;border-radius:18px;box-shadow:0 12px 32px rgba(15,23,42,0.18);} .doc-hero a {display:inline-block;}</style>'
+  );
   lines.push('');
+  if (hero) {
+    let heroImage =
+      '<img src="' +
+      escapeHtmlAttribute(hero.src) +
+      '" alt="' +
+      escapeHtmlAttribute(hero.alt) +
+      '"/>';
+    if (hero.href) {
+      heroImage =
+        '<a href="' +
+        escapeHtmlAttribute(hero.href) +
+        '">' +
+        heroImage +
+        '</a>';
+    }
+    lines.push('<p class="doc-hero">' + heroImage + '</p>');
+    if (hero.caption) {
+      lines.push('*' + applyUiBadges(hero.caption) + '*');
+    }
+    lines.push('');
+  }
   for (const section of sections) {
     lines.push('## ' + section.title);
     lines.push('');

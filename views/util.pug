@@ -181,4 +181,5 @@ mixin tablesort
         }
         
 mixin asis(x)
-    |!{x}
+    - var sanitized = typeof sanitizeRichHtml === 'function' ? sanitizeRichHtml(x) : (x || '');
+    |!{sanitized}

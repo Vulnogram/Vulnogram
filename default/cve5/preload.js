@@ -3,10 +3,26 @@ loadCpeNameOverrides();
 document.getElementById('post1').addEventListener('click', cvePost);
 
 var DEFAULT_PROPERTIES_CACHE_KEY = 'vulnogram.cve5.defaultProperties.v1';
+var defaultPropertyValueFields = {
+    vendor: {
+        inputId: 'defaultPropertiesVendorName',
+        schemaPath: ['product', 'vendor']
+    },
+    product: {
+        inputId: 'defaultPropertiesProductName',
+        schemaPath: ['product', 'product']
+    },
+    versionType: {
+        inputId: 'defaultPropertiesVersionType',
+        schemaPath: ['product', 'versions', 'items', 'versionType']
+    }
+};
+var defaultPropertyValueNames = Object.keys(defaultPropertyValueFields);
 var defaultPropertiesTargets = {
     cnaContainer: {
         definitionNames: ['cnaPublishedContainer', 'cnaRejectedContainer'],
         hostId: 'defaultPropertiesCnaFields',
+        requiredFields: ['x_generator'],
         presets: {
             noob: ['title', 'problemTypes'],
             basic: ['title', 'problemTypes', 'metrics', 'solutions', 'workarounds', 'credits'],
@@ -16,6 +32,7 @@ var defaultPropertiesTargets = {
     adpContainer: {
         definitionNames: ['adpContainer'],
         hostId: 'defaultPropertiesAdpFields',
+        requiredFields: ['x_generator'],
         presets: {
             enricher: ['problemTypes', 'metrics'],
             supplier: ['affected', 'references']
@@ -34,6 +51,8 @@ var defaultPropertiesTargets = {
 var defaultPropertiesTargetNames = Object.keys(defaultPropertiesTargets);
 var defaultPropertiesBaseline = {};
 var defaultPropertiesSelection = {};
+var defaultPropertyValuesBaseline = {};
+var defaultPropertyValues = {};
 
 function getPresetChecksForTarget(targetName) {
     var target = defaultPropertiesTargets[targetName];
@@ -88,6 +107,28 @@ function getFirstDefinitionForTarget(rootSchema, targetName) {
         }
     }
     return null;
+}
+
+function getDefaultPropertyValueSchema(rootSchema, valueName) {
+    var field = defaultPropertyValueFields[valueName];
+    if (!field || !rootSchema || !rootSchema.definitions) {
+        return null;
+    }
+    var current = rootSchema.definitions;
+    for (var i = 0; i < field.schemaPath.length; i++) {
+        var key = field.schemaPath[i];
+        if (!current) {
+            return null;
+        }
+        if (key === 'items') {
+            current = current.items;
+        } else if (current.properties) {
+            current = current.properties[key];
+        } else {
+            current = current[key];
+        }
+    }
+    return current || null;
 }
 
 function getDefinitionPropertyKeys(definition) {
@@ -237,6 +278,33 @@ function cloneSelection(selection) {
     return out;
 }
 
+function readDefaultPropertyValuesFromSchema(rootSchema) {
+    var out = {};
+    for (var i = 0; i < defaultPropertyValueNames.length; i++) {
+        var valueName = defaultPropertyValueNames[i];
+        var fieldSchema = getDefaultPropertyValueSchema(rootSchema, valueName);
+        out[valueName] = (fieldSchema && fieldSchema.default != undefined) ? String(fieldSchema.default) : '';
+    }
+    return out;
+}
+
+function normalizeDefaultPropertyValues(values, rootSchema) {
+    var out = {};
+    for (var i = 0; i < defaultPropertyValueNames.length; i++) {
+        var valueName = defaultPropertyValueNames[i];
+        var fieldSchema = getDefaultPropertyValueSchema(rootSchema, valueName);
+        var nextValue = '';
+        if (values && values[valueName] != undefined) {
+            nextValue = String(values[valueName]).trim();
+        }
+        if (fieldSchema && typeof fieldSchema.maxLength === 'number' && nextValue.length > fieldSchema.maxLength) {
+            nextValue = nextValue.slice(0, fieldSchema.maxLength);
+        }
+        out[valueName] = nextValue;
+    }
+    return out;
+}
+
 function normalizeSelectionForSchema(selection, rootSchema) {
     var out = {};
     for (var i = 0; i < defaultPropertiesTargetNames.length; i++) {
@@ -283,6 +351,25 @@ function applySelectionToSchemaRoot(rootSchema, selection) {
     }
 }
 
+function applyDefaultPropertyValuesToSchemaRoot(rootSchema, values) {
+    if (!rootSchema) {
+        return;
+    }
+    for (var i = 0; i < defaultPropertyValueNames.length; i++) {
+        var valueName = defaultPropertyValueNames[i];
+        var fieldSchema = getDefaultPropertyValueSchema(rootSchema, valueName);
+        if (!fieldSchema) {
+            continue;
+        }
+        var nextValue = values && values[valueName] ? values[valueName] : '';
+        if (nextValue) {
+            fieldSchema.default = nextValue;
+        } else {
+            delete fieldSchema.default;
+        }
+    }
+}
+
 function applyDefaultPropertiesSelection(selection) {
     defaultPropertiesSelection = normalizeSelectionForSchema(selection, docSchema);
     applySelectionToSchemaRoot(docSchema, defaultPropertiesSelection);
@@ -294,11 +381,22 @@ function applyDefaultPropertiesSelection(selection) {
     }
 }
 
+function applyDefaultPropertyValues(values) {
+    defaultPropertyValues = normalizeDefaultPropertyValues(values, docSchema);
+    applyDefaultPropertyValuesToSchemaRoot(docSchema, defaultPropertyValues);
+    if (publicEditorOption && publicEditorOption.schema) {
+        applyDefaultPropertyValuesToSchemaRoot(publicEditorOption.schema, defaultPropertyValues);
+    }
+    if (rejectEditorOption && rejectEditorOption.schema) {
+        applyDefaultPropertyValuesToSchemaRoot(rejectEditorOption.schema, defaultPropertyValues);
+    }
+}
+
 function applyBaselineDefaultPropertiesSelection() {
     applyDefaultPropertiesSelection(cloneSelection(defaultPropertiesBaseline));
 }
 
-function loadCachedDefaultPropertiesSelection() {
+function loadCachedDefaultPropertiesSettings() {
     try {
         var raw = localStorage.getItem(DEFAULT_PROPERTIES_CACHE_KEY);
         if (!raw) {
@@ -308,16 +406,25 @@ function loadCachedDefaultPropertiesSelection() {
         if (!parsed || typeof parsed !== 'object') {
             return null;
         }
-        return parsed;
+        if (parsed.selection || parsed.values) {
+            return parsed;
+        }
+        return {
+            selection: parsed,
+            values: null
+        };
     } catch (e) {
         console.warn('Failed to read cached default property settings', e);
         return null;
     }
 }
 
-function saveCachedDefaultPropertiesSelection(selection) {
+function saveCachedDefaultPropertiesSettings(selection, values) {
     try {
-        localStorage.setItem(DEFAULT_PROPERTIES_CACHE_KEY, JSON.stringify(selection));
+        localStorage.setItem(DEFAULT_PROPERTIES_CACHE_KEY, JSON.stringify({
+            selection: selection,
+            values: values
+        }));
     } catch (e) {
         console.warn('Failed to persist default property settings', e);
     }
@@ -386,10 +493,34 @@ function renderDefaultPropertiesTarget(targetName) {
     }
 }
 
+function syncDefaultPropertyValueInputs() {
+    for (var i = 0; i < defaultPropertyValueNames.length; i++) {
+        var valueName = defaultPropertyValueNames[i];
+        var input = document.getElementById(defaultPropertyValueFields[valueName].inputId);
+        if (input) {
+            input.value = defaultPropertyValues[valueName] || '';
+        }
+    }
+
+    var versionTypeList = document.getElementById('defaultPropertiesVersionTypeSuggestions');
+    if (!versionTypeList) {
+        return;
+    }
+    versionTypeList.textContent = '';
+    var versionTypeSchema = getDefaultPropertyValueSchema(docSchema, 'versionType');
+    var suggestions = (versionTypeSchema && Array.isArray(versionTypeSchema.examples)) ? versionTypeSchema.examples : [];
+    for (var j = 0; j < suggestions.length; j++) {
+        var option = document.createElement('option');
+        option.value = suggestions[j];
+        versionTypeList.appendChild(option);
+    }
+}
+
 function syncDefaultPropertiesDialog() {
     for (var i = 0; i < defaultPropertiesTargetNames.length; i++) {
         renderDefaultPropertiesTarget(defaultPropertiesTargetNames[i]);
     }
+    syncDefaultPropertyValueInputs();
 }
 
 function collectSelectionFromDialog(targetName) {
@@ -412,6 +543,16 @@ function collectSelectionFromDialog(targetName) {
         }
     }
     return sanitizeDefaultPropertiesSelection(selected, allowed, required);
+}
+
+function collectDefaultPropertyValuesFromDialog() {
+    var out = {};
+    for (var i = 0; i < defaultPropertyValueNames.length; i++) {
+        var valueName = defaultPropertyValueNames[i];
+        var input = document.getElementById(defaultPropertyValueFields[valueName].inputId);
+        out[valueName] = input ? input.value : '';
+    }
+    return normalizeDefaultPropertyValues(out, docSchema);
 }
 
 function getEditorOptionsForDocValue(value) {
@@ -453,8 +594,10 @@ function saveDefaultPropertiesSettings() {
         var targetName = defaultPropertiesTargetNames[i];
         next[targetName] = collectSelectionFromDialog(targetName);
     }
+    var nextValues = collectDefaultPropertyValuesFromDialog();
     applyDefaultPropertiesSelection(next);
-    saveCachedDefaultPropertiesSelection(defaultPropertiesSelection);
+    applyDefaultPropertyValues(nextValues);
+    saveCachedDefaultPropertiesSettings(defaultPropertiesSelection, defaultPropertyValues);
     var dialog = document.getElementById('defaultPropertiesSettingsDialog');
     if (dialog && dialog.open) {
         dialog.close();
@@ -464,6 +607,7 @@ function saveDefaultPropertiesSettings() {
 
 function resetDefaultPropertiesSettings() {
     applyBaselineDefaultPropertiesSelection();
+    applyDefaultPropertyValues(defaultPropertyValuesBaseline);
     clearCachedDefaultPropertiesSelection();
     syncDefaultPropertiesDialog();
     refreshEditorForDefaultPropertySettings();
@@ -483,11 +627,18 @@ Object.assign(rejectEditorOption.schema, docSchema.oneOf[1]);
 delete rejectEditorOption.schema.oneOf;
 
 defaultPropertiesBaseline = buildSelectionFromSchema(docSchema);
-var cachedDefaultPropertiesSelection = loadCachedDefaultPropertiesSelection();
-if (cachedDefaultPropertiesSelection) {
-    applyDefaultPropertiesSelection(cachedDefaultPropertiesSelection);
+defaultPropertyValuesBaseline = readDefaultPropertyValuesFromSchema(docSchema);
+var cachedDefaultPropertiesSettings = loadCachedDefaultPropertiesSettings();
+if (cachedDefaultPropertiesSettings) {
+    applyDefaultPropertiesSelection(cachedDefaultPropertiesSettings.selection);
+    if (cachedDefaultPropertiesSettings.values) {
+        applyDefaultPropertyValues(cachedDefaultPropertiesSettings.values);
+    } else {
+        applyDefaultPropertyValues(defaultPropertyValuesBaseline);
+    }
 } else {
     applyBaselineDefaultPropertiesSelection();
+    applyDefaultPropertyValues(defaultPropertyValuesBaseline);
 }
 syncDefaultPropertiesDialog();
 

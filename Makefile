@@ -10,7 +10,7 @@ EDITOR_VENDOR_SOURCES := ./public/js/tagify.min.js
 EDITOR_PUBLIC_FILE := ./public/js/vg-editor.js
 EDITOR_BUNDLE_STAMP := ./public/js/.vg-editor-bundle.stamp
 
-TARGETS := $(OUT) $(OUT)/static $(OUT)/index.html $(CSS)/min.css $(CSS)/simplehtml.css $(CSS)/vg-icons.css $(CSS)/tagify.css $(CSS)/logo.png $(CSS)/logo.svg $(JS)/vg-editor.js $(JS)/mode-json.js $(JS)/cvss.json $(JS)/cwe-all.json $(JS)/cwe-frequent.json $(JS)/capec.json $(JS)/tablesort.min.js $(OUT)/static/CVE.svg $(OUT)/static/cve5sw.js $(OUT)/static/cvss40.js
+TARGETS := $(OUT) $(OUT)/static $(OUT)/index.html $(CSS)/min.css $(CSS)/simplehtml.css $(CSS)/vg-icons.css $(CSS)/tagify.css $(CSS)/logo.png $(CSS)/logo.svg $(CSS)/Vulnogram-og.jpg $(JS)/vg-editor.js $(JS)/mode-json.js $(JS)/cvss.json $(JS)/cwe-all.json $(JS)/cwe-frequent.json $(JS)/capec.json $(JS)/tablesort.min.js $(OUT)/static/CVE.svg $(OUT)/static/cve5sw.js $(OUT)/static/cvss40.js
 
 $(OUT):
 	mkdir $(OUT)
@@ -34,6 +34,9 @@ $(CSS)/%.svg: ./public/css/%.svg
 	cp -f $< $@
 
 $(CSS)/%.png: ./public/css/%.png
+	cp -f $< $@
+
+$(CSS)/%.jpg: ./public/css/%.jpg
 	cp -f $< $@
 
 $(CSS)/%.svgf: ./public/css/%.svg

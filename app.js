@@ -2,7 +2,6 @@
 
 const express = require('express');
 const path = require('path');
-const fs = require('fs');
 const http = require('http');
 const flash = require('connect-flash');
 const https = require('https');
@@ -30,6 +29,7 @@ if (dotenv.error) {
 
 const conf = require('./config/conf');
 const optSet = require('./models/set');
+const { sanitizeRichHtml } = require('./lib/html-sanitize');
 const mongo = require('./lib/mongo');
 
 if (!process.env.NODE_ENV) {
@@ -61,6 +61,7 @@ app.set('view engine', 'pug');
 // make conf available for pug
 app.locals.conf = conf;
 app.locals.pugLib = pug;
+app.locals.sanitizeRichHtml = sanitizeRichHtml;
 
 // parse urlencoded forms
 app.use(express.urlencoded({

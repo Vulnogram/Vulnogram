@@ -4,7 +4,8 @@ mixin spara(l, hypertext)
     if l
         each d in l
             if d.supportingMedia && d.supportingMedia.length > 0 && d.supportingMedia[0].type == 'text/html'
-                p !{d.supportingMedia[0].value}
+                - var supportingHtml = typeof sanitizeRichHtml === 'function' ? sanitizeRichHtml(d.supportingMedia[0].value) : (d.supportingMedia[0].value || '');
+                p !{supportingHtml}
             else if d.value
                 +para(d.value)
 
@@ -431,7 +432,8 @@ mixin spara(l, hypertext)
     if l
         each d in l
             if d.supportingMedia && d.supportingMedia.length > 0 && d.supportingMedia[0].type == 'text/html'
-                p !{d.supportingMedia[0].value}
+                - var supportingHtml = typeof sanitizeRichHtml === 'function' ? sanitizeRichHtml(d.supportingMedia[0].value) : (d.supportingMedia[0].value || '');
+                p !{supportingHtml}
             else if d.value
                 +para(d.value)
 
