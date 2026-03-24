@@ -171,7 +171,7 @@ module.exports = function (name, opts) {
             res.json([]);
         }
     });
-    router.post('/json/', async function (req, res) {
+    router.post('/json/', csrfProtection, async function (req, res) {
         if (req.body.ids && req.body.ids.length > 0) {
             //console.log('REQ: ' + JSON.stringify(req.body.ids));
             var q = {};
