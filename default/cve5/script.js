@@ -151,6 +151,14 @@ var additionalTabs = {
                 doc: j
             });
         }
+    },
+    changesTab: {
+        title: 'Changes',
+        setValue: async function (j) {
+            if (typeof cveRenderPublishChanges === 'function') {
+                await cveRenderPublishChanges(j);
+            }
+        }
     }
 }
 

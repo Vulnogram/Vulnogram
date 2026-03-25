@@ -47,6 +47,8 @@ block append outputButtons
     a.rbtn.vgi-what(href="https://www.vulnogram.org/docs/",target="_blank")
 
 block append scripts
+    if min || !conf.realtime || !conf.realtime.enabled
+        script(src=conf.basedir + "js/json-patch-extended.min.js")
     script(type="module")
         | import {CVSS40} from './static/cvss40.js';
         | window.CVSS40 = CVSS40;
@@ -81,6 +83,12 @@ block customtabs
                 a.vgi-download.fbn.right(type="button",oncontextmenu='downloadHtml(document.getElementById("cvetitle").innerText, render, this);',onclick='downloadHtml(document.getElementById("cvetitle").innerText, render, this);',value="Download") Download
                 a.vgi-mail.fbn.right(type="button",oncontextmenu='draftEmail(event, this, "render");',onclick='draftEmail(event, this,"render");',value="Email") Email
             div.render(id="render")
+        if min
+            input.tab(name='tabs', type='radio', id='changesTab', value="6")
+            label.lbl(for='changesTab') Changes
+            .wht.fil.bort
+                div#unSavedChanges
+                div#changelog
 
 block prepend content
     dialog.dlg.bor.rndx.shd#cveErrorsModal
@@ -171,6 +179,16 @@ block prepend content
         center.pad2
             | 
             button.btn.vgi-x(type="button" onclick="this.closest('dialog').close()") Close
+    dialog.dlg.bor.rndx.shd#publishPreviewDialog
+        header.ban.sec.pad
+            b.lbl.vgi-eye#publishPreviewTitle Publish Preview
+            a.right.rbtn.vgi-x(title="Close preview" onclick="document.getElementById('publishPreviewDialog').close()")
+        .pad2
+            p.lbl#publishPreviewSummary Review the current CVE Services container next to the pending publish.
+            #publishPreviewBody
+        center.pad2.gap
+            button.btn.vgi-x(type="button" id="publishPreviewCancel") Cancel
+            button.btn.sfe.vgi-export(type="button" id="publishPreviewConfirm") Publish
     +showSecret
     +userAddDialog
     +userEditDialog

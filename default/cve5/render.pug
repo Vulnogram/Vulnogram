@@ -268,58 +268,86 @@ mixin warnings(con)
                 | 
                 span=x.message
 
-mixin container(con, cve)
-    .cna.pad
-        - var cList = con && con.shortName ? con.shortName : (cve && cve.cveMetadata ? cve.cveMetadata.assignerShortName : false);
-        - var quote = (cList && cList.indexOf(' ') !== -1) ? '"' : '';
-        - var cnaName = con.shortName;
-        - if (typeof cna !== 'undefined' && cna && cna[con.shortName] && cna[con.shortName].n) { cnaName = cna[con.shortName].n; }
-        if con.url
-            a(href=cList ? '?CNA:'+quote+cList+quote : false)
-                img.logo(src="https://www.google.com/s2/favicons?sz=128&domain_url="+con.url)
-        span
+mixin containerIdentity(con, cve)
+    - var cList = con && con.shortName ? con.shortName : (cve && cve.cveMetadata ? cve.cveMetadata.assignerShortName : false);
+    - var quote = (cList && cList.indexOf(' ') !== -1) ? '"' : '';
+    - var cnaName = con && con.shortName ? con.shortName : (cve && cve.cveMetadata ? cve.cveMetadata.assignerShortName : false);
+    - if (typeof cna !== 'undefined' && cna && cList && cna[cList] && cna[cList].n) { cnaName = cna[cList].n; }
+    - var publicDate = con && con.datePublic ? con.datePublic : (cve && cve.cveMetadata ? cve.cveMetadata.datePublished : false);
+    - var publishDate = (cve && cve.cveMetadata ? cve.cveMetadata.datePublished : false) || (con ? con.datePublic : false);
+    if con.url || cnaName || publicDate || (con.dateUpdated || publishDate)
+        .cna.pad
+            if con.url
+                a(href=cList ? '?CNA:'+quote+cList+quote : false)
+                    img.logo(src="https://www.google.com/s2/favicons?sz=128&domain_url="+con.url)
+            span
+                if cnaName || con.url
+                    span.flx
+                        if cnaName
+                            a.bld(href=cList ? '?CNA:'+quote+cList+quote : false)=cnaName
+                        if con.url
+                            a.vgi-globe(href=con.url)
+                +renderDate(publicDate)
+                if (con.dateUpdated || publishDate) && con.dateUpdated != publishDate
+                    |  (updated 
+                    +renderDate(con.dateUpdated)
+                    |)
+
+mixin containerMetricSummary(con)
+    if (con.cvssList && con.cvssList.length > 0) || con.KEV
+        .pad
             span.flx
-                a.bld(href=cList ? '?CNA:'+quote+cList+quote : false)=cnaName
-                if con.url
-                    a.vgi-globe(href=con.url)
-            - var publicDate = con.datePublic || (cve && cve.cveMetadata ? cve.cveMetadata.datePublished : false);
-            - var publishDate = (cve && cve.cveMetadata ? cve.cveMetadata.datePublished : false) || con.datePublic;
-            +renderDate(publicDate)
-            if (con.dateUpdated || publishDate) && con.dateUpdated != publishDate
-                |  (updated 
-                +renderDate(con.dateUpdated)
-                |)
-        span.flx
-            +cvssList(con.cvssList)
-            if con.KEV
-                summary.lbl.rnd.tag.CVSS.CRITICAL.vgi-bomb Known Exploited Since 
-                    = con.KEV.dateAdded
-    .desc.pad
-        if con.state == 'REJECTED'
-            - con.maxCVSS = -1;
-            b.tag.rnd.CVSS.CRITICAL REJECTED
-            |  ·  
-        +tagList(con.tags)
-        span#cvetitle
-            b=con.cveId
-            if con.title
+                +cvssList(con.cvssList)
+                if con.KEV
+                    summary.lbl.rnd.tag.CVSS.CRITICAL.vgi-bomb Known Exploited Since 
+                        = con.KEV.dateAdded
+
+mixin containerSummary(con, showId)
+    - var includeId = showId !== false;
+    if con.state == 'REJECTED' || (con.tags && con.tags.length > 0) || (includeId && (con.cveId || con.title)) || (!includeId && con.title) || (con.descriptions && con.descriptions.length > 0) || (con.rejectedReasons && con.rejectedReasons.length > 0)
+        .desc.pad
+            if con.state == 'REJECTED'
+                - con.maxCVSS = -1;
+                b.tag.rnd.CVSS.CRITICAL REJECTED
+                |  ·  
+            +tagList(con.tags)
+            if includeId
+                span#cvetitle
+                    if con.cveId
+                        b=con.cveId
+                        if con.title
+                            |  
+                    if con.title
+                        b=con.title
+            else if con.title
+                span#cvetitle
+                    b=con.title
+            if (includeId && (con.cveId || con.title)) || (!includeId && con.title)
                 |  
-                b=con.title
-        |  
-        +spara(con.descriptions)
-        +spara(con.rejectedReasons)
+            +spara(con.descriptions)
+            +spara(con.rejectedReasons)
+
+mixin containerMetricsDetails(con)
     if (con.metrics && con.metrics.length > 0)
         each metric, i in con.metrics
-            if (con.metrics[i].other && con.metrics[i].other.type == 'ssvc')
+            if metric.other && metric.other.type == 'ssvc' && metric.other.content && metric.other.content.options
                 .metrics.pad
                     b Stakeholder Specific Vulnerability Categorization (SSVC)
-                    each m, j in con.metrics[i].other.content.options
+                    each m, j in metric.other.content.options
                         each o, k in m
                             p=k + ': ' + o
+
+mixin containerMetrics(con)
+    +containerMetricSummary(con)
+    +containerMetricsDetails(con)
+
+mixin containerConfigurations(con)
     if con.configurations
         .configs.pad
             b.vgi-cog Required configuration for exposure: 
             +spara(con.configurations)
+
+mixin containerProblemTypes(con)
     if con.problemTypes
         .problem.pad
             b.vgi-bug Problem: 
@@ -343,6 +371,8 @@ mixin container(con, cve)
                                 |  
                         else
                             =d.description
+
+mixin containerImpacts(con)
     if con.impacts
         .impact.pad
             b.vgi-impact Impact:  
@@ -362,41 +392,222 @@ mixin container(con, cve)
                         a(href="https://capec.mitre.org/data/definitions/"+capec[0],target="_blank")
                             small=t.capecId
                         |  
+
+mixin containerExploits(con)
     if con.exploits
         .exploits.pad
             b.vgi-bomb Exploits
             +spara(con.exploits)
+
+mixin containerAffected(con)
     if con.pvstatus
         +statusTable(con.pvstatus)
+
+mixin containerCpeApplicability(con)
     if con.cpeApplicability
         #CPE
             h2 CPE Applicability:
             +cpeApplicability(con.cpeApplicability,true)
             br(style="font-size:0;")
+
+mixin containerSolutions(con)
     if con.solutions
         .solution.pad
             b.vgi-safe Solution
             +spara(con.solutions)
+
+mixin containerWorkarounds(con)
     if con.workarounds
         .workaround.pad
             b.vgi-avoid Workaround
             +spara(con.workarounds)
+
+mixin containerCredits(con)
     if con.credits
         .credits.rnd.pad.sec
             b.vgi-like Credits
             +creditList(con.credits)
+
+mixin containerTimeline(con)
     if con.timeline
         .timeline.pad
             details(open)
                 summary
                     b.vgi-cal Timeline
                 +timeList(con)
+
+mixin containerReferences(con)
     if con.references
         .references.pad
             details(open)
                 summary
                     b.vgi-ext References
                 +refList(con.references)
+
+mixin containerUnknown(fieldName, value)
+    if value !== undefined
+        .pad
+            if value instanceof Object
+                +JSON(value)
+            else if value == null
+                i.vgi-del deleted
+            else
+                .pre= value
+
+mixin containerPreviewField(renderer, fieldName, con, cve)
+    case renderer
+        when 'identity'
+            +containerIdentity(con, cve)
+        when 'summary'
+            +containerSummary(con, false)
+        when 'metrics'
+            +containerMetrics(con)
+        when 'configurations'
+            +containerConfigurations(con)
+        when 'problemTypes'
+            +containerProblemTypes(con)
+        when 'impacts'
+            +containerImpacts(con)
+        when 'exploits'
+            +containerExploits(con)
+        when 'affected'
+            +containerAffected(con)
+        when 'cpeApplicability'
+            +containerCpeApplicability(con)
+        when 'solutions'
+            +containerSolutions(con)
+        when 'workarounds'
+            +containerWorkarounds(con)
+        when 'credits'
+            +containerCredits(con)
+        when 'timeline'
+            +containerTimeline(con)
+        when 'references'
+            +containerReferences(con)
+        default
+            +containerUnknown(fieldName, con && fieldName ? con[fieldName] : con)
+
+mixin publishPreviewCell(row, sideLabel, con, cve, hasData, side)
+    .col.s5.fil.pad(data-publish-preview-cell=side)
+        if sideLabel
+            div.lbl.sml=sideLabel
+        if hasData
+            div(data-publish-preview-content=side)
+                +containerPreviewField(row.renderer, row.fieldName, con, cve)
+        else if row.state == 'removed' && side == 'next'
+            i.vgi-del.tgrey deleted
+
+mixin publishPreviewChangeIcon(op)
+    if op == 'add'
+        span.lbl +
+    else
+        span.lbl &rarr;
+
+mixin publishPreviewPatchRows(row)
+    if row.patch && row.patch.length > 0
+        tbody(hidden data-publish-preview-patch-row=row.id)
+            each op in row.patch
+                tr.hig
+                    td.pad(colspan=3)
+                        b= row.label
+                        |  
+                        = op.op == 'add' ? 'added' : op.op == 'remove' ? 'removed' : 'changed'
+                        |  
+                        b= op.path
+                tr.change(class=op.op)
+                    td(colspan=3)
+                        .row
+                            .col.s5.fil.pad
+                                if op.op == 'remove'
+                                    - op.old = op.value
+                                    - delete op.value
+                                if op.op == 'replace' && typeof op.old === 'string' && typeof op.value === 'string'
+                                    if textUtil
+                                        - var diffs = textUtil.diffline(op.old, op.value);
+                                        .pre
+                                            for s in diffs.lhs
+                                                case s.t
+                                                    when 0
+                                                        = s.str
+                                                    when 1
+                                                        span.yel=s.str
+                                    else
+                                        .pre=op.old
+                                else if op.old instanceof Object
+                                    .pre= JSON.stringify(op.old, null, 1)
+                                else
+                                    = op.old
+                            .col.s2.fil.pad.center.nobr
+                                +publishPreviewChangeIcon(op.op)
+                            .col.s5.fil.pad
+                                if op.op == 'replace' && typeof op.old === 'string' && typeof op.value === 'string'
+                                    if textUtil
+                                        .pre
+                                            for s in diffs.rhs
+                                                case s.t
+                                                    when 0
+                                                        = s.str
+                                                    when 1
+                                                        span.grn=s.str
+                                    else
+                                        .pre=op.value
+                                else if op.value == null
+                                    i.vgi-del deleted
+                                else if op.value instanceof Object
+                                    .pre= JSON.stringify(op.value, null, 1)
+                                else
+                                    = op.value
+
+mixin publishPreview(preview)
+    if preview.rows && preview.rows.length > 0
+        table.diff.fil
+            each row in preview.rows
+                - var changeOp = row.state == 'added' ? 'add' : row.state == 'removed' ? 'remove' : 'replace';
+                tbody(data-publish-preview-row=row.id data-publish-preview-state=row.state)
+                    tr.hig
+                        td.pad(colspan=3)
+                            b= row.label
+                            if row.stateLabel
+                                |  
+                                span.lbl= row.stateLabel
+                    tr.change(class=changeOp)
+                        td(colspan=3)
+                            .row
+                                +publishPreviewCell(row, preview.currentLabel ? preview.currentLabel : 'Current CVE Services', row.currentContainer, preview.currentDoc, row.currentHasData, 'current')
+                                .col.s2.fil.pad.center.nobr
+                                    +publishPreviewChangeIcon(changeOp)
+                                +publishPreviewCell(row, preview.nextLabel ? preview.nextLabel : 'Pending publish', row.nextContainer, preview.nextDoc, row.nextHasData, 'next')
+                +publishPreviewPatchRows(row)
+    else
+        p.lbl.bor.rnd.pad2.sec No container field changes detected. The pending publish matches the current CVE Services container for the rendered fields.
+
+mixin publishPreviewPanel(preview)
+    .bor.rnd.shd.wht.gap2
+        if preview.title || preview.description
+            .sec.pad2
+                if preview.title
+                    b.lbl.vgi-eye= preview.title
+                if preview.description
+                    p.gap= preview.description
+        .pad
+            +publishPreview(preview)
+
+mixin container(con, cve)
+    +containerIdentity(con, cve)
+    +containerMetricSummary(con)
+    +containerSummary(con, true)
+    +containerMetricsDetails(con)
+    +containerConfigurations(con)
+    +containerProblemTypes(con)
+    +containerImpacts(con)
+    +containerExploits(con)
+    +containerAffected(con)
+    +containerCpeApplicability(con)
+    +containerSolutions(con)
+    +containerWorkarounds(con)
+    +containerCredits(con)
+    +containerTimeline(con)
+    +containerReferences(con)
     if con.json
         pre=JSON.stringify(con.json,1,1)
 
