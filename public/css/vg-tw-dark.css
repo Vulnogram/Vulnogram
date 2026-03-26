@@ -1,0 +1,55 @@
+/*
+ * Vulnogram 2.0 — dark mode class bridge
+ *
+ * min.css uses @media (prefers-color-scheme: dark) for its token overrides,
+ * but the new UI uses html.dark (class toggle) for dark mode so users can
+ * switch independently of their OS setting.
+ *
+ * This file mirrors those tokens under html.dark so all min.css components
+ * (tables, editor widgets, radio groups, etc.) respond correctly to the toggle.
+ */
+
+html.dark {
+    --txt:       #e2e8f0;              /* slate-200  */
+    --dis:       #94a3b8;              /* slate-400  */
+    --bor:       #334155;              /* slate-700  */
+    --bg1:       #0f172a;              /* slate-900  */
+    --bg2:       #1e293b;              /* slate-800  */
+    --acc:       #818cf8;              /* indigo-400 */
+    --wht:       #0f172a;              /* slate-900  (was #000 — too harsh) */
+    --red:       #f87171;              /* red-400    */
+    --sev-none:  #1e3a1e;
+    --sev-low:   #2d3a08;
+    --sev-med:   #4a3b00;
+    --sev-high:  #4a2400;
+    --sev-crit:  #4a0f0a;
+    --txt-red:   #fca5a5;              /* red-300    */
+    --shw-soft:  0 10px 24px rgba(0, 0, 0, 0.55);
+}
+
+/* Icons: invert in dark mode (same as the original media query) */
+html.dark [class^="vgi-"]::before,
+html.dark [class*=" vgi-"]::before {
+    filter: invert(1) hue-rotate(180deg) brightness(1.2) contrast(1.05);
+}
+
+/* Dialogs use bg1 in dark mode */
+html.dark dialog {
+    color: var(--txt);
+    background-color: var(--bg1);
+    border-color: var(--bor);
+}
+
+/* Tagify tag chips */
+html.dark tags.tagify {
+    background-color: var(--bg2);
+    border-color: var(--bor);
+}
+
+html.dark tags.tagify .tagify__tag {
+    background-color: var(--bg1);
+}
+
+html.dark tags.tagify .tagify__tag__removeBtn::after {
+    color: var(--txt);
+}

@@ -8,12 +8,12 @@ html.h-full
     script.
       (function(){var t=localStorage.getItem('vg-theme');if(t==='dark')document.documentElement.classList.add('dark');else if(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)document.documentElement.classList.add('dark');})();
     include head
-  body.h-full.min-h-screen.flex.flex-col.items-center.justify-center.p-4(class="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950")
+  body.h-full.min-h-screen.flex.flex-col.items-center.justify-center.p-4(class="bg-gradient-to-br from-indigo-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-950")
     .w-full.max-w-md
       .text-center.mb-8
-        .text-4xl.font-bold.text-white.tracking-tight ◈ Vulnogram
-        p.text-slate-400.text-sm.mt-2 Making the world safer, one CVE at a time
-      .bg-white.rounded-2xl.shadow-2xl.overflow-hidden(class="dark:bg-slate-800")
+        .text-4xl.font-bold.tracking-tight.text-slate-900(class="dark:text-white") ◈ Vulnogram
+        p.text-sm.mt-2.text-slate-500(class="dark:text-slate-400") Making the world safer, one CVE at a time
+      .rounded-2xl.shadow-2xl.overflow-hidden.bg-white(class="dark:bg-slate-800")
         !=messages()
         block content
       .text-center.mt-6
