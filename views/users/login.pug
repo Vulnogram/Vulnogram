@@ -1,17 +1,18 @@
-//- Copyright (c) 2017 Chandan B N. All rights reserved.
+//- Copyright (c) 2017-2026 Chandan B N. All rights reserved.
 
 extends ../splash
 
 block content
-  form(method='POST', action='/users/login')
-    input(type='hidden', name='_csrf', value=csrfToken)
-    .pad
-      .big.center Login required
-    .pad
-      label.lbl(style="width:6em;") Username:
-      input.bor.txt(name='username', type='text', autocomplete='username')
-    .pad
-      label.lbl(style="width:6em;") Password:
-      input.bor.txt(name='password', type='password', autocomplete='current-password')
-    .pad.center 
-      input.bor.fbn.sfe(type='submit', value='Login')
+  .px-8.py-10
+    h1.text-2xl.font-bold.text-slate-900.mb-1(class="dark:text-white") Sign in
+    p.text-slate-500.text-sm.mb-8(class="dark:text-slate-400") Enter your credentials to continue
+    form(method='POST', action='/users/login')
+      input(type='hidden', name='_csrf', value=csrfToken)
+      .space-y-5
+        div
+          label.block.text-sm.font-medium.text-slate-700.mb-1(class="dark:text-slate-300", for='login-username') Username
+          input#login-username.w-full.px-4.rounded-xl.text-slate-900.placeholder-slate-400.transition-colors(name='username', type='text', autocomplete='username', class="py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent")
+        div
+          label.block.text-sm.font-medium.text-slate-700.mb-1(class="dark:text-slate-300", for='login-password') Password
+          input#login-password.w-full.px-4.rounded-xl.text-slate-900.placeholder-slate-400.transition-colors(name='password', type='password', autocomplete='current-password', class="py-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent")
+        button.w-full.py-2.px-4.bg-indigo-600.text-white.font-semibold.rounded-xl.shadow-sm.transition-colors(class="hover:bg-indigo-700 active:bg-indigo-800", type='submit') Sign in

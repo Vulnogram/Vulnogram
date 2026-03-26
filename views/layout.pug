@@ -1,105 +1,98 @@
 //- Copyright (c) 2017-2026 Chandan B N. All rights reserved.
-//- Modern responsive grid layout with CSS-only collapsible sidebar
+//- Vulnogram 2.0 — Tailwind CSS UI
 
 doctype html
-html
+html.h-full
   head
     title= title
+    script.
+      (function(){var t=localStorage.getItem('vg-theme');if(t==='dark')document.documentElement.classList.add('dark');else if(!t&&window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)document.documentElement.classList.add('dark');})();
     block head
-        include head
-  body#body(class=schemaName)
-    //- CSS-only sidebar toggle checkbox
-    input#sidebarToggle(type="checkbox" checked=true)
-    
-    .layout-grid
-      //- Overlay for mobile (closes sidebar when clicked)
-      label.sidebar-overlay(for="sidebarToggle")
-      
-      //- Left Sidebar
-      aside.sidebar
-        .sidebar-head.pad
+      include head
+  body.h-full.bg-slate-100.text-slate-900(class="dark:bg-slate-950 dark:text-slate-100")
+    .flex.h-full
+      //- Sidebar
+      aside#vg-sidebar.fixed.inset-y-0.left-0.z-40.w-64.flex.flex-col.bg-slate-900(class="dark:bg-slate-950 -translate-x-full md:translate-x-0 transition-transform duration-200")
+        .flex.items-center.gap-2.px-5.h-14.shrink-0.border-b.border-white.border-opacity-10
           block sidebarHeader
-            label.lbl.vgi-logo(for="sidebarToggle") Vulnogram
-            label.vgi-larrow(for="sidebarToggle")
-        nav.sidebar-nav.pad
+            span.text-xl.font-bold.text-white ◈ 
+            span.text-xl.font-bold.text-indigo-400 Vulnogram
+        nav.flex-1.overflow-y-auto.px-3.py-4.space-y-1
           block sidebarNav
-            //-if min
-            //-  a.fbn.vgi-logo(title="Making the world safer one CVE at a time, since 2017", href=conf.homepage)="Vulnogram"
             block sidebarSections
               - var vs = Object.keys(confOpts).sort((a,b)=>(confOpts[a].conf.order-confOpts[b].conf.order));
               each section in vs
                 if confOpts && confOpts[section]
                   - var cf = confOpts[section].conf ? confOpts[section].conf : {};
-                  a.lbl(class=(cf.class ? cf.class : 'vgi-data')+ (schemaName == section ? ' rnd sec ':'')+ (page && page.startsWith('/' + section + '/') ? " hig " : ""), title=cf.title, href = (cf.uri? cf.uri : '/' + section + '/' ))=cf.name
-          label.sidebar-nav-fill(for="sidebarToggle" aria-label="Toggle sidebar")
-        .sidebar-foot
+                  - var isActive = schemaName == section || (page && page.startsWith('/' + section + '/'));
+                  a(href=(cf.uri ? cf.uri : '/' + section + '/'), title=cf.title, class=(isActive ? 'flex items-center gap-3 px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium' : 'flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 text-sm transition-colors'))
+                    span(class=(cf.class ? cf.class : 'vgi-data'))
+                    span= cf.name
+        .px-3.py-4.border-t.border-white.border-opacity-10.shrink-0
           block sidebarFooter
-      script.
-        document.addEventListener('toggle', function (e) {
-          var d = e && e.target;
-          if (!d || !d.matches || !d.matches('details.sidebar-expandable') || d.open === undefined || !d.open) return;
-          var t = document.getElementById('sidebarToggle');
-          if (t) t.checked = false;
-        }, true);
-        document.addEventListener('click', function (e) {
-          if (!window.matchMedia || !window.matchMedia('(max-width: 768px)').matches) return;
-          var target = e && e.target;
-          var navLink = target && target.closest ? target.closest('.sidebar-nav a.lbl') : null;
-          if (!navLink) return;
-          var t = document.getElementById('sidebarToggle');
-          if (t) t.checked = true;
-        });
-
-      //- Main Content Area
-      main.main-area
-        //- Top Header
-        .stk#vgHead
+      //- Mobile overlay
+      div#vg-overlay.fixed.inset-0.z-30.hidden(class="bg-black/60")
+      //- Main content
+      .flex-1.min-w-0.flex.flex-col(class="md:pl-64")
+        //- Sticky header
+        header.h-14.sticky.top-0.z-20.flex.items-center.px-4.gap-3.border-b.border-slate-200.shrink-0(class="bg-white/95 dark:bg-slate-900/95 dark:border-slate-800 backdrop-blur")
           block topHeader
-            header.ban.pad.wht.btm.vg-top-header
-              .left.flx
+            .flex.items-center.gap-3.flex-1.min-w-0
+              .flex.items-center.gap-2.shrink-0
+                button#vg-menu-btn.p-2.rounded-lg.text-slate-500(class="md:hidden hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800", aria-label="Open menu")
+                  span.vgi-menu
                 block topHeaderLeft
-                  label#smallScreenMenu.lbl.vgi-menu(for="sidebarToggle") 
                   if schemaName && confOpts && confOpts[schemaName] && !confOpts[schemaName].conf.readonly
                     if min
-                      a.fbn.sfe(href=(schemaName == 'cve' ? './' : './'+ schemaName)) NEW 
+                      a.inline-flex.items-center.gap-1.px-3.rounded-lg.bg-indigo-600.text-white.text-sm.font-medium.transition-colors(class="py-1.5 hover:bg-indigo-700", href=(schemaName == 'cve' ? './' : './'+ schemaName))
+                        | + 
                         = confOpts[schemaName].conf.name ? confOpts[schemaName].conf.name : schemaName
                     else
-                      a.fbn.sfe(href='/' + schemaName + '/new') NEW 
+                      a.inline-flex.items-center.gap-1.px-3.rounded-lg.bg-indigo-600.text-white.text-sm.font-medium.transition-colors(class="py-1.5 hover:bg-indigo-700", href='/' + schemaName + '/new')
+                        | + 
                         = confOpts[schemaName].conf.name ? confOpts[schemaName].conf.name : schemaName
-              .center.flx
+              .flex-1.min-w-0
                 block topHeaderMid
                   if !min && schemaName
-                    form.bor.out.nobr.vg-search-form(action='/' + schemaName,method="GET")
-                      input.txt.vg-search-input(size=20,type="text",name="q",placeholder=" Search all "+schemaName,value=query ? (Array.isArray(query.q) ? query.q.join(' ') : query.q) :'',results="10")
-                      button.vgi-search.sbn(type="submit")
-              .right.flx
+                    form.flex.items-center.bg-slate-100.border.border-slate-200.rounded-lg.overflow-hidden(class="dark:bg-slate-800 dark:border-slate-700", action='/' + schemaName, method="GET")
+                      input.flex-1.bg-transparent.px-3.text-sm.outline-none.placeholder-slate-400(class="py-1.5", type="text", name="q", placeholder="Search " + schemaName, value=query ? (Array.isArray(query.q) ? query.q.join(' ') : query.q) : '')
+                      button.px-3.text-slate-400(class="py-1.5 hover:text-slate-600 dark:hover:text-slate-200", type="submit")
+                        span.vgi-search
+              .flex.items-center.gap-2.shrink-0
                 block topHeaderRight
                   block outputButtons
+                  button#vg-theme-btn.p-2.rounded-lg.text-slate-500.text-base(class="hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800", aria-label="Toggle theme") ☀
                   block userProfile
                     if user
-                      details.popup.vg-user-details
-                        summary.lbl.vgi-user= user.name
-                        div.wht.pop.pad.bor.shd.rnd.vflx.vg-user-pop
-                          a.lbl.right.vgi-x(onclick="this.closest('details').removeAttribute('open')")
-                          a.lbl.vgi-edit.block(href="/users/profile/" + user.username) Update profile
-                          a.lbl.vgi-user(href="/users/list") Team list
+                      details.relative
+                        summary.flex.items-center.gap-2.px-3.rounded-lg.cursor-pointer.text-sm.text-slate-700.select-none(class="py-1.5 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800")
+                          span.vgi-user
+                          span= user.name
+                        div.absolute.right-0.top-full.mt-1.w-52.bg-white.border.border-slate-200.rounded-xl.shadow-lg.py-1.z-50(class="dark:bg-slate-800 dark:border-slate-700")
+                          a.flex.items-center.gap-2.px-4.py-2.text-sm.text-slate-700(class="hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700", href="/users/profile/" + user.username)
+                            span.vgi-edit
+                            | Update profile
+                          a.flex.items-center.gap-2.px-4.py-2.text-sm.text-slate-700(class="hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700", href="/users/list")
+                            span.vgi-user
+                            | Team list
                           if opts && opts.conf && opts.conf.shortcuts
                             each shortcut in opts.conf.shortcuts
                               - var href=(shortcut.href instanceof Function ? shortcut.href(locals) : shortcut.href)
-                              a.fbn(class=shortcut.class,href=href,target=shortcut.target)=(shortcut.label instanceof Function ? shortcut.label(locals) : shortcut.label)
-                          div.bort
-                          a.lbl.vgi-exit.block(href="/users/logout") Logout
-          block banner
-            header.wht.stk
-              block bannerItems
-                .left
-                  block bannerItemsLeft
-                .right
-                  block bannerItemsRight
-
-
+                              a.flex.items-center.gap-2.px-4.py-2.text-sm.text-slate-700(class=(shortcut.class + " hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700"), href=href, target=shortcut.target)
+                                = (shortcut.label instanceof Function ? shortcut.label(locals) : shortcut.label)
+                          div.border-t.border-slate-100.my-1(class="dark:border-slate-700")
+                          a.flex.items-center.gap-2.px-4.py-2.text-sm.text-red-600(class="hover:bg-slate-50 dark:text-red-400 dark:hover:bg-slate-700", href="/users/logout")
+                            span.vgi-exit
+                            | Logout
+        //- Banner bar for shortcut pills
+        block banner
+          .flex.items-center.gap-2.px-4.py-2.bg-white.border-b.border-slate-200(class="dark:bg-slate-900 dark:border-slate-800")
+            block bannerItems
+              .flex.items-center.gap-2.flex-1.min-w-0.flex-wrap
+                block bannerItemsLeft
+              .flex.items-center.gap-2.shrink-0
+                block bannerItemsRight
         block facetBanner
-
         //- User script variables
         if user && !min
           script.
@@ -108,24 +101,59 @@ html
         else
           script.
             var userUsername = ""
-
-        //- Message Bar
-        .pad.ban.messagebar
+        //- Message bar
+        .px-4.py-2
           block messageBar
-            .left.tred#errMsg
-              if !min
-                !=messages()
-              block error
-            .right
-              block info
-
-        //- Main Content
-        .pad
+            .flex.items-center.justify-between
+              .text-red-600.text-sm#errMsg(class="dark:text-red-400")
+                if !min
+                  !=messages()
+                block error
+              .text-sm
+                block info
+        //- Main content
+        main.flex-1
           block scripts
-          block content
-
-        //- Sub Content
+          .px-4.pb-6
+            block content
         block subcontent
-
-        //- Footer
         include foot
+    script.
+      (function() {
+        function vgSidebarOpen() {
+          document.getElementById('vg-sidebar').classList.remove('-translate-x-full');
+          document.getElementById('vg-overlay').classList.remove('hidden');
+        }
+        function vgSidebarClose() {
+          document.getElementById('vg-sidebar').classList.add('-translate-x-full');
+          document.getElementById('vg-overlay').classList.add('hidden');
+        }
+        var mb = document.getElementById('vg-menu-btn');
+        if (mb) mb.addEventListener('click', vgSidebarOpen);
+        document.getElementById('vg-overlay').addEventListener('click', vgSidebarClose);
+        document.addEventListener('click', function(e) {
+          if (window.innerWidth >= 768) return;
+          var link = e.target && e.target.closest ? e.target.closest('#vg-sidebar a') : null;
+          if (link) vgSidebarClose();
+        });
+        (function() {
+          var html = document.documentElement;
+          var btn = document.getElementById('vg-theme-btn');
+          function sync() { if (btn) btn.textContent = html.classList.contains('dark') ? '☾' : '☀'; }
+          sync();
+          if (btn) btn.addEventListener('click', function() {
+            var dark = !html.classList.contains('dark');
+            dark ? html.classList.add('dark') : html.classList.remove('dark');
+            localStorage.setItem('vg-theme', dark ? 'dark' : 'light');
+            sync();
+          });
+        })();
+        document.addEventListener('toggle', function(e) {
+          var d = e && e.target;
+          if (!d || !d.matches || !d.matches('details.sidebar-expandable') || d.open === undefined || !d.open) return;
+          var sidebar = document.getElementById('vg-sidebar');
+          if (sidebar) sidebar.classList.add('-translate-x-full');
+          var overlay = document.getElementById('vg-overlay');
+          if (overlay) overlay.classList.add('hidden');
+        }, true);
+      })();

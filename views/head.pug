@@ -18,6 +18,17 @@ else
 link(rel='apple-touch-icon', sizes='256x256', href=conf.basedir + 'css/logo.png')
 link(rel='stylesheet', href= conf.basedir + 'css/min.css')
 link(rel='stylesheet', href= conf.basedir + 'css/vg-icons.css')
+script(src="https://cdn.tailwindcss.com")
+script.
+  tailwind.config = {
+    darkMode: 'class',
+    corePlugins: { preflight: false },
+    theme: {
+      extend: {
+        fontFamily: { sans: ['system-ui', '-apple-system', 'sans-serif'] }
+      }
+    }
+  }
 if (opts && opts.conf.favicon)
     link#favicon(rel='icon' href=opts.conf.favicon)
 else

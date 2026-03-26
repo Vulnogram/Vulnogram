@@ -1,70 +1,67 @@
-//- Copyright (c) 2017 Chandan B N. All rights reserved.
+//- Copyright (c) 2017-2026 Chandan B N. All rights reserved.
 
 extends ../layout
 
 block append topHeaderLeft
   if admin
-    a.btn.sfe.vgi-magic(href="/users/profile") Add user
-  a.fbn.vgi-user(href="/users/list") User list
+    a.inline-flex.items-center.px-3.rounded-lg.bg-indigo-600.text-white.text-sm.font-medium.transition-colors(class="gap-1.5 py-1.5 hover:bg-indigo-700", href="/users/profile") + Add user
+  a.inline-flex.items-center.px-3.rounded-lg.border.border-slate-200.text-sm.text-slate-600.transition-colors(class="gap-1.5 py-1.5 dark:border-slate-700 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700", href="/users/list") ← User list
 
 block content
- div
-  - var action = '/users/profile/';
-  if profile.username
-    - action = action + profile.username;
-  form.pad2(method='POST', action=action)
-    input(type='hidden', name='_csrf', value=csrfToken)
-    .row
-        h2=title
-    .row
-      label.lbl.vgi-user Name:
-      input.txt(name='name', type='text', value=profile.name)
-    .row
-      label.lbl.vgi-mail Email:
-      input.txt(name='email', type='text', value=profile.email)
-    .row
-      label.lbl.vgi-user Username:
-      if admin
-        input.txt(name='username', type='text',value=profile.username)
-      else
-        tt=profile.username
-    .row
-      label.lbl.vgi-image Favorite Emoji:
-      input.txt(name='emoji', type='text', value=profile.emoji)
-    .row
-      label.lbl.vgi-key Password:
-      input.txt(name='password', type='password', autocomplete="new-password")
-    .row
-      label.lbl.vgi-key Confirm Password:
-      input.txt(name='password2', type='password', autocomplete="new-password")
-    .row
-      label.lbl.vgi-org CNA or group email:
-      if admin
-        input.txt(name='group', type='text',value=profile.group)
-      else
-        tt=profile.group
-    .row
-      label.lbl.vgi-crown Privilege:
-      if admin
-        select.form-control(name='priv')
-            //option(value=2,selected=profile.priv==2) Read only
-            option(value=1,selected=profile.priv==1) Read/Write
-            option(value=0,selected=profile.priv==0) Admin
-      else
-        tt
-            if profile.priv == 0
-                | Admin
-            else if profile.priv == 1
-                | Read/Write
-            else if profile.priv == 2
-                | Read only
-    .gap
-        button.btn.sfe(type='submit', value='Save') Save
-        if admin && profile.username
-          a.fbn.vgi-del.dis(href="/users/delete/"+profile.username,onclick="return confirm('Delete this user?')") Delete 
-            = profile.username    
-
-                
-        
-
-    
+  .p-4.max-w-2xl.mx-auto(class="sm:p-8")
+    .bg-white.rounded-2xl.border.border-slate-200.shadow-sm.overflow-hidden(class="dark:bg-slate-800 dark:border-slate-700")
+      .px-6.py-5.border-b.border-slate-100(class="dark:border-slate-700")
+        h1.text-lg.font-semibold.text-slate-900(class="dark:text-white")= title
+      - var action = '/users/profile/';
+      - if (profile.username) action = action + profile.username;
+      form.px-6.py-6.space-y-5(method='POST', action=action)
+        input(type='hidden', name='_csrf', value=csrfToken)
+        .grid.grid-cols-3.gap-4.items-center
+          label.text-sm.font-medium.text-slate-700.col-span-1.vgi-user(class="dark:text-slate-300") Name
+          input.col-span-2.px-3.py-2.bg-slate-50.border.border-slate-200.rounded-lg.text-sm.text-slate-900.transition-colors(class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500", name='name', type='text', value=profile.name)
+        .grid.grid-cols-3.gap-4.items-center
+          label.text-sm.font-medium.text-slate-700.col-span-1.vgi-mail(class="dark:text-slate-300") Email
+          input.col-span-2.px-3.py-2.bg-slate-50.border.border-slate-200.rounded-lg.text-sm.text-slate-900.transition-colors(class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500", name='email', type='text', value=profile.email)
+        .grid.grid-cols-3.gap-4.items-center
+          label.text-sm.font-medium.text-slate-700.col-span-1.vgi-user(class="dark:text-slate-300") Username
+          if admin
+            input.col-span-2.px-3.py-2.bg-slate-50.border.border-slate-200.rounded-lg.text-sm.text-slate-900.transition-colors(class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500", name='username', type='text', value=profile.username)
+          else
+            .col-span-2.text-sm.text-slate-600(class="dark:text-slate-400")
+              tt= profile.username
+        .grid.grid-cols-3.gap-4.items-center
+          label.text-sm.font-medium.text-slate-700.col-span-1.vgi-image(class="dark:text-slate-300") Favourite Emoji
+          input.col-span-2.px-3.py-2.bg-slate-50.border.border-slate-200.rounded-lg.text-sm.text-slate-900.transition-colors(class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500", name='emoji', type='text', value=profile.emoji)
+        .grid.grid-cols-3.gap-4.items-center
+          label.text-sm.font-medium.text-slate-700.col-span-1.vgi-key(class="dark:text-slate-300") Password
+          input.col-span-2.px-3.py-2.bg-slate-50.border.border-slate-200.rounded-lg.text-sm.text-slate-900.transition-colors(class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500", name='password', type='password', autocomplete='new-password')
+        .grid.grid-cols-3.gap-4.items-center
+          label.text-sm.font-medium.text-slate-700.col-span-1.vgi-key(class="dark:text-slate-300") Confirm Password
+          input.col-span-2.px-3.py-2.bg-slate-50.border.border-slate-200.rounded-lg.text-sm.text-slate-900.transition-colors(class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500", name='password2', type='password', autocomplete='new-password')
+        .grid.grid-cols-3.gap-4.items-center
+          label.text-sm.font-medium.text-slate-700.col-span-1.vgi-org(class="dark:text-slate-300") CNA Email
+          if admin
+            input.col-span-2.px-3.py-2.bg-slate-50.border.border-slate-200.rounded-lg.text-sm.text-slate-900.transition-colors(class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500", name='group', type='text', value=profile.group)
+          else
+            .col-span-2.text-sm.text-slate-600(class="dark:text-slate-400")
+              tt= profile.group
+        .grid.grid-cols-3.gap-4.items-center
+          label.text-sm.font-medium.text-slate-700.col-span-1.vgi-crown(class="dark:text-slate-300") Privilege
+          if admin
+            select.col-span-2.px-3.py-2.bg-slate-50.border.border-slate-200.rounded-lg.text-sm.text-slate-900.transition-colors(class="dark:bg-slate-700 dark:border-slate-600 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500", name='priv')
+              option(value='1', selected=profile.priv==1) Read/Write
+              option(value='0', selected=profile.priv==0) Admin
+          else
+            .col-span-2.text-sm.text-slate-600(class="dark:text-slate-400")
+              tt
+                if profile.priv == 0
+                  | Admin
+                else if profile.priv == 1
+                  | Read/Write
+                else if profile.priv == 2
+                  | Read only
+        .pt-4.border-t.border-slate-100.flex.items-center.justify-between(class="dark:border-slate-700")
+          button.px-5.py-2.bg-indigo-600.text-white.text-sm.font-semibold.rounded-lg.shadow-sm.transition-colors(class="hover:bg-indigo-700", type='submit') Save changes
+          if admin && profile.username
+            a.px-4.py-2.text-sm.text-red-600.transition-colors(class="dark:text-red-400 hover:text-red-800 dark:hover:text-red-300", href="/users/delete/"+profile.username, onclick="return confirm('Delete this user?')")
+              | Delete #{profile.username}
