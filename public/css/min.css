@@ -341,6 +341,7 @@ hr.bort {
 .center {
     text-align: center;
     vertical-align: middle;
+    align-content: center;
 }
 
 .mid {
@@ -2101,4 +2102,15 @@ table.diff pre {
     #smallScreenMenu.lbl {
         display: inline-block;
     }
+}
+
+/* Publish preview cell state borders */
+.diff-add  { border-left:  3px solid var(--sev-none); background-color: color-mix(in srgb, var(--sev-none) 15%, transparent); }
+.diff-chg-l { border-right: 3px solid var(--sev-med); }
+.diff-chg-r { border-left:  3px solid var(--sev-med); }
+.diff-del  { border-right: 3px solid var(--red); background-color: color-mix(in srgb, var(--red) 15%, transparent); }
+
+@media (max-width: 599px) {
+    .diff-chg-l { border-right: none; border-left: 3px solid var(--sev-med); }
+    .diff-del   { border-right: none; border-left: 3px solid var(--red); }
 }
