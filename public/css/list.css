@@ -1,0 +1,187 @@
+/* ============================================================
+   LIST PAGE — styles used exclusively by views/list.pug
+   ============================================================ */
+
+/* ============================================================
+   COMPACT TABLE TOGGLE
+   Controlled by the hidden #compactTable checkbox in bulkTable mixin.
+   ============================================================ */
+
+.compactTable:checked+table span[class^="vgi-"],
+.compactTable:checked+table span[class*=" vgi-"] {
+    min-width: 0em;
+    width: 0em;
+    overflow: hidden;
+    font-size: 0px;
+}
+
+label[for="compactTable"][val=""]:after {
+    content: " Expand ";
+    font-size: small;
+}
+
+label[for="compactTable"][val="false"]:after {
+    content: " Expand ";
+    font-size: small;
+}
+
+label[for="compactTable"][val="true"]:after {
+    content: " Compact ";
+    font-size: small;
+}
+
+/* ============================================================
+   FACET CHART
+   Used by the facetChart mixin in views/list.pug.
+   ============================================================ */
+
+.chart {
+    box-sizing: border-box;
+    display: inline-block;
+    padding: 3px;
+    margin: 1px 2px;
+    --tc: black;
+    --c1: #E0F3DB;
+    --c2: #CCEBC5;
+    --c3: #A8DDB5;
+    --c4: #7BCCC4;
+    --c5: #4EB3D3;
+    --c6: #2B8CBE;
+    --c7: #97c782;
+    --c8: #a49f8c;
+    --c9: #F0BC5B;
+    --c10: #D6C888;
+    --c11: #BDD4B6;
+    --c12: #B0BBAC;
+    --c13: #c4d0c0;
+}
+
+.chart:nth-child(odd) {
+    --c1: #FDB462;
+    --c2: #8dd3c7;
+    --c3: #bebada;
+    --c4: #fb8072;
+    --c5: #80b1d3;
+    --c6: #fdb462;
+    --c7: #b3de69;
+    --c8: #fccde5;
+    --c9: #d9d9d9;
+    --c10: #bc80bd;
+    --c11: #ccebc5;
+}
+
+.chart>label:first-child {
+    display: block;
+}
+
+.chart>label:last-child:before,
+.chart>label:first-child:after {
+    content: "❯";
+    opacity: 0;
+    transition-duration: 0.5s;
+    transition-property: opacity;
+}
+
+.chart label {
+    cursor: pointer;
+}
+
+.chart:hover>label:last-child:before,
+.chart:hover>label:first-child:after {
+    content: "❯";
+    opacity: 1;
+}
+
+.chart>label:last-child:before {
+    position: absolute;
+    margin-top: 9px;
+    margin-left: -1px;
+    height: 30px;
+    width: 10px;
+}
+
+.chart>label:first-child:after {
+    margin-left: 5px;
+}
+
+.chart:hover>.expand:checked~label:before {
+    content: "❮";
+}
+
+.expand {
+    display: none;
+}
+
+.expand:checked~.bar {
+    display: inline-table;
+    transition: all .5s;
+    width: auto;
+}
+
+.chart .bar {
+    display: inline-block;
+    margin: 1px;
+}
+
+.chart .bar .icn {
+    line-height: 10px;
+}
+
+.chart .bar .icn:before {
+    font-size: 12px;
+}
+
+.chart .bar input {
+    display: none;
+}
+
+.chart .bar label {
+    display: inline-block;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 10px;
+    height: 34px;
+    overflow: hidden;
+    white-space: pre;
+    padding: 1px;
+    text-align: center;
+    font-weight: normal;
+    transition-duration: 0.4s;
+    border-width: 0px;
+    outline-color: white;
+}
+
+.chart .bar input:checked+label {
+    border-color: #444;
+    border-style: solid;
+    box-shadow: inset 0px 2px 3px rgba(0, 0, 0, 0.1);
+    border-width: 1px;
+    border-bottom-width: 3px;
+}
+
+.chart .bar label:active,
+.chart .bar input+label:hover {
+    outline: 1px solid var(--acc);
+    box-shadow: 0 0 0 0.2em var(--shd);
+}
+
+.bar label {
+    background-color: var(--c1);
+    color: var(--tc);
+}
+
+.bar:nth-child(15n+1)  label { background-color: var(--c3) }
+.bar:nth-child(15n+2)  label { background-color: var(--c2) }
+.bar:nth-child(15n+3)  label { background-color: var(--c1) }
+.bar:nth-child(15n+4)  label { background-color: var(--c2) }
+.bar:nth-child(15n+5)  label { background-color: var(--c3) }
+.bar:nth-child(15n+6)  label { background-color: var(--c4) }
+.bar:nth-child(15n+7)  label { background-color: var(--c5) }
+.bar:nth-child(15n+8)  label { background-color: var(--c6) }
+.bar:nth-child(15n+9)  label { background-color: var(--c7) }
+.bar:nth-child(15n+10) label { background-color: var(--c8) }
+.bar:nth-child(15n+11) label { background-color: var(--c9) }
+.bar:nth-child(15n+12) label { background-color: var(--c10) }
+.bar:nth-child(15n+13) label { background-color: var(--c11) }
+.bar:nth-child(15n+14) label { background-color: var(--c12) }
+.bar:nth-child(15n+15) label { background-color: var(--c13) }

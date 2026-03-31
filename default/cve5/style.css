@@ -77,20 +77,20 @@ div[data-schemaid="cvss4"] .je-indented-panel div div div.row:last-child
   margin: 10px;
 }
 .CVSS.NONE {
-  background-color: rgb(162, 213, 114);
+  background-color: rgb(162, 213, 114) !important;
 }
 .CVSS.LOW {
-  background-color: gold;
+  background-color: gold !important;
 }
 .CVSS.MEDIUM {
-  background-color: orange;
+  background-color: orange !important;
 }
 .CVSS.HIGH {
-  background-color: salmon;
+  background-color: salmon !important;
 }
 .CVSS.CRITICAL {
   color: white;
-  background-color: orangered;
+  background-color: orangered !important;
 }
 
 
@@ -334,3 +334,19 @@ button.json-editor-btn-delete {
 #render.render table {border-spacing: 0; border: 1px solid #888; border-collapse: collapse;}
 #render.render table th { text-align:center;background-color:#88888822;}
 #render.render table td { padding:5px;border: 1px solid #888}
+
+/* --- CVE portal user list: div-based table layout (cvelist.pug) --- */
+.tbody { display: table-row-group; }
+.tr    { display: table-row; }
+.th,
+.td    { display: table-cell; }
+
+.vtbl>.tbody>.tr>.td {
+  padding: 0.2em 0.3em;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--bor) !important;
+}
+
+.vtbl>.tbody>.tr:last-child>.td {
+  border-bottom: none !important;
+}
