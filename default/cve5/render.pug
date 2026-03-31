@@ -1,4 +1,5 @@
 extends ../../views/render.pug
+include ../../views/util
 
 mixin spara(l, hypertext)
     if l
@@ -487,76 +488,30 @@ mixin containerPreviewField(renderer, fieldName, con, cve)
         default
             +containerUnknown(fieldName, con && fieldName ? con[fieldName] : con)
 
-mixin publishPreviewCell(row, sideLabel, con, cve, hasData, side)
-    .col.s5.fil.pad(data-publish-preview-cell=side)
-        if sideLabel
-            div.lbl.sml=sideLabel
+mixin publishPreviewCell(row, con, cve, hasData, side)
+    - var op = row.state == 'added' ? 'add' : row.state == 'removed' ? 'remove' : row.state == 'changed' ? 'replace' : ''
+    - var edgeClass = textUtil ? textUtil.diffEdgeClass(op, side) : ''
+    .col.s6.bor(class=edgeClass, data-publish-preview-cell=side)
         if hasData
             div(data-publish-preview-content=side)
                 +containerPreviewField(row.renderer, row.fieldName, con, cve)
         else if row.state == 'removed' && side == 'next'
             i.vgi-del.tgrey deleted
 
-mixin publishPreviewChangeIcon(op)
-    if op == 'add'
-        span.lbl +
-    else
-        span.lbl &rarr;
-
 mixin publishPreviewPatchRows(row)
     if row.patch && row.patch.length > 0
         tbody(hidden data-publish-preview-patch-row=row.id)
             each op in row.patch
-                tr.hig
+                tr
                     td.pad(colspan=3)
                         b= row.label
-                        |  
+                        |
                         = op.op == 'add' ? 'added' : op.op == 'remove' ? 'removed' : 'changed'
-                        |  
+                        |
                         b= op.path
                 tr.change(class=op.op)
                     td(colspan=3)
-                        .row
-                            .col.s5.fil.pad
-                                if op.op == 'remove'
-                                    - op.old = op.value
-                                    - delete op.value
-                                if op.op == 'replace' && typeof op.old === 'string' && typeof op.value === 'string'
-                                    if textUtil
-                                        - var diffs = textUtil.diffline(op.old, op.value);
-                                        .pre
-                                            for s in diffs.lhs
-                                                case s.t
-                                                    when 0
-                                                        = s.str
-                                                    when 1
-                                                        span.yel=s.str
-                                    else
-                                        .pre=op.old
-                                else if op.old instanceof Object
-                                    .pre= JSON.stringify(op.old, null, 1)
-                                else
-                                    = op.old
-                            .col.s2.fil.pad.center.nobr
-                                +publishPreviewChangeIcon(op.op)
-                            .col.s5.fil.pad
-                                if op.op == 'replace' && typeof op.old === 'string' && typeof op.value === 'string'
-                                    if textUtil
-                                        .pre
-                                            for s in diffs.rhs
-                                                case s.t
-                                                    when 0
-                                                        = s.str
-                                                    when 1
-                                                        span.grn=s.str
-                                    else
-                                        .pre=op.value
-                                else if op.value == null
-                                    i.vgi-del deleted
-                                else if op.value instanceof Object
-                                    .pre= JSON.stringify(op.value, null, 1)
-                                else
-                                    = op.value
+                        +diffOpRow(op)
 
 mixin publishPreview(preview)
     if preview.rows && preview.rows.length > 0
@@ -564,33 +519,32 @@ mixin publishPreview(preview)
             each row in preview.rows
                 - var changeOp = row.state == 'added' ? 'add' : row.state == 'removed' ? 'remove' : 'replace';
                 tbody(data-publish-preview-row=row.id data-publish-preview-state=row.state)
-                    tr.hig
+                    tr
                         td.pad(colspan=3)
-                            b= row.label
+                            b.lbl= row.label
                             if row.stateLabel
                                 |  
                                 span.lbl= row.stateLabel
                     tr.change(class=changeOp)
                         td(colspan=3)
                             .row
-                                +publishPreviewCell(row, preview.currentLabel ? preview.currentLabel : 'Current CVE Services', row.currentContainer, preview.currentDoc, row.currentHasData, 'current')
-                                .col.s2.fil.pad.center.nobr
-                                    +publishPreviewChangeIcon(changeOp)
-                                +publishPreviewCell(row, preview.nextLabel ? preview.nextLabel : 'Pending publish', row.nextContainer, preview.nextDoc, row.nextHasData, 'next')
+                                +publishPreviewCell(row, row.currentContainer, preview.currentDoc, row.currentHasData, 'current')
+                                .col.center
+                                    +diffOpIcon(changeOp)
+                                +publishPreviewCell(row, row.nextContainer, preview.nextDoc, row.nextHasData, 'next')
                 +publishPreviewPatchRows(row)
     else
         p.lbl.bor.rnd.pad2.sec No container field changes detected. The pending publish matches the current CVE Services container for the rendered fields.
 
 mixin publishPreviewPanel(preview)
-    .bor.rnd.shd.wht.gap2
-        if preview.title || preview.description
-            .sec.pad2
-                if preview.title
-                    b.lbl.vgi-eye= preview.title
-                if preview.description
-                    p.gap= preview.description
-        .pad
-            +publishPreview(preview)
+    if preview.title || preview.description
+        .pad2
+            if preview.title
+                b.lbl.vgi-eye= preview.title
+            if preview.description
+                p.gap= preview.description
+    .pad
+        +publishPreview(preview)
 
 mixin container(con, cve)
     +containerIdentity(con, cve)

@@ -243,6 +243,12 @@ getDocuments: async function(schemaName, ids, paths) {
     fileSize : function(a,b,c,d,e){
         return (b=Math,c=b.log,d=1024,e=c(a)/c(d)|0,a/b.pow(d,e)).toFixed(2)
             +' '+(e?'KMGTPEZY'[--e]+'B':'Bytes')
+    },
+    diffEdgeClass: function(op, side) {
+        if (op == 'add')     return side == 'next'    ? 'diff-add'   : '';
+        if (op == 'remove')  return side == 'current' ? 'diff-del'   : '';
+        if (op == 'replace') return side == 'current' ? 'diff-chg-l' : 'diff-chg-r';
+        return '';
     }
 };
 if(typeof module !== 'undefined') {

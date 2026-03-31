@@ -35,11 +35,11 @@ mixin comments
             span.pad3.lbl(class=c.subject ? 'Email' : '')
                 b.vguser(title=c.author)=c.author
                 | &nbsp;on  
-                = cd.toLocaleDateString("en-US",{year: 'numeric', month: 'short', day: 'numeric'})
+                = textUtil.formatFriendlyDate(cd)
                 |  
                 if(c.updatedAt && (cd.getTime() !== ud.getTime()))
                     | (updated 
-                    = ud.toLocaleDateString("en-US",{year: 'numeric', month: 'short', day: 'numeric'})
+                    =  textUtil.formatFriendlyDate(ud)
                     | )
                 |  
             if c.author == username
@@ -61,14 +61,6 @@ mixin comments
         input(type="hidden",name="slug",value=c.slug)
         input(type="hidden",name="date",value=c.createdAt)
 
-mixin changeIcon(op)
-    if op == 'remove'
-        span.lbl &rarr; 
-    else if op == 'add'
-        span.lbl +
-    else
-        span.lbl &rarr;  
-
 mixin changes
     - var past = {add: 'added', remove: 'removed', replace: 'changed', move: 'moved', copy: 'copied'}
     table.diff.fil
@@ -76,59 +68,19 @@ mixin changes
         each v, i in docs
           tbody
             each op, i in v.body.patch
-                tr.hig
+                tr
                     td.pad(colspan=3)
                       span.vguser(title=v.author)
                         b= v.author
                         |  on 
-                        +hyperdate(v,'updatedAt')
+                        = textUtil.formatFriendlyDate(v.updatedAt)
                         |  
                         = past[op.op] ? past[op.op] : op.op
                         |  
                         b= op.path
                 tr.change(class=op.op)
                     td(colspan=3)
-                        .row
-                            .col.s5.fil.pad
-                                if op.op == 'remove'
-                                    - op.old = op.value
-                                    - delete op.value
-                                if op.op == 'replace' && typeof op.old === 'string' && typeof op.value === 'string'
-                                    if textUtil
-                                      - var diffs = textUtil.diffline(op.old, op.value);
-                                      .pre
-                                        for s in diffs.lhs
-                                            case s.t
-                                              when 0
-                                                = s.str
-                                              when 1
-                                                span.yel=s.str
-                                    else
-                                      .pre=op.old
-                                else if op.old instanceof Object
-                                    .pre= JSON.stringify(op.old, null, 1)
-                                else
-                                    = op.old
-                            .col.s2.fil.pad.center.nobr
-                                +changeIcon(op.op)
-                            .col.s5.fil.pad
-                                if op.op == 'replace' && typeof op.old === 'string' && typeof op.value === 'string'
-                                    if textUtil
-                                      .pre
-                                        for s in diffs.rhs
-                                            case s.t
-                                              when 0
-                                                = s.str
-                                              when 1
-                                                span.grn=s.str
-                                    else
-                                      .pre=op.value
-                                else if op.value == null
-                                  i.vgi-del  deleted
-                                else if op.value instanceof Object
-                                    .pre= JSON.stringify(op.value, null, 1)
-                                else
-                                    = op.value 
+                        +diffOpRow(op)
 
 mixin filePreview
     +table(docs,columns)

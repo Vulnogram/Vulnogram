@@ -968,27 +968,29 @@ function cveLoadIntoEditor(res, cveId, message, edOpts) {
     portalFocusEditor();
 }
 
+async function cveFetchRawFromCveOrg(cveId) {
+    const response = await fetch('https://cveawg.mitre.org/api/cve/' + cveId, {
+        method: 'GET',
+        credentials: 'omit',
+        headers: { 'Accept': 'application/json, text/plain, */*' }
+    });
+    if (!response.ok) {
+        return null;
+    }
+    const data = await response.json();
+    return (data && data.cveMetadata) ? cveFixForVulnogram(data) : null;
+}
+
 async function cveLoadFromCveOrg(cveId, suppressErrors) {
     var loadFeedback = new feedback(document.getElementById('editorContent'), 'spinner');
     try {
-
-        const response = await fetch('https://cveawg.mitre.org/api/cve/' + cveId, {
-            method: 'GET',
-            credentials: 'omit',
-            headers: {
-                'Accept': 'application/json, text/plain, */*'
-            }
-        });
-        if (response.ok) {
-            const data = await response.json();
-            if (data && data.cveMetadata) {
-                cveLoadIntoEditor(cveFixForVulnogram(data), cveId, "Loaded " + cveId + " from CVE.org");
-                return data;
-            }
+        var data = await cveFetchRawFromCveOrg(cveId);
+        if (data) {
+            cveLoadIntoEditor(data, cveId, "Loaded " + cveId + " from CVE.org");
+            return data;
         } else if (!suppressErrors) {
             errMsg.textContent = "CVE not found in CVE.org!";
             infoMsg.textContent = "";
-            return null;
         }
     } catch (e) {
         if (!suppressErrors) {
@@ -996,7 +998,6 @@ async function cveLoadFromCveOrg(cveId, suppressErrors) {
             infoMsg.textContent = "";
         }
         console.error('Failed to fetch from CVE.org:', e);
-        return null;
     } finally {
         loadFeedback.cancel();
     }
@@ -1158,20 +1159,20 @@ function cvePreparePublishDoc(doc) {
 }
 
 var cvePublishPreviewSections = [
-    { id: 'identity', label: 'Publisher details', keys: ['providerMetadata', 'url', 'datePublic'], renderer: 'identity' },
-    { id: 'summary', label: 'Summary', keys: ['title', 'descriptions', 'rejectedReasons', 'tags'], renderer: 'summary' },
-    { id: 'metrics', label: 'Metrics', keys: ['metrics', 'KEV'], renderer: 'metrics' },
-    { id: 'configurations', label: 'Required configuration', keys: ['configurations'], renderer: 'configurations' },
-    { id: 'problemTypes', label: 'Problem types', keys: ['problemTypes'], renderer: 'problemTypes' },
-    { id: 'impacts', label: 'Impacts', keys: ['impacts'], renderer: 'impacts' },
-    { id: 'exploits', label: 'Exploits', keys: ['exploits'], renderer: 'exploits' },
-    { id: 'affected', label: 'Affected products', keys: ['affected'], renderer: 'affected' },
-    { id: 'cpeApplicability', label: 'CPE applicability', keys: ['cpeApplicability'], renderer: 'cpeApplicability' },
-    { id: 'solutions', label: 'Solutions', keys: ['solutions'], renderer: 'solutions' },
-    { id: 'workarounds', label: 'Workarounds', keys: ['workarounds'], renderer: 'workarounds' },
-    { id: 'credits', label: 'Credits', keys: ['credits'], renderer: 'credits' },
-    { id: 'timeline', label: 'Timeline', keys: ['timeline'], renderer: 'timeline' },
-    { id: 'references', label: 'References', keys: ['references'], renderer: 'references' }
+    { id: 'identity', label: 'Publisher details', keys: ['providerMetadata', 'url', 'datePublic'] },
+    { id: 'summary', label: 'Summary', keys: ['title', 'descriptions', 'rejectedReasons', 'tags'] },
+    { id: 'metrics', label: 'Metrics', keys: ['metrics', 'KEV'] },
+    { id: 'configurations', label: 'Required configuration', keys: ['configurations'] },
+    { id: 'problemTypes', label: 'Problem types', keys: ['problemTypes'] },
+    { id: 'impacts', label: 'Impacts', keys: ['impacts'] },
+    { id: 'exploits', label: 'Exploits', keys: ['exploits'] },
+    { id: 'affected', label: 'Affected products', keys: ['affected'] },
+    { id: 'cpeApplicability', label: 'CPE applicability', keys: ['cpeApplicability'] },
+    { id: 'solutions', label: 'Solutions', keys: ['solutions'] },
+    { id: 'workarounds', label: 'Workarounds', keys: ['workarounds'] },
+    { id: 'credits', label: 'Credits', keys: ['credits'] },
+    { id: 'timeline', label: 'Timeline', keys: ['timeline'] },
+    { id: 'references', label: 'References', keys: ['references'] }
 ];
 
 function cveDeepEqual(a, b) {
@@ -1275,6 +1276,19 @@ function cveSelectPublishContainer(doc, targetType, orgId) {
 }
 
 async function cveFetchCurrentPortalDoc(cveId) {
+    // Try the public CVE.org API first (same priority as the Load button).
+    try {
+        var data = await cveFetchRawFromCveOrg(cveId);
+        if (data) {
+            return cvePreparePublishDoc(data);
+        }
+    } catch (e) {
+        // Network error or CORS — fall through to CSClient.
+    }
+    // Fall back to CVE Services (requires an active session).
+    if (!csClient || typeof csClient.getCve !== 'function') {
+        return null;
+    }
     try {
         var currentDoc = await csClient.getCve(cveId);
         if (currentDoc && currentDoc.containers) {
@@ -1320,10 +1334,34 @@ function cvePublishPreviewLabel(fieldName) {
 }
 
 function cveBuildPublishPreviewPatch(currentSubset, nextSubset) {
-    var compare = typeof window !== 'undefined' && window.jsonpatch && typeof window.jsonpatch.compare === 'function'
+    var compare = (typeof window !== 'undefined' && window.jsonpatch && typeof window.jsonpatch.compare === 'function')
         ? window.jsonpatch.compare
         : (typeof jsonpatch !== 'undefined' && jsonpatch && typeof jsonpatch.compare === 'function' ? jsonpatch.compare : null);
     return compare ? compare(currentSubset || {}, nextSubset || {}) : [];
+}
+
+function cveBuildPreviewRow(id, label, renderer, keys, current, next, currentMeta, nextMeta, targetType) {
+    var currentSubset = cveSubsetContainer(current, keys);
+    var nextSubset = cveSubsetContainer(next, keys);
+    if (cveDeepEqual(currentSubset, nextSubset)) {
+        return null;
+    }
+    var currentHasData = Object.keys(currentSubset).length > 0;
+    var nextHasData = Object.keys(nextSubset).length > 0;
+    var state = cvePublishPreviewRowState(currentSubset, nextSubset);
+    return {
+        id: id,
+        fieldName: keys[0],
+        label: label,
+        renderer: renderer,
+        state: state,
+        stateLabel: cvePublishPreviewStateLabel(state),
+        currentHasData: currentHasData,
+        nextHasData: nextHasData,
+        patch: state == 'changed' ? cveBuildPublishPreviewPatch(currentSubset, nextSubset) : [],
+        currentContainer: currentHasData ? cveBuildRenderableContainer(currentSubset, currentMeta, targetType) : {},
+        nextContainer: nextHasData ? cveBuildRenderableContainer(nextSubset, nextMeta, targetType) : {}
+    };
 }
 
 function cveBuildPublishPreviewRows(currentContainer, nextContainer, currentMeta, nextMeta, targetType) {
@@ -1333,65 +1371,28 @@ function cveBuildPublishPreviewRows(currentContainer, nextContainer, currentMeta
     var next = nextContainer || {};
     for (var i = 0; i < cvePublishPreviewSections.length; i++) {
         var section = cvePublishPreviewSections[i];
-        var currentSubset = cveSubsetContainer(current, section.keys);
-        var nextSubset = cveSubsetContainer(next, section.keys);
-        if (cveDeepEqual(currentSubset, nextSubset)) {
+        var row = cveBuildPreviewRow(section.id, section.label, section.id, section.keys, current, next, currentMeta, nextMeta, targetType);
+        if (!row) {
             continue;
         }
         section.keys.forEach(function (key) {
             usedKeys[key] = true;
         });
-        var currentHasData = Object.keys(currentSubset).length > 0;
-        var nextHasData = Object.keys(nextSubset).length > 0;
-        var state = cvePublishPreviewRowState(currentSubset, nextSubset);
-        rows.push({
-            id: section.id,
-            fieldName: section.keys[0],
-            label: section.label,
-            renderer: section.renderer,
-            state: state,
-            stateLabel: cvePublishPreviewStateLabel(state),
-            currentHasData: currentHasData,
-            nextHasData: nextHasData,
-            patch: state == 'changed' ? cveBuildPublishPreviewPatch(currentSubset, nextSubset) : [],
-            currentContainer: currentHasData ? cveBuildRenderableContainer(currentSubset, currentMeta, targetType) : {},
-            nextContainer: nextHasData ? cveBuildRenderableContainer(nextSubset, nextMeta, targetType) : {}
-        });
+        rows.push(row);
     }
 
     var keySet = {};
-    Object.keys(current).forEach(function (key) {
-        keySet[key] = true;
-    });
-    Object.keys(next).forEach(function (key) {
-        keySet[key] = true;
-    });
+    Object.keys(current).forEach(function (key) { keySet[key] = true; });
+    Object.keys(next).forEach(function (key) { keySet[key] = true; });
     var extraKeys = Object.keys(keySet).filter(function (key) {
         return !usedKeys[key];
     }).sort();
     for (var j = 0; j < extraKeys.length; j++) {
         var fieldName = extraKeys[j];
-        var currentSubset = cveSubsetContainer(current, [fieldName]);
-        var nextSubset = cveSubsetContainer(next, [fieldName]);
-        if (cveDeepEqual(currentSubset, nextSubset)) {
-            continue;
+        var row = cveBuildPreviewRow(fieldName, cvePublishPreviewLabel(fieldName), 'json', [fieldName], current, next, currentMeta, nextMeta, targetType);
+        if (row) {
+            rows.push(row);
         }
-        var currentHasData = Object.keys(currentSubset).length > 0;
-        var nextHasData = Object.keys(nextSubset).length > 0;
-        var state = cvePublishPreviewRowState(currentSubset, nextSubset);
-        rows.push({
-            id: fieldName,
-            fieldName: fieldName,
-            label: cvePublishPreviewLabel(fieldName),
-            renderer: 'json',
-            state: state,
-            stateLabel: cvePublishPreviewStateLabel(state),
-            currentHasData: currentHasData,
-            nextHasData: nextHasData,
-            patch: state == 'changed' ? cveBuildPublishPreviewPatch(currentSubset, nextSubset) : [],
-            currentContainer: currentHasData ? cveBuildRenderableContainer(currentSubset, currentMeta, targetType) : {},
-            nextContainer: nextHasData ? cveBuildRenderableContainer(nextSubset, nextMeta, targetType) : {}
-        });
     }
     return rows;
 }
@@ -1416,7 +1417,7 @@ async function cveBuildPublishPreview(doc, options) {
         throw new Error('Missing cveMetadata.cveId');
     }
     var cveId = preparedDoc.cveMetadata.cveId;
-    var latestId = opts.latestId ? opts.latestId : await csClient.getCveId(cveId);
+    var latestId = Object.prototype.hasOwnProperty.call(opts, 'latestId') ? opts.latestId : await csClient.getCveId(cveId).catch(function () { return null; });
     var currentDoc = Object.prototype.hasOwnProperty.call(opts, 'currentDoc') ? opts.currentDoc : await cveFetchCurrentPortalDoc(cveId);
     var currentContainer = cveSelectPublishContainer(currentDoc, targetType, opts.orgId);
     var nextContainer = cveSelectPublishContainer(preparedDoc, targetType, opts.orgId);
@@ -1442,12 +1443,29 @@ async function cveBuildPublishPreview(doc, options) {
         },
         cveId: cveId,
         rows: rows,
-        currentLabel: 'Current CVE Services',
-        nextLabel: 'Pending publish',
         title: 'Preview ' + targetLabel + ' Publish',
         confirmLabel: targetType == 'adp' ? 'Publish ADP' : 'Publish CVE',
         description: actionLabel + ' for ' + cveId + '. ' + changedLabel + ' will be sent to CVE Services.'
     };
+}
+
+async function cveGetCurrentOrgId() {
+    if (csCache && csCache.orgInfo && csCache.orgInfo.UUID) {
+        return csCache.orgInfo.UUID;
+    }
+    if (!csClient || typeof csClient.getOrgInfo !== 'function') {
+        return null;
+    }
+    try {
+        csCache.orgInfo = await csClient.getOrgInfo();
+        return csCache.orgInfo ? csCache.orgInfo.UUID : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+function cveCanPublishAdp(orgId, currentOrgId) {
+    return !!orgId && (orgId === '00000000-0000-4000-9000-000000000000' || orgId === currentOrgId);
 }
 
 async function cveBuildPublishPreviewList(doc) {
@@ -1456,32 +1474,30 @@ async function cveBuildPublishPreviewList(doc) {
         return [];
     }
     var cveId = preparedDoc.cveMetadata.cveId;
-    var latestId = await csClient.getCveId(cveId);
-    var currentDoc = await cveFetchCurrentPortalDoc(cveId);
-    var previews = [];
+    var fetched = await Promise.all([
+        csClient.getCveId(cveId).catch(function () { return null; }),
+        cveFetchCurrentPortalDoc(cveId),
+        cveGetCurrentOrgId()
+    ]);
+    var latestId = fetched[0];
+    var currentDoc = fetched[1];
+    var currentOrgId = fetched[2];
+    var shared = { latestId: latestId, currentDoc: currentDoc };
+    var promises = [];
     if (preparedDoc.containers && preparedDoc.containers.cna) {
-        previews.push(await cveBuildPublishPreview(preparedDoc, {
-            targetType: 'cna',
-            latestId: latestId,
-            currentDoc: currentDoc
-        }));
+        promises.push(cveBuildPublishPreview(preparedDoc, Object.assign({ targetType: 'cna' }, shared)));
     }
     var adp = preparedDoc.containers && Array.isArray(preparedDoc.containers.adp) ? preparedDoc.containers.adp : [];
     var seenAdp = {};
     for (var i = 0; i < adp.length; i++) {
         var orgId = adp[i] && adp[i].providerMetadata ? adp[i].providerMetadata.orgId : null;
-        if (!orgId || seenAdp[orgId]) {
+        if (!orgId || seenAdp[orgId] || !cveCanPublishAdp(orgId, currentOrgId)) {
             continue;
         }
         seenAdp[orgId] = true;
-        previews.push(await cveBuildPublishPreview(preparedDoc, {
-            targetType: 'adp',
-            orgId: orgId,
-            latestId: latestId,
-            currentDoc: currentDoc
-        }));
+        promises.push(cveBuildPublishPreview(preparedDoc, Object.assign({ targetType: 'adp', orgId: orgId }, shared)));
     }
-    return previews;
+    return Promise.all(promises);
 }
 
 function cveSetPublishChangesMessage(container, message, isError) {
@@ -1490,7 +1506,7 @@ function cveSetPublishChangesMessage(container, message, isError) {
     }
     container.innerHTML = '';
     var note = document.createElement('p');
-    note.className = 'lbl bor rnd pad2 sec';
+    note.className = 'pad2';
     if (isError) {
         note.className += ' tred';
     }
@@ -1789,7 +1805,11 @@ function cveHighlightPublishPreview(container) {
     }
     var cache = new WeakMap();
     var rows = container.querySelectorAll('[data-publish-preview-row]');
-    var patchRows = container.querySelectorAll('[data-publish-preview-patch-row]');
+    var patchRowEls = container.querySelectorAll('[data-publish-preview-patch-row]');
+    var patchRowMap = {};
+    for (var k = 0; k < patchRowEls.length; k++) {
+        patchRowMap[patchRowEls[k].getAttribute('data-publish-preview-patch-row')] = patchRowEls[k];
+    }
     for (var i = 0; i < rows.length; i++) {
         var row = rows[i];
         if (row.getAttribute('data-publish-preview-state') != 'changed') {
@@ -1798,14 +1818,7 @@ function cveHighlightPublishPreview(container) {
         var current = row.querySelector('[data-publish-preview-content="current"]');
         var next = row.querySelector('[data-publish-preview-content="next"]');
         if (current && next) {
-            var patchId = row.getAttribute('data-publish-preview-row');
-            var patchRow = null;
-            for (var j = 0; j < patchRows.length; j++) {
-                if (patchRows[j].getAttribute('data-publish-preview-patch-row') == patchId) {
-                    patchRow = patchRows[j];
-                    break;
-                }
-            }
+            var patchRow = patchRowMap[row.getAttribute('data-publish-preview-row')] || null;
             if ((typeof current.isEqualNode === 'function' && current.isEqualNode(next)) || current.innerHTML == next.innerHTML) {
                 if (patchRow) {
                     row.hidden = true;
@@ -1912,7 +1925,6 @@ async function cveShowPublishPreviewDialog(preview) {
             dialog.close();
         };
         cancelButton.onclick = function () {
-            state.confirmed = false;
             dialog.close();
         };
         dialog.addEventListener('close', finish);
@@ -2155,12 +2167,7 @@ async function postADP(orgID, button) {
         if (!(await cveEnsurePublishSession())) {
             return;
         }
-        var currentOrgId = csCache && csCache.orgInfo ? csCache.orgInfo.UUID : null;
-        if (!currentOrgId) {
-            csCache.orgInfo = await csClient.getOrgInfo();
-            currentOrgId = csCache.orgInfo ? csCache.orgInfo.UUID : null;
-        }
-        if (currentOrgId != orgID && orgID != '00000000-0000-4000-9000-000000000000') {
+        if (!cveCanPublishAdp(orgID, await cveGetCurrentOrgId())) {
             cveAlert('This ADP information is not from Current CNA');
             return;
         }

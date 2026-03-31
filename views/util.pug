@@ -1,5 +1,54 @@
 include formatters.pug
 
+mixin diffOpIcon(op)
+    if op == 'add'
+        span.lbl +
+    else
+        span.lbl &rarr;
+
+mixin diffOpRow(op)
+    - var leftClass = op.op == 'remove' ? 'diff-del' : op.op == 'replace' ? 'diff-chg-l' : ''
+    - var rightClass = op.op == 'add' ? 'diff-add' : op.op == 'replace' ? 'diff-chg-r' : ''
+    - if (op.op == 'remove') { op.old = op.value; delete op.value; }
+    .row
+        .col.s6.fil.pad.bor(class=leftClass)
+            if op.op == 'replace' && typeof op.old === 'string' && typeof op.value === 'string'
+                if textUtil
+                    - var diffs = textUtil.diffline(op.old, op.value)
+                    .pre
+                        for s in diffs.lhs
+                            case s.t
+                                when 0
+                                    = s.str
+                                when 1
+                                    span.yel= s.str
+                else
+                    .pre= op.old
+            else if op.old instanceof Object
+                .pre= JSON.stringify(op.old, null, 1)
+            else
+                = op.old
+        .col.center
+            +diffOpIcon(op.op)
+        .col.s6.fil.pad.bor(class=rightClass)
+            if op.op == 'replace' && typeof op.old === 'string' && typeof op.value === 'string'
+                if textUtil
+                    .pre
+                        for s in diffs.rhs
+                            case s.t
+                                when 0
+                                    = s.str
+                                when 1
+                                    span.grn= s.str
+                else
+                    .pre= op.value
+            else if op.value == null
+                i.vgi-del deleted
+            else if op.value instanceof Object
+                .pre= JSON.stringify(op.value, null, 1)
+            else
+                = op.value
+
 mixin hyperlevel(obj, name)
     - var value = obj[name];
     span.nobr.icn(class="l" + value.charAt(0),title=value)
