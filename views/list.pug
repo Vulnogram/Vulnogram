@@ -181,6 +181,8 @@ block append head
         link(rel='stylesheet', href= '/users/list/css')
 
 block append scripts
+    script.
+        var csrfToken = !{JSON.stringify(csrfToken)};
     script(type="module")
         include ../src/js/edit/feedback.js
 
