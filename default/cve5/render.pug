@@ -243,7 +243,7 @@ mixin refList(references)
             div
                 - var u ; try { u = (new URL(r.url)) } catch(e){};
                 if u
-                    img(width=16,height=16,class="lbl",src="https://www.google.com/s2/favicons?sz=32&domain_url="+u.protocol + '//'+ encodeURIComponent(u.hostname))
+                    img(width=18,height=18,class="lbl",src="https://www.google.com/s2/favicons?sz=32&domain_url="+u.protocol + '//'+ encodeURIComponent(u.hostname))
                     a(href=r.url)=(r.name && (r.name != r.url)) ?  u.hostname + " : " + r.name : u.hostname + u.pathname + u.search
                 else
                     =r.url

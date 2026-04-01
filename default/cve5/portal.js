@@ -1024,7 +1024,8 @@ async function cveLoad(cveId) {
                 return res;
             }
         } catch (e) {
-            if (e != '404' && e.error != 'CVE_RECORD_DNE') {
+            const isSessionError = e.error == 'NO_SESSION' || e.error == 'UNAUTHORIZED';
+            if (!isSessionError && e != '404' && e.error != 'CVE_RECORD_DNE') {
                 errMsg.textContent = "Failed to load valid CVE Record";
                 infoMsg.textContent = "";
                 return null;
@@ -1066,6 +1067,8 @@ async function cveLoad(cveId) {
     } catch (e2) {
         if (e2 == '404') {
             showAlert('CVE Not found!');
+        } else if (e2.error == 'NO_SESSION' || e2.error == 'UNAUTHORIZED') {
+            throw e2;
         } else {
             errMsg.textContent = "Failed to load valid CVE Record";
             infoMsg.textContent = "";
