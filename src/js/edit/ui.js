@@ -888,7 +888,7 @@ JSONEditor.defaults.editors.simplehtml = class simplehtml extends JSONEditor.def
             if(i.path === self.path) {
                 messages.push(i.message);
             }
-        });    
+        });
         if(messages.length) {
           this.theme.addInputError(this.control, messages.join('. ')+'.');
         }

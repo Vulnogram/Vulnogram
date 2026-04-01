@@ -188,7 +188,7 @@ module.exports = {
             const semverPattern = /^((0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?)|0|\*$/;
             var errors = [];
             if (schema.id == "desc") {
-                if((value.value == "")) {
+                if(!value.value || (value.value == "")) {
                     value = {}
                 } else if(value.value.match(/^\s+$/) || value.value.length < 10) {
                     errors.push({

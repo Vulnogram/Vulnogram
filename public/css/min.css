@@ -41,11 +41,6 @@
         --txt-red: rgb(220, 115, 105);
         --shw-soft: 0 10px 24px rgba(0, 0, 0, 0.55);
     }
-
-    [class^="vgi-"]::before,
-    [class*=" vgi-"]::before {
-        filter: invert(1) hue-rotate(180deg) brightness(1.2) contrast(1.05);
-    }
 }
 
 /* ============================================================
