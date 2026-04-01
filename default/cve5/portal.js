@@ -12,6 +12,8 @@ var csCache = {
 }
 var portalBootstrapPromise = null;
 var portalNavStatePromise = null;
+var portalNavStateLastCheck = 0;
+var portalNavStateCheckInterval = 5 * 60 * 1000; // 5 minutes
 var cvePortalFilterChoice = {
     fstate: 'RESERVED',
     y: null
@@ -35,6 +37,9 @@ async function refreshPortalNavConnectionState() {
     if (portalNavStatePromise) {
         return portalNavStatePromise;
     }
+    if (Date.now() - portalNavStateLastCheck < portalNavStateCheckInterval) {
+        return true;
+    }
     portalNavStatePromise = (async function () {
         try {
             await ensurePortalBootstrap();
@@ -45,6 +50,9 @@ async function refreshPortalNavConnectionState() {
         try {
             var hasSession = await hasActivePortalSession(csCache.url);
             setPortalNavConnectionState(hasSession);
+            if (hasSession) {
+                portalNavStateLastCheck = Date.now();
+            }
             return hasSession;
         } catch (e) {
             setPortalNavConnectionState(false);
@@ -99,6 +107,7 @@ function ensureCsClient(url) {
 }
 
 function clearPortalSessionCache() {
+    portalNavStateLastCheck = 0;
     const settings = getStoredPortalSettings();
     csCache = {
         portalType: settings.portalType,
@@ -126,11 +135,12 @@ async function hasActivePortalSession(url) {
     }
     // Verify session against CVE Services, not just cached SW credentials.
     try {
-        await csClient.getOrgInfo();
+        const orgInfo = await csClient.getOrgInfo();
         setPortalNavConnectionState(true);
-        return true;
+        return orgInfo;
     } catch (e) {
-        if (isPortalAuthError(e)) {
+        const err = e && e.error ? e.error : null;
+        if (err === 'UNAUTHORIZED') {
             if (csClient && typeof csClient.logout === 'function') {
                 try {
                     await csClient.logout();
@@ -138,6 +148,10 @@ async function hasActivePortalSession(url) {
                     // ignore cleanup errors
                 }
             }
+            clearPortalSessionCache();
+            return false;
+        }
+        if (err === 'NO_SESSION') {
             clearPortalSessionCache();
             return false;
         }
@@ -236,7 +250,7 @@ async function showPortalViewOrLogin() {
         setPortalSidebarState(true);
         return false;
     }
-    await showPortalView();
+    await showPortalView(hasSession);
     setPortalSidebarState(true);
     return true;
 }
@@ -330,9 +344,7 @@ async function initCsClient() {
             await ensurePortalBootstrap();
             const hasSession = await hasActivePortalSession(csCache.url);
             if (hasSession) {
-                await showPortalView();
-            } else {
-                clearPortalSessionCache();
+                await showPortalView(hasSession);
             }
         } catch (e) {
             portalErrorHandler(e);
@@ -419,9 +431,8 @@ var loginChannel = new BroadcastChannel("login");
 var logoutChannel = new BroadcastChannel("logout");
 
 function listenforLogins() {
-    loginChannel.onmessage = function (a) {
-        initCsClient();
-        refreshPortalNavConnectionState();
+    loginChannel.onmessage = async function (a) {
+        await initCsClient();
     }
 }
 function listenforLogouts() {
@@ -492,7 +503,6 @@ async function portalLogin(elem, credForm) {
         window.localStorage.setItem('shortName', credForm.org.value);
 
         if (ret == 'ok' || ret.data == "ok") {
-            csCache.keyUrl = ret.keyUrl;
             await refreshRecentCveEntries(credForm.org.value);
             await showPortalView(orgInfo, userInfo);
             /* Add one hour session timeout in addition to timeout in serviceWorker */
@@ -531,8 +541,7 @@ function portalErrorHandler(e) {
     }
 
     if (isNoSession || isUnauthorized) {
-        var loginErrNode = document.getElementById("loginErr");
-        if (!loginErrNode && csClient && typeof csClient.logout === 'function') {
+        if (isUnauthorized && csClient && typeof csClient.logout === 'function') {
             csClient.logout().catch(function () { });
         }
         clearPortalSessionCache();
@@ -743,10 +752,6 @@ async function cveAddUser(f) {
     }
 }
 
-async function cveOrgUpdate() {
-    cveShowError('To be done');
-}
-
 async function cveRenderList(l, refreshEditor) {
     if (l && document.getElementById('cveList')) {
         var canInlineLoad = !!(document.getElementById('docEditor') && typeof loadJSON === 'function' && typeof mainTabGroup !== 'undefined');
@@ -793,7 +798,7 @@ function paginate(a) {
     if (isNaN(cp)) {
         //console.log("The data-page element is not pareable ");
         //console.log(cp);
-        return galse;
+        return false;
     }
     let np = cp + parseInt(a);
     var cveForm = document.getElementById("cvePortalFilter");
@@ -1006,42 +1011,42 @@ async function cveLoadFromCveOrg(cveId, suppressErrors) {
 
 
 async function cveLoad(cveId) {
+    if (csClient && typeof csClient.getCve === 'function') {
+        try {
+            var res = await csClient.getCve(cveId);
+            if (res.cveMetadata) {
+                if (res.containers) {
+                    res = cveFixForVulnogram(res);
+                }
+                var edOpts = (res.cveMetadata.state == 'REJECTED') ? rejectEditorOption : publicEditorOption;
+                var portalType = (csCache && csCache.portalType) ? csCache.portalType : 'production';
+                cveLoadIntoEditor(res, cveId, "Loaded " + cveId + " from CVE Services (" + portalType + ")", edOpts);
+                return res;
+            }
+        } catch (e) {
+            if (e != '404' && e.error != 'CVE_RECORD_DNE') {
+                errMsg.textContent = "Failed to load valid CVE Record";
+                infoMsg.textContent = "";
+                return null;
+            }
+        }
+    }
+
     var cveOrgRes = await cveLoadFromCveOrg(cveId, true);
     if (cveOrgRes) {
         return cveOrgRes;
     }
 
     if (!csClient || typeof csClient.getCve !== 'function') {
-        errMsg.textContent = "CVE not found in CVE.org!";
+        errMsg.textContent = "CVE not found!";
         infoMsg.textContent = "";
         return null;
-    }
-
-    try {
-        var res = await csClient.getCve(cveId);
-        if (res.cveMetadata) {
-            if (res.containers) {
-                res = cveFixForVulnogram(res);
-            } else {
-                //console.log('no containers');
-            }
-            var edOpts = (res.cveMetadata.state == 'REJECTED') ? rejectEditorOption : publicEditorOption;
-            var portalType = (csCache && csCache.portalType) ? csCache.portalType : 'production';
-            cveLoadIntoEditor(res, cveId, "Loaded " + cveId + " from CVE Services (" + portalType + ")", edOpts);
-            return res;
-        }
-    } catch (e) {
-        if (e != '404' && e.error != 'CVE_RECORD_DNE') {
-            errMsg.textContent = "Failed to load valid CVE Record";
-            infoMsg.textContent = "";
-            return null;
-        }
     }
 
     var skeleton = {
         "cveMetadata": {
             "cveId": cveId,
-            "assigner": csCache.orgInfo ? csCache.orgInfo.UUID : "",
+            "assigner": csCache && csCache.orgInfo ? csCache.orgInfo.UUID : "",
         }
     };
     try {
@@ -1053,7 +1058,7 @@ async function cveLoad(cveId) {
             skeleton.cveMetadata.state = "REJECTED";
             edOpts = rejectEditorOption;
         } else {
-            return {};
+            return null;
         }
 
         cveLoadIntoEditor(skeleton, cveId, "Loaded " + cveId, edOpts);
@@ -1159,7 +1164,7 @@ function cvePreparePublishDoc(doc) {
 }
 
 var cvePublishPreviewSections = [
-    { id: 'identity', label: 'Publisher details', keys: ['providerMetadata', 'url', 'datePublic'] },
+    { id: 'identity', label: 'Publisher details', keys: ['url', 'datePublic'] },
     { id: 'summary', label: 'Summary', keys: ['title', 'descriptions', 'rejectedReasons', 'tags'] },
     { id: 'metrics', label: 'Metrics', keys: ['metrics', 'KEV'] },
     { id: 'configurations', label: 'Required configuration', keys: ['configurations'] },
@@ -1276,31 +1281,30 @@ function cveSelectPublishContainer(doc, targetType, orgId) {
 }
 
 async function cveFetchCurrentPortalDoc(cveId) {
-    // Try the public CVE.org API first (same priority as the Load button).
+    // Try CVE Services first (authoritative source when a session is active).
+    if (csClient && typeof csClient.getCve === 'function') {
+        try {
+            var currentDoc = await csClient.getCve(cveId);
+            if (currentDoc && currentDoc.containers) {
+                currentDoc = cveFixForVulnogram(currentDoc);
+            }
+            return cvePreparePublishDoc(currentDoc);
+        } catch (e) {
+            if (e != '404' && e.error != 'CVE_RECORD_DNE') {
+                throw e;
+            }
+        }
+    }
+    // Fall back to the public CVE.org API (no auth required).
     try {
         var data = await cveFetchRawFromCveOrg(cveId);
         if (data) {
             return cvePreparePublishDoc(data);
         }
     } catch (e) {
-        // Network error or CORS — fall through to CSClient.
+        // Network error or CORS.
     }
-    // Fall back to CVE Services (requires an active session).
-    if (!csClient || typeof csClient.getCve !== 'function') {
-        return null;
-    }
-    try {
-        var currentDoc = await csClient.getCve(cveId);
-        if (currentDoc && currentDoc.containers) {
-            currentDoc = cveFixForVulnogram(currentDoc);
-        }
-        return cvePreparePublishDoc(currentDoc);
-    } catch (e) {
-        if (e == '404' || (e && e.error == 'CVE_RECORD_DNE')) {
-            return null;
-        }
-        throw e;
-    }
+    return null;
 }
 
 function cvePublishPreviewRowState(currentSubset, nextSubset) {
@@ -1367,8 +1371,10 @@ function cveBuildPreviewRow(id, label, renderer, keys, current, next, currentMet
 function cveBuildPublishPreviewRows(currentContainer, nextContainer, currentMeta, nextMeta, targetType) {
     var rows = [];
     var usedKeys = {};
-    var current = currentContainer || {};
-    var next = nextContainer || {};
+    var current = Object.assign({}, currentContainer);
+    var next = Object.assign({}, nextContainer);
+    delete current.providerMetadata;
+    delete next.providerMetadata;
     for (var i = 0; i < cvePublishPreviewSections.length; i++) {
         var section = cvePublishPreviewSections[i];
         var row = cveBuildPreviewRow(section.id, section.label, section.id, section.keys, current, next, currentMeta, nextMeta, targetType);
@@ -2107,9 +2113,11 @@ async function cvePost() {
                 var publishMessage = ret.message ? ret.message : "Successfully submitted " + j.cveMetadata.cveId;
                 cveAlert("CVE Record is Published", publishMessage, 10000);
                 var a = document.createElement('a');
-                a.setAttribute('href', (csCache.portalType == 'test' ? 'https://test.cve.org/cverecord?id=' : 'https://www.cve.org/cverecord?id=') + j.cveMetadata.cveId);
+                var cveRecordUrl = (csCache.portalType == 'test' ? 'https://test.cve.org/cverecord?id=' : 'https://www.cve.org/cverecord?id=') + j.cveMetadata.cveId;
+                a.setAttribute('href', cveRecordUrl);
                 a.setAttribute('target', '_blank');
                 a.innerText = j.cveMetadata.cveId;
+                window.open(cveRecordUrl, '_blank');
                 if (typeof infoMsg !== 'undefined' && infoMsg) {
                     infoMsg.innerText = '';
                     infoMsg.appendChild(a);
@@ -2345,6 +2353,16 @@ function cveDraftCanPublish(entry) {
     return !!(entry.doc.cveMetadata && entry.doc.cveMetadata.cveId);
 }
 
+function cveStatusHtml(text) {
+    var safe = String(text).replace(/[&<>"']/g, function (ch) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+    });
+    return safe.replace(/CVE-\d{4}-\d{4,12}/gi, function (idText) {
+        var cveId = idText.toUpperCase();
+        return '<a href="https://vulnogram.org/seaview/?' + encodeURIComponent(cveId) + '" target="_blank" rel="noopener noreferrer">' + cveId + '</a>';
+    });
+}
+
 function cveDraftPublishSetStatus(entryId, text, isError) {
     if (!text) {
         delete cveDraftPublishStatusMap[entryId];
@@ -2371,20 +2389,7 @@ function cveDraftPublishSetStatus(entryId, text, isError) {
         statusNode.remove();
         return;
     }
-    var safeText = String(text).replace(/[&<>"']/g, function (ch) {
-        return {
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#39;'
-        }[ch];
-    });
-    safeText = safeText.replace(/CVE-\d{4}-\d{4,12}/gi, function (idText) {
-        var cveId = idText.toUpperCase();
-        return '<a href="https://vulnogram.org/seaview/?' + encodeURIComponent(cveId) + '" target="_blank" rel="noopener noreferrer">' + cveId + '</a>';
-    });
-    statusNode.innerHTML = safeText;
+    statusNode.innerHTML = cveStatusHtml(text);
     if (isError) {
         statusNode.classList.add('tred');
     } else {
@@ -2527,20 +2532,7 @@ async function cveRefreshDraftPublishDialog() {
             if (status && status.text) {
                 var titleStatus = document.createElement('small');
                 titleStatus.className = 'draftPublishState block sml';
-                var titleSafeText = String(status.text).replace(/[&<>"']/g, function (ch) {
-                    return {
-                        '&': '&amp;',
-                        '<': '&lt;',
-                        '>': '&gt;',
-                        '"': '&quot;',
-                        "'": '&#39;'
-                    }[ch];
-                });
-                titleSafeText = titleSafeText.replace(/CVE-\d{4}-\d{4,12}/gi, function (idText) {
-                    var cveId = idText.toUpperCase();
-                    return '<a href="https://vulnogram.org/seaview/?' + encodeURIComponent(cveId) + '" target="_blank" rel="noopener noreferrer">' + cveId + '</a>';
-                });
-                titleStatus.innerHTML = titleSafeText;
+                titleStatus.innerHTML = cveStatusHtml(status.text);
                 if (status.isError) {
                     titleStatus.classList.add('tred');
                 }

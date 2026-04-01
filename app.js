@@ -240,6 +240,16 @@ async function bootstrap() {
     server.listen(conf.serverPort, conf.serverHost, function () {
         console.log('Server started at ' + (conf.httpsOptions ? 'https://' : 'http://') + conf.serverHost + ':' + conf.serverPort);
     });
+
+    server.on('error', function (err) {
+        if (err.code === 'EADDRINUSE') {
+            console.error('Error: Port ' + conf.serverPort + ' is already in use on ' + conf.serverHost + '.\n' +
+                'Please stop the other process or set a different port via the VULNOGRAM_PORT environment variable.');
+            process.exit(1);
+        } else {
+            throw err;
+        }
+    });
 }
 
 bootstrap();

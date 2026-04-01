@@ -505,9 +505,9 @@ mixin publishPreviewPatchRows(row)
                 tr
                     td.pad(colspan=3)
                         b= row.label
-                        |
+                        |  
                         = op.op == 'add' ? 'added' : op.op == 'remove' ? 'removed' : 'changed'
-                        |
+                        |   
                         b= op.path
                 tr.change(class=op.op)
                     td(colspan=3)

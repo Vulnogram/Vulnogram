@@ -365,7 +365,6 @@ dialog {
     display: flex;
     flex-direction: column;
     column-gap: 1em;
-    align-items: flex-start;
     margin-bottom: 2px;
 }
 
@@ -541,7 +540,7 @@ td.compact {
 
 td.compact .form-control {
     box-sizing: border-box;
-    margin: 0px;
+    margin: 1.5px;
 }
 
 /* ============================================================
@@ -1316,7 +1315,6 @@ input.tab[type="radio"]:checked+.lbl {
 .editor .form-control {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
     vertical-align: middle;
 }
 

@@ -16,6 +16,7 @@
 
 .simplehtml-editor {
     background: var(--bg1);
+    width: 100%;
 }
 
 .simplehtml-url-form {
