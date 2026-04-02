@@ -104,7 +104,16 @@ getPR: function(cve) {
  * @returns {string} A formatted, user-friendly date string.
  */
 formatFriendlyDate: function (isoString) {
+  if (isoString === "" || isoString === null || isoString === 0) {
+    return "-";
+  }
+
   const date = new Date(isoString);
+
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
   const now = new Date();
 
   // Create date objects for comparison, stripping out the time part.

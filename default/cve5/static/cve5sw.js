@@ -31,11 +31,15 @@ const cacheName = 'private';
 const cacheURL = '/creds';
 let sessionTimer = null;
 
-const destroySession = () => {
+const clearSessionTimer = () => {
     if (sessionTimer) {
         clearTimeout(sessionTimer);
         sessionTimer = null;
     }
+};
+
+const destroySession = () => {
+    clearSessionTimer();
     if ('creds' in storage) {
         delete storage['creds'];
         let bc = new BroadcastChannel('logout');
@@ -46,9 +50,11 @@ const destroySession = () => {
     });
 };
 
-const setSessionTimer = () => {
-    if (sessionTimer) clearTimeout(sessionTimer);
-    sessionTimer = setTimeout(destroySession, 1000 * 60 * 60);
+const SESSION_6H = 1000 * 60 * 60 * 6;
+
+const setSessionTimer = (duration) => {
+    clearSessionTimer();
+    sessionTimer = setTimeout(destroySession, duration);
 };
 
 const setCredentials = async (e) => {
@@ -60,10 +66,19 @@ const setCredentials = async (e) => {
         let f = JSON.parse(JSON.stringify(e.data.creds));
         delete f['key'];
         f['keyURL'] = encURL;
+        f['rememberMe'] = !!e.data.creds.rememberMe;
+        if (!f['rememberMe']) {
+            f['loginTime'] = Date.now();
+            f['sessionDuration'] = SESSION_6H;
+        }
         const cache = await caches.open(cacheName);
         await cache.put(cacheURL, new Response(JSON.stringify(f)));
         clientReply(e, { data: "ok" });
-        setSessionTimer();
+        if (f['rememberMe']) {
+            clearSessionTimer();
+        } else {
+            setSessionTimer(f['sessionDuration']);
+        }
     } catch (err) {
         clientReply(e, { error: 'LOGIN_ERROR', message: String(err) });
     }
@@ -89,11 +104,24 @@ const checkSession = async (e) => {
             let cachecreds = await cache.match(cacheURL);
             if (cachecreds) {
                 let result = await cachecreds.json();
+                if (!result.rememberMe) {
+                    const sessionDuration = result.sessionDuration || SESSION_6H;
+                    const elapsed = result.loginTime ? Date.now() - result.loginTime : Infinity;
+                    if (elapsed >= sessionDuration) {
+                        destroySession();
+                        return deadSession(e);
+                    }
+                    setSessionTimer(sessionDuration - elapsed);
+                } else {
+                    clearSessionTimer();
+                }
                 let ekey = await check_create_key(result.user);
                 let encBuffer = URItoarrayBuffer(result.keyURL);
                 let rawKey = await decryptMessage(encBuffer, ekey.privateKey);
                 result.key = rawKey;
                 delete result.keyURL;
+                delete result.loginTime;
+                delete result.sessionDuration;
                 storage.creds = JSON.parse(JSON.stringify(result));
                 return true;
             } else {

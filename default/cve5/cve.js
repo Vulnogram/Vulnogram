@@ -40,9 +40,9 @@
 
         // Session mgmt
 
-        login(user, org, key) {
+        login(user, org, key, rememberMe) {
             //console.log('called login');
-            return this._middleware.setCredentials({ user, org, key });
+            return this._middleware.setCredentials({ user, org, key, rememberMe });
         }
 
         logout() {

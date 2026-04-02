@@ -113,7 +113,16 @@ getPR: function(cve) {
  * @returns {string} A formatted, user-friendly date string.
  */
 formatFriendlyDate: function (isoString) {
+  if (isoString === "" || isoString === null || isoString === 0) {
+    return "-";
+  }
+
   const date = new Date(isoString);
+
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
   const now = new Date();
 
   // Create date objects for comparison, stripping out the time part.
@@ -3823,20 +3832,33 @@ JSONEditor.defaults.editors.simplehtml = class simplehtml extends JSONEditor.def
     }
     showValidationErrors(errs) {
         var self = this;
+        var richTextPathSuffix = '.supportingMedia.0.value';
 
         if(this.jsoneditor.options.show_errors === "always") {}
         else if(!this.is_dirty && this.previous_error_setting===this.jsoneditor.options.show_errors) return;
         
         this.previous_error_setting = this.jsoneditor.options.show_errors;
     
+        var relatedPaths = {};
+        relatedPaths[self.path] = true;
+        if (self.path && self.path.slice(-richTextPathSuffix.length) === richTextPathSuffix) {
+            var descriptionPath = self.path.slice(0, -richTextPathSuffix.length);
+            relatedPaths[descriptionPath] = true;
+            relatedPaths[descriptionPath + '.value'] = true;
+        }
+
         var messages = [];
         errs.forEach(i => {
-            if(i.path === self.path) {
+            if(i.path && relatedPaths[i.path] && messages.indexOf(i.message) === -1) {
                 messages.push(i.message);
             }
-        });    
+        });
         if(messages.length) {
-          this.theme.addInputError(this.control, messages.join('. ')+'.');
+          var messageText = messages.join('. ');
+          if (messageText[messageText.length - 1] !== '.') {
+              messageText += '.';
+          }
+          this.theme.addInputError(this.control, messageText);
         }
         else {
           this.theme.removeInputError(this.control);
@@ -4356,6 +4378,20 @@ if (document.getElementById('save1')) {
     document.getElementById('save1').addEventListener('click', save);
 }
 
+function formatErrorPathLabel(path) {
+    var normalized = String(path || '').trim().replace(/^\^?root\.?/, '');
+    if (!normalized) {
+        return 'Document';
+    }
+    var parts = normalized.split('.');
+    for (var i = parts.length - 1; i >= 0; i--) {
+        if (!/^\d+$/.test(parts[i])) {
+            return parts[i];
+        }
+    }
+    return normalized;
+}
+
 function scroll2Err(x) {
     var path = x.getAttribute('e_path');
     mainTabGroup.focus(0);
@@ -4393,7 +4429,7 @@ function showJSONerrors(errors) {
         a.setAttribute('class', 'rqd')
         a.setAttribute('e_path', e.path);
         a.setAttribute('onclick', 'scroll2Err(this)');
-        a.textContent = (showLabel && showLabel.trim() ? showLabel : e.path.replace('^root.','')) + ": " + e.message;
+        a.textContent = (showLabel && showLabel.trim() ? showLabel : formatErrorPathLabel(e.path)) + ": " + e.message;
         errList.appendChild(a);
         errList.appendChild(document.createElement('br'))
     }

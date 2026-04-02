@@ -14,10 +14,18 @@ var portalBootstrapPromise = null;
 var portalNavStatePromise = null;
 var portalNavStateLastCheck = 0;
 var portalNavStateCheckInterval = 5 * 60 * 1000; // 5 minutes
+var portalSessionTimer = null;
 var cvePortalFilterChoice = {
     fstate: 'RESERVED',
     y: null
 };
+
+function clearPortalSessionTimer() {
+    if (portalSessionTimer) {
+        clearTimeout(portalSessionTimer);
+        portalSessionTimer = null;
+    }
+}
 
 function setPortalNavConnectionState(connected) {
     var nav = document.getElementById('cvePortalNav');
@@ -107,6 +115,7 @@ function ensureCsClient(url) {
 }
 
 function clearPortalSessionCache() {
+    clearPortalSessionTimer();
     portalNavStateLastCheck = 0;
     const settings = getStoredPortalSettings();
     csCache = {
@@ -485,7 +494,8 @@ async function portalLogin(elem, credForm) {
         var ret = await csClient.login(
             credForm.user.value,
             credForm.org.value,
-            credForm.key.value);
+            credForm.key.value,
+            credForm.rememberMe.checked);
 
 
         var orgInfo = await csClient.getOrgInfo();
@@ -505,8 +515,10 @@ async function portalLogin(elem, credForm) {
         if (ret == 'ok' || ret.data == "ok") {
             await refreshRecentCveEntries(credForm.org.value);
             await showPortalView(orgInfo, userInfo);
-            /* Add one hour session timeout in addition to timeout in serviceWorker */
-            setTimeout(portalLogout, defaultTimeout);
+            clearPortalSessionTimer();
+            if (!credForm.rememberMe.checked) {
+                portalSessionTimer = setTimeout(portalLogout, defaultTimeout);
+            }
             //announce to others that a login happened.
             loginChannel.postMessage({ message: 'The user has logged in' });
 
@@ -1441,7 +1453,8 @@ async function cveBuildPublishPreview(doc, options) {
     var rows = cveBuildPublishPreviewRows(currentContainer, nextContainer, currentMeta, nextMeta, targetType);
     var targetLabel = targetType == 'adp' ? 'ADP' : 'CNA';
     var actionLabel = cvePublishPreviewActionLabel(targetType, currentContainer, nextMeta, latestId);
-    var changedLabel = rows.length == 1 ? '1 changed section' : rows.length + ' changed sections';
+    var isNew = !currentContainer;
+    var changedLabel = isNew ? 'New record' : rows.length == 1 ? '1 changed section' : rows.length + ' changed sections';
     return {
         preparedDoc: preparedDoc,
         currentDoc: {
@@ -1451,6 +1464,7 @@ async function cveBuildPublishPreview(doc, options) {
             cveMetadata: nextMeta
         },
         cveId: cveId,
+        isNew: isNew,
         rows: rows,
         title: 'Preview ' + targetLabel + ' Publish',
         confirmLabel: targetType == 'adp' ? 'Publish ADP' : 'Publish CVE',

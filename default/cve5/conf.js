@@ -187,12 +187,24 @@ module.exports = {
         function (schema, value, path) {
             const semverPattern = /^((0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?)|0|\*$/;
             var errors = [];
+            var getDescriptionEditorPath = function (currentPath, currentValue) {
+                if (currentValue && Array.isArray(currentValue.supportingMedia) && currentValue.supportingMedia.length > 0) {
+                    return currentPath + '.supportingMedia.0.value';
+                }
+                return currentPath + '.value';
+            };
+            var getDescriptionListEditorPath = function (currentPath, currentValue, index) {
+                if (!Array.isArray(currentValue) || !currentValue[index]) {
+                    return currentPath;
+                }
+                return getDescriptionEditorPath(currentPath + '.' + index, currentValue[index]);
+            };
             if (schema.id == "desc") {
                 if(!value.value || (value.value == "")) {
                     value = {}
                 } else if(value.value.match(/^\s+$/) || value.value.length < 10) {
                     errors.push({
-                        path: path,
+                        path: getDescriptionEditorPath(path, value),
                         property: 'format',
                         message: 'Valid description required'
                     });
@@ -355,9 +367,10 @@ module.exports = {
             }
             if(schema.id == "description") { // check for bad descriptions
                 if(value && value[0] 
+                    && value[0].value
                     && value[0].value.match(/\[(PROBLEMTYPE|COMPONENT|VENDOR|PRODUCT|VERSION|PLATFORMS|ATTACKER|IMPACT|VECTOR)\]/)) {
                     errors.push({
-                        path: path,
+                        path: getDescriptionListEditorPath(path, value, 0),
                         property: 'format',
                         message: 'Replace the placeholders in the template.'
                     });

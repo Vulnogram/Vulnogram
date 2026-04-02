@@ -32,8 +32,12 @@ mixin cveLoginBox
                 span.txt-icon-wrap
                     span.txt-input-icon.vgi-key
                     input#cpKey.bor.txt.txt-has-icon(name='key', type='password', autocomplete='off' required=true)
-                b
-                span 
+                span
+                span.row
+                    input#cpRemember.chk(name='rememberMe', type='checkbox')
+                    label.lbl(for='cpRemember') Remember me
+                span
+                span
                     input#cpSubmit.bor.fbn.sfe.vgi-export(type='submit', value='Login')
                     |  
                     button.fbn.vgi-x(onclick="return closeCvePortal(event);") Cancel

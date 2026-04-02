@@ -877,20 +877,33 @@ JSONEditor.defaults.editors.simplehtml = class simplehtml extends JSONEditor.def
     }
     showValidationErrors(errs) {
         var self = this;
+        var richTextPathSuffix = '.supportingMedia.0.value';
 
         if(this.jsoneditor.options.show_errors === "always") {}
         else if(!this.is_dirty && this.previous_error_setting===this.jsoneditor.options.show_errors) return;
         
         this.previous_error_setting = this.jsoneditor.options.show_errors;
     
+        var relatedPaths = {};
+        relatedPaths[self.path] = true;
+        if (self.path && self.path.slice(-richTextPathSuffix.length) === richTextPathSuffix) {
+            var descriptionPath = self.path.slice(0, -richTextPathSuffix.length);
+            relatedPaths[descriptionPath] = true;
+            relatedPaths[descriptionPath + '.value'] = true;
+        }
+
         var messages = [];
         errs.forEach(i => {
-            if(i.path === self.path) {
+            if(i.path && relatedPaths[i.path] && messages.indexOf(i.message) === -1) {
                 messages.push(i.message);
             }
         });
         if(messages.length) {
-          this.theme.addInputError(this.control, messages.join('. ')+'.');
+          var messageText = messages.join('. ');
+          if (messageText[messageText.length - 1] !== '.') {
+              messageText += '.';
+          }
+          this.theme.addInputError(this.control, messageText);
         }
         else {
           this.theme.removeInputError(this.control);

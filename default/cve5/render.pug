@@ -514,7 +514,9 @@ mixin publishPreviewPatchRows(row)
                         +diffOpRow(op)
 
 mixin publishPreview(preview)
-    if preview.rows && preview.rows.length > 0
+    if preview.isNew && preview.preparedDoc
+        +page(preview.preparedDoc)
+    else if preview.rows && preview.rows.length > 0
         table.diff.fil
             each row in preview.rows
                 - var changeOp = row.state == 'added' ? 'add' : row.state == 'removed' ? 'remove' : 'replace';
@@ -523,7 +525,7 @@ mixin publishPreview(preview)
                         td.pad(colspan=3)
                             b.lbl= row.label
                             if row.stateLabel
-                                |  
+                                | &nbsp;
                                 span.lbl= row.stateLabel
                     tr.change(class=changeOp)
                         td(colspan=3)

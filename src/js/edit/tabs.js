@@ -189,6 +189,20 @@ if (document.getElementById('save1')) {
     document.getElementById('save1').addEventListener('click', save);
 }
 
+function formatErrorPathLabel(path) {
+    var normalized = String(path || '').trim().replace(/^\^?root\.?/, '');
+    if (!normalized) {
+        return 'Document';
+    }
+    var parts = normalized.split('.');
+    for (var i = parts.length - 1; i >= 0; i--) {
+        if (!/^\d+$/.test(parts[i])) {
+            return parts[i];
+        }
+    }
+    return normalized;
+}
+
 function scroll2Err(x) {
     var path = x.getAttribute('e_path');
     mainTabGroup.focus(0);
@@ -226,7 +240,7 @@ function showJSONerrors(errors) {
         a.setAttribute('class', 'rqd')
         a.setAttribute('e_path', e.path);
         a.setAttribute('onclick', 'scroll2Err(this)');
-        a.textContent = (showLabel && showLabel.trim() ? showLabel : e.path.replace('^root.','')) + ": " + e.message;
+        a.textContent = (showLabel && showLabel.trim() ? showLabel : formatErrorPathLabel(e.path)) + ": " + e.message;
         errList.appendChild(a);
         errList.appendChild(document.createElement('br'))
     }
