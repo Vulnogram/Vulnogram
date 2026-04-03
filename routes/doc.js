@@ -10,6 +10,7 @@ var qs = require('querystring');
 const _ = require('lodash');
 const path = require('path');
 const toErrorMessage = require('../lib/error-message');
+const textUtil = require('../src/js/edit/util.js');
 
 var queryMW;
 var queryMWBody;
@@ -602,7 +603,7 @@ module.exports = function (name, opts) {
                 title: (opts.conf ? opts.conf.title + ' - ' : '') + package.name,
                 docs: docs,
                 opts: opts,
-           //     textUtil: textUtil,
+                textUtil: textUtil,
                 qs: qs,
                 focustab: 0,
                 facet: charts,

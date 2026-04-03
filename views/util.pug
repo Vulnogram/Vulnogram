@@ -106,14 +106,12 @@ mixin hyperdate(obj, name)
         - var nowt = Date.now();
         - var vtime = v.getTime();
         - var delta = nowt-vtime;
-        - var hidet = '';
-        - if (Math.abs(delta) > 43000000) { hidet = 'hid';}
         - var cl = "date y"+ (nowt > vtime ? Math.floor(Math.log2((delta/31536000000)+1)*2) : 'f tag-s');
         span.nobr(class=cl, title=v.toString())
-            = v.toISOString().slice(0,10)
-            span.nobr(class=hidet)
-                |  
-                = v.toLocaleTimeString("de-US", {hour:"2-digit", minute:"2-digit"})
+            if textUtil && textUtil.formatFriendlyDate
+                = textUtil.formatFriendlyDate(v.toISOString())
+            else
+                = v.toISOString().slice(0,10)
     else
         = obj[name]
 
@@ -122,7 +120,7 @@ mixin hyperLink(value, url, mid, suffix, target, cls, onclick)
 
 mixin hyperVal(obj, name)
     - var value = (obj !== Object(obj) || Array.isArray(obj))? obj : obj[name];
-    if value instanceof Date || name == 'date' || name == 'updatedAt' || name == 'createdAt'
+    if value instanceof Date || name == 'date' || name == 'updatedAt' || name == 'createdAt' || (fields && fields[name] && fields[name].type === Date)
         +hyperdate(obj, name)
     else
         case name
