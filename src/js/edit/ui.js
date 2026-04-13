@@ -531,6 +531,16 @@ JSONEditor.defaults.editors.dateTime = class dateTime extends JSONEditor.default
         super.build();
         this.input.className = "txt";
         this.input.setAttribute("tz", localTZ);
+        // Firefox datetime-local won't emit a value until both date and time
+        // sub-fields are filled. Pre-fill with current time on focus so the
+        // user only needs to pick a date and the time is already valid.
+        this.input.addEventListener('focus', () => {
+            if (!this.input.value) {
+                var now = new Date();
+                var local = new Date(now.getTime() - (now.getTimezoneOffset() * 60000));
+                this.input.value = local.toJSON().slice(0, 16);
+            }
+        });
     }
 };
 
