@@ -213,24 +213,9 @@ mixin htext
         p=t
 
 mixin date(value)
-    - var v = false;
-    - if (value instanceof Date) { v = value;} else {
-    -   var timestamp = Date.parse(value);
-    -   v = isNaN(timestamp) ? false : new Date(timestamp)
-    - }
-    if v
-        - var nowt = Date.now();
-        - var vtime = v.getTime();
-        - var delta = nowt-vtime;
-        - var hidet = '';
-        - if (Math.abs(delta) > 43000000) { hidet = 'hid';}
-        span.nobr.date(class=cl, title=v.toString())
-            = v.toISOString().slice(0,10)
-            span.nobr(class=hidet)
-                |  
-                = v.toLocaleTimeString("de-US", {hour:"2-digit", minute:"2-digit"})
-    else
-        = obj[name]
+    if value
+        - var friendly = (typeof textUtil !== 'undefined' && textUtil.formatFriendlyDate) ? textUtil.formatFriendlyDate(value) : String(value).slice(0,10)
+        span.nobr.date(title=value)= friendly
 
 mixin editables
     each c in cveIds

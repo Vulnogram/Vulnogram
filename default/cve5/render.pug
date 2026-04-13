@@ -300,8 +300,8 @@ mixin containerMetricSummary(con)
             span.flx
                 +cvssList(con.cvssList)
                 if con.KEV
-                    summary.lbl.rnd.tag.CVSS.CRITICAL.vgi-bomb Known Exploited Since 
-                        = con.KEV.dateAdded
+                    summary.lbl.rnd.tag.CVSS.CRITICAL.vgi-bomb Known Exploited Since
+                        +renderDate(con.KEV.dateAdded)
 
 mixin containerSummary(con, showId)
     - var includeId = showId !== false;
@@ -637,7 +637,10 @@ mixin renderDate(value)
     -   v = isNaN(timestamp) ? false : new Date(timestamp)
     - }
     if v
-        = v.toJSON().substr(0,10)
+        if textUtil && textUtil.formatFriendlyDate
+            = textUtil.formatFriendlyDate(v.toISOString())
+        else
+            = v.toJSON().substr(0,10)
 
 mixin JSON(d, par, comma)
     - var k;

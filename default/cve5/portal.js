@@ -2128,13 +2128,24 @@ async function cvePost() {
             }
             if (ret != null) {
                 var publishMessage = ret.message ? ret.message : "Successfully submitted " + j.cveMetadata.cveId;
-                cveAlert("CVE Record is Published", publishMessage, 10000);
-                var a = document.createElement('a');
                 var cveRecordUrl = (csCache.portalType == 'test' ? 'https://test.cve.org/cverecord?id=' : 'https://www.cve.org/cverecord?id=') + j.cveMetadata.cveId;
+                var countdownSecs = 5;
+                cveAlert("CVE Record is Published", publishMessage + "\nOpening CVE record in " + countdownSecs + " seconds...", 10000);
+                var smallAlertEl = document.getElementById('smallAlert');
+                var countdownInterval = setInterval(function () {
+                    countdownSecs--;
+                    if (smallAlertEl) {
+                        smallAlertEl.innerText = publishMessage + (countdownSecs > 0 ? "\nOpening CVE record in " + countdownSecs + " second" + (countdownSecs !== 1 ? "s" : "") + "..." : "\nOpening CVE record now...");
+                    }
+                    if (countdownSecs <= 0) {
+                        clearInterval(countdownInterval);
+                        window.open(cveRecordUrl, '_blank');
+                    }
+                }, 1000);
+                var a = document.createElement('a');
                 a.setAttribute('href', cveRecordUrl);
                 a.setAttribute('target', '_blank');
                 a.innerText = j.cveMetadata.cveId;
-                window.open(cveRecordUrl, '_blank');
                 if (typeof infoMsg !== 'undefined' && infoMsg) {
                     infoMsg.innerText = '';
                     infoMsg.appendChild(a);
