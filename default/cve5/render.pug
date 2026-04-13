@@ -152,12 +152,18 @@ mixin cvssList(cvssList)
                             = s.value
                     each x, i in cvss
                         if !nonSpec.includes(i)
+                            - var icon = textUtil && textUtil.cvssIcons && textUtil.cvssIcons[i] && textUtil.cvssIcons[i][x] ? textUtil.cvssIcons[i][x] : null
                             div
                                 =i
-                                | :  
+                                | :
+                                if icon
+                                    i(class='vgi-'+icon)
+                                |
                                 b=x
                     div
-                        if cvss.version >= "3"
+                        if cvss.version >= "4"
+                            a.vgi-dial(href="https://vulnogram.org/cvss4?"+ cvss.vectorString target="_blank") Open CVSS Calc
+                        else if cvss.version >= "3"
                             a.vgi-dial(href="https://cvss.js.org/#" + cvss.vectorString target="_blank") Open CVSS Calc
                         else
                             a.vgi-dial(href='https://nvd.nist.gov/vuln-metrics/cvss/v2-calculator?vector='+cvss.vectorString target="_blank") Open CVSS Calc

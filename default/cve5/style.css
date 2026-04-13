@@ -322,18 +322,19 @@ button.json-editor-btn-delete {
 }
 }
 
-#render.render p {
+.render p {
   margin-left: 2em;
   margin-top: .5em;
 }
 
-#render.render h4 {
+.render h4 {
   margin-bottom: 0.3em;
   margin-top: .3em;
 }
-#render.render table {border-spacing: 0; border: 1px solid #888; border-collapse: collapse;}
-#render.render table th { text-align:center;background-color:#88888822;}
-#render.render table td { padding:5px;border: 1px solid #888}
+.render table {border-spacing: 0; border: 1px solid var(--bor); border-collapse: collapse;}
+.render table th { text-align:center;background-color:var(--bg1)}
+.render table td { padding:5px;border: 1px solid var(--bor)}
+.render table tbody { background-color: var(--wht);}
 
 /* --- CVE portal user list: div-based table layout (cvelist.pug) --- */
 .tbody { display: table-row-group; }

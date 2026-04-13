@@ -259,6 +259,23 @@ getDocuments: async function(schemaName, ids, paths) {
         if (op == 'remove')  return side == 'current' ? 'diff-del'   : '';
         if (op == 'replace') return side == 'current' ? 'diff-chg-l' : 'diff-chg-r';
         return '';
+    },
+    cvssIcons: {
+        attackVector:              { NETWORK: 'cvss-net', ADJACENT_NETWORK: 'cvss-adj', ADJACENT: 'cvss-adj', LOCAL: 'cvss-user', PHYSICAL: 'cvss-physical' },
+        attackComplexity:          { HIGH: 'rocket', LOW: 'paper-plane' },
+        attackRequirements:        { PRESENT: 'cvss-required', NONE: 'cvss-direct' },
+        privilegesRequired:        { HIGH: 'king', LOW: 'pawn', NONE: 'thief' },
+        userInteraction:           { REQUIRED: 'cvss-ui', ACTIVE: 'alert', PASSIVE: 'eye-close', NONE: 'cvss-direct' },
+        scope:                     { UNCHANGED: 'cvss-direct', CHANGED: 'cvss-scope-change' },
+        confidentialityImpact:     { HIGH: 'eye', LOW: 'eye-half', NONE: 'eye-close' },
+        integrityImpact:           { HIGH: 'box-high', LOW: 'box-low', NONE: 'box' },
+        availabilityImpact:        { HIGH: 'signal-1', LOW: 'signal-2', NONE: 'signal' },
+        vulnConfidentialityImpact: { HIGH: 'eye', LOW: 'eye-half', NONE: 'eye-close' },
+        subConfidentialityImpact:  { HIGH: 'eye', LOW: 'eye-half', NONE: 'eye-close' },
+        vulnIntegrityImpact:       { HIGH: 'box-high', LOW: 'box-low', NONE: 'box' },
+        subIntegrityImpact:        { HIGH: 'box-high', LOW: 'box-low', NONE: 'box' },
+        vulnAvailabilityImpact:    { HIGH: 'signal-1', LOW: 'signal-2', NONE: 'signal' },
+        subAvailabilityImpact:     { HIGH: 'signal-1', LOW: 'signal-2', NONE: 'signal' }
     }
 };
 if(typeof module !== 'undefined') {
