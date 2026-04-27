@@ -323,6 +323,7 @@ function htmltoText(html) {
         text = text.replace(/<\/li[^>]*?>/gi, "\n");
         text = text.replace(/<li.*?>/gi, "  *  ");
         text = text.replace(/<\/ul[^>]*?>/gi, "\n\n");
+        text = text.replace(/<p[^>]*?>/gi, "\n\n");
         text = text.replace(/<\/p[^>]*?>/gi, "\n\n");
         text = text.replace(/<br\s*[\/]?>/gi, "\n");
         text = text.replace(/<[^>]+>/gi, "");
