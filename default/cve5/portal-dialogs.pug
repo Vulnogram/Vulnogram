@@ -52,3 +52,32 @@ mixin showSecret
             label.vgi-eye.lbl.sbn(for="showpass")
             center.gap
                 input.btn.sfe(type="reset" onclick="this.closest('dialog').close()" value="OK")
+
+mixin transferCveIdDialog
+    dialog.dlg.bor.rndx.shd#transferCveIdDialog
+        +dlgHeader('vgi-forward','Transfer CVE ID(s) to another CNA')
+        .gap
+            p.gap.vgi-alert.lbl
+                b STOP: Coordinate Before You Transfer!
+                p Unauthorized CVE transfers are strictly prohibited. You must receive confirmation from the receiving CNA prior to hand-off. Failure to comply is grounds for removal from the CVE Program.
+            p.gap #[b Selected:]&nbsp;
+                span#transferCveIdList
+            label.lbl(for="transferCnaSel") Transfer to CNA
+            br
+            select#transferCnaSel.txt.bor.gap
+            br
+            center.gap
+                button.btn.vgi-forward#transferCveConfirm Transfer
+                | &nbsp;
+                button.btn.vgi-x#transferCveCancel Cancel
+
+mixin bulkRejectDialog
+    dialog.dlg.bor.rndx.shd#bulkRejectDialog
+        +dlgHeader('vgi-del','Reject CVE IDs')
+        .gap
+            p.gap The following IDs will be permanently rejected:
+            ul#bulkRejectIdList
+            center.gap
+                button.btn.vgi-del#bulkRejectConfirm Reject All
+                | &nbsp;
+                button.btn.vgi-x#bulkRejectCancel Cancel

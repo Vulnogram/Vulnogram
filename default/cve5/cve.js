@@ -77,6 +77,10 @@
             return this._middleware.put('cve-id/'.concat(id), record);
         }
 
+        transferCveId(id, newOrg) {
+            return this._middleware.put('cve-id/'.concat(id), { org: newOrg });
+        }
+
         getCve(id) {
             return this._middleware.get('cve/'.concat(id));
         }

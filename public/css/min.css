@@ -329,7 +329,9 @@ dialog {
     display: flex;
     flex-direction: column;
 }
-
+.vflx.gap {
+    gap: 0.5em;
+}
 .flx {
     display: flex;
     flex-wrap: wrap;

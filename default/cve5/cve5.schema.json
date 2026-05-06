@@ -903,7 +903,7 @@
           "links": [
             {
               "class": "lbl vgi-ext",
-              "href": "'https://www.cve.org/CVERecord?id=' + context.self",
+              "href": "'https://vulnogram.org/seaview/?' + context.self",
               "title": "'CVE.org Entry",
               "rel": "'cve.org'"
             }
@@ -1178,7 +1178,7 @@
           "properties": {
             "engine": {
               "type": "string",
-              "default": "Vulnogram 1.0.2"
+              "default": "Vulnogram 1.0.3"
             }
           },
           "options": {
@@ -1246,7 +1246,7 @@
           "properties": {
             "engine": {
               "type": "string",
-              "default": "Vulnogram 1.0.2"
+              "default": "Vulnogram 1.0.3"
             }
           },
           "options": {
@@ -3878,6 +3878,15 @@
           "href": "'javascript:rejectRecord()'",
           "title": "'Reject this CVE ID'",
           "rel": "'Reject this ID'"
+        },
+        {
+          "place": "container",
+          "class": "lbl gap2 fbn vgi-forward flr",
+          "style": "",
+          "target": false,
+          "href": "'javascript:transferRecord()'",
+          "title": "'Transfer this CVE ID to another CNA'",
+          "rel": "'Transfer this CVE'"
         }
       ],
       "additionalProperties": false

@@ -70,39 +70,39 @@ mixin portal
     header.pad.ban
         .left.flx
             label.vgi-globe.lbl Portal: 
-
                 b=portalType
             span.btg.rnd
-                        button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve One CVE
-                        details.popup
-                            summary.btn.t9 ▼
-                            dl.pop.wht.bor.rnd.shd.rows
-                              .gap
-                                dt.flx
-                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0, 5)' style="min-width:6em") Reserve  5
-                                    button.rbtn.right.vgi-x(onclick="this.closest('details').removeAttribute('open')")     
-                                dt
-                                    button.btn.vgi-magic(onclick='cveReserveAndRender(0, 10)'  style="min-width:6em") Reserve 10
-                                dt 
-                                    button.btn.vgi-magic(onclick='cveReserveAndRender(1)') Reserve one for 
-                                        = y+1
-                                dt
-                                    button.btn.vgi-magic(onclick='cveReserveAndRender(-1)') Reserve one for 
-                                        = y-1
-                                dt
-                                    - var reserveSelectedYear = selectedYear
-                                    .flx
-                                        button.btn.vgi-magic(onclick="cveReserveAndRender(((parseInt(document.getElementById('reserveSelectedYear').value, 10) || currentYear) - currentYear))")
-                                            | Reserve one for &nbsp;
-                                            span#reserveSelectedYearLabel=reserveSelectedYear
-                                        |  
-                                        select#reserveSelectedYear.lbl.txt(onclick='event.stopPropagation();' onchange="document.getElementById('reserveSelectedYearLabel').innerText=this.value")
-                                            option(value=nextY selected=(reserveSelectedYear == String(nextY)))=nextY
-                                            option(value=y selected=(reserveSelectedYear == String(y)))=y
-                                            - var j = y-1
-                                            while j > 1998
-                                                option(value=j selected=(reserveSelectedYear == String(j)))=j
-                                                - j--;
+                button.btn.vgi-magic(onclick='cveReserveAndRender(0)') Reserve One CVE
+                details.popup
+                    summary.btn.t9 ▼
+                    dl.pop.wht.bor.rnd.shd.rows.pad.gap.vflx
+                        dt.flx
+                            button.btn.vgi-magic(onclick='cveReserveAndRender(0, 5)' style="min-width:6em") Reserve  5
+                            button.rbtn.right.vgi-x(onclick="this.closest('details').removeAttribute('open')")     
+                        dt
+                            button.btn.vgi-magic(onclick='cveReserveAndRender(0, 10)'  style="min-width:6em") Reserve 10
+                        dt 
+                            button.btn.vgi-magic(onclick='cveReserveAndRender(1)') Reserve one for 
+                                = y+1
+                        dt
+                            button.btn.vgi-magic(onclick='cveReserveAndRender(-1)') Reserve one for 
+                                = y-1
+                        dt
+                            - var reserveSelectedYear = selectedYear
+                            .flx
+                                button.btn.vgi-magic(onclick="cveReserveAndRender(((parseInt(document.getElementById('reserveSelectedYear').value, 10) || currentYear) - currentYear))")
+                                    | Reserve one for &nbsp;
+                                    span#reserveSelectedYearLabel=reserveSelectedYear
+                                |  
+                                select#reserveSelectedYear.lbl.txt(onclick='event.stopPropagation();' onchange="document.getElementById('reserveSelectedYearLabel').innerText=this.value")
+                                    option(value=nextY selected=(reserveSelectedYear == String(nextY)))=nextY
+                                    option(value=y selected=(reserveSelectedYear == String(y)))=y
+                                    - var j = y-1
+                                    while j > 1998
+                                        option(value=j selected=(reserveSelectedYear == String(j)))=j
+                                        - j--;
+            button.btn.vgi-forward#bulkTransferBtn(onclick='cveBulkTransfer()' disabled) Transfer
+            button.btn.vgi-del#bulkRejectBtn(onclick='cveBulkReject()' disabled) Reject
 
         .flx
             label#cveUser
@@ -246,6 +246,8 @@ mixin listIds
         table#cveListTable.vtbl.sortable
             thead
                 tr
+                    th
+                        input#selectAllCves(type="checkbox" title="Select all" onchange="cveSelectionSelectAll(this)")
                     th ID
                     th Requester
                     th(aria-sort="ascending") Created
@@ -254,6 +256,8 @@ mixin listIds
             tbody
                 each c in cveIds
                     tr(data=c.state)
+                        td
+                            input.cve-select-cb(type="checkbox" data=c.cve_id onchange="cveSelectionChanged()")
                         td
                             if editable
                                 if canInlineLoad
@@ -266,7 +270,7 @@ mixin listIds
                                 span(class=stateIcons[c.state]?stateIcons[c.state]:'', title=c.state)
                                     =c.cve_id
                             if c.state != 'RESERVED'
-                                a.vgi-ext(href="https://www.cve.org/CVERecord?id="+c.cve_id, target="_blank")
+                                a.vgi-ext(href="https://vulnogram.org/seaview/?"+c.cve_id, target="_blank")
                         td=c.requested_by.user
                         td
                             +date(c.time.created)
@@ -274,7 +278,8 @@ mixin listIds
                             if c.time.modified != c.time.created
                                 +date(c.time.modified)
                         td
-                            if editable 
+                            if editable
+                                a.fbn.vgi-forward(data=c.cve_id onclick="cveTransfer(this, event)", title="Transfer this CVE ID",) &nbsp;
                                 if c.state == 'RESERVED'
                                     a.fbn.vgi-del(data=c.cve_id onclick="cveReject(this, event)", title="Reject this CVE ID",) &nbsp;
                                 else if c.state == 'PUBLISHED'

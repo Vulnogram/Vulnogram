@@ -34,6 +34,14 @@ function hidepopups() {
     document.getElementById("userStatsPopup").open = false;
 }
 
+async function transferRecord() {
+    var id = getDocID();
+    if (!id) return;
+    var el = document.createElement('a');
+    el.setAttribute('data', id);
+    await cveTransfer(el, null);
+}
+
 async function rejectRecord() {
     var id = getDocID();
     if (window.confirm('Do you want to reject ' + id + '? All vulnerability details will be removed.')) {
