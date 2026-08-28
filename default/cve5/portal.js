@@ -1721,9 +1721,12 @@ async function cveFetchCurrentPortalDoc(cveId) {
             }
             return cvePreparePublishDoc(currentDoc);
         } catch (e) {
-            if (e != '404' && e.error != 'CVE_RECORD_DNE') {
-                throw e;
+            // Record genuinely doesn't exist yet: nothing to compare against.
+            if (e == '404' || (e && e.error == 'CVE_RECORD_DNE')) {
+                return null;
             }
+            // Any other failure (no active session, network issue, etc.)
+            // falls through to the public CVE.org API below.
         }
     }
     // Fall back to the public CVE.org API (no auth required).
@@ -2292,17 +2295,6 @@ async function cveRenderPublishChanges(doc) {
         await ensurePortalBootstrap();
     } catch (e) {
         cveSetPublishChangesMessage(container, cvePublishErrorMessage(e), true);
-        return;
-    }
-    var hasSession = false;
-    try {
-        hasSession = await hasActivePortalSession(csCache.url);
-    } catch (e) {
-        cveSetPublishChangesMessage(container, cvePublishErrorMessage(e), true);
-        return;
-    }
-    if (!hasSession) {
-        cveSetPublishChangesMessage(container, 'Login to CVE Services to compare against the current record.', false);
         return;
     }
     try {
