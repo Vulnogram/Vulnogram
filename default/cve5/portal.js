@@ -1125,16 +1125,23 @@ function cveLoadIntoEditor(res, cveId, message, edOpts) {
     portalFocusEditor();
 }
 
-async function cveFetchRawFromCveOrg(cveId) {
+async function cveFetchRawFromCveOrg(cveId, options) {
+    var opts = options || {};
     const response = await fetch('https://cveawg.mitre.org/api/cve/' + cveId, {
         method: 'GET',
         credentials: 'omit',
         headers: { 'Accept': 'application/json, text/plain, */*' }
     });
     if (!response.ok) {
+        if (opts.throwOnError && response.status != 404) {
+            throw new Error('Unable to load the public CVE.org record (HTTP ' + response.status + ').');
+        }
         return null;
     }
     const data = await response.json();
+    if (opts.throwOnError && (!data || !data.cveMetadata)) {
+        throw new Error('The public CVE.org record response is invalid.');
+    }
     return (data && data.cveMetadata) ? cveFixForVulnogram(data) : null;
 }
 
@@ -1711,7 +1718,8 @@ function cveSelectPublishContainer(doc, targetType, orgId) {
     return doc.containers.cna ? doc.containers.cna : null;
 }
 
-async function cveFetchCurrentPortalDoc(cveId) {
+async function cveFetchCurrentPortalDoc(cveId, options) {
+    var opts = options || {};
     // Try CVE Services first (authoritative source when a session is active).
     if (csClient && typeof csClient.getCve === 'function') {
         try {
@@ -1721,18 +1729,25 @@ async function cveFetchCurrentPortalDoc(cveId) {
             }
             return cvePreparePublishDoc(currentDoc);
         } catch (e) {
-            if (e != '404' && e.error != 'CVE_RECORD_DNE') {
+            var notFound = e == '404' || (e && e.error == 'CVE_RECORD_DNE');
+            // Publish flows must surface portal errors rather than silently
+            // diff against a substitute baseline; read-only comparisons may
+            // opt in to falling back on any failure (e.g. no session).
+            if (!notFound && !opts.allowPublicFallback) {
                 throw e;
             }
         }
     }
     // Fall back to the public CVE.org API (no auth required).
     try {
-        var data = await cveFetchRawFromCveOrg(cveId);
+        var data = await cveFetchRawFromCveOrg(cveId, { throwOnError: opts.allowPublicFallback });
         if (data) {
             return cvePreparePublishDoc(data);
         }
     } catch (e) {
+        if (opts.allowPublicFallback) {
+            throw e;
+        }
         // Network error or CORS.
     }
     return null;
@@ -1839,7 +1854,9 @@ function cvePublishPreviewActionLabel(targetType, currentContainer, nextMeta, la
         return currentContainer ? 'Update ADP container' : 'Add ADP container';
     }
     var cveState = nextMeta && nextMeta.state == 'REJECTED' ? 'REJECTED' : 'PUBLISHED';
-    var isReserved = latestId && latestId.state == 'RESERVED';
+    // Without a session latestId is unknown; infer create-vs-update from
+    // whether a current record was found.
+    var isReserved = latestId ? latestId.state == 'RESERVED' : !currentContainer;
     if (isReserved) {
         return cveState == 'REJECTED' ? 'Create rejected CNA record' : 'Create CNA record';
     }
@@ -1907,15 +1924,18 @@ function cveCanPublishAdp(orgId, currentOrgId) {
     return !!orgId && (orgId === '00000000-0000-4000-9000-000000000000' || orgId === currentOrgId);
 }
 
-async function cveBuildPublishPreviewList(doc) {
+async function cveBuildPublishPreviewList(doc, options) {
+    var opts = options || {};
     var preparedDoc = cvePreparePublishDoc(doc);
     if (!preparedDoc || !preparedDoc.cveMetadata || !preparedDoc.cveMetadata.cveId) {
         return [];
     }
     var cveId = preparedDoc.cveMetadata.cveId;
     var fetched = await Promise.all([
-        csClient.getCveId(cveId).catch(function () { return null; }),
-        cveFetchCurrentPortalDoc(cveId),
+        (csClient && typeof csClient.getCveId === 'function')
+            ? csClient.getCveId(cveId).catch(function () { return null; })
+            : null,
+        cveFetchCurrentPortalDoc(cveId, { allowPublicFallback: opts.allowPublicFallback }),
         cveGetCurrentOrgId()
     ]);
     var latestId = fetched[0];
@@ -2274,11 +2294,14 @@ function cveHighlightPublishPreview(container) {
     }
 }
 
+var cvePublishChangesRenderSeq = 0;
+
 async function cveRenderPublishChanges(doc) {
     var container = document.getElementById('unSavedChanges');
     if (!container) {
         return;
     }
+    var seq = ++cvePublishChangesRenderSeq;
     if (!doc || !doc.cveMetadata || !doc.cveMetadata.cveId) {
         cveSetPublishChangesMessage(container, 'Load a CVE record to compare publish changes.', false);
         return;
@@ -2291,25 +2314,27 @@ async function cveRenderPublishChanges(doc) {
     try {
         await ensurePortalBootstrap();
     } catch (e) {
-        cveSetPublishChangesMessage(container, cvePublishErrorMessage(e), true);
+        if (seq == cvePublishChangesRenderSeq) {
+            cveSetPublishChangesMessage(container, cvePublishErrorMessage(e), true);
+        }
         return;
     }
     var hasSession = false;
     try {
         hasSession = await hasActivePortalSession(csCache.url);
     } catch (e) {
-        cveSetPublishChangesMessage(container, cvePublishErrorMessage(e), true);
-        return;
-    }
-    if (!hasSession) {
-        cveSetPublishChangesMessage(container, 'Login to CVE Services to compare against the current record.', false);
-        return;
+        // No usable session; compare against the public CVE.org record below.
     }
     try {
-        var previews = await cveBuildPublishPreviewList(doc);
+        var previews = await cveBuildPublishPreviewList(doc, { allowPublicFallback: !hasSession });
+        if (seq != cvePublishChangesRenderSeq) {
+            return;
+        }
         container.innerHTML = '';
         if (!previews.length) {
-            cveSetPublishChangesMessage(container, 'No publishable CNA or ADP containers found in this record.', false);
+            cveSetPublishChangesMessage(container, hasSession
+                ? 'No publishable CNA or ADP containers found in this record.'
+                : 'No comparable containers found. Login to CVE Services to compare containers you can publish.', false);
             return;
         }
         container.innerHTML = previews.map(function (preview) {
@@ -2318,9 +2343,17 @@ async function cveRenderPublishChanges(doc) {
                 doc: preview
             });
         }).join('');
+        if (!hasSession) {
+            var note = document.createElement('p');
+            note.className = 'pad2';
+            note.innerText = 'Not logged in: comparing against the public CVE.org record.';
+            container.insertBefore(note, container.firstChild);
+        }
         cveHighlightPublishPreview(container);
     } catch (e) {
-        cveSetPublishChangesMessage(container, cvePublishErrorMessage(e), true);
+        if (seq == cvePublishChangesRenderSeq) {
+            cveSetPublishChangesMessage(container, cvePublishErrorMessage(e), true);
+        }
     }
 }
 

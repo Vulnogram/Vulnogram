@@ -4803,6 +4803,7 @@ function loadJSON(res, id, message, editorOptions) {
     docEditor = new JSONEditor(document.getElementById('docEditor'), editorOptions ? editorOptions : docEditorOptions);
     docEditor.on('ready', async function () {
         await docEditor.root.setValue(res, true);
+        mainTabGroup.changeIndex[mainTabGroup.primary] = Math.max(...mainTabGroup.changeIndex) + 1;
         if (docEditor && typeof docEditor.getValue === 'function') {
             draftsSetBaseline(docEditor.getValue());
         }
