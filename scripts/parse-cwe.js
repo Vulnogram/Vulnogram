@@ -15,8 +15,8 @@ let match;
 
 while ((match = weaknessRegex.exec(xml)) !== null) {
     const [block, id, name] = match;
-    if (/<Usage>Allowed<\/Usage>/.test(block)) {
-        results.push(`CWE-${id} ${toSentenceCase(name)}`);
+    if (/<Usage>Allowed(-with-Review)?<\/Usage>/.test(block) || id === '20') {
+    results.push(`CWE-${id} ${toSentenceCase(name)}`);
     }
 }
 
