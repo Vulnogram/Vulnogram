@@ -316,7 +316,8 @@ mixin autoText
     if con.affected
         - var plist = [];
         for p in con.affected
-            - var pd = [p.vendor, p.vendor != p.product ? p.product : '', p.packageName != p.product ? p.packageName : '', (p.platforms ? 'on ' + andJoin(p.platforms) : ''), p.modules ? '(' + andJoin(p.modules) + (p.modules.length > 1 ? ' modules)' : ' module)') : ''].join(' ').trim().replaceAll(/\s+/g, ' ')
+            - var vendorProduct = (p.vendor && p.product && p.vendor != p.product) ? p.vendor + "'s " + p.product : (p.vendor || p.product || '');
+            - var pd = [vendorProduct, p.packageName != p.product ? p.packageName :'', (p.platforms ? 'on ' + andJoin(p.platforms) : ''), p.modules ? '(' + andJoin(p.modules) + (p.modules.length > 1 ? ' modules)' : ' module)') : ''].join(' ').trim().replaceAll(/\s+/g, ' ')
             - var pn = p.product ? p.product : p.packageName;
             if pd
                 - plist.push(pd);
