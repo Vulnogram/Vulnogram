@@ -22,40 +22,35 @@ const validator = require('validator');
 var csrfProtection = csurf();
 const profileRoutes = ['/profile', '/profile/:id'];
 
+function isAdminUser(user) {
+    return user && user.priv == 0;
+}
+
 // If admin allow edits, otherwise display user
 protected.get(profileRoutes, csrfProtection, function (req, res) {
-    var admin = false;
-    if (req.user.priv == 0) {
-        admin = true;
-    }
+    var admin = isAdminUser(req.user);
     if (req.params.id) {
         if (!validator.matches(req.params.id, new RegExp('^' + conf.usernameRegex + '$'))) {
             req.flash('error', 'Invalid user id');
             res.render('blank');
             return;
         }
+        if (!admin && req.user.username != req.params.id) {
+            req.flash('error', 'Only administrators can view other user profiles');
+            res.redirect('/users/profile/' + req.user.username);
+            return;
+        }
         User.findOne({
             username: req.params.id
         }, function (err, user) {
             if (user) {
-                //if Admin or self then present edit form
-                if (admin || req.user.username == req.params.id) {
-                    res.render('users/edit', {
-                        title: 'Update profile: ' + user.username,
-                        profile: user,
-                        admin: admin,
-                        page: 'users',
-                        csrfToken: req.csrfToken()
-                    });
-                } else {
-                    res.render('users/view', {
-                        title: 'Profile: ' + user.username,
-                        profile: user,
-                        admin: admin,
-                        page: 'users',
-                        csrfToken: req.csrfToken()
-                    });
-                }
+                res.render('users/edit', {
+                    title: 'Update profile: ' + user.username,
+                    profile: user,
+                    admin: admin,
+                    page: 'users',
+                    csrfToken: req.csrfToken()
+                });
             } else {
                 req.flash('error', 'User id not found');
                 if (admin) {
@@ -174,10 +169,7 @@ protected.post(profileRoutes, csrfProtection, [
         .withMessage('Privilege provided is invalid')
 ], function (req, res) {
     if (req.isAuthenticated()) {
-        var admin = false;
-        if (req.user.priv == 0) {
-            admin = true;
-        }
+        var admin = isAdminUser(req.user);
         let errors = validationResult(req);
         let updates = matchedData(req);
 
@@ -282,24 +274,25 @@ public.get('/logout', function (req, res) {
 
 //List users
 protected.get('/list', function (req, res) {
-    if (req.isAuthenticated()) {
-        User.find({}, [], {
-            sort: {
-                _id: 1
-            }
-        }, function (err, users) {
-            if (err) {
-                res.status(500).send('Error');
-            } else {
-                res.render('users/index', {
-                    users: users,
-                    page: 'users'
-                });
-            }
-        });
-    } else {
-
+    if (!isAdminUser(req.user)) {
+        req.flash('error', 'Only administrators can view the user list');
+        res.redirect('/users/profile/' + req.user.username);
+        return;
     }
+    User.find({}, [], {
+        sort: {
+            _id: 1
+        }
+    }, function (err, users) {
+        if (err) {
+            res.status(500).send('Error');
+        } else {
+            res.render('users/index', {
+                users: users,
+                page: 'users'
+            });
+        }
+    });
 });
 
 protected.get('/list/json', function (req, res) {
