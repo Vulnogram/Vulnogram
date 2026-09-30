@@ -522,10 +522,12 @@
           "title": "Package URL (purl)",
           "description": "A Package URL, a unified URL specification for identifying packages hosted by known package hosts. The Package URL MUST NOT include a version.",
           "$ref": "#/definitions/uriType",
+          "pattern": "^pkg:[^@\\s]+$",
           "options": {
             "show_errors": "always",
             "grid_columns": 12,
             "class": "vgi-package",
+            "patternmessage": "Enter a valid purl: start with pkg: and no version",
             "inputAttributes": {
               "placeholder": "eg., pkg:maven/org.apache.commons/commons-lang3"
             }
