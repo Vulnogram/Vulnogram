@@ -2,6 +2,7 @@ const pbkdf2 = require('./lib/pbkdf2.js');
 const User = require('./models/user.js');
 const mongo = require('./lib/mongo');
 const config = require('./config/conf');
+const runtimeEnv = require('./config/runtime-env');
 
 function hashPassword(password) {
     return new Promise(function (resolve, reject) {
@@ -17,6 +18,7 @@ function hashPassword(password) {
 
 async function main() {
     try {
+        runtimeEnv.assertSafeDeploymentConfig();
         await mongo.connect(config.database);
         var username = (process.env.VULNOGRAM_ADMIN_USERNAME || '').toLowerCase();
         var adminUser = await User.findOne({

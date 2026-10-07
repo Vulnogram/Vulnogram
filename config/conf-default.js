@@ -1,12 +1,15 @@
 const fs = require("fs");
 var package = require('../package.json');
+const runtimeEnv = require('./runtime-env');
+
+runtimeEnv.assertSafeDeploymentConfig();
 
 module.exports = {
 
     // The Mongodb URL where CVE entries and users are stored.
     // WARNING: Configure MongoDB authentication and use a strong password
     // WARNING: Ensure MongoDB is not reachable from the network. 
-    database: `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME || "admin"}:${process.env.MONGO_INITDB_ROOT_PASSWORD || "admin"}@${process.env.MONGO_HOST || "127.0.0.1"}:${process.env.MONGO_PORT || "27017"}`,
+    database: runtimeEnv.buildMongoUrl(),
     //database:'mongodb://vulnogram:StrongLongPass@127.0.0.1:27017/vulnogram',
 
     // Name of the organization that should be used in page titles etc.,
