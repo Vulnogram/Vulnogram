@@ -247,9 +247,11 @@ function barChart(a) {
             return d._id;
         }));
 
-        a.y.domain([0, d3.max(data, function (d) {
+        var dataMax = d3.max(data, function (d) {
             return d.t;
-        })]);
+        });
+        /* optional fixed Y max shared across charts; never clip data above it */
+        a.y.domain([0, a.maxY > 0 ? Math.max(a.maxY, dataMax) : dataMax]);
 
         svg.append("g")
             .attr("class", "x axis")

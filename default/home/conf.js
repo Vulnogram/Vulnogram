@@ -137,6 +137,12 @@ schema: {
       ],
       "pattern": "^(.*)$"
     },
+    "maxY": {
+        "type": "number",
+        "title": "Max Y value (bar charts, optional)",
+        "description": "Fixed upper bound of the Y axis so different bar charts share the same scale. Leave empty to fit automatically.",
+        "minimum": 0
+    },
     "section": {
         type: "string",
         format: "radio",

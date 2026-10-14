@@ -314,7 +314,7 @@
         },
         "tooltips": {
           "affected": "Affected - bad",
-          "unaffected": "Unffected - safe",
+          "unaffected": "Unaffected - safe",
           "unknown": "Unknown - not sure"
         },
         "enum_titles": [
