@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 node:18
+FROM --platform=linux/amd64 node:22
 
 # Create unprivileged user
 
