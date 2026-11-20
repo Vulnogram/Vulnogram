@@ -183,7 +183,7 @@ module.exports = {
     schema: cve5,
     validators: [
         function (schema, value, path) {
-            const semverPattern = /^((0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?)|0|\*$/;
+            const semverPattern = /^(?:(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?|0|\*)$/;
             var errors = [];
             var getDescriptionEditorPath = function (currentPath, currentValue) {
                 if (currentValue && Array.isArray(currentValue.supportingMedia) && currentValue.supportingMedia.length > 0) {
