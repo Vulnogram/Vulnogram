@@ -1,0 +1,156 @@
+//- Read-only page of one Finding: a "Finding" tab (summary, where to fix as a filterable,
+//- sortable table, what it is, dates)
+//- and a "JSON" tab. Read-only pages allow no inline scripts and get no section style.css,
+//- so tabs are CSS-only and styles are inline.
+extends ../../views/readonly.pug
+
+block content
+    include ../../views/util.pug
+    link(rel='stylesheet', href=conf.basedir + 'css/list.css')
+    style.
+        .f h2 { margin: 0 0 .2em; }
+        .f h3 { margin: 1.4em 0 .5em; font-size: 1em; text-transform: uppercase; letter-spacing: .06em; color: var(--acc); }
+        .f-head { display: flex; gap: 1em; align-items: center; }
+        .f-sev { border-radius: .4em; padding: .15em .6em; font-weight: bold; white-space: nowrap; background: var(--bg2); }
+        .f-head > .f-sev { font-size: 1.3em; padding: .5em .8em; }
+        .f-sev.Critical { background: var(--sev-crit); }
+        .f-sev.High { background: var(--sev-high); }
+        .f-sev.Medium { background: var(--sev-med); }
+        .f-sev.Low { background: var(--sev-low); }
+        .f-pill { border-radius: 1em; padding: .1em .7em; border: 1px solid var(--bor); white-space: nowrap; }
+        .f-pill.open { border-color: var(--txt-red); color: var(--txt-red); font-weight: bold; }
+        .f-pill.closed { background: var(--sev-none); border-color: transparent; }
+        .f-meta { display: flex; flex-wrap: wrap; gap: .4em 1em; align-items: center; color: var(--dis); }
+        .f-sum { display: flex; flex-wrap: wrap; gap: .6em; margin-top: 1em; }
+        .f-sum > div { flex: 1 1 9em; background: var(--bg1); border: 1px solid var(--bor); border-radius: .5em; padding: .5em .8em; }
+        .f-sum b { display: block; font-size: 1.4em; }
+        .f-sum span { color: var(--dis); font-size: .9em; }
+        .f-kv { display: grid; grid-template-columns: max-content 1fr; gap: .2em .8em; margin: 0; }
+        .f-kv dt { color: var(--dis); }
+        .f-kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+        .f-chips { display: flex; flex-wrap: wrap; gap: .3em; }
+        .f-chip { border: 1px solid var(--bor); border-radius: .3em; padding: 0 .4em; background: var(--bg1); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+        .f code { overflow-wrap: anywhere; }
+        #instTable td.severity span { border-radius: .3em; padding: 0 .4em; }
+        #instTable td.severity .Critical { background: var(--sev-crit); }
+        #instTable td.severity .High { background: var(--sev-high); }
+        #instTable td.severity .Medium { background: var(--sev-med); }
+        #instTable td.severity .Low { background: var(--sev-low); }
+        #instTable td { white-space: nowrap; }
+        #instTable td.versions span, #instTable td.files span, #instTable td.sources span { display: block; }
+
+    - var d = (doc && doc.body) || {};
+    - var c = (doc && doc.computed) || {};
+    - var OPEN = ['New', 'Triaged', 'Confirmed', 'In remediation'];
+    - var SEV = ['Critical', 'High', 'Medium', 'Low', 'Info'];
+    - var TYPE = { code: ['vgi-console', 'Code weakness'], dependency: ['vgi-package', 'Vulnerable dependency'], secret: ['vgi-key', 'Exposed secret'] };
+    - var day = function (v) { var t = Date.parse(v); return isNaN(t) ? '' : new Date(t).toISOString().slice(0, 10); };
+    - var insts = (d.instances || []).slice().sort(function (a, b) { return (OPEN.indexOf(b.status) >= 0) - (OPEN.indexOf(a.status) >= 0) || SEV.indexOf(a.severity) - SEV.indexOf(b.severity); });
+    - var openCount = insts.filter(function (i) { return OPEN.indexOf(i.status) >= 0; }).length;
+    - var parts = String(d.key || '').split(':');
+    - var hash = parts[parts.length - 1];
+    - var keyText = d.type === 'secret' ? parts[0].replace(/_/g, ' ') + ' ' + hash.slice(0, 2) + '..' + hash.slice(-2) : d.key;
+    - var type = TYPE[d.type] || ['vgi-search', d.type];
+    //- Instances as table rows for the table mixin of views/util.pug (fields drives its cell rendering).
+    - var columns = ['name', 'scope', 'status', 'severity', 'kev', 'owner', 'prodsecPartner', 'champion', 'bu', 'productGroup', 'versions', 'files', 'jira', 'sources'];
+    - var filterFields = ['status', 'severity', 'kev', 'scope', 'bu', 'productGroup', 'owner', 'prodsecPartner'];
+    - var fields = {};
+    - columns.forEach(function (k) { fields[k] = {}; });
+    - fields.scope.icons = { repo: 'folder', product: 'package' };
+    - fields.kev.icons = { yes: 'bomb' };
+    - fields.status.icons = { New: 'inbox1', Triaged: 'eye', Confirmed: 'tick', Fixed: 'ok', Verified: 'safe', Closed: 'closed', Duplicate: 'copy' };
+    - var rowCount = 0;
+    - var rows = insts.map(function (i) { return Object.assign({}, i, { sources: (i.sources || []).map(function (s) { return s.source + ' ' + s.id + (s.open ? '' : ' (closed)'); }) }); });
+
+    div#mainTabGroup
+        input.tab(name='tabs', type='radio', id='findingTab', checked)
+        label.lbl.vgi-search(for='findingTab') Finding
+        .fil.bort.pad2.wht
+            if !d.ID
+                .tred Document not found
+            else
+                .f
+                    //- 1. What, how bad, is it open
+                    .f-head
+                        span.f-sev(class=d.severity)= d.severity || 'Unrated'
+                        div
+                            h2= d.title
+                            .f-meta
+                                b= d.ID
+                                span(class=type[0])= type[1]
+                                span.f-pill(class=d.state === 'Open' ? 'open' : 'closed')= d.state
+                                if d.kev === 'yes'
+                                    span.f-pill.open.vgi-bomb= d.type === 'secret' ? 'Active secret' : 'Known exploited (KEV)'
+
+                    .f-sum
+                        div
+                            b= openCount + ' of ' + insts.length
+                            span places still open
+                        div
+                            b= c.age || '-'
+                            span= 'old, since ' + (day(doc.createdAt) || '-')
+                        div
+                            b= (d.sources || []).length
+                            span= 'sources: ' + (d.sources || []).join(', ')
+
+                    //- 2. Where to fix it and who owns it: list-page charts and table, open places first.
+                    h3.vgi-stack Where to fix
+                    div.ins.hig.flx.wlp.pad#instFilter
+                        each field in filterFields
+                            - var counts = {};
+                            - rows.forEach(function (r) { [].concat(r[field] || []).forEach(function (v) { counts[v] = (counts[v] || 0) + 1; }); });
+                            div.wht.rnd.shd.chart(class=field)
+                                label(for='flt' + field)= field
+                                input.expand(id='flt' + field, type='checkbox')
+                                each n, v in counts
+                                    - var icon = fields[field] && fields[field].icons && fields[field].icons[v];
+                                    div.bar(style='width:' + Math.round(n / rows.length * 170 + 1) + 'px')
+                                        input(type='checkbox', id=field + v, name=field, value=v)
+                                        label.otl(class=icon ? 'vgi-' + icon : v, for=field + v, title=v + ' (' + n + ')')
+                                            = v
+                                            br
+                                            b= n
+                                label(for='flt' + field)
+                        .right.gap
+                            button.indent.btn.vgi-reuse#instReset(type='button') Reset
+                    +table(rows, columns, false, 'instTable')
+
+                    //- 3. What the problem is
+                    h3.vgi-info What it is
+                    dl.f-kv
+                        dt Type
+                        dd(class=type[0])= type[1]
+                        if d.cve && d.cve.length
+                            dt CVE
+                            dd.f-chips
+                                each v in d.cve
+                                    a.f-chip(href='https://vulnogram.org/seaview/?' + encodeURIComponent(v), target='_blank', rel='noopener')= v
+                        if d.cwe && d.cwe.length
+                            dt CWE
+                            dd.f-chips
+                                each w in d.cwe
+                                    a.f-chip(href='https://cwe.mitre.org/data/definitions/' + String(w).replace(/^CWE-/i, '') + '.html', target='_blank', rel='noopener')= w
+                        if d.rules && d.rules.length
+                            dt Rules
+                            dd.f-chips
+                                each r in d.rules
+                                    code.f-chip= r
+                        dt(title='Findings with the same type and key are merged') Dedup key
+                        dd
+                            code(title=d.type === 'secret' ? 'Fingerprint of the secret hash' : null)= keyText
+
+                    //- 4. Dates
+                    h3.vgi-cal Dates
+                    dl.f-kv
+                        dt First seen
+                        dd= day(doc.createdAt) + (c.quarter ? ' (' + c.quarter + ')' : '')
+                        dt Last updated
+                        dd= day(doc.updatedAt) + (doc.author ? ' by ' + doc.author : '')
+
+        input.tab(name='tabs', type='radio', id='jsonTab')
+        label.lbl.vgi-json(for='jsonTab') JSON
+        .fil.bort.pad2.wht
+            +jsondump(d)
+    //- Read-only pages allow only same-origin scripts: sorting and filtering live in static/.
+    script(src=conf.basedir + 'js/tablesort.min.js')
+    script(src='/finding/static/instances.js')
