@@ -6,10 +6,15 @@ block prepend messageBar
     if bulkInput && Object.keys(bulkInput).length !== 0
         .left
             button#teamPublishSelected.btn.sfe.vgi-export(type="button") Publish Selected
+            | 
+            button#csafSelected.btn.vgi-download(type="button",onclick="saveCSAFSelected()",title="Download the selected CVEs as one CSAF 2.1 file (TLP:CLEAR)") CSAF Selected
 
 block append scripts
+    script.
+        var csafConfig = !{JSON.stringify(conf.csafPublisher || {}).replace(/</g, '\\u003c')};
     script
         include cve.js
+        include csaf.js
         include portal.js
     - var compileScript = pugLib.compileFileClient('default/cve5/cvelist.pug', {name: "cveRender", basedir: '', compileDebug: false,inlineRuntimeFunctions: true})
     script !{compileScript}

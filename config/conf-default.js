@@ -18,6 +18,10 @@ module.exports = {
     //CNA contact address
     //contact: 'sirt@example.net',
 
+    // Publisher of exported CSAF documents. When name and namespace are set here, CVE Services and the
+    // CVE website's CNA list are not consulted. category: vendor (default), coordinator, discoverer, multiplier, other, translator or user.
+    //csafPublisher: { category: 'vendor', name: 'Example Org PSIRT', namespace: 'https://www.example.com' },
+
     classification: 'Confidential INTERNAL USE ONLY',
     copyright: '© Example Org. Made with ' + package.name + ' ' + package.version,
 
